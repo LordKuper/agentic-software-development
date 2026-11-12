@@ -21,6 +21,8 @@ Name describe purpose, not look. Good: `button-danger`, `surface-panel`, `text-m
 
 Test: rename underlying color → token name still true? If `red-button` cannot turn yellow without absurd, name bad. Use `button-danger`.
 
+**Subsystem prefix** (`project.subsystem_decomposition: enabled`): a token only one subsystem uses is named `<subsystem>-<purpose>` inside the spec's existing groups (`colors.billing-status-due`), never a new top-level group, which the spec leaves undefined. A token two or more subsystems use stays unprefixed.
+
 ## 4. Token Usage Comment
 
 Every token MUST carry inline YAML comment: where + when used. One line. No essay.
@@ -30,7 +32,7 @@ button-danger: "#c0392b"   # primary destructive actions (delete, discard, irrev
 surface-raised: "#2a2a2a"  # elevated panels, modals, popovers
 ```
 
-Comment absent → reviewer FAIL. Comment that only restates name (`button-danger: # danger button`) → reviewer FAIL.
+Comment absent → reviewer CONCERNS. Comment that only restates name (`button-danger: # danger button`) → reviewer CONCERNS.
 
 ## 5. Token Add Checklist
 
@@ -54,7 +56,7 @@ No raw hex / px / rem / font-family in UI code **or ux-spec mockup previews**. A
 
 Every interactive component declare: `default`, `hover`/`focus`, `pressed`, `disabled`. Add `selected` if applicable, `danger` if destructive.
 
-Disabled state MUST show reason ("Need 5 X, have 2"). Plain grey button with no explanation = FAIL.
+Disabled state MUST show reason ("Need 5 X, have 2"). Plain grey button with no explanation = reviewer CONCERNS.
 
 ## 8. Notification Levels
 
@@ -78,9 +80,11 @@ Theme MUST NOT change: grid, component size, hit targets, base spacing, notifica
 
 ## 11. Linter Pass Criteria
 
-`designmd-lint` result with ≥1 **error** OR ≥1 **warning** (not in exclusion list) = FAIL → fixes required, re-lint. Clean pass = zero errors + zero un-excluded warnings.
+`designmd-lint` result with ≥1 **error** OR ≥1 **warning** (not in exclusion list) = not clean → fixes required, re-lint. Clean pass = zero errors + zero un-excluded warnings.
 
-Errors never excludable. Each **warning** exclusion MUST be user-approved (request user decision) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). The UI conformance verifier FAILs if excluded warning lacks recorded rationale.
+Errors never excludable. Each **warning** exclusion MUST be user-approved (request user decision) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). The UI conformance verifier raises CONCERNS if an excluded warning lacks recorded rationale.
+
+A token a script or theme switch selects at runtime, referenced by no component, trips the `orphaned-tokens` warning: its exclusion is an `orphaned-tokens` list in the lint-exclusions block, one line per token naming the runtime selector, approved like any warning exclusion.
 
 ## 12. Authoring, token decisions, rule survival
 
@@ -88,11 +92,12 @@ Scope: the design-system gate, `design-md-delta.yaml`, DESIGN.md / design-system
 
 - **Precondition**: any of `DESIGN.md`, `design-system.html`, `accessibility.html` missing → halt, run `/asd-design-system`; never author mockups against missing tokens.
 - **Token decisions**: never use a missing, insufficient, new or changed token undecided. Put every such proposal into one decision under `checkpoints.md` (adaptive or strict), append each approved token to the sprint's `design-md-delta.yaml` before a mockup or code uses it. No separate unconditional token pause. Lite design-promote: a token the implementation added or changed passes the same decision before `DESIGN.md` is patched.
-- **Mockups**: each modified screen is an interactive HTML/CSS mockup using only tokens in `DESIGN.md` or the delta, with its states (empty, loading, error) where it has them.
+- **Delta prose**: `design-md-delta.yaml` carries a `prose` section of DESIGN.md Markdown text (Overview, Do's and Don'ts, …), applied at `design-promote` beside the token changes.
+- **Mockups** (only with `documents.ux_spec` enabled; `lite`: made at scope): each modified screen or state is an interactive HTML/CSS mockup using only tokens in `DESIGN.md` or the delta, with its states (empty, loading, error) where it has them. Home `<sprint>/design/mockups/`, promoted to `docs/ux/mockups/` (decomposition: `mockups/<subsystem>/`). Claude Code with the Artifact tool: one subfolder per Design canvas holding `project/canvas.json` and `project/*.dc.html`, published from it, plus `mockups/index.md` linking each canvas; otherwise one `<screen>.html` per screen or state (`t_html-shell.html`). Dev and reviewers receive the folder as an input.
 - **Accessibility**: a ux-spec never carries a11y rules; project-wide `accessibility.html` owns them.
 - **DESIGN.md spec**: fetch the latest Google Labs spec before editing when the cached one is stale; the fetch failing twice halts the step. The web is limited to that spec.
-- **Tool bounds**: `designmd-install` runs once per session (it writes `package.json` and the lockfile); `designmd-lint`, `-diff`, `-export` per §10-§11; the `design.md` binary never inline.
-- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference.
+- **Tool bounds**: `designmd-install` runs once per session as a no-save install (`npm install --no-save`), never changing `package.json` or the lockfile; `designmd-lint`, `-diff`, `-export` per §10-§11; the `design.md` binary never inline.
+- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference. The token reference rows and the CSS variables are never hand-written: `node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>` rebuilds the regions between the `asd:tokens` and `asd:vars` markers from DESIGN.md, run by `design-promote` and `/asd-design-system` after the other sections are written.
 
 ## See also
 
