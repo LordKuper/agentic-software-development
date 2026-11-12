@@ -9,6 +9,7 @@
   },
   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" },
   "variants": {
+    "escalated": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } },
     "mechanical": { "claude": { "model": "haiku", "effort": "high" }, "codex": { "model": "luna", "model_reasoning_effort": "high" } }
   }
 }

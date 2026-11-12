@@ -12,7 +12,8 @@ const PROBE_TIMEOUT_MS = 3000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
 /** The longest a tool call may run before its silent transcript counts as a stall: the host's maximum command timeout. */
 const TOOL_CALL_CEILING_MS = 600000;
-const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
+const ESCALATED_CHANGE_RISKS = ['migration', 'broad reasoning', 'cross domain'];
+const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'public contract', 'workflow gate', ...ESCALATED_CHANGE_RISKS];
 /** The single review-ledger row vocabulary: allowed statuses per row type, plus the one status carrying `p` and the one carrying `f`. Emitted into every manifest and enforced on every ledger from here, so published and enforced vocabulary cannot drift. */
 const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
 /** One filled ledger row, published beside the vocabulary so a reviewer reads the row shape off its own input too. Its status is taken from the vocabulary constant and paired with the key that status requires, so the example cannot teach a row the validator rejects. */
@@ -152,7 +153,7 @@ function riskEntry(value) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) fail('risks entry must be a name or a typed risk');
   if (typeof entry.name !== 'string' || entry.name.length === 0 || entry.name.includes('\0')) fail('risks entry name must be a non-empty string');
   if (entry.target !== 'change' && entry.target !== 'artifact') fail('risks entry target must be change or artifact');
-  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(entry.name.toLowerCase().replace(/[\s_-]+/g, ' ').trim())) fail(`reserved risk class is change by definition: ${entry.name}`);
+  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(normalizedRiskName(entry.name))) fail(`reserved risk class is change by definition: ${entry.name}`);
   return { name: entry.name, target: entry.target };
 }
 
@@ -316,29 +317,38 @@ function recordExternalFailure(input) {
   return cache.entries[input.fingerprint];
 }
 
-/** Selects a task class without allowing a task to move to a weaker class; a change risk or a failed objective check only forbids `mechanical`, and a legacy `critical` prior tier reads `standard`. */
+function normalizedRiskName(name) {
+  return name.toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+}
+
+/** Selects a task class without allowing a task to move to a weaker class. A change risk forbids `mechanical`, and migration, broad reasoning and cross-domain risks select `escalated`. A failed objective check after its correction attempt first keeps the tier and asks for one effort level higher (`raiseEffort`); once `effortRaised`, it moves one tier up. A legacy `critical` prior tier reads `standard`. */
 function routeTask(input) {
   if (!input || typeof input !== 'object') fail('routing input required');
   if (!['command', 'mechanical', 'standard'].includes(input.kind)) fail('routing kind invalid');
   if (typeof input.objectiveInputs !== 'boolean' || typeof input.failedObjectiveCheck !== 'boolean') fail('routing evidence incomplete');
+  if (input.effortRaised !== undefined && typeof input.effortRaised !== 'boolean') fail('effortRaised invalid');
   const risks = riskArray(input.risks, 'risks');
   const checks = stringArray(input.checks, 'checks');
   if (!Number.isInteger(input.correctionAttempts) || input.correctionAttempts < 0) fail('correctionAttempts invalid');
-  const attempted = input.correctionAttempts;
-  const ranks = { mechanical: 0, standard: 1 };
+  const tiers = ['mechanical', 'standard', 'escalated'];
   const priorTier = input.priorTier === 'critical' ? 'standard' : input.priorTier;
-  if (priorTier !== undefined && !Object.prototype.hasOwnProperty.call(ranks, priorTier)) fail('priorTier invalid');
-  const changeRisk = risks.find((risk) => risk.target === 'change');
+  if (priorTier !== undefined && !tiers.includes(priorTier)) fail('priorTier invalid');
+  const changeRisks = risks.filter((risk) => risk.target === 'change');
+  const escalatingRisk = changeRisks.find((risk) => ESCALATED_CHANGE_RISKS.includes(normalizedRiskName(risk.name)));
+  const changeRisk = escalatingRisk || changeRisks[0];
   const artifactRisk = risks.find((risk) => risk.target === 'artifact');
   const deterministicCommand = input.kind === 'command' && input.objectiveInputs === true && checks.includes('deterministic-state');
   const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
-  const escalated = changeRisk || (input.failedObjectiveCheck && attempted >= 1);
-  const computedTier = !escalated && (deterministicCommand || mechanical) ? 'mechanical' : 'standard';
-  const clamped = Boolean(priorTier) && ranks[priorTier] > ranks[computedTier];
-  const tier = clamped ? priorTier : computedTier;
-  const execution = deterministicCommand && tier === 'mechanical' && risks.length === 0 ? 'command' : 'agent';
-  const reason = changeRisk ? `risk:${changeRisk.name}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : clamped ? 'no-downgrade' : artifactRisk ? `artifact-risk:${artifactRisk.name}` : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
-  return { tier, execution, reason };
+  const failed = input.failedObjectiveCheck && input.correctionAttempts >= 1;
+  const computedRank = escalatingRisk ? 2 : !changeRisk && (deterministicCommand || mechanical) ? 0 : 1;
+  const priorRank = priorTier === undefined ? 0 : tiers.indexOf(priorTier);
+  const clamped = priorRank > computedRank;
+  const baseRank = Math.max(computedRank, priorRank);
+  const raiseEffort = failed && input.effortRaised !== true;
+  const tier = tiers[failed && !raiseEffort ? Math.min(baseRank + 1, 2) : baseRank];
+  const execution = deterministicCommand && tier === 'mechanical' && risks.length === 0 && !failed ? 'command' : 'agent';
+  const reason = raiseEffort ? 'effort-step' : changeRisk ? `risk:${changeRisk.name}` : failed ? 'failed-objective-check' : clamped ? 'no-downgrade' : artifactRisk ? `artifact-risk:${artifactRisk.name}` : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
+  return { tier, execution, reason, raiseEffort };
 }
 
 function rowsById(rows, expected, allowedNa, findings, label) {
