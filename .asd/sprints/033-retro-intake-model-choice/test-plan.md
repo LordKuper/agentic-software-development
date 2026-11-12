@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 97cdd2f3 | full change surface |
 | 2 | 14898f4a | delta since entry 1 (D-1..D-4 fixes) |
-| 3 |  | delta since entry 2 (review-fix wave-1/iter-01, bcd4f6ac..c6d460a8) |
+| 3 | 245bed7a | delta since entry 2 (review-fix wave-1/iter-01, bcd4f6ac..c6d460a8) |
 
 ## Risk → check decisions
 

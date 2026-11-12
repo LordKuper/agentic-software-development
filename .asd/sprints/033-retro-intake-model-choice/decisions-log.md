@@ -89,3 +89,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: combined F1-F10 and external 1-7 resolved in bcd4f6ac..c6d460a8 by `asd-dev-escalated`; flagged extras accepted: `Skill` also on asd-phase-impl, a runner red at impl-test step 8 goes to a fresh base tester, `applyFloor` rewrites a `FAIL: n` count too.
 - **Rationale**: Each extra closes the same gap the finding named at a sibling site; orchestrator/impl load stays 56 B under the AC-16 ceiling. Two design-tokens tests pin the old `asd:vars` HTML markers — for impl-test.
 - **Affected docs**: reviews/impl/wave-1/iter-01/
+- 2026-11-12 — route impl-test entry 3: standard, dispatch HEAD 9ae24872
+- 2026-11-12 — impl-test: impacted set green (362/362), 3/0 tests
