@@ -97,7 +97,7 @@ Scope: the design-system gate, `design-md-delta.yaml`, DESIGN.md / design-system
 - **Accessibility**: a ux-spec never carries a11y rules; project-wide `accessibility.html` owns them.
 - **DESIGN.md spec**: fetch the latest Google Labs spec before editing when the cached one is stale; the fetch failing twice halts the step. The web is limited to that spec.
 - **Tool bounds**: `designmd-install` runs once per session as a no-save install (`npm install --no-save`), never changing `package.json` or the lockfile; `designmd-lint`, `-diff`, `-export` per §10-§11; the `design.md` binary never inline.
-- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference. The token reference rows and the CSS variables are never hand-written: `node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>` rebuilds the regions between the `asd:tokens` and `asd:vars` markers from DESIGN.md, run by `design-promote` and `/asd-design-system` after the other sections are written.
+- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference. The token reference rows and the CSS variables are never hand-written: `node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>` rebuilds the regions between the `asd:tokens` (HTML comment) and `asd:vars` (CSS comment) markers from DESIGN.md, run by `design-promote` and `/asd-design-system` after the other sections are written.
 
 ## See also
 

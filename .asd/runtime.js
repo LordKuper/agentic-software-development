@@ -1711,7 +1711,8 @@ const DESIGN_CSS_UNSAFE = /[;{}<>]/;
 const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
 const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
 const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
-const DESIGN_REGIONS = { tokens: 'asd:tokens', vars: 'asd:vars' };
+/** Marker comment form per region: HTML in the token table, CSS inside the vars `<style>` (an HTML comment there breaks the `:root` selector). */
+const DESIGN_REGIONS = { tokens: (edge) => `<!-- asd:tokens:${edge} -->`, vars: (edge) => `/* asd:vars:${edge} */` };
 
 /** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
 function designScalar(rest, where) {
@@ -1791,10 +1792,10 @@ function designCssValue(leaf, file) {
   return value;
 }
 
-/** Text with the content between the `name` start/end markers replaced by `content`; the markers must each appear exactly once, start first. */
-function replaceMarkedRegion(html, name, content, eol, file) {
-  const start = `<!-- ${name}:start -->`;
-  const end = `<!-- ${name}:end -->`;
+/** Text with the content between the `marker` start/end comments replaced by `content`; the markers must each appear exactly once, start first. */
+function replaceMarkedRegion(html, marker, content, eol, file) {
+  const start = marker('start');
+  const end = marker('end');
   const from = html.indexOf(start);
   const to = html.indexOf(end);
   if (from === -1 || to === -1 || to < from || html.indexOf(start, from + 1) !== -1 || html.indexOf(end, to + 1) !== -1) fail(`${file}: needs exactly one ${start} ... ${end} marker pair`);

@@ -173,7 +173,7 @@ The shell trims two blocks per document instead of always emitting them: the mer
 
 **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
 
-**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding.
+**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding. Sole exception: `t_design-system.html`'s `<style>` holding only the `asd:vars` `:root` block, generator-owned (`design-system.md` §12 Regeneration).
 
 ## Review verdict placeholder namespace
 
