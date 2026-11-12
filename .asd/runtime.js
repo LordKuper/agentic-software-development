@@ -107,11 +107,14 @@ const TIMING_LEDGER = 'timing.jsonl';
 const TIMING_KINDS = ['phase', 'dispatch', 'review-iteration', 'suite', 'external-review', 'user-wait'];
 /** Kinds timing a single machine operation, the only ones the slow set ranks; user waits are never slow. */
 const LEAF_MACHINE_KINDS = ['dispatch', 'suite', 'external-review'];
-const TIMING_OUTCOMES = ['done', 'interrupted'];
+/** Close outcomes; `continued` closes an operation a recovery had closed as `interrupted` and the orchestrator carried on. */
+const TIMING_OUTCOMES = ['done', 'interrupted', 'continued'];
 /** Longest leaf machine operations the timing summary always lists as slow. */
 const SLOW_TOP_N = 5;
-/** Minutes past which a leaf machine operation is slow whatever its rank. */
+/** Minutes past which a leaf machine operation is slow, and a phase stretch covered by no operation is idle. */
 const SLOW_MINUTES = 30;
+/** Longest commit header, `<type>(<scope>): <subject>` whole, in characters. */
+const COMMIT_HEADER_MAX = 50;
 
 /** How long a PR may report no check before it counts as having none. */
 const CHECKS_GRACE_MS = 60000;
@@ -779,12 +782,31 @@ function memoryViolations(diff, names) {
   return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
 }
 
-/** Runs the work-history check over the staged agent-memory changes. */
-function memoryCheck(flags) {
+/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (files or directories, repo-root relative) when any are given. */
+function memoryCheck(flags, paths = []) {
   if (Object.keys(flags).length > 0) fail('memory-check takes no flags');
   const diff = runGit(['diff', '--cached', '-U0', '--no-color', '--no-ext-diff', '--no-prefix', '--', AGENT_MEMORY_PATHSPEC]);
   const names = runGit(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACR', '--', AGENT_MEMORY_PATHSPEC]).split('\0').filter(Boolean);
-  return memoryViolations(diff, names);
+  const named = paths.map((entry) => entry.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, ''));
+  const isNamed = (violation) => named.length === 0 || named.some((target) => violation.path === target || violation.path.startsWith(`${target}/`));
+  return memoryViolations(diff, names).filter(isNamed);
+}
+
+/** The pre-commit report for a commit of `paths` (all staged when none): the header's length and the memory-check hits among those paths; `ok` only when the header fits and there is no hit. */
+function commitCheck(flags, paths) {
+  const unknown = Object.keys(flags).filter((name) => name !== 'subject');
+  if (unknown.length > 0 || typeof flags.subject !== 'string' || flags.subject === '') fail('commit-check takes --subject "<header>" [-- <paths...>]');
+  const headerLength = Array.from(flags.subject).length;
+  const memory = memoryCheck({}, paths);
+  return { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+}
+
+/** Runs `commit-check`: `--subject` flag, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
+function commitCheckCommand(args) {
+  const split = args.indexOf('--');
+  const report = commitCheck(parseFlagArgs(split === -1 ? args : args.slice(0, split)), split === -1 ? [] : args.slice(split + 1));
+  process.stdout.write(JSON.stringify(report) + '\n');
+  return report.ok ? 0 : 1;
 }
 
 /** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
@@ -1227,7 +1249,7 @@ function timingEntries(text) {
   return text.split('\n').map(parse).filter((entry) => entry && (entry.op === 'open' || entry.op === 'close') && typeof entry.id === 'string');
 }
 
-/** Replays ledger entries: the ops still open keyed by id, the close entries, and the ids of closes no open preceded. */
+/** Replays ledger entries: the ops still open keyed by id, the close entries, and the ids of closes no open preceded; a `continued` close needs none, it continues an op an earlier close ended. */
 function ledgerState(entries) {
   const open = new Map();
   const closed = [];
@@ -1237,10 +1259,20 @@ function ledgerState(entries) {
       open.set(entry.id, entry);
       continue;
     }
-    if (!open.delete(entry.id)) unpaired.push(entry.id);
+    if (!open.delete(entry.id) && entry.outcome !== 'continued') unpaired.push(entry.id);
     closed.push(entry);
   }
   return { open, closed, unpaired };
+}
+
+/** Each id's latest close entry, dropped when the id was opened again after it. */
+function latestCloses(entries) {
+  const closes = new Map();
+  for (const entry of entries) {
+    closes.delete(entry.id);
+    if (entry.op === 'close') closes.set(entry.id, entry);
+  }
+  return closes;
 }
 
 function phaseName(id) {
@@ -1252,10 +1284,10 @@ function phaseOrdinal(id) {
   return match === null ? 1 : Number(match[1]);
 }
 
-/** The open op an id names: its exact id, else the latest open phase op its bare phase name names. */
-function resolveOpen(open, id) {
-  if (open.has(id)) return open.get(id);
-  return [...open.values()].reverse().find((entry) => entry.kind === 'phase' && phaseName(entry.id) === id);
+/** The op an id names in `ops` (open ops by id, or latest closes): its exact id, else the latest phase op its bare phase name names. */
+function resolveOp(ops, id) {
+  if (ops.has(id)) return ops.get(id);
+  return [...ops.values()].reverse().find((entry) => entry.kind === 'phase' && phaseName(entry.id) === id);
 }
 
 function closeEntry(entry, end, outcome) {
@@ -1300,19 +1332,39 @@ function timingRequest(flags) {
   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open, or of a phase whose bare name is already open, is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
+/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened is recorded, unpaired, so the summary reports it (warns). */
+function timingCloses(entries, open, id, outcome, now, warnings) {
+  const entry = resolveOp(open, id);
+  if (entry !== undefined) return closeWithChildren(open, entry, now, outcome, warnings);
+  const previous = resolveOp(latestCloses(entries), id);
+  if (previous === undefined) {
+    warnings.push(`close of ${id} matches no open op`);
+    return [closeEntry({ id, kind: null, parent: null, start: null, attrs: {} }, now, outcome)];
+  }
+  if (previous.outcome === 'interrupted' && outcome !== 'interrupted') return [closeEntry({ ...previous, start: previous.end }, now, 'continued')];
+  warnings.push(`close of ${previous.id} skipped: already closed`);
+  return [];
+}
+
+/** Closes `entry` and, before it, every op still open under it, deepest first, all at `end` with `outcome`; each child warns. */
+function closeWithChildren(open, entry, end, outcome, warnings) {
+  const children = [...open.values()].filter((child) => child.parent === entry.id);
+  const closes = children.flatMap((child) => {
+    warnings.push(`close of ${entry.id} closed open child ${child.id}`);
+    return closeWithChildren(open, child, end, outcome, warnings);
+  });
+  open.delete(entry.id);
+  return closes.concat(closeEntry(entry, end, outcome));
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
 function timingAppend(text, flags, now) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
   const { open } = ledgerState(entries);
   const warnings = [];
   const written = [];
-  for (const id of request.close) {
-    const entry = resolveOpen(open, id);
-    if (entry === undefined) warnings.push(`close of ${id} matches no open op`);
-    else open.delete(entry.id);
-    written.push(closeEntry(entry || { id, kind: null, parent: null, start: null, attrs: {} }, now, request.outcome));
-  }
+  for (const id of request.close) written.push(...timingCloses(entries.concat(written), open, id, request.outcome, now, warnings));
   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
   for (const name of request.open) {
     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
@@ -1331,7 +1383,7 @@ function timingAppend(text, flags, now) {
 /** A new op's parent: the open op `--parent` names, kept verbatim when none is open; without `--parent`, the open phase op for any op but a phase. */
 function openParent(open, request) {
   if (request.parent !== undefined) {
-    const named = resolveOpen(open, request.parent);
+    const named = resolveOp(open, request.parent);
     return named === undefined ? request.parent : named.id;
   }
   const phase = request.kind === 'phase' ? undefined : [...open.values()].reverse().find((entry) => entry.kind === 'phase');
@@ -1455,6 +1507,22 @@ function timingBaseline(archivedTexts) {
   return { ledgers: archivedTexts.length, by_phase: medians('by_phase'), by_kind: medians('by_kind') };
 }
 
+/** Stretches over SLOW_MINUTES inside a closed phase op that no other op overlaps, as `{phase, start, seconds}` by start; an op still open covers to the phase's end. */
+function idleStretches(all) {
+  const limitMs = SLOW_MINUTES * 60000;
+  return all.filter((phase) => phase.kind === 'phase' && Number.isFinite(phase.end)).flatMap((phase) => {
+    const covers = all.filter((op) => op.kind !== 'phase').map((op) => ({ start: Math.max(op.start, phase.start), end: Math.min(op.end, phase.end) }))
+      .filter((cover) => cover.end > cover.start).sort((a, b) => a.start - b.start);
+    const stretches = [];
+    let reach = phase.start;
+    for (const cover of covers.concat({ start: phase.end, end: phase.end })) {
+      if (cover.start - reach > limitMs) stretches.push({ phase: phase.id, start: new Date(reach).toISOString(), seconds: seconds(cover.start - reach) });
+      reach = Math.max(reach, cover.end);
+    }
+    return stretches;
+  }).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+}
+
 function timingGaps(ops, open, unpaired) {
   const openOps = [...open.values()].map((entry) => ({ id: entry.id, kind: entry.kind, start: Date.parse(entry.start), end: Infinity }));
   const all = ops.concat(openOps);
@@ -1465,10 +1533,11 @@ function timingGaps(ops, open, unpaired) {
     outside_phase: all.filter((op) => op.kind !== 'phase' && !inPhase(op)).map((op) => op.id),
     open: [...open.values()].map((entry) => ({ id: entry.id, kind: entry.kind, start: entry.start })),
     negative: ops.filter((op) => op.negative).map((op) => op.id),
+    idle: idleStretches(all),
   };
 }
 
-/** The deterministic timing summary of a ledger holding `text` (null when it is missing) against archived sprints' ledger texts; it reads no clock, so an op still open is reported open, never measured. Machine time is the phase union minus the user-wait union; unaccounted time is wall time outside every phase. */
+/** The deterministic timing summary of a ledger holding `text` (null when it is missing) against archived sprints' ledger texts; it reads no clock, so an op still open is reported open, never measured. Machine time is the phase union minus the user-wait union; unaccounted time is wall time outside every phase; `gaps.idle` lists phase stretches no op covers. */
 function timingSummary(text, archivedTexts) {
   if (text === null) return { timing: null };
   const entries = timingEntries(text);
@@ -1614,6 +1683,28 @@ async function waitForChecks({ read, sleep, now }) {
   }
 }
 
+/** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
+function fillHeadAnalysed(text, entry, head) {
+  const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
+  const rows = (text.match(row) || []).length;
+  if (rows !== 1) fail(`test plan holds ${rows} Entry log rows for entry ${entry}, expected 1`);
+  return text.replace(row, `$1 ${head} $2`);
+}
+
+/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; both inputs are validated before either file is written. */
+function implTestClose(flags, now = new Date()) {
+  const missing = ['test-plan', 'entry', 'decisions', 'line'].filter((name) => typeof flags[name] !== 'string');
+  if (missing.length > 0) fail(`impl-test-close requires ${missing.map((name) => `--${name}`).join(', ')}`);
+  if (!/^[1-9]\d*$/.test(flags.entry)) fail('--entry <positive integer> required');
+  if (flags.line.trim() === '' || /[\r\n]/.test(flags.line)) fail('--line must be one non-empty line');
+  const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
+  const filled = fillHeadAnalysed(fs.readFileSync(flags['test-plan'], 'utf8'), flags.entry, head);
+  const log = fs.readFileSync(flags.decisions, 'utf8');
+  fs.writeFileSync(flags['test-plan'], filled, 'utf8');
+  fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
+  return { entry: Number(flags.entry), head };
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -1636,6 +1727,7 @@ function inputJson(flags) {
 async function main(argv) {
   const command = argv[2];
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
+  if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
@@ -1678,6 +1770,10 @@ async function main(argv) {
     const violations = memoryCheck(flags);
     process.stdout.write(JSON.stringify(violations) + '\n');
     return violations.length === 0 ? 0 : 1;
+  }
+  if (command === 'impl-test-close') {
+    process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    return 0;
   }
   if (command === 'draft-snapshot') {
     if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
@@ -1725,7 +1821,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
