@@ -1,11 +1,11 @@
 # ASD Workflow: Scope
 
-Owner: inline orchestrator; dispatches `asd-advisor` only for an escalation consult (`agent-protocol.md` "Relay").
+Owner: inline orchestrator; dispatches `asd-advisor` for an escalation consult (`agent-protocol.md` "Relay"); runs skill `asd-init` sprint-mediated for a `sprint.md` settings change (step 2b).
 
 ## Entry
 
 ```json
-{"requires": ["no other active sprint; a merged-unclosed sprint asd-sprint passes is exempt (step 1 closure write)"], "modes": {"new": "no sprint folder for this scope yet", "re-entry": "state.json phase=scope"}, "ops": ["context: node .asd/runtime.js context --phase scope --role orchestrator at entry, read it; --role asd-advisor before each ## Dispatch delegation, passed as inputs.context; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["no other active sprint; a merged-unclosed sprint asd-sprint passes is exempt (step 1 closure write)"], "modes": {"new": "no sprint folder for this scope yet", "re-entry": "state.json phase=scope"}, "ops": ["dispatch a skill: asd-init sprint-mediated mode (step 2b)", "context: node .asd/runtime.js context --phase scope --role orchestrator at entry, read it; --role asd-advisor before each ## Dispatch delegation, passed as inputs.context; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
@@ -46,21 +46,23 @@ Owner: inline orchestrator; dispatches `asd-advisor` only for an escalation cons
 
      Closes 2-3 run here, before the gate, and take no gate (`checkpoints.md` "Gate inventory"); each issue triaged gets `gh issue edit <n> -R <repo> --add-label asd-retro`, a closed duplicate `--add-label asd-retro,duplicate`. A closed issue is no longer listed, so re-entry resumes on the open ones. Close comments here are English (`language-policy.md` "Matrix": ASD-repo issue row). One decisions-log line: `issue triage: rewrote #…; closed duplicate #N of #M; closed resolved #K (<evidence>); to user #…; non-standard #…`.
    - Dispositions are written on scope acceptance (step 4): rows to the backlog, which lands with the sprint PR — an aborted sprint loses them, so they are offered again — and issues to GitHub, never the backlog (`artifact-layout.md` "Retro backlog").
+2b. **Scope-time settings change** — only when the drafted `sprint.md` carries a `Settings change: <key>=<value>[, …]` line (a key audit or design reads, e.g. `project.subsystem_decomposition`; `t_sprint.md`): before step 3a's freeze, record each key's current value, dispatch `asd-init` sprint-mediated mode with exactly the declared pairs (validated against the working-tree `t_config.yaml`) and commit `.asd/project/config.yaml` itself; `FAILED` → relay, halt. The pairs are shown at step 4's gate, which is their approval of record: a rejected or dropped line re-applies the recorded values the same way. A plan-declared settings change keeps its impl timing (`sprint-lifecycle.md` "Plan file format").
 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic). Reevaluate after an accepted scope expansion.
 3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_DESIGN_SYSTEM}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled; `design_system` absent from a present group -> the `ux_spec` value); `{{CLEANUP}}` from top-level `cleanup` (absent -> enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write. At the scope gate (step 4) the user may skip an enabled optional document (`prd`/`ux_spec`/`design_system`/`adr`/`c4`) for this sprint only [GATE hard: document skip] — narrow-only: overwrite its frozen value with `false` and log one decisions-log line "<doc> skipped this sprint by user" (`sprint-lifecycle.md` "Optional documents").
+3b. **`lite` mockups** — `workflow` `lite`, frozen `documents.ux_spec` enabled and the scope touching UI: author the mockups (`lite` has no design phase) to `<sprint>/design/mockups/` per `design-system.md` §12 "Mockups", its design-system precondition and "Token decisions" applying; shown at step 4's gate beside the scope. `standard`: the design phase owns them.
 4. The initial scope is hard until it is explicitly accepted [GATE hard: scope], because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. It shows step 2a's `upstream: true` rows, its `closed` rows and its auto-closed issues (duplicate or resolved) with their evidence, no question, and puts its other rows and issues, non-standard ones flagged [GATE hard: retro intake dispositions], as step 2a requires; it is not accepted while a row or issue put to the user lacks a choice. Afterwards record the accepted user decision and write step 2a's dispositions: rows to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write); issues to GitHub — include → the `AC-N` text ends `(issue #N)`; reject → `gh issue close <n> -R <repo> -r "not planned" -c <reason>` (English, `language-policy.md` "Matrix": ASD-repo issue row) and `gh issue edit <n> -R <repo> --add-label wontfix`; defer → `--add-label deferred`, left open — plus one decisions-log line `issue dispositions: #N include AC-K; #M reject; …`. A fully specified already-authorized outcome is recorded without inventing another decision.
 5. Exit per `## Exit`.
 
 ## Dispatch
 
 ```json
-[{"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
+[{"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "sprint.md carries a Settings change: line, step 2b", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
 ```
 
 ## Exit
 
 ```json
-{"writes": ["<sprint>/sprint.md", "<sprint>/research.md", "state.json", "decisions-log.md", "timing.jsonl", "sprint branch", "ASD update commit (update choice)", ".asd/project/retro-backlog.md (intake disposition recorded)", "closing sprint's archive move and terminal state (closure write)", "self-hosting: ASD-repo issue labels, triage closes and dispositions (`gh`)"], "next": [{"if": "scope accepted", "next": "audit"}]}
+{"writes": ["<sprint>/sprint.md", "<sprint>/research.md", "state.json", "decisions-log.md", "timing.jsonl", "sprint branch", "ASD update commit (update choice)", ".asd/project/retro-backlog.md (intake disposition recorded)", "closing sprint's archive move and terminal state (closure write)", ".asd/project/config.yaml (a Settings change, step 2b)", "<sprint>/design/mockups/ (`lite` with ux_spec, step 3b)", "self-hosting: ASD-repo issue labels, triage closes and dispositions (`gh`)"], "next": [{"if": "scope accepted", "next": "audit"}]}
 ```
 
 ## Return
