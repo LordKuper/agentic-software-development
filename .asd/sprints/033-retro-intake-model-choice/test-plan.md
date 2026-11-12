@@ -49,7 +49,7 @@ Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`g
 - Scope: impacted (the one runner holds every impacted test; the shared-infrastructure valve would give the same set)
 - Result: pass — 362 passed, 0 failed, 0 skipped of 362, exit 0
 - Lint / build: `node .asd/sync.js --check` exit 0 (`ok: true`); lint runs at commit (`git diff --cached --check`)
-- HEAD: 50c9f5de (F3 in-place test fix: `--filter "sprint-033"` 21/21, full 362/362, exit 0)
+- HEAD: 373fa77e (entry 4 commit; pre-strategy run at 5349e5dc was 361/362, exit 1, the AC-25 stalemate fixture test defect fixed here)
 
 ## Defects
 
