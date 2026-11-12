@@ -42,7 +42,7 @@ Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`g
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines… | `node tests/run.js --filter "AC-24 (review-fix)"` in the pre-fix tree → exit 1, that test (1 matched), patch lacked `rename from` and named the file `"a/src/\303\251.js" "b/src/\303\251.js"`; green at HEAD; runs: 1 |
+| tests/run.js: sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines… | `node tests/run.js --filter "AC-24 (review-fix)"` in the pre-fix tree → exit 1, that test (1 matched), patch lacked `rename from` and named the file `"a/src/\303\251.js" "b/src/\303\251.js"`; green at HEAD; runs: 1. Review finding F3 (iter-02): the sandbox also deletes `src/ü.js` (40 lines) and asserts `# collapsed: src/ü.js: deleted, 40 lines` with no `Ã`/`¼` escape and `review-waves` `lines` 0; `node tests/run.js --filter "AC-24 (review-fix)"` in `git archive 70c67011` (before the sectionPath decode fix) under `.asd/tmp/`, the earlier rename/mode/substitution asserts dropped from the copy so the new one is first → exit 1, that test (1 matched), `a deleted C-quoted path is named by its decoded characters in the deletion collapse`, output `"a/src/Ã¼.js" "b/src/Ã¼.js": deleted, 40 lines`; green at HEAD; runs: 1 |
 | tests/run.js: sprint-033 AC-25: persist-review --floor… (FAIL and stalemate cases added) | `--filter "AC-25: persist-review"` in the pre-fix tree → exit 1, that test (1 matched), `a FAIL whose every row dropped becomes APPROVE`; runs: 1 |
 | tests/run.js: sprint-033 AC-19/AC-33: the 14.5.0 migration… (unparsable-frontmatter case added) | `--filter "AC-19/AC-33"` in the pre-fix tree → exit 1, that test (1 matched), `.claude/agent-memory/asd-pm` deleted; runs: 1 |
 | tests/run.js: sprint-033 AC-32: design-tokens (both tests, markers re-pointed) | `--filter "AC-32"` in the pre-fix tree → exit 1, 2 matched, the new CSS-comment fixture refused for lacking `<!-- asd:vars:start -->`; runs: 1 |
@@ -53,7 +53,7 @@ Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`g
 - Scope: impacted (the one runner holds every impacted test; the shared-infrastructure valve would give the same set)
 - Result: pass — 362 passed, 0 failed, 0 skipped of 362, exit 0
 - Lint / build: `node .asd/sync.js --check` exit 0 (`ok: true`); lint runs at commit (`git diff --cached --check`)
-- HEAD: a6109932
+- HEAD: 50c9f5de (F3 in-place test fix: `--filter "sprint-033"` 21/21, full 362/362, exit 0)
 
 ## Defects
 

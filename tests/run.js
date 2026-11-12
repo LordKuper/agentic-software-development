@@ -9546,17 +9546,19 @@ test('sprint-033 AC-35, AC-24: emit-manifest collapses a whole-file deletion to 
   assert.ok(designReview.status === 2 && /impl-review with --base\/--head only/.test(designReview.stderr), `--rename-map outside an impl-review range is refused (got ${JSON.stringify(designReview)})`);
 });
 
-test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path by its literal name', () => {
+test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path, substituted or deleted, by its literal name', () => {
   const { repo, env, git } = sandboxGitRepo();
   const OLD = 'oldName';
   const NEW = 'newName';
   const NON_ASCII = 'src/é.js';
+  const DELETED_NON_ASCII = 'src/ü.js';
   const body = (name) => `${Array.from({ length: 40 }, (unused, index) => (index === 2 ? `use ${name} here` : `line ${index + 1}`)).join('\n')}\n`;
-  for (const file of ['src/before.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
+  for (const file of ['src/before.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
   git('add', '-A');
   git('commit', '-q', '-m', 'base');
   const base = git('rev-parse', 'HEAD').trim();
   git('mv', 'src/before.js', 'src/after.js');
+  fs.rmSync(path.join(repo, DELETED_NON_ASCII));
   for (const file of ['src/after.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(NEW));
   git('add', '-A');
   git('update-index', '--chmod=+x', 'src/run.sh');
@@ -9566,7 +9568,7 @@ test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and 
   const work = mkTempDir();
   const scopeFile = path.join(work, 'scope.txt');
   const mapFile = path.join(work, 'map.json');
-  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
+  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
   fs.writeFileSync(mapFile, JSON.stringify({ [OLD]: NEW }), 'utf8');
   const range = ['--base', base, '--head', head, '--rename-map', mapFile];
   const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', work, ...range], { cwd: repo, env });
@@ -9575,9 +9577,10 @@ test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and 
   assert.ok(patch.includes('rename from src/before.js\nrename to src/after.js\n# collapsed: src/after.js: 1 rename-map substitutions\n'), `AC-24: a renamed file whose only edit applies the map still shows the rename (got ${patch})`);
   assert.ok(patch.includes('old mode 100644\nnew mode 100755\n# collapsed: src/run.sh: 1 rename-map substitutions\n'), 'AC-24: a mode change survives the collapse of its only hunk');
   assert.ok(patch.includes(`# collapsed: ${NON_ASCII}: 1 rename-map substitutions\n`) && !patch.includes('\\303'), 'AC-24: a C-quoted path is named by its decoded characters');
+  assert.ok(patch.includes(`# collapsed: ${DELETED_NON_ASCII}: deleted, 40 lines\n`) && !patch.includes('\\303') && !patch.includes('\\274'), 'AC-35, AC-24: a deleted C-quoted path is named by its decoded characters in the deletion collapse');
   assert.ok(!patch.includes(`use ${NEW} here`), 'every substitution hunk is collapsed');
   const measured = runtimeCliResult(['review-waves', '--files', scopeFile, ...range], { cwd: repo, env });
-  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted one included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
+  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted substituted and deleted ones included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
 });
 
 test('sprint-033 AC-25: persist-review --floor drops each external finding below the floor and records the count, rewrites a CONCERNS whose rows all dropped to APPROVE, leaves the skip form alone, and refuses a non-external reviewer or a floor outside the four levels', () => {
