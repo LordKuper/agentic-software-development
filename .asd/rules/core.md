@@ -83,8 +83,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
-6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
-   review's stalemate set excepted) — `review-policy.md`, not restated here.
+6. Reviewer context per iteration: `review-policy.md` "Clean-context review iteration".
 
 ## Untrusted-data boundary
 
