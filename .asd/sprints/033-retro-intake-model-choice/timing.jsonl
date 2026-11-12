@@ -123,3 +123,4 @@
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-12T09:48:55.551Z","attrs":{}}
 {"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-12T09:48:55.551Z","end":"2026-11-12T09:50:41.193Z","outcome":"done","attrs":{}}
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-12T09:51:13.197Z","attrs":{}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-12T09:51:13.197Z","end":"2026-11-12T09:51:44.737Z","outcome":"done","attrs":{}}
