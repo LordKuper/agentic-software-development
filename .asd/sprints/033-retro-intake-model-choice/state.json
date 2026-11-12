@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -55,6 +55,13 @@
       "reason": "all t_audit.md sections for AC-1..AC-36; contradictions user-settled; departures are planned criteria",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-36 traced to Tasks 1-11 and the AC-7 line; decomposition rules met; names bounded by approach B",
+      "evidence": "decisions-log.md 2026-11-12 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},

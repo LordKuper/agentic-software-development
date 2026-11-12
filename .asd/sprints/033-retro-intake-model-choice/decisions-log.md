@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-12 — plan accepted (adaptive)
+
+- **Decision**: `plan.md` accepted: Tasks 1-11 (6a/6b) in 4 waves, cut by rule-doc ownership, `runtime.js` split over waves 1-4 by function group; names fixed in Overview (`escalated` tier, `effortRaised`/`raiseEffort`, suffixes `escalated`/`mechanical`/`runner`, `asd-scout`, `commit-check`, `impl-test-close`, `design-tokens`, `persist-review --floor`, `emit-manifest --rename-map`, migration 14.5.0). No stubs match scope.
+- **Rationale**: AC-1..AC-36 (minus retired AC-22, AC-29) traced to Tasks and the AC-7 orchestrator line; decomposition rules met (no overlapping paths in a wave, one Task per multi-AC rule doc); every named choice is bounded inside an accepted AC and approach B, so no open material alternative.
+- **Affected docs**: `plan.md`
