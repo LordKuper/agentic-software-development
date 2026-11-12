@@ -9616,9 +9616,14 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
   const failFloored = persist(failing, 'external', 'medium');
   assert.deepStrictEqual(failFloored.result, { token: 'APPROVE', findings: [], dropped: 1 }, 'AC-25: a FAIL whose every row dropped becomes APPROVE');
   assert.ok(fs.readFileSync(path.join(failFloored.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\nAPPROVE\n'), 'the verdict line and the FAIL count line are rewritten');
-  const stalemate = persist(failing.replace('FAIL: 1', 'FAIL: 1\nStalemate: D-1'), 'external', 'medium');
+  const STALEMATE_LINE = 'Stalemate: 2 iterations, identical findings — options: stop / continue fixing / abort';
+  const stalemate = persist(failing.replace('FAIL: 1', `FAIL: 1\n${STALEMATE_LINE}`), 'external', 'medium');
   assert.deepStrictEqual([stalemate.result.token, stalemate.result.dropped], ['FAIL', 1], 'AC-25: a stalemate FAIL keeps its verdict whatever the floor drops');
   assert.ok(fs.readFileSync(path.join(stalemate.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: FAIL\n'), 'the persisted stalemate verdict line stays FAIL');
+  const notStalemate = persist(external.replace('\n\n', '\nStalemate: no\n\n'), 'external', 'critical');
+  assert.deepStrictEqual([notStalemate.result.token, notStalemate.result.dropped], ['APPROVE', 3], 'AC-25: a "Stalemate: no" line is no stalemate FAIL - a CONCERNS whose every row dropped still becomes APPROVE');
+  const concernsWithCount = persist(external.replace('\n\n', `\n${STALEMATE_LINE}\n\n`), 'external', 'critical');
+  assert.deepStrictEqual([concernsWithCount.result.token, concernsWithCount.result.dropped], ['APPROVE', 3], 'AC-25: only a FAIL verdict is a stalemate - a CONCERNS carrying the count line becomes APPROVE when every row dropped');
 
   const skipped = '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n';
   assert.deepStrictEqual(persist(skipped, 'external', 'high').result, { token: skipped.trim().slice('[REVIEW-impl-external]: '.length), findings: [] }, 'the availability skip carries no table and no floor');
