@@ -20,6 +20,7 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 |---|---|---|---|
 | F-1 | scope | Host auto-mode classifier refused the gate-free triage close of a resolved issue | — |
 | F-2 | scope | Two scope criteria were written undeliverable and caught only at audit | — |
+| F-3 | impl-review | External Review could not pipe the full rendered prompt through a heredoc | reviews/impl/wave-1/iter-01/external.md |
 
 ## F-1 — Host auto-mode classifier refused the gate-free triage close of a resolved issue
 
@@ -36,3 +37,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: AC-22 narrowed #93 to provider views the change surface already excludes, and AC-29 kept "plan-declared" for a change applied before any plan exists; step 2's HEAD re-verification checks a row is unresolved, not that the criterion drafted from it is deliverable.
 - **Impact**: One hard audit-contradiction gate and a scope amendment (AC-35, AC-36).
 - **Refs**: —
+
+## F-3 — External Review could not pipe the full rendered prompt through a heredoc
+
+- **Phase**: impl-review
+- **Surface**: provider tool — Claude Code Bash tool vs `external-review.md` "OS-specific invocation" (heredoc of the rendered prompt into stdin)
+- **What happened**: The Bash tool rejected heredoc commands above roughly 3 KB; the rendered `t_prompt-external-impl.md` exceeded it, so the wrapper sent a compact slot-filled prompt naming the template by path. The wrapped run was also auto-backgrounded after 180 s despite a 600 s timeout.
+- **Impact**: The rule's "prompt alone via heredoc, never written to disk" was bent; Codex read the template itself. Review still completed.
+- **Refs**: reviews/impl/wave-1/iter-01/external.md

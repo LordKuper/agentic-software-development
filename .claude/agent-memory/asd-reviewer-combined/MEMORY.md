@@ -23,3 +23,5 @@
 - [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "a finding from <agent>" lines, combined's return rules
 - [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
 - [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
+- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
+- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
