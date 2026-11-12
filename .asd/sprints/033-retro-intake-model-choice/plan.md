@@ -101,7 +101,7 @@ Material risk: change: ledger close semantics (continuation vs repeat close)
 
 ### Task 9: Design token generator
 Material risk: change: parser edge (DESIGN.md front-matter subset)
-- [ ] `.asd/runtime.js` `design-tokens` command per Overview: parses DESIGN.md front matter (zero-dependency subset: nested maps of scalars), rewrites only the marked regions, fails naming the line on unsupported YAML (AC-32).
+- [x] `.asd/runtime.js` `design-tokens` command per Overview: parses DESIGN.md front matter (zero-dependency subset: nested maps of scalars), rewrites only the marked regions, fails naming the line on unsupported YAML (AC-32).
 
 ### Task 10: Phase workflows
 Material risk: change: workflow gate (memory-before-FAIL order, orchestrator-applied findings, scope-time mockups and settings)
@@ -115,9 +115,9 @@ Material risk: change: workflow gate (memory-before-FAIL order, orchestrator-app
 
 ### Task 11: README, roster, release
 Material risk: artifact: mirror tables (verified by tests/run.js README checks)
-- [ ] `README.md`: roster (8 roles + 3 variants), model-tier table both providers, runtime command list, mockups folder map, orchestrator session-model guidance (Opus `medium` default, Fable for long unattended or large runs) and the `haiku` alias note (AC-6, AC-8).
-- [ ] `AGENTS.md` agent count line below `<!-- asd:end -->` (AC-5).
-- [ ] `CHANGELOG.md` 14.5.0 section; `.asd/release-manifest.json` `asd_version` 14.5.0 and `canon_hashes` entry for `asd-scout` (AC-5).
+- [x] `README.md`: roster (8 roles + 3 variants), model-tier table both providers, runtime command list, mockups folder map, orchestrator session-model guidance (Opus `medium` default, Fable for long unattended or large runs) and the `haiku` alias note (AC-6, AC-8).
+- [x] `AGENTS.md` agent count line below `<!-- asd:end -->` (AC-5).
+- [x] `CHANGELOG.md` 14.5.0 section; `.asd/release-manifest.json` `asd_version` 14.5.0 and `canon_hashes` entry for `asd-scout` (AC-5).
 
 ## Risks
 - AC-28 changes how every reviewer escalates; Task 2 lands it in wave 1 so the workflows of Task 10 cite settled text.

@@ -60,3 +60,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Task 7 shipped the flag but no Task owned the declaration AC-24 names; wave 3 holds only Task 8, so the doc edits collide with nothing.
 - **Affected docs**: plan.md Task 8, .asd/rules/sprint-lifecycle.md, .asd/rules/artifact-layout.md, .asd/workflows/asd-phase-impl-review.md
 - 2026-11-12 — route Task 8: standard, dispatch HEAD 3d8f1ff4
+- 2026-11-12 — route Task 9: standard, dispatch HEAD 64379c28
+- 2026-11-12 — route Task 11: standard, dispatch HEAD 64379c28

@@ -89,6 +89,20 @@ Settled from sources:
 - Migration gaps: commands.yaml `designmd-install` old value → `--no-save` form (AC-33); retired agents' `.claude/agent-memory/<agent>/` → removed when the name is not a live agent (AC-19).
 - External dependency gaps: `@google/design.md` spec group rules (AC-30); `npm --no-save` prefix resolution without a `package.json` (AC-33).
 
+Article dispositions (AC-7, written at impl after wave 4):
+- F1 reflected: `README.md` "Orchestrator session model" (Opus `medium` default, Fable for long unattended or large runs).
+- F2 reflected: effort step before a tier climb — `.asd/runtime.js` `routeTask`, `providers.md` "Task-class variants and routing"; agent default efforts kept, since lowering them is unmeasured on ASD work (F10).
+- F3 reflected: haiku for cheap-to-check work — `asd-tester-runner`, `asd-scout`, External Review wrapper (`.asd/agents/asd-tester.md`, `asd-scout.md`, `asd-external-review.md`).
+- F4 reflected: `escalated` tier (opus) for migration, broad-reasoning, cross-domain risks — `routeTask`, `providers.md`, `.asd/agents/asd-dev.md`.
+- F5 reflected: self-verify → effort step → next tier — `routeTask` `effortRaised`/`raiseEffort`, `asd-phase-impl.md` 5a.
+- F6 reflected: read-heavy scans on `asd-scout` — `asd-phase-audit.md`, `asd-phase-plan.md`, `asd-phase-cleanup.md`.
+- F7 reflected (pre-existing): code picks the model — `route-task`.
+- F8 reflected (pre-existing): consult-only `asd-advisor`; no executor-advisor pairing added, the article measured no gain.
+- F9 reflected (pre-existing): impl waves of parallel workers — `asd-phase-impl.md` steps 5-6.
+- F10 rejected: neither host returns a dispatch's token `usage` to the orchestrator, and the user chose approach B over C (measure first).
+- F11 reflected: `README.md` `haiku` alias note (`ANTHROPIC_DEFAULT_HAIKU_MODEL`).
+- F12 rejected: API-level settings (prices, cache writes, sampling, thinking blocks, fast mode, `opusplan`) that ASD never sets.
+
 ## Risks
 - Haiku wrapper misparses CLI output (severity mapping, stalemate): impact=silently degraded external review, mitigation=AC-25 moves the floor into code; `persist-review` table check stays; wrapper keeps `high` effort.
 - Tester run variant used for a suite needing triage: impact=defects misclassified, mitigation=variant only runs and reports; triage and authoring stay on the base agent.

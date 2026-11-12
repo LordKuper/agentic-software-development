@@ -74,7 +74,9 @@
     "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 10": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
-    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:ledger close semantics", "raise_effort": false, "resolved_model": "sonnet" }
+    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:ledger close semantics", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 9": { "execution": "agent", "tier": "standard", "reason": "risk:parser edge", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 11": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
