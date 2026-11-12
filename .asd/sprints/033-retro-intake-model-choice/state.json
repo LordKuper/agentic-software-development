@@ -73,7 +73,8 @@
     "Task 6b": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:decided path and wording edits", "resolved_model": "sonnet" },
     "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
-    "Task 10": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" }
+    "Task 10": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:ledger close semantics", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {

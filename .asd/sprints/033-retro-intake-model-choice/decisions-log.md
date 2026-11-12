@@ -59,3 +59,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Task 8 gains a subtask documenting AC-24's plan-declared rename map (plan line, sprint tree entry, impl-review passing `--rename-map` to `review-waves` and `emit-manifest`); Task 7's map format (JSON object, longest key first) and its `review-waves --rename-map` extension are accepted.
 - **Rationale**: Task 7 shipped the flag but no Task owned the declaration AC-24 names; wave 3 holds only Task 8, so the doc edits collide with nothing.
 - **Affected docs**: plan.md Task 8, .asd/rules/sprint-lifecycle.md, .asd/rules/artifact-layout.md, .asd/workflows/asd-phase-impl-review.md
+- 2026-11-12 — route Task 8: standard, dispatch HEAD 3d8f1ff4

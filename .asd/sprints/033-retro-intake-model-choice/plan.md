@@ -94,10 +94,10 @@ Reachability: impl-review step 6 writes the collapsed diff via `emit-manifest`; 
 
 ### Task 8: Runtime timing and commit commands
 Material risk: change: ledger close semantics (continuation vs repeat close)
-- [ ] `.asd/runtime.js` `timingAppend`: continuation, repeat-close skip, cascade close, outcome `continued`; `timingSummary` gaps `idle` (> `SLOW_MINUTES` uncovered phase window) (AC-18, AC-26).
-- [ ] `commit-check` command per Overview, reusing `memoryCheck` with a path filter (AC-12, AC-21).
-- [ ] `impl-test-close` command per Overview (AC-27).
-- [ ] Rename-map declaration (plan gap, added at impl): `sprint-lifecycle.md` "Plan file format" optional `Rename map: <sprint-relative JSON path>` line (JSON object old → new, `emit-manifest`'s format); `artifact-layout.md` sprint tree entry; `asd-phase-impl-review.md` passes `--rename-map` to `review-waves` and `emit-manifest` when plan.md declares one (AC-24).
+- [x] `.asd/runtime.js` `timingAppend`: continuation, repeat-close skip, cascade close, outcome `continued`; `timingSummary` gaps `idle` (> `SLOW_MINUTES` uncovered phase window) (AC-18, AC-26).
+- [x] `commit-check` command per Overview, reusing `memoryCheck` with a path filter (AC-12, AC-21).
+- [x] `impl-test-close` command per Overview (AC-27).
+- [x] Rename-map declaration (plan gap, added at impl): `sprint-lifecycle.md` "Plan file format" optional `Rename map: <sprint-relative JSON path>` line (JSON object old → new, `emit-manifest`'s format); `artifact-layout.md` sprint tree entry; `asd-phase-impl-review.md` passes `--rename-map` to `review-waves` and `emit-manifest` when plan.md declares one (AC-24).
 
 ### Task 9: Design token generator
 Material risk: change: parser edge (DESIGN.md front-matter subset)
