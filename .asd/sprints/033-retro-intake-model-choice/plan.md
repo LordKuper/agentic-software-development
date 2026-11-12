@@ -55,13 +55,13 @@ Material risk: artifact: mirror prose (verified by `sync.js --check` and tests/r
 
 ### Task 4: Sprint lifecycle rules
 Material risk: change: workflow gate (suite-run reuse, review reset, scope-time settings change)
-- [ ] `.asd/rules/sprint-lifecycle.md` "Orchestration and adaptive gates": delegation list adds `asd-scout` (AC-5).
-- [ ] "Plan file format": Material risk reserved classes `broad-reasoning`, `cross-domain`; Settings change declaration points at the scope-time line for keys audit or design read (AC-3, AC-36); Decomposition rules gain AC-11's bullet: a plan moving a responsibility between roles, adding a delegation or removing a routing clause lists, per affected file, each sentence attributing it to a role, the delegate's write classes read from its definition, and each case the clause routed (AC-11).
-- [ ] "Self-hosting": review-fix findings outside the dev allowlist are applied by the orchestrator (AC-10).
-- [ ] "Rollback reset" and "Scope amendment": reset moves folders aside per Overview; an amendment accepted after design-review and before plan resets `reviews.design` (`standard`) (AC-17).
-- [ ] "Impacted test set": home of the content-scoped reuse rule — an earlier green run at or above the needed scope, after the last latch clear, counts as the next required impl-test or terminal run when no code, test or stub path changed since its HEAD; the full suite runs once or is reused (AC-23).
-- [ ] "Operation timing": continuation close, repeat-close skip, cascade close, repeat suite run new id, handoff user-wait (AC-18, AC-26).
-- [ ] "State recovery" "Failed dispatch" anchor line covers routed tiers `runner`/`escalated`; `ux` input row adds the mockups folder (AC-1, AC-34).
+- [x] `.asd/rules/sprint-lifecycle.md` "Orchestration and adaptive gates": delegation list adds `asd-scout` (AC-5).
+- [x] "Plan file format": Material risk reserved classes `broad-reasoning`, `cross-domain`; Settings change declaration points at the scope-time line for keys audit or design read (AC-3, AC-36); Decomposition rules gain AC-11's bullet: a plan moving a responsibility between roles, adding a delegation or removing a routing clause lists, per affected file, each sentence attributing it to a role, the delegate's write classes read from its definition, and each case the clause routed (AC-11).
+- [x] "Self-hosting": review-fix findings outside the dev allowlist are applied by the orchestrator (AC-10).
+- [x] "Rollback reset" and "Scope amendment": reset moves folders aside per Overview; an amendment accepted after design-review and before plan resets `reviews.design` (`standard`) (AC-17).
+- [x] "Impacted test set": home of the content-scoped reuse rule — an earlier green run at or above the needed scope, after the last latch clear, counts as the next required impl-test or terminal run when no code, test or stub path changed since its HEAD; the full suite runs once or is reused (AC-23).
+- [x] "Operation timing": continuation close, repeat-close skip, cascade close, repeat suite run new id, handoff user-wait (AC-18, AC-26).
+- [x] "State recovery" "Failed dispatch" anchor line covers routed tiers `runner`/`escalated`; `ux` input row adds the mockups folder (AC-1, AC-34).
 
 ### Task 5: Agent protocol, commits, tester
 Material risk: change: public contract (one-command commit form)
@@ -87,16 +87,17 @@ Material risk: artifact: decided path and wording edits (verified by tests/run.j
 ### Task 7: Runtime review pipeline
 Material risk: change: public contract (manifest diff shape, persist-review floor)
 Reachability: impl-review step 6 writes the collapsed diff via `emit-manifest`; reviewers read it in the same iteration
-- [ ] `.asd/runtime.js` `positiveInteger` accepts leading zeros (AC-9).
-- [ ] `writeManifestDiff`: collapse whole-file deletions and, with `--rename-map`, pure map-substitution hunks; `fingerprint` hashes the map; `numstatLines`/`reviewWaveCount` count only the remainder (AC-35, AC-24).
-- [ ] `persistReview` `--floor` per Overview (AC-25).
-- [ ] Design-review UI predicate matches `design/mockups/**` (AC-34).
+- [x] `.asd/runtime.js` `positiveInteger` accepts leading zeros (AC-9).
+- [x] `writeManifestDiff`: collapse whole-file deletions and, with `--rename-map`, pure map-substitution hunks; `fingerprint` hashes the map; `numstatLines`/`reviewWaveCount` count only the remainder (AC-35, AC-24).
+- [x] `persistReview` `--floor` per Overview (AC-25).
+- [x] Design-review UI predicate matches `design/mockups/**` (AC-34).
 
 ### Task 8: Runtime timing and commit commands
 Material risk: change: ledger close semantics (continuation vs repeat close)
 - [ ] `.asd/runtime.js` `timingAppend`: continuation, repeat-close skip, cascade close, outcome `continued`; `timingSummary` gaps `idle` (> `SLOW_MINUTES` uncovered phase window) (AC-18, AC-26).
 - [ ] `commit-check` command per Overview, reusing `memoryCheck` with a path filter (AC-12, AC-21).
 - [ ] `impl-test-close` command per Overview (AC-27).
+- [ ] Rename-map declaration (plan gap, added at impl): `sprint-lifecycle.md` "Plan file format" optional `Rename map: <sprint-relative JSON path>` line (JSON object old → new, `emit-manifest`'s format); `artifact-layout.md` sprint tree entry; `asd-phase-impl-review.md` passes `--rename-map` to `review-waves` and `emit-manifest` when plan.md declares one (AC-24).
 
 ### Task 9: Design token generator
 Material risk: change: parser edge (DESIGN.md front-matter subset)
@@ -104,13 +105,13 @@ Material risk: change: parser edge (DESIGN.md front-matter subset)
 
 ### Task 10: Phase workflows
 Material risk: change: workflow gate (memory-before-FAIL order, orchestrator-applied findings, scope-time mockups and settings)
-- [ ] `.asd/workflows/asd-phase-impl-review.md`: step 6 `--iteration <N>`; step 8 memory findings before Any FAIL, minor test-only per AC-20, FAIL grouping per AC-28; step 9 terminal suite via `asd-tester-runner`, reuse per AC-23 (AC-1, AC-9, AC-14, AC-20, AC-23, AC-28).
-- [ ] `asd-phase-impl.md`: 5a tier map adds `escalated`, effort step dispatch; review-fix orchestrator-apply branch; step 9 round diff names each orchestrator-edited path by finding id (AC-3, AC-4, AC-10).
-- [ ] `asd-phase-impl-test.md`: step 8 reuse; AC deviation and removal shapes; entry close via `impl-test-close`; impacted re-run with no test change via `asd-tester-runner` (AC-1, AC-15, AC-16, AC-23, AC-27).
-- [ ] `asd-phase-pr.md`: suite skip cites the "Impacted test set" home (AC-23).
-- [ ] `asd-phase-scope.md`: scope-time settings change before 3a; `lite` mockups at scope when `ux_spec` enabled; `.asd/templates/t_sprint.md`: optional `Settings change:` line (AC-34, AC-36).
-- [ ] `asd-phase-audit.md`, `asd-phase-plan.md`, `asd-phase-cleanup.md`, `.asd/skills/asd-phase-audit/SKILL.md`: `asd-scout` dispatch rows and Owner lines (AC-5); cleanup's one-command mirror (AC-21).
-- [ ] `asd-phase-design.md`, `asd-phase-design-promote.md`, `asd-phase-design-review.md`: mockups step and promotion, delta prose apply, `design-tokens` rebuild, FAIL grouping per AC-28 (AC-28, AC-31, AC-32, AC-34).
+- [x] `.asd/workflows/asd-phase-impl-review.md`: step 6 `--iteration <N>`; step 8 memory findings before Any FAIL, minor test-only per AC-20, FAIL grouping per AC-28; step 9 terminal suite via `asd-tester-runner`, reuse per AC-23 (AC-1, AC-9, AC-14, AC-20, AC-23, AC-28).
+- [x] `asd-phase-impl.md`: 5a tier map adds `escalated`, effort step dispatch; review-fix orchestrator-apply branch; step 9 round diff names each orchestrator-edited path by finding id (AC-3, AC-4, AC-10).
+- [x] `asd-phase-impl-test.md`: step 8 reuse; AC deviation and removal shapes; entry close via `impl-test-close`; impacted re-run with no test change via `asd-tester-runner` (AC-1, AC-15, AC-16, AC-23, AC-27).
+- [x] `asd-phase-pr.md`: suite skip cites the "Impacted test set" home (AC-23).
+- [x] `asd-phase-scope.md`: scope-time settings change before 3a; `lite` mockups at scope when `ux_spec` enabled; `.asd/templates/t_sprint.md`: optional `Settings change:` line (AC-34, AC-36).
+- [x] `asd-phase-audit.md`, `asd-phase-plan.md`, `asd-phase-cleanup.md`, `.asd/skills/asd-phase-audit/SKILL.md`: `asd-scout` dispatch rows and Owner lines (AC-5); cleanup's one-command mirror (AC-21).
+- [x] `asd-phase-design.md`, `asd-phase-design-promote.md`, `asd-phase-design-review.md`: mockups step and promotion, delta prose apply, `design-tokens` rebuild, FAIL grouping per AC-28 (AC-28, AC-31, AC-32, AC-34).
 
 ### Task 11: README, roster, release
 Material risk: artifact: mirror tables (verified by tests/run.js README checks)

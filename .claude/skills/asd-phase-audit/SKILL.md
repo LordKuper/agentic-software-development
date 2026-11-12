@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-audit/SKILL.md. source_digest=sha256:08b90a7f313596b771d1414b378fc24e91b9c7146cdc2b4b02577d2709524600 content_digest=sha256:a0d5c8971d63a7ece5b8a1b34b9489ed54c0c53d3f8a99fc46f655861861c4ab asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-audit/SKILL.md. source_digest=sha256:e08e4505589ca00b04730d2f3f271c02386a7c6de049f82b122409b9de2744c3 content_digest=sha256:5238a0c635ab6debecf1217f37582c42c4274ca9aa61d4fad27e0433b049e1a8 asd_version=14.4.0 schema=1
 name: asd-phase-audit
-description: "Runs the ASD audit phase for the active sprint: the main orchestrator scans code and documentation itself and resolves product/domain ambiguity its sources can settle, then gates audit.md. Use when asd-sprint dispatches the audit phase, or when the user explicitly asks to run or re-run audit for the active sprint."
+description: "Runs the ASD audit phase for the active sprint: the main orchestrator scans code and documentation itself (read-only `asd-scout` summaries allowed) and resolves product/domain ambiguity its sources can settle, then gates audit.md. Use when asd-sprint dispatches the audit phase, or when the user explicitly asks to run or re-run audit for the active sprint."
 allowed-tools: "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task"
 ---
 

@@ -50,3 +50,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Accept Task 5's one-command form with `git diff --cached --check -- <paths>` before `commit-check` and `git commit --only … -- <paths>`; accept Task 6a's `asd:vars` markers wrapping the whole `:root { … }` block (Task 9 emits the full block); leave 8e4018f0's 54-char header unrewritten. `t_review-report.md` below-floor wording joins Task 7's write scope.
 - **Rationale**: The lint step and `--only` keep code-style.md §19 and the shared worktree safe; an HTML comment inside a CSS rule drops a declaration; rewriting a shared wave's history costs more than one over-long header.
 - **Affected docs**: .asd/rules/git-strategy.md, .asd/templates/t_design-system.html, plan.md Task 7, Task 9
+- 2026-11-12 — route Task 4: standard, dispatch HEAD ad03cb51
+- 2026-11-12 — route Task 7: standard, dispatch HEAD ad03cb51
+- 2026-11-12 — route Task 10: standard, dispatch HEAD ad03cb51
+
+## 2026-11-12 — plan gap: rename-map declaration added to Task 8
+
+- **Decision**: Task 8 gains a subtask documenting AC-24's plan-declared rename map (plan line, sprint tree entry, impl-review passing `--rename-map` to `review-waves` and `emit-manifest`); Task 7's map format (JSON object, longest key first) and its `review-waves --rename-map` extension are accepted.
+- **Rationale**: Task 7 shipped the flag but no Task owned the declaration AC-24 names; wave 3 holds only Task 8, so the doc edits collide with nothing.
+- **Affected docs**: plan.md Task 8, .asd/rules/sprint-lifecycle.md, .asd/rules/artifact-layout.md, .asd/workflows/asd-phase-impl-review.md
