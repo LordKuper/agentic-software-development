@@ -73,3 +73,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — impl-test: defects D-1, D-2, D-3, D-4 → impl test-fix (digest 1b0eb42a)
 - 2026-11-12 — route test-fix D-1, D-2, D-3, D-4: standard, dispatch HEAD 991fac4a; risk D-1, D-2 change: public contract, D-3 change: workflow gate, D-4 artifact: mirror tables via node tests/run.js
 - 2026-11-12 — impl test-fix: defects D-1, D-2, D-3, D-4 resolved (b5edbb1f, 6c66383c); orchestrator/impl load 0.6993 of baseline, 148 B under the 0.70 ceiling
+- 2026-11-12 — route impl-test entry 2: standard, dispatch HEAD f41b2995
+- 2026-11-12 — impl-test: impacted set green (361/361), 0/0 tests
