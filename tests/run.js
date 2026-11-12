@@ -9546,6 +9546,40 @@ test('sprint-033 AC-35, AC-24: emit-manifest collapses a whole-file deletion to 
   assert.ok(designReview.status === 2 && /impl-review with --base\/--head only/.test(designReview.stderr), `--rename-map outside an impl-review range is refused (got ${JSON.stringify(designReview)})`);
 });
 
+test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path by its literal name', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  const OLD = 'oldName';
+  const NEW = 'newName';
+  const NON_ASCII = 'src/é.js';
+  const body = (name) => `${Array.from({ length: 40 }, (unused, index) => (index === 2 ? `use ${name} here` : `line ${index + 1}`)).join('\n')}\n`;
+  for (const file of ['src/before.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  git('mv', 'src/before.js', 'src/after.js');
+  for (const file of ['src/after.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(NEW));
+  git('add', '-A');
+  git('update-index', '--chmod=+x', 'src/run.sh');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+
+  const work = mkTempDir();
+  const scopeFile = path.join(work, 'scope.txt');
+  const mapFile = path.join(work, 'map.json');
+  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
+  fs.writeFileSync(mapFile, JSON.stringify({ [OLD]: NEW }), 'utf8');
+  const range = ['--base', base, '--head', head, '--rename-map', mapFile];
+  const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', work, ...range], { cwd: repo, env });
+  assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
+  const patch = fs.readFileSync(emitted.result.diff, 'utf8');
+  assert.ok(patch.includes('rename from src/before.js\nrename to src/after.js\n# collapsed: src/after.js: 1 rename-map substitutions\n'), `AC-24: a renamed file whose only edit applies the map still shows the rename (got ${patch})`);
+  assert.ok(patch.includes('old mode 100644\nnew mode 100755\n# collapsed: src/run.sh: 1 rename-map substitutions\n'), 'AC-24: a mode change survives the collapse of its only hunk');
+  assert.ok(patch.includes(`# collapsed: ${NON_ASCII}: 1 rename-map substitutions\n`) && !patch.includes('\\303'), 'AC-24: a C-quoted path is named by its decoded characters');
+  assert.ok(!patch.includes(`use ${NEW} here`), 'every substitution hunk is collapsed');
+  const measured = runtimeCliResult(['review-waves', '--files', scopeFile, ...range], { cwd: repo, env });
+  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted one included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
+});
+
 test('sprint-033 AC-25: persist-review --floor drops each external finding below the floor and records the count, rewrites a CONCERNS whose rows all dropped to APPROVE, leaves the skip form alone, and refuses a non-external reviewer or a floor outside the four levels', () => {
   const root = mkTempDir();
   const header = ['| # | Severity | Location | Description | Suggested fix |', '|---|---|---|---|---|'];
@@ -9574,6 +9608,14 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
 
   const kept = persist(external, 'external', 'low');
   assert.deepStrictEqual([kept.result.token, kept.result.dropped, kept.result.findings.length], ['CONCERNS', 0, 3], 'a floor at the lowest level drops nothing');
+
+  const failing = `[REVIEW-impl-external]: FAIL\nFAIL: 1\n\n${[...header, rows.low].join('\n')}\n`;
+  const failFloored = persist(failing, 'external', 'medium');
+  assert.deepStrictEqual(failFloored.result, { token: 'APPROVE', findings: [], dropped: 1 }, 'AC-25: a FAIL whose every row dropped becomes APPROVE');
+  assert.ok(fs.readFileSync(path.join(failFloored.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\nAPPROVE\n'), 'the verdict line and the FAIL count line are rewritten');
+  const stalemate = persist(failing.replace('FAIL: 1', 'FAIL: 1\nStalemate: D-1'), 'external', 'medium');
+  assert.deepStrictEqual([stalemate.result.token, stalemate.result.dropped], ['FAIL', 1], 'AC-25: a stalemate FAIL keeps its verdict whatever the floor drops');
+  assert.ok(fs.readFileSync(path.join(stalemate.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: FAIL\n'), 'the persisted stalemate verdict line stays FAIL');
 
   const skipped = '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n';
   assert.deepStrictEqual(persist(skipped, 'external', 'high').result, { token: skipped.trim().slice('[REVIEW-impl-external]: '.length), findings: [] }, 'the availability skip carries no table and no floor');
@@ -9672,7 +9714,7 @@ const DESIGN_FIXTURE = {
     ['typography.body.fontFamily', 'Inter', 'typography'], ['typography.body.fontSize', '14px', 'typography'],
   ],
   vars: ['--colors-primary: #112233;', '--colors-accent: var(--colors-primary);', '--spacing-md: 16px;', '--typography-body-fontFamily: Inter;', '--typography-body-fontSize: 14px;'],
-  html: (eol) => ['<table><tbody>', '<!-- asd:tokens:start -->', 'stale row', '<!-- asd:tokens:end -->', '</tbody></table>', '<style>', '<!-- asd:vars:start -->', ':root { --stale: 1; }', '<!-- asd:vars:end -->', '</style>', '<p>keep me</p>', ''].join(eol),
+  html: (eol) => ['<table><tbody>', '<!-- asd:tokens:start -->', 'stale row', '<!-- asd:tokens:end -->', '</tbody></table>', '<style>', '/* asd:vars:start */', ':root { --stale: 1; }', '/* asd:vars:end */', '</style>', '<p>keep me</p>', ''].join(eol),
 };
 
 test('sprint-033 AC-32: design-tokens rewrites only the two marked regions of design-system.html from the DESIGN.md front matter - token rows with a type chip, :root variables with references as var() - keeps the file\'s line endings, and a second run changes nothing', () => {
@@ -9717,7 +9759,7 @@ test('sprint-033 AC-32: design-tokens fails naming the line on YAML beyond neste
 
   fs.writeFileSync(designFile, DESIGN_FIXTURE.md, 'utf8');
   for (const [label, broken, pattern] of [
-    ['a missing vars end marker', html.replace('<!-- asd:vars:end -->', ''), /needs exactly one <!-- asd:vars:start --> \.\.\. <!-- asd:vars:end --> marker pair/],
+    ['a missing vars end marker', html.replace('/* asd:vars:end */', ''), /needs exactly one \/\* asd:vars:start \*\/ \.\.\. \/\* asd:vars:end \*\/ marker pair/],
     ['a repeated tokens marker', html.replace('<!-- asd:tokens:start -->', '<!-- asd:tokens:start --><!-- asd:tokens:start -->'), /needs exactly one <!-- asd:tokens:start -->/],
     ['tokens markers in the wrong order', html.replace('<!-- asd:tokens:start -->', '@@S@@').replace('<!-- asd:tokens:end -->', '<!-- asd:tokens:start -->').replace('@@S@@', '<!-- asd:tokens:end -->'), /needs exactly one <!-- asd:tokens:start --> \.\.\. <!-- asd:tokens:end --> marker pair/],
   ]) {
@@ -9790,6 +9832,12 @@ test('sprint-033 AC-19/AC-33: the 14.5.0 migration deletes the agent-memory dire
   writeFile(bare, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
   const guarded = await runMigration1450(bare);
   assert.deepStrictEqual([guarded.report.deleted, fs.existsSync(path.join(bare, '.claude/agent-memory/asd-pm/MEMORY.md')), /agents is missing/.test(guarded.output)], [[], true, true], 'with no canonical agents directory no live name can be known, so nothing is deleted and the migration warns');
+
+  const broken = makeMigrationFixtureRepo();
+  writeFile(broken, '.asd/agents/asd-dev.md', '---\n{ not json\n---\nbody\n');
+  writeFile(broken, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
+  const unparsable = await runMigration1450(broken);
+  assert.deepStrictEqual([unparsable.report.deleted, fs.existsSync(path.join(broken, '.claude/agent-memory/asd-pm/MEMORY.md')), /asd-dev\.md: frontmatter unparsable/.test(unparsable.output)], [[], true, true], 'AC-19: an agent whose frontmatter fails to parse has unknown variants, so nothing is deleted and the migration names the file');
 });
 
 test('sprint-033 leftover-term check: no canon, README, AGENTS.md, runtime, sync, hook, workflow definition or agent-memory line keeps a sentence or term this sprint removed - the old rotate subject, the duplicate-of removal reason, the one-suffix variant sentence, the wrapper-applied external floor and the severity-driven iron-rule FAIL', () => {
