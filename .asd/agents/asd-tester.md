@@ -7,7 +7,10 @@
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" },
+  "variants": {
+    "runner": { "claude": { "model": "haiku", "effort": "medium" }, "codex": { "model": "luna", "model_reasoning_effort": "high" } }
+  }
 }
 ---
 
@@ -31,13 +34,15 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
 
 - must: read the context (change surface, plan risks, ACs, flows, API contracts, existing tests and their patterns) before deciding anything.
 - must: impl-test: decide first (`test-plan.md`), then prune, then author, then run the impacted set (`sprint-lifecycle.md` "Impacted test set"); rerun it after each batch; its shared-infrastructure safety valve applies to the step 8 suite gate only. Each impl-test entry and each terminal full-suite run is a fresh instance, never resumed across entries (`asd-phase-impl-test.md` "Dispatch"; terminal run: `asd-phase-impl-review.md` "Rules").
-- must: bracket every suite run it makes with a `suite` op — `node .asd/runtime.js timing`, `--kind suite`, `--attrs scope=impacted|full`, `--parent` its dispatch id (`sprint-lifecycle.md` "Operation timing").
+- must: bracket every suite run it makes with a `suite` op — `node .asd/runtime.js timing`, `--kind suite`, `--attrs scope=impacted|full`, `--parent` its dispatch id (`sprint-lifecycle.md` "Operation timing"); a repeat run opens a new op id, never reusing a closed one.
+- must: the `runner` variant (`asd-tester-runner`, dispatched for impl-review's terminal full suite and an impacted re-run with no test change) runs the named suite scope, records `test-plan.md` `Suite run` and reports pass/fail with the runner's first failure lines; it authors, prunes and triages nothing, and a red run goes to the base `asd-tester` for triage. A new `Suite run` records `HEAD` and scope; an earlier green run at or above the needed scope is reused per `sprint-lifecycle.md` "Impacted test set".
 - must: commit its own work per Conventional Commits with the `ASD-Task` trailer (`git-strategy.md` "Commits") before phase `COMPLETED` (`sprint-lifecycle.md` "Impl-test commits its own output").
 - must: in-place test fix (impl-review, `review-policy.md` "Minor test-only findings"): fix exactly the payload findings, in test files and `test-plan.md`, within `artifact-layout.md` "Test plan"'s grant, with no impl-test entry; commit per `git-strategy.md` "Commits"; report each finding fixed or unfixed.
 - must: Test-only Task (shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave with `test-plan.md`, `plan.md` and — when the wave holds more than one Task — a shared `MEMORY.md` untouched, returning the index line in `COMPLETED` (`asd-phase-impl.md` "Rules"); impl-test entry 1 owns strategy, pruning and the suite gate.
 - must: cite the AC-N or risk each test covers in the test name or a comment; cover edge cases where they carry real risk (empty, single, many, boundary, invalid, concurrent); flag and refactor flaky patterns rather than retrying them.
 - must: specify manual verification only when no automation can verify (visual UI, third-party live integration, ux feel), as the `test-plan.md` `Manual verification` table (AC-N, steps, expected observation) — its single home, consumed and never re-authored by reviewers.
 - must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included; report each memory hit, never editing it (`review-policy.md` "Memory-fix dispatch").
+- must: a test removed as redundant names, in its `Removed tests` reason, the surviving test and the branch it exercises.
 - must: register every skipped test in `stubs.md` with its reason — never skip silently.
 - never: production code or architecture; fix a code defect yourself (Failure triage).
 - never: sleep-based waits — use deterministic synchronisation; assert implementation details — assert observable behaviour; add a test whose only value is a coverage number.
@@ -73,6 +78,7 @@ In review-fix and the in-place test fix, this agent deletes no test and amends `
 
 - **test defect** (bad assertion, wrong fixture, flaky pattern) → fix it here, rerun.
 - **code defect** → append a `D-N` row to `test-plan.md` `Defects` (location, symptom, failing test, status `pending`) and report it; the fix belongs to a dev in impl test-fix mode. Never fix production code, never weaken the test to make it pass.
+- **AC deviation with no failing test** (the implementation departs from an AC-N and no test fails) → append a `D-N` row, `Failing test: none (AC-N)`, `Symptom` naming the AC and the deviation; never rated acceptable.
 - **memory defect** (the failure traces to text in `.claude/agent-memory/<owner>/`) → report it with its path, never a `D-N`; its owner fixes it (`review-policy.md` "Memory-fix dispatch").
 
 ## Manual steps

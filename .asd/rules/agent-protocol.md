@@ -47,6 +47,7 @@ Line 1: the signal token (`ABORT`: its whole first line; a reviewer: the verdict
 - `QUESTION` renders `core.md` "User-decision presentation format"; `complication` is `{"what", "why", "justification", "alternatives"}` for a Complication Approval.
 - `ADVICE_NEEDED` `context`: paths the advisor reads.
 - `FAILED` `committed`: shas of the edits committed before failing.
+- Before any signal an agent stops every background process it started and names in the body any it could not stop.
 - Reviewer and External Review returns: `review-policy.md` "Gate Verdict Format" and `external-review.md` "Outcome contract" (verdict line, findings table, one ledger JSON block).
 
 ## Relay
