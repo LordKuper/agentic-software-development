@@ -16,3 +16,6 @@ responsibility:
 
 ## Out of scope (optional)
 - {{explicit exclusion}}
+
+## Settings change (optional)
+Settings change: {{<key>=<value>[, <key>=<value>…] — a config.yaml key audit or design reads; applied at scope, approved by the scope gate}}

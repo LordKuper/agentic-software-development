@@ -17,9 +17,9 @@ All project work goes through `/asd-sprint`.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
 - **Review wave** — one of the sequential slices a large `standard` impl-review scope divides into (`lite`: always one), each with its own iterations (`sprint-lifecycle.md` "Review iteration counters").
 - **Creator agent** — produces code or tests (Dev, Tester); every other artifact is the orchestrator's.
-- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice and memory-fix dispatches (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table.
+- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice, memory-fix and read-only scout scan dispatches, and applying itself a review-fix finding whose fix lies outside the dev allowlist (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table.
 - **Reviewer agent** — evaluates artifacts (Quality, Efficiency, Combined, External Review); a review phase dispatches its workflow's `reviewers` roster.
-- **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
+- **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user or on an ambiguous review-finding route, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
 - **Persistent doc** — living document under `docs/`. Updated across sprints.
 - **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
@@ -29,7 +29,7 @@ All project work goes through `/asd-sprint`.
 ## Invariants
 
 - One active sprint. New sprint blocked until current archived, except a merged sprint, which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
-- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `/asd-update` in sprint-mediated mode, run at a new sprint's scope step 1 on the user's update choice, may write framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode"). **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
+- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a sprint- or plan-declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `/asd-update` in sprint-mediated mode, run at a new sprint's scope step 1 on the user's update choice, may write framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode"). **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
 - Every project task flows through a sprint. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
 
@@ -83,8 +83,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
-6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
-   review's stalemate set excepted) — `review-policy.md`, not restated here.
+6. Reviewer context per iteration: `review-policy.md` "Clean-context review iteration".
 
 ## Untrusted-data boundary
 

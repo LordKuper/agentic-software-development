@@ -34,7 +34,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 ## Rules
 
 - must: assess complexity, structure, reuse, token cost, change size, performance and test-suite cost of code against the over-engineering and structure/cohesion checklists of `review-policy.md`.
-- must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with category and severity, return one verdict (APPROVE | CONCERNS | FAIL).
+- must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with category and severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
 - must: mark a section the manifest authorizes `n/a: <predicate>` so in the section-coverage ledger and never review it this dispatch.
 - must: when the conjunctive perf predicate (`asd-phase-impl-review.md` step 5) holds, mark all five performance sections `n/a: <predicate>`; with no perf-budgets section but an executable file in scope, Perf budget compliance alone is `n/a: no budgets defined` and the other four apply.
 - must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
@@ -93,7 +93,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 - logic, a helper, type, rule or pattern the repo already holds re-implemented instead of reused; copy-paste blocks that belong in one unit; a duplicated documentation fact is quality's SSoT
 
 ### Documentation economy [design-review, impl-review]
-- agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply `artifact-layout.md` "Documentation economy"'s three tests and raise nothing against text its preserve-list keeps. Violation = `FAIL`
+- agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply `artifact-layout.md` "Documentation economy"'s three tests and raise nothing against text its preserve-list keeps
 
 ### Runtime token cost [design-review, impl-review]
 - the change grows what agents load per dispatch — a wider context grant, a whole-file read where a section suffices, text moved into an always-loaded file — without behaviour that needs it

@@ -1,6 +1,6 @@
 ---
 name: roster-move-mirror-sweep
-description: when a review roster moves between reviewers (who reviews which phase), the mirrors a removal sweep misses — README Scope cells, gating paragraphs, "Violation = FAIL from <agent>" attributions, return-format rules on one composed reviewer only
+description: when a review roster moves between reviewers (who reviews which phase), the mirrors a removal sweep misses — README Scope cells, gating paragraphs, "Violation = a finding from <agent>" attributions, return-format rules on one composed reviewer only
 metadata:
   type: feedback
 ---
@@ -9,7 +9,7 @@ A roster-move diff updates the obvious roster literals (workflow JSON, Dispatch 
 
 - README agent table: the **Scope** cell of a row whose Phase(s) cell changed (e.g. a reviewer no longer dispatched in a phase still "judges" in it; "Receives … test-plan.md" on a phase that has none).
 - A gating paragraph that gains the moved reviewer in a parenthetical while the gate it describes is limited to one phase (`asd-phase-impl-review.md` step 5 predicates; `runtime.js` `standingPredicates` returns before them in design-review).
-- Agent attributions of an iron rule (`artifact-layout.md` "Violation = FAIL from asd-reviewer-…", README "enforced by the Quality reviewer").
+- Agent attributions of an iron rule (`artifact-layout.md` "Violation = a finding from asd-reviewer-…", README "enforced by the Quality reviewer").
 - A return-format rule added to one composed reviewer (e.g. where the keep-as-is/simplify/escalate category goes) but not to `asd-reviewer-combined`, which composes that reviewer's entries.
 - Runtime JSDoc naming the moved reviewer's old workflow (`COMBINED_REVIEWER`).
 

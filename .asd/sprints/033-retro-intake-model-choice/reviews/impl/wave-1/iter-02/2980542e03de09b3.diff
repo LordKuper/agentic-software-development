@@ -1,0 +1,1064 @@
+diff --git a/.asd/agents/asd-advisor.md b/.asd/agents/asd-advisor.md
+index 1ca02ed4..d3654063 100644
+--- a/.asd/agents/asd-advisor.md
++++ b/.asd/agents/asd-advisor.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-advisor",
+-  "description": "Read-only advisor: recommendation with rationale on a question, its options and file paths; consulted via a creator's ADVICE_NEEDED relay and by the orchestrator before a failure or question escalation. Not: approval, decision → user (checkpoints.md); verdict review → asd-reviewer-*; writing → none.",
++  "description": "Read-only advisor: reasoned recommendation on a question and its paths; consulted via a creator's ADVICE_NEEDED relay and by the orchestrator before a user escalation or on an ambiguous finding route. Not: approval, decision → user (checkpoints.md); verdict review → asd-reviewer-*; writing → none.",
+   "claude": {
+     "model": "fable", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+@@ -13,18 +13,18 @@
+ 
+ # Role
+ 
+-Advisor: answers a question with a recommendation grounded in the files it points at — for a consulting creator, so it can proceed without escalating; for the orchestrator, so a failure or question escalation reaches the user with advice beside its options (`agent-protocol.md` "Relay").
++Advisor: answers a question with a recommendation grounded in the files it points at — for a consulting creator, so it can proceed without escalating; for the orchestrator, so a failure or question escalation reaches the user with advice beside its options, or so it can route an ambiguous review finding (`agent-protocol.md` "Relay").
+ 
+ ## Inputs
+ 
+ ```json
+-{"rules": ["payload.inputs.context"], "required": ["the question text plus file paths: relayed by the dispatching phase workflow from a creator's ADVICE_NEEDED, or sent by the orchestrator before a failure or question escalation, then with its options; one request may batch several items"]}
++{"rules": ["payload.inputs.context"], "required": ["the question text plus file paths: relayed by the dispatching phase workflow from a creator's ADVICE_NEEDED, or sent by the orchestrator before a failure or question escalation, then with its options, or on an ambiguous review-finding route (routing consult); one request may batch several items"]}
+ ```
+ 
+ ## Outputs
+ 
+ ```json
+-["free-text recommendation with rationale per item, plus named gaps from unreadable paths, as the whole return: no signal token, no verdict, no ledger; the dispatching workflow relays it to the consulting creator, or the orchestrator presents it to the user"]
++["free-text recommendation with rationale per item, plus named gaps from unreadable paths, as the whole return: no signal token, no verdict, no ledger; the dispatching workflow relays it to the consulting creator, or the orchestrator presents it to the user or routes by it"]
+ ```
+ 
+ ## Rules
+diff --git a/.asd/agents/asd-reviewer-quality.md b/.asd/agents/asd-reviewer-quality.md
+index d73ad156..6be42e00 100644
+--- a/.asd/agents/asd-reviewer-quality.md
++++ b/.asd/agents/asd-reviewer-quality.md
+@@ -124,7 +124,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
+ - responsibility frontmatter present; sections respect declared `owns` / `excludes`. PRD is scope-conditional (`t_prd.html`): a sprint draft (`SUBSYSTEM=sprint`) correctly omits Goals/Non-goals — never flag a draft for missing them; only the persistent per-subsystem doc requires Goals present (Non-goals stays optional there)
+ 
+ ### HTML shell wrapping [design-review, impl-review]
+-- every user-facing HTML artifact wrapped in `t_html-shell.html` (`artifact-layout.md`); all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, CONTENT); TOC_NAV/MERMAID_SCRIPT are conditional — correctly empty (nav omitted, no mermaid script) below the stated threshold is compliant, not a defect; a finding only when a placeholder is non-empty but wrong (e.g. TOC_NAV present for a <3-`<h2>` fragment, or a mermaid script emitted for a fragment with no `.mermaid` block) or when required-always placeholders are missing; no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>`/mermaid `<script>`/TOC `<nav>` chrome hand-authored inside fragments — that chrome belongs solely to the shell
++- every user-facing HTML artifact wrapped in `t_html-shell.html` (`artifact-layout.md`); all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, CONTENT); TOC_NAV/MERMAID_SCRIPT are conditional — correctly empty (nav omitted, no mermaid script) below the stated threshold is compliant, not a defect; a finding only when a placeholder is non-empty but wrong (e.g. TOC_NAV present for a <3-`<h2>` fragment, or a mermaid script emitted for a fragment with no `.mermaid` block) or when required-always placeholders are missing; no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>`/mermaid `<script>`/TOC `<nav>` chrome hand-authored inside fragments — that chrome belongs solely to the shell (sole exception: `artifact-layout.md` "Fragment invariants")
+ 
+ ### Provenance [design-review, impl-review]
+ - `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index 0d00e58d..cf0fdea6 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -33,7 +33,7 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
+ ## Rules
+ 
+ - must: read the context (change surface, plan risks, ACs, flows, API contracts, existing tests and their patterns) before deciding anything.
+-- must: impl-test: decide first (`test-plan.md`), then prune, then author, then run the impacted set (`sprint-lifecycle.md` "Impacted test set"); rerun it after each batch; its shared-infrastructure safety valve applies to the step 8 suite gate only. Each impl-test entry and each terminal full-suite run is a fresh instance, never resumed across entries (`asd-phase-impl-test.md` "Dispatch"; terminal run: `asd-phase-impl-review.md` "Rules").
++- must: impl-test: decide first (`test-plan.md`), then prune, then author, then run the impacted set (`sprint-lifecycle.md` "Impacted test set"); rerun it after each batch; its shared-infrastructure safety valve applies to the step 8 suite gate only, run by this agent only when the entry changed a test — else return after step 7 and the runner takes step 8. Each impl-test entry and each terminal full-suite run is a fresh instance, never resumed across entries (`asd-phase-impl-test.md` "Dispatch"; terminal run: `asd-phase-impl-review.md` "Rules").
+ - must: bracket every suite run it makes with a `suite` op — `node .asd/runtime.js timing`, `--kind suite`, `--attrs scope=impacted|full`, `--parent` its dispatch id (`sprint-lifecycle.md` "Operation timing"); a repeat run opens a new op id, never reusing a closed one.
+ - must: the `runner` variant (`asd-tester-runner`, dispatched for impl-review's terminal full suite and an impacted re-run with no test change) runs the named suite scope, records `test-plan.md` `Suite run` and reports pass/fail with the runner's first failure lines; it authors, prunes and triages nothing, and a red run goes to the base `asd-tester` for triage. A new `Suite run` records `HEAD` and scope; an earlier green run at or above the needed scope is reused per `sprint-lifecycle.md` "Impacted test set".
+ - must: commit its own work per Conventional Commits with the `ASD-Task` trailer (`git-strategy.md` "Commits") before phase `COMPLETED` (`sprint-lifecycle.md` "Impl-test commits its own output").
+diff --git a/.asd/migrations/14.5.0.js b/.asd/migrations/14.5.0.js
+index 76d4bbcb..41519e16 100644
+--- a/.asd/migrations/14.5.0.js
++++ b/.asd/migrations/14.5.0.js
+@@ -14,8 +14,8 @@
+  * Scope, in order:
+  *   1. Delete `.claude/agent-memory/<name>/` for every name in the retired lists of migrations 4.0.0,
+  *      5.0.0 and 14.0.0 that is not a live canonical agent or tier variant (`asd-reviewer-quality` was
+- *      retired in 4.0.0 and is live again). When the canonical agents directory is unreadable no
+- *      directory is deleted: a live agent's memory is never guessed at.
++ *      retired in 4.0.0 and is live again). When the canonical agents directory is missing, or an agent's
++ *      frontmatter fails to parse, no directory is deleted: a live agent's memory is never guessed at.
+  *   2. Rewrite `.asd/project/commands.yaml` `designmd-install` from exactly
+  *      `npm install @google/design.md` to `npm install --no-save @google/design.md`; any other value,
+  *      or an absent file or key, is left untouched.
+@@ -57,30 +57,32 @@ function toRepoRel(parts) {
+   return parts.join('/');
+ }
+ 
+-/** Names of every canonical agent and its tier variants, or null when the agents directory is unreadable. */
+-function liveAgentNames(repoRoot, sync) {
++/** Names of every canonical agent and its tier variants, or null (warned) when the agents directory is missing or an agent's frontmatter fails to parse. */
++function liveAgentNames(repoRoot, sync, warn) {
+   const agentsDir = path.join(repoRoot, ...AGENTS_PARTS);
+-  if (!fs.existsSync(agentsDir)) return null;
++  if (!fs.existsSync(agentsDir)) {
++    warn(`${toRepoRel(AGENTS_PARTS)} is missing - retired agent memory directories left untouched.`);
++    return null;
++  }
+   const names = new Set();
+   for (const entry of fs.readdirSync(agentsDir).filter((file) => file.endsWith('.md'))) {
+     const base = entry.slice(0, -'.md'.length);
+     names.add(base);
++    let meta;
+     try {
+-      const { meta } = sync.parseCanonicalFrontmatter(sync.normalizeText(fs.readFileSync(path.join(agentsDir, entry), 'utf8')));
+-      for (const suffix of Object.keys(meta.variants || {})) names.add(`${base}-${suffix}`);
+-    } catch (_) {
+-      names.add(base);
++      ({ meta } = sync.parseCanonicalFrontmatter(sync.normalizeText(fs.readFileSync(path.join(agentsDir, entry), 'utf8'))));
++    } catch (error) {
++      warn(`${toRepoRel(AGENTS_PARTS)}/${entry}: frontmatter unparsable (${error.message}) - its variants are unknown, so no retired agent memory directory is deleted.`);
++      return null;
+     }
++    for (const suffix of Object.keys(meta.variants || {})) names.add(`${base}-${suffix}`);
+   }
+   return names;
+ }
+ 
+ function removeRetiredMemory(repoRoot, sync, report, warn) {
+-  const live = liveAgentNames(repoRoot, sync);
+-  if (live === null) {
+-    warn(`${toRepoRel(AGENTS_PARTS)} is missing - retired agent memory directories left untouched.`);
+-    return;
+-  }
++  const live = liveAgentNames(repoRoot, sync, warn);
++  if (live === null) return;
+   for (const name of RETIRED_AGENTS.filter((agent) => !live.has(agent))) {
+     const rel = `${toRepoRel(MEMORY_PARTS)}/${name}`;
+     const absPath = path.join(repoRoot, ...MEMORY_PARTS, name);
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 8e08ab96..643ad147 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,45 +32,45 @@
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+     "skills/asd-init/SKILL.md": "sha256:40b53f72b0d8d5827beac4c7c493bab564a031a8d81bb2522e86e9399f319878",
+-    "skills/asd-sprint/SKILL.md": "sha256:a73c47d328636ec5600f74ccc2969a09219754f905cedde1bbb1dfb9d2bb0fa3",
++    "skills/asd-sprint/SKILL.md": "sha256:154e8528ac01c911907361bcce228e06d1ddcf7a9f6a00cb78dcb03dcb5433ef",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     "skills/asd-update/SKILL.md": "sha256:14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+-    "skills/asd-phase-scope/SKILL.md": "sha256:dff87a5da486ba75f72008ced9587f71ad738e55b8df4ddef9b5091922ca2646",
++    "skills/asd-phase-scope/SKILL.md": "sha256:e9895d75abcc42a961912afac38b1e4d9bab34c80ad3b420e3b5e7004d82f00f",
+     "skills/asd-phase-audit/SKILL.md": "sha256:e08e4505589ca00b04730d2f3f271c02386a7c6de049f82b122409b9de2744c3",
+     "skills/asd-phase-design/SKILL.md": "sha256:90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+     "skills/asd-phase-design-review/SKILL.md": "sha256:dbd1a637132f8453a24217bc8991d83584f5bf10ca4d3b40c713010c06fe1bc9",
+     "skills/asd-phase-design-promote/SKILL.md": "sha256:f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+     "skills/asd-phase-plan/SKILL.md": "sha256:40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
+-    "skills/asd-phase-impl/SKILL.md": "sha256:d3910cb0d81e097ab68f255bfb94b84c5ebfd1db3b3db3a695613737f93a4f4d",
++    "skills/asd-phase-impl/SKILL.md": "sha256:c8bce7678c68dbed3b828279b1d83033f6dc832c934beeb0415eaa7092575f89",
+     "skills/asd-phase-impl-test/SKILL.md": "sha256:4398e7b5033df617a984f8adc30b3aafc565930436ee986506f10a036a4301f3",
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:4e80200649594fcc7731ec6bd1bea794003546ac9e1418ccecf580f723786bed",
+     "skills/asd-phase-pr/SKILL.md": "sha256:f92c938eb06136c8295452e69d56cc0e8340bb2242ecce209ec7f93ffb99fb72",
+-    "agents/asd-advisor.md": "sha256:5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
++    "agents/asd-advisor.md": "sha256:16355a9372983b6ee5d25fac40bae51e9a98346f3d4a0cd0f79ddb77f169ecaa",
+     "agents/asd-reviewer-efficiency.md": "sha256:c0fb317b6cc24155b8d0442dc74bef844a821465d1522f12d738da3ea2e90751",
+     "agents/asd-dev.md": "sha256:2249d28ba4f7487c2856f477272f479111386f2872c166346928a5fb8a258ead",
+-    "agents/asd-tester.md": "sha256:cac5af07fea572221c9504ab28bcd905fc0c55fdcc2d104cc8590e026cd242e7",
++    "agents/asd-tester.md": "sha256:2807640e02d7af5bcf5ce176eebb0591fb1c1617188b2d94edad252a8cb00171",
+     "skills/asd-phase-retro/SKILL.md": "sha256:e8e8b03349b6b05b6170fb2d81cf092237e0b9f4f067a739b80d2f57491d2bfc",
+     "agents/asd-reviewer-combined.md": "sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914",
+-    "agents/asd-reviewer-quality.md": "sha256:060a4d5d7b92eef6027ae8a0a28bf77dd353191a71ff4435a261c741466840f5",
++    "agents/asd-reviewer-quality.md": "sha256:defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168",
+     "skills/asd-phase-cleanup/SKILL.md": "sha256:67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+     "agents/asd-scout.md": "sha256:91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6"
+   },
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "1107d009c6e1dca898455b84b7df89dc6027ffdf71718095372dd6d892df6357",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "cf11563b2c59f20b8e36cf2f7df5975c9ee80d4e3cd6f3a271b196f0a5824986",
++    ".asd/rules/artifact-layout.md": "98695095fb6259cd4d57b6e29b928fa6fe7c145fb681a05021961119d1fd7730",
+     ".asd/rules/checkpoints.md": "b51da7fe1c832826cf35e428b43f55fd5b238ee62a35d1c44d7c06544040192f",
+     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
+-    ".asd/rules/core.md": "39fffc9da6ddc10134f27c692cecd8d6e8f69aa146dcf018cd06a268ac05cc6b",
++    ".asd/rules/core.md": "1d59078ad0eeb85596ed30b2ba55d7020267c57abc6a6f5f359e54e6c01a2607",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+-    ".asd/rules/design-system.md": "b8524b7d3dac666bef4cd81421b052803a6c9f36070b288bae83837bee5e69c1",
+-    ".asd/rules/external-review.md": "481bccc7327b54abdbcbfd7c643a0e18705b3b9ddb9dc3a87ac2ef3862f776f1",
++    ".asd/rules/design-system.md": "63ede85dc2c3d2167a4e48e2df1d6b31ef457304030cb9a086cff77ad0a1c3e7",
++    ".asd/rules/external-review.md": "6a08f5c7b6734113d5cc897e233968b018bc7e5be48410e37aa80f9d07e9ee95",
+     ".asd/rules/git-strategy.md": "af215d40ef7fe7a7ef5579c0582e7964418dcb85726e28639832b17f16bc4073",
+     ".asd/rules/language-policy.md": "834a43edbf2cb11a6aee45392cfc8cbc1dc39427364fedc1be2f2e1266df9eae",
+-    ".asd/rules/providers.md": "3fc005f4d6fb44e05e75518594ccf84653734ce7127ecb0fbd590c5ea3c2e83a",
+-    ".asd/rules/review-policy.md": "bec58c2a01ec62467029461f81b25ec4d3da6a244af616b8c708b2c049208dc5",
+-    ".asd/rules/sprint-lifecycle.md": "2defb922784673d902e6f8bf651d4e5141cba253a5917bebe2226c84c84f1308",
++    ".asd/rules/providers.md": "001698ee0aa58bd1f80312ff7829669d113c92b3a817850263ef4141cb08478d",
++    ".asd/rules/review-policy.md": "3fa50688dc03533c68a264f2888b429a182758849adc1889d9d9f8e2d4fa87e6",
++    ".asd/rules/sprint-lifecycle.md": "a0d09ab92a3b9a2ac48c49629fd050dbb5d2afb6a8e6d72b29a9b0f4fe64e498",
+     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+@@ -81,11 +81,11 @@
+     ".asd/skills/asd-phase-design/SKILL.md": "90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+     ".asd/skills/asd-phase-impl-review/SKILL.md": "4e80200649594fcc7731ec6bd1bea794003546ac9e1418ccecf580f723786bed",
+     ".asd/skills/asd-phase-impl-test/SKILL.md": "4398e7b5033df617a984f8adc30b3aafc565930436ee986506f10a036a4301f3",
+-    ".asd/skills/asd-phase-impl/SKILL.md": "d3910cb0d81e097ab68f255bfb94b84c5ebfd1db3b3db3a695613737f93a4f4d",
++    ".asd/skills/asd-phase-impl/SKILL.md": "c8bce7678c68dbed3b828279b1d83033f6dc832c934beeb0415eaa7092575f89",
+     ".asd/skills/asd-phase-plan/SKILL.md": "40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
+     ".asd/skills/asd-phase-pr/SKILL.md": "f92c938eb06136c8295452e69d56cc0e8340bb2242ecce209ec7f93ffb99fb72",
+-    ".asd/skills/asd-phase-scope/SKILL.md": "dff87a5da486ba75f72008ced9587f71ad738e55b8df4ddef9b5091922ca2646",
+-    ".asd/skills/asd-sprint/SKILL.md": "a73c47d328636ec5600f74ccc2969a09219754f905cedde1bbb1dfb9d2bb0fa3",
++    ".asd/skills/asd-phase-scope/SKILL.md": "e9895d75abcc42a961912afac38b1e4d9bab34c80ad3b420e3b5e7004d82f00f",
++    ".asd/skills/asd-sprint/SKILL.md": "154e8528ac01c911907361bcce228e06d1ddcf7a9f6a00cb78dcb03dcb5433ef",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+@@ -94,7 +94,7 @@
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+-    ".asd/templates/t_AGENTS.md": "60264d776662369991b7fcd7242704b5cda6c7bf1ffc83cfc06f2c5389acd368",
++    ".asd/templates/t_AGENTS.md": "aac5f2e719612500afee6b5283b650be0ad6c2c9caa2ec7871dc887f92c86930",
+     ".asd/templates/t_CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+     ".asd/templates/t_accessibility.html": "ac188f67b5a5b19dfc0a5e5e4a3f4d940b764df3917fbb6cc75bbaefb32b50f9",
+     ".asd/templates/t_adr.html": "9ac045ee1190cf8ee2a54e19b1d76f7e206c726892583267cfb8a657024aea9d",
+@@ -109,7 +109,7 @@
+     ".asd/templates/t_custom-design-rules.md": "32bea20a1464f1170e4cb7aab64005992de81b24a954fa9a0e6765045841bb86",
+     ".asd/templates/t_decisions-log.md": "3ed93b39a8e4846c487c5da86e52a84b631f534d0cb213ec87c74df310a179c6",
+     ".asd/templates/t_design-md-delta.yaml": "ed78209e1c68d65fa0b3d58fe2f50a8c3084a1cc2942587bb7a09fe015ddf14a",
+-    ".asd/templates/t_design-system.html": "98bde0bbbe77a14034590447cd382ebca63a494b4c0e9809186e27a4af1dc91a",
++    ".asd/templates/t_design-system.html": "d666b81eff65e1762f00a65d6e3651414a66d55a819f709d021cf0c2b9eab7cc",
+     ".asd/templates/t_html-shell.html": "26fea46a6396e1648da8c2fd82153475588662ce0ba460c8ede4fed30d1e209d",
+     ".asd/templates/t_manual-steps.md": "e199733b7d87674c573985497b345bd653129db5112713dc94afb47d4aab6c8c",
+     ".asd/templates/t_plan.md": "5af1f8a408f97c86e2b99c4c85bbfe6d962af422f0e376f913991f5d568c21cb",
+@@ -125,22 +125,22 @@
+     ".asd/templates/t_ux-spec.html": "c9714c085778d576b1fa93dbc996fecb99a452a2b10faace97b310c6c2a520e8",
+     ".asd/workflows/asd-phase-audit.md": "ef951dbfd9afcc378e5c9066d7b1f4aad1d8f8bc29ada24d3b19985f622ae503",
+     ".asd/workflows/asd-phase-design-promote.md": "92d1e44c58b62b5aa0f2c658ad116d13681c705f7b73f288bdfd4d7cfa6fc5d5",
+-    ".asd/workflows/asd-phase-design-review.md": "3fd16b5dda0cb6cb7f3fa58fedf146150a282b000958641cf7c96d3ed3eab7ce",
++    ".asd/workflows/asd-phase-design-review.md": "b057d88d871515f15a56d2db4c3301920a48a80271511016bad9eb46a5592d38",
+     ".asd/workflows/asd-phase-design.md": "f7cbb2a79463cb59b8c8c6ce82039a3b14808004f74ce59b22e4df4530f26b9d",
+-    ".asd/workflows/asd-phase-impl-review.md": "e85f3be5b2a0e326188d89a53251c6cfb593c75ca5eca88cb6fd197c2362974c",
+-    ".asd/workflows/asd-phase-impl-test.md": "56b4550077fa50a1f56266885c4d2ebf2bfdfa1dfe9521bbd06e142c2dcb1d99",
++    ".asd/workflows/asd-phase-impl-review.md": "96c5f69577c7111ea38d0cdcc20a1ef45f471b384ef2c651dfd65cf95a9fcb0d",
++    ".asd/workflows/asd-phase-impl-test.md": "20584bded548829fadc670a92f3ce5dae2cd5cda68035d8e1faaf0e6e97bab59",
+     ".asd/workflows/asd-phase-impl.md": "d7d08c9c4872794405160581b3246ff0b5e04ea67093156c6bff1b1e863187dc",
+     ".asd/workflows/asd-phase-plan.md": "0d81578d127130246efe6e21563f9cc3c967e63f237bf5d8c27f101d8a176124",
+     ".asd/workflows/asd-phase-pr.md": "f6187154d55f16db1577fb8ce8856bd2db819de996311d9cd5fc00e07eff229d",
+     ".asd/workflows/asd-phase-scope.md": "d0ff13f0438c3b2a9058c9464c18ab1dc6c37a74abda6b7ac475482b8f63cf0d",
+-    ".asd/agents/asd-advisor.md": "5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
++    ".asd/agents/asd-advisor.md": "16355a9372983b6ee5d25fac40bae51e9a98346f3d4a0cd0f79ddb77f169ecaa",
+     ".asd/agents/asd-reviewer-efficiency.md": "c0fb317b6cc24155b8d0442dc74bef844a821465d1522f12d738da3ea2e90751",
+     ".asd/agents/asd-dev.md": "2249d28ba4f7487c2856f477272f479111386f2872c166346928a5fb8a258ead",
+-    ".asd/agents/asd-tester.md": "cac5af07fea572221c9504ab28bcd905fc0c55fdcc2d104cc8590e026cd242e7",
++    ".asd/agents/asd-tester.md": "2807640e02d7af5bcf5ce176eebb0591fb1c1617188b2d94edad252a8cb00171",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "d8b921309569b324709b6575c4bd5fcf28d6b00d1684e841e67cbc55ad4b7856",
++    ".asd/runtime.js": "2263e126150c377768f7ae7163d897ef91fbd2c961cb67dcf5e24905319c75b0",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+@@ -153,14 +153,14 @@
+     ".asd/agents/asd-reviewer-combined.md": "47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914",
+     ".asd/workflows/lite.json": "b56ab1c62e029a56c79d541c79515f79277be5453a954c8b33af0950263aca55",
+     ".asd/workflows/standard.json": "9bb5fdf7d04029214ef892b59a4ff1ea6670fd614709e833d737a4a52460314c",
+-    ".asd/rules/agent-protocol.md": "9827be960a3aa96946e1e6aaa22525853c3d031c0b0b27004cbf1f01a1781151",
++    ".asd/rules/agent-protocol.md": "84afabff3a5cf1f20abc4831f8a3743fa4690ea8a6a926ab5be29252c88d9aff",
+     ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4",
+-    ".asd/agents/asd-reviewer-quality.md": "060a4d5d7b92eef6027ae8a0a28bf77dd353191a71ff4435a261c741466840f5",
++    ".asd/agents/asd-reviewer-quality.md": "defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168",
+     ".asd/migrations/14.0.0.js": "5c0ad4a19f5ed993b37938cba305425e6078e4abad5c3cdc11235602b0c6958c",
+     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+     ".asd/workflows/asd-phase-cleanup.md": "1c679b0a71289bc261704413d9fc9dcd1e70d35c76e9b10b11dec5fd10d62ce3",
+     ".asd/migrations/14.2.0.js": "a230f4824213e0f1b18fb49ac629c93d7836b39e619cd1f22ceea1add816f16b",
+     ".asd/agents/asd-scout.md": "91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6",
+-    ".asd/migrations/14.5.0.js": "e80e313da6d150bf00892b8d9f1d81e6818ec2221be4855b6c004e620d3246fc"
++    ".asd/migrations/14.5.0.js": "983d48aeaf812e1ccc893cd358cf93b8d9563d041302a7e76fdcc75b703ad192"
+   }
+ }
+diff --git a/.asd/rules/agent-protocol.md b/.asd/rules/agent-protocol.md
+index 7c5361f4..620b3835 100644
+--- a/.asd/rules/agent-protocol.md
++++ b/.asd/rules/agent-protocol.md
+@@ -57,14 +57,16 @@ Main orchestrator only.
+ **`ADVICE_NEEDED`** (every relay branch in an `asd-phase-*.md` is this exact sequence):
+ 1. Dispatching phase workflow catches `ADVICE_NEEDED` from a dispatched creator, mid-task.
+ 2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent and its own `inputs.context` — no other context injected.
+-3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the answer in `advice`; no other context injected except `consults_left` (step 6). Not a same-turn resume (no host tool suspends and resumes a dispatched agent mid-execution — `providers.md` has no such operation); it is a fresh dispatch carrying forward the same task.
++3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the answer in `advice`; no other context injected except `consults_left` (step 6). A fresh dispatch of the same task, never a resume: no host resumes a dispatched agent mid-execution.
+ 4. The advisor always returns a recommendation. A consulting creator that sees the question named a hard gate treats it as gate uncertainty per `core.md` "Autonomy and escalation" and returns `QUESTION`.
+ 5. No halt, no user contact, no logged trail — the round-trip is autonomous and intra-phase (consults are not logged, `asd-advisor.md`).
+-6. Capped at 3 consults per consulting-agent **task** — the dispatching phase workflow owns this counter (the consulting agent does not; each re-dispatch in step 3 is a fresh dispatch and would otherwise reset a self-held count), increments it once per completed advisor round-trip, and does not reset it across the task's re-dispatches. At the cap, the workflow stops relaying further `ADVICE_NEEDED` signals for that task; the agent proceeds on its own judgment or re-classifies the question as gate uncertainty and returns `QUESTION` per `core.md` "Autonomy and escalation".
++6. Capped at 3 consults per consulting-agent **task** — the dispatching phase workflow, never the freshly re-dispatched consulting agent, owns this counter, increments it once per completed advisor round-trip, and does not reset it across the task's re-dispatches. At the cap, the workflow stops relaying further `ADVICE_NEEDED` signals for that task; the agent proceeds on its own judgment or re-classifies the question as gate uncertainty and returns `QUESTION` per `core.md` "Autonomy and escalation".
+ 
+ **`QUESTION`**:
+ 1. The dispatching workflow catches `QUESTION` — the question plus options (`core.md` "User-decision presentation format") — from a dispatched agent.
+ 2. The main orchestrator asks the user via request user decision (free-form input as a plain chat message) and records the answer in `decisions-log.md` before any further work (`core.md` "Context hygiene").
+-3. Re-dispatches the agent fresh with its original task context plus the answer in `answers` — not a resume, for the reason in `ADVICE_NEEDED` step 3.
++3. Re-dispatches the agent fresh with its original task context plus the answer in `answers` — not a resume (`ADVICE_NEEDED` step 3).
+ 
+ **Escalation consult** (orchestrator only; no creator or phase-workflow counter): before putting any of these to the user — an agent `QUESTION`, a `FAILED`, a second stall or interruption, a stalemate (impl-test, External Review), a review-cap override, a reviewer FAIL escalation — the orchestrator dispatches `asd-advisor` once per request, batching its items, with the question, options and context paths. It presents the request with the **Advisor** line (`core.md` "User-decision presentation format") and records the advice in the answer's decisions-log entry. Advisor unavailable → present without it, saying so. The advisor never authorizes a hard gate; gate-inventory gates, skill preference menus and `BLOCKED_MANUAL` take no consult.
++
++**Routing consult** (orchestrator only, no user contact): an ambiguous CONCERNS finding's route (`review-policy.md` "Verdict format") takes one batched `asd-advisor` request per review iteration; the orchestrator decides.
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index cbdd9335..004d205d 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -173,7 +173,7 @@ The shell trims two blocks per document instead of always emitting them: the mer
+ 
+ **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
+ 
+-**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding.
++**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding. Sole exception: `t_design-system.html`'s `<style>` holding only the `asd:vars` `:root` block, generator-owned (`design-system.md` §12 Regeneration).
+ 
+ ## Review verdict placeholder namespace
+ 
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index cf3dc100..5e5ff0e8 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -19,7 +19,7 @@ All project work goes through `/asd-sprint`.
+ - **Creator agent** — produces code or tests (Dev, Tester); every other artifact is the orchestrator's.
+ - **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice, memory-fix and read-only scout scan dispatches, and applying itself a review-fix finding whose fix lies outside the dev allowlist (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table.
+ - **Reviewer agent** — evaluates artifacts (Quality, Efficiency, Combined, External Review); a review phase dispatches its workflow's `reviewers` roster.
+-- **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
++- **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user or on an ambiguous review-finding route, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
+ - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
+ - **Persistent doc** — living document under `docs/`. Updated across sprints.
+ - **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
+@@ -29,7 +29,7 @@ All project work goes through `/asd-sprint`.
+ ## Invariants
+ 
+ - One active sprint. New sprint blocked until current archived, except a merged sprint, which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
+-- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `/asd-update` in sprint-mediated mode, run at a new sprint's scope step 1 on the user's update choice, may write framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode"). **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
++- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a sprint- or plan-declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `/asd-update` in sprint-mediated mode, run at a new sprint's scope step 1 on the user's update choice, may write framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode"). **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
+ - Every project task flows through a sprint. Ad-hoc edits forbidden.
+ - Folder structure follows `artifact-layout.md`.
+ 
+@@ -83,8 +83,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`.
+ 4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
+ 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
+    never inherits the main orchestrator's conversation.
+-6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
+-   review's stalemate set excepted) — `review-policy.md`, not restated here.
++6. Reviewer context per iteration: `review-policy.md` "Clean-context review iteration".
+ 
+ ## Untrusted-data boundary
+ 
+diff --git a/.asd/rules/design-system.md b/.asd/rules/design-system.md
+index f8047d8b..0b9cef88 100644
+--- a/.asd/rules/design-system.md
++++ b/.asd/rules/design-system.md
+@@ -97,7 +97,7 @@ Scope: the design-system gate, `design-md-delta.yaml`, DESIGN.md / design-system
+ - **Accessibility**: a ux-spec never carries a11y rules; project-wide `accessibility.html` owns them.
+ - **DESIGN.md spec**: fetch the latest Google Labs spec before editing when the cached one is stale; the fetch failing twice halts the step. The web is limited to that spec.
+ - **Tool bounds**: `designmd-install` runs once per session as a no-save install (`npm install --no-save`), never changing `package.json` or the lockfile; `designmd-lint`, `-diff`, `-export` per §10-§11; the `design.md` binary never inline.
+-- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference. The token reference rows and the CSS variables are never hand-written: `node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>` rebuilds the regions between the `asd:tokens` and `asd:vars` markers from DESIGN.md, run by `design-promote` and `/asd-design-system` after the other sections are written.
++- **Regeneration**: `design-system.html` is regenerated per §10 step 4 with color swatches, typography samples, spacing scale, component previews, UI composition preview and the full token reference. The token reference rows and the CSS variables are never hand-written: `node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>` rebuilds the regions between the `asd:tokens` (HTML comment) and `asd:vars` (CSS comment) markers from DESIGN.md, run by `design-promote` and `/asd-design-system` after the other sections are written.
+ 
+ ## See also
+ 
+diff --git a/.asd/rules/external-review.md b/.asd/rules/external-review.md
+index 6d0882fd..cd892cfd 100644
+--- a/.asd/rules/external-review.md
++++ b/.asd/rules/external-review.md
+@@ -87,7 +87,7 @@ Wrapped-CLI severity terms in the captured stdout mapped to ASD severity:
+ | minor | medium |
+ | info, suggestion | low |
+ 
+-Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/wave-<K>/iter-NN/external.md`), using verdict format from `review-policy.md`. The agent drops nitpicks and returns every other finding at any severity; the severity floor is applied by `persist-review --floor <payload floor>` ("Persistence", `review-policy.md`), which drops each below-floor row, records `dropped: <n>` and rewrites a CONCERNS whose rows all dropped to APPROVE. Dropped findings (below floor, nitpick) are never rendered as per-finding rows — only a count, per `t_review-report.md`; nothing downstream reads a dropped finding's detail.
++Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/wave-<K>/iter-NN/external.md`), using verdict format from `review-policy.md`. The agent drops nitpicks and returns every other finding at any severity; the severity floor is applied by `persist-review --floor <payload floor>` ("Persistence", `review-policy.md`), which drops each below-floor row, records `dropped: <n>` and rewrites a CONCERNS or FAIL whose rows all dropped to APPROVE, a stalemate FAIL excepted. Dropped findings (below floor, nitpick) are never rendered as per-finding rows — only a count, per `t_review-report.md`; nothing downstream reads a dropped finding's detail.
+ 
+ ## Stalemate detection
+ 
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index e172ca22..7a91f199 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -114,7 +114,7 @@ A role's context is its rows of the grant table below, built into one bundle by
+ {"role":"orchestrator","phase":"stack","refs":[".asd/project/custom-design-rules.md",".asd/rules/design-principles.md",".asd/rules/sprint-lifecycle.md#Optional documents",".asd/rules/artifact-layout.md#Optional documents",".asd/rules/artifact-layout.md#Subsystem decomposition modes",".asd/rules/artifact-layout.md#Subsystem registry",".asd/rules/artifact-layout.md#Document provenance",".asd/rules/artifact-layout.md#Document representation rule",".asd/rules/artifact-layout.md#HTML shell wrapping (mandatory)",".asd/rules/artifact-layout.md#Tech reference docs (mandatory for every chosen tech)",".asd/rules/artifact-layout.md#Document responsibility"]},
+ {"role":"orchestrator","phase":"design-system","refs":[".asd/project/custom-design-rules.md",".asd/rules/design-system.md",".asd/rules/ux-principles.md",".asd/rules/artifact-layout.md#Optional documents",".asd/rules/artifact-layout.md#Subsystem decomposition modes",".asd/rules/artifact-layout.md#Subsystem registry",".asd/rules/artifact-layout.md#Document provenance",".asd/rules/artifact-layout.md#Document representation rule",".asd/rules/artifact-layout.md#HTML shell wrapping (mandatory)",".asd/rules/artifact-layout.md#Document responsibility"]},
+ {"role":"asd-advisor","phase":"*","refs":[".asd/rules/core.md",".asd/rules/agent-protocol.md#Signals",".asd/rules/agent-protocol.md#Dispatch payload",".asd/rules/agent-protocol.md#Return",".asd/rules/providers.md#Declared tool policy",".asd/project/custom-common-rules.md",".asd/rules/checkpoints.md#Gate policy",".asd/rules/checkpoints.md#Gate inventory"]},
+-{"role":"asd-scout","phase":"*","refs":[".asd/rules/agent-protocol.md#Signals",".asd/rules/agent-protocol.md#Dispatch payload",".asd/rules/agent-protocol.md#Return",".asd/rules/providers.md#Declared tool policy"]},
++{"role":"asd-scout","phase":"*","refs":[".asd/rules/core.md#Untrusted-data boundary",".asd/rules/agent-protocol.md#Signals",".asd/rules/agent-protocol.md#Dispatch payload",".asd/rules/agent-protocol.md#Return",".asd/rules/providers.md#Declared tool policy"]},
+ {"role":"asd-dev","phase":"*","refs":[".asd/rules/core.md",".asd/rules/agent-protocol.md#Signals",".asd/rules/agent-protocol.md#Dispatch payload",".asd/rules/agent-protocol.md#Return",".asd/rules/providers.md#Declared tool policy",".asd/rules/checkpoints.md#Gate policy",".asd/rules/checkpoints.md#Gate inventory",".asd/rules/language-policy.md",".asd/project/custom-common-rules.md",".asd/project/custom-coding-rules.md",".asd/workflows/asd-phase-impl.md#Rules",".asd/rules/code-style.md",".asd/rules/git-strategy.md#Commits",".asd/rules/git-strategy.md#Forbidden",".asd/rules/git-strategy.md#TODO stubs",".asd/rules/git-strategy.md#Commit before review",".asd/rules/artifact-layout.md#Agent memory",".asd/rules/artifact-layout.md#Tech reference docs (mandatory for every chosen tech)",".asd/rules/artifact-layout.md#Manual steps",".asd/rules/artifact-layout.md#Test plan",".asd/rules/artifact-layout.md#Single Source of Truth (iron rule)",".asd/rules/artifact-layout.md#Documentation economy (iron rule)",".asd/rules/review-policy.md#Over-engineering checklist (critical, undroppable)",".asd/rules/review-policy.md#Structure / cohesion checklist (critical, undroppable)",".asd/rules/review-policy.md#Autofix vs escalation",".asd/rules/sprint-lifecycle.md#Input sources",".asd/rules/sprint-lifecycle.md#Workflows",".asd/rules/sprint-lifecycle.md#Self-hosting",".asd/rules/sprint-lifecycle.md#Impacted test set",".asd/rules/sprint-lifecycle.md#Plan file format",".asd/rules/providers.md#Canonical path -> per-provider path"]},
+ {"role":"asd-tester","phase":"*","refs":[".asd/rules/core.md",".asd/rules/agent-protocol.md#Signals",".asd/rules/agent-protocol.md#Dispatch payload",".asd/rules/agent-protocol.md#Return",".asd/rules/providers.md#Declared tool policy",".asd/rules/checkpoints.md#Gate policy",".asd/rules/checkpoints.md#Gate inventory",".asd/rules/language-policy.md",".asd/project/custom-common-rules.md",".asd/project/custom-coding-rules.md",".asd/rules/code-style.md",".asd/rules/git-strategy.md#Commits",".asd/rules/git-strategy.md#Forbidden",".asd/rules/git-strategy.md#TODO stubs",".asd/rules/git-strategy.md#Commit before review",".asd/rules/artifact-layout.md#Agent memory",".asd/rules/artifact-layout.md#Tech reference docs (mandatory for every chosen tech)",".asd/rules/artifact-layout.md#Manual steps",".asd/rules/artifact-layout.md#Test plan",".asd/rules/artifact-layout.md#Single Source of Truth (iron rule)",".asd/rules/artifact-layout.md#Documentation economy (iron rule)",".asd/rules/sprint-lifecycle.md#Self-hosting",".asd/rules/sprint-lifecycle.md#Impl-test commits its own output",".asd/rules/sprint-lifecycle.md#Impacted test set",".asd/rules/sprint-lifecycle.md#Plan file format"]},
+ {"role":"asd-tester","phase":"impl","refs":[".asd/workflows/asd-phase-impl.md#Rules",".asd/rules/review-policy.md#Autofix vs escalation"]},
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 4fe33812..ebf6af82 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -103,7 +103,7 @@ Default: the responsible fixer autofixes any reviewer issue without user prompt
+ - Change to approved concept, PRD requirement, or API contract
+ - New abstraction, layer, interface, or dependency
+ - Scope expansion beyond `sprint.md`
+-- Complexity increase (any over-engineering check trips)
++- Complexity increase (an over-engineering finding categorised `escalate`)
+ 
+ ### Minor test-only findings
+ 
+@@ -147,7 +147,7 @@ Every reviewer ends with exactly one:
+ 
+ - `APPROVE` — no issues at or above floor severity
+ - `CONCERNS: <list>` — every issue at or above floor not FAIL, whatever its severity
+-- `FAIL: <list>` — only an issue whose fix needs a design decision that changes requirements or complicates the architecture: the "Escalation required" rows below — change to concept, PRD requirement or API contract, new abstraction/layer/interface/dependency, complexity increase (an over-engineering finding categorised `escalate`; `simplify` and `keep-as-is` are CONCERNS). Severity alone never makes a FAIL. External Review's stalemate FAIL is its own route (`external-review.md` "Stalemate detection"), not this boundary.
++- `FAIL: <list>` — only an issue whose fix needs a design decision that changes requirements or complicates the architecture: the four "Escalation required" rows above — change to concept, PRD requirement or API contract, new abstraction/layer/interface/dependency, scope expansion, complexity increase (`simplify` and `keep-as-is` are CONCERNS). Severity alone never makes a FAIL. External Review's stalemate FAIL is its own route (`external-review.md` "Stalemate detection"), not this boundary.
+ 
+ Next action: APPROVE → reviewer done · CONCERNS → the orchestrator decides each finding's route, consulting `asd-advisor` on an ambiguous case (`agent-protocol.md` "Relay"); the responsible fixer autofixes, next iteration · FAIL → escalate to user.
+ 
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index c511905f..137bc2c3 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -322,7 +322,7 @@ Unlike `Material risk`, an absent `Reachability` line asserts the task has no cr
+ 
+ **Test-only declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), ahead of any `Reachability` line, never a checkbox): `Test-only: <test paths or globs>`. `impl` dispatches the Task to `asd-tester` (unrouted), never a dev. It touches only test files, never `test-plan.md`; it adapts existing tests to the code change and adds a test only where `code-style.md` §17 qualifies one; its commits carry `ASD-Task: Task N`.
+ 
+-**Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. A `Test-only` Task sits in a wave after every Task whose code it covers. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval.
++**Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. A `Test-only` Task sits in a wave after every Task whose code it covers. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval — a plan predating this rule excepted (`asd-phase-impl.md` step 5).
+ 
+ **Rename map declaration** (plan-level, optional, one plain-text line outside every `### Task N:` block, never a checkbox): `Rename map: <sprint-relative JSON path>`, a plan-author JSON object of old text to new text (`.asd/runtime.js` `readRenameMap`). `asd-phase-impl-review.md` step 1c passes it to `review-waves` and `emit-manifest`, so a hunk that only applies its substitutions collapses in the reviewed diff to one line per file with the substitution count.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 23e0333f..54d3a4c3 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -567,7 +567,7 @@ function reviewFindings(text) {
+   });
+ }
+ 
+-/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS verdict to its kept count, or to APPROVE when no row is kept. */
++/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a `Stalemate:` line) excepted, its sets being floored already. */
+ function applyFloor(body, floor) {
+   const rank = SEVERITIES.indexOf(floor);
+   const lines = body.split('\n');
+@@ -578,9 +578,14 @@ function applyFloor(body, floor) {
+   const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
+   const dropped = lines.length - kept.length;
+   const keptRows = tableEnd - start - 2 - dropped;
+-  const verdict = /^\[REVIEW-\w+-\w+\]: CONCERNS$/.test(kept[0].trimEnd()) && keptRows === 0 ? kept[0].replace('CONCERNS', 'APPROVE') : kept[0];
+-  const text = [verdict, ...kept.slice(1)].map((line) => (/^CONCERNS: \d+\s*$/.test(line) ? (keptRows === 0 ? 'APPROVE' : `CONCERNS: ${keptRows}`) : line)).join('\n');
+-  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, keptRows };
++  const approve = keptRows === 0 && !/^Stalemate: /m.test(body);
++  const verdict = approve ? kept[0].replace(/\]: (?:CONCERNS|FAIL)(\s*)$/, ']: APPROVE$1') : kept[0];
++  const text = [verdict, ...kept.slice(1)].map((line) => {
++    const count = /^(CONCERNS|FAIL): \d+\s*$/.exec(line);
++    if (count === null) return line;
++    return approve ? 'APPROVE' : `${count[1]}: ${keptRows}`;
++  }).join('\n');
++  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, approve };
+ }
+ 
+ /** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
+@@ -614,7 +619,7 @@ function persistReview(input) {
+   }
+   const floored = applyFloor(body, input.floor);
+   const flooredFindings = findings.filter((finding) => SEVERITIES.indexOf(finding.severity) >= SEVERITIES.indexOf(input.floor));
+-  const flooredVerdict = verdict === 'CONCERNS' && floored.keptRows === 0 ? 'APPROVE' : verdict;
++  const flooredVerdict = floored.approve ? 'APPROVE' : verdict;
+   fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(flooredFindings) + '\n', 'utf8');
+   fs.writeFileSync(`${stem}.md`, floored.text, 'utf8');
+   return { token: flooredVerdict, findings: flooredFindings, dropped: floored.dropped };
+@@ -1014,15 +1019,30 @@ function substitutedLines(hunk, substitute) {
+   return isPure ? count : 0;
+ }
+ 
+-/** The path a patch section names: its rename target or `+++` path, else for a deletion the shared path of its `diff --git` line (a quoted pair stays quoted). */
++const GIT_PATH_ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
++
++/** A patch-header path decoded to the literal repo path numstat `-z` prints: a C-quoted one (`"b/\303\251.js"`) unescaped, octal escapes as UTF-8 bytes; a bare one as is. */
++function gitPath(text) {
++  if (!text.startsWith('"')) return text;
++  const bytes = [];
++  for (const [, escape, plain] of text.slice(1, -1).matchAll(/\\([0-7]{3}|.)|([^\\]+)/g)) {
++    if (plain !== undefined) bytes.push(...Buffer.from(plain, 'utf8'));
++    else bytes.push(escape.length === 3 ? parseInt(escape, 8) : GIT_PATH_ESCAPES[escape]);
++  }
++  return Buffer.from(bytes).toString('utf8');
++}
++
++/** The literal repo path a patch section names: its rename target or `+++` path, else for a deletion the `b/` half of its `diff --git` line. */
+ function sectionPath(head) {
+-  const named = /^(?:rename to |\+\+\+ b\/)(.*?)\t?$/m.exec(head);
+-  if (named !== null) return named[1];
++  const renamed = /^rename to (.*)$/m.exec(head);
++  if (renamed !== null) return gitPath(renamed[1]);
++  const plus = /^\+\+\+ (.*?)\t?$/m.exec(head);
++  if (plus !== null && plus[1] !== '/dev/null') return gitPath(plus[1]).slice(2);
+   const pair = head.split('\n', 1)[0].slice('diff --git '.length);
+-  return pair.startsWith('"') ? pair : pair.slice(2, (pair.length - 1) / 2);
++  return gitPath(pair.slice((pair.length + 1) / 2)).slice(2);
+ }
+ 
+-/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file; `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
++/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file (a fully collapsed file keeping its mode and rename header lines); `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
+ function collapsePatch(patch, substitute) {
+   const discounts = [];
+   const text = patch.split(/^(?=diff --git )/m).map((section) => {
+@@ -1038,7 +1058,10 @@ function collapsePatch(patch, substitute) {
+     if (total === 0) return section;
+     discounts.push([sectionPath(head), 2 * total]);
+     const kept = hunks.filter((hunk, i) => counts[i] === 0);
+-    return `${kept.length === 0 ? '' : head + kept.join('')}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
++    // With every hunk collapsed, a mode change or rename still reaches the reviewer through its header lines.
++    const semantic = head.split('\n').filter((line) => /^(?:old mode|new mode|similarity index|rename from|rename to|copy from|copy to) /.test(line));
++    const header = kept.length > 0 ? head + kept.join('') : semantic.length > 0 ? `${[head.split('\n', 1)[0], ...semantic].join('\n')}\n` : '';
++    return `${header}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
+   }).join('');
+   return { text, discounts };
+ }
+@@ -1711,7 +1734,8 @@ const DESIGN_CSS_UNSAFE = /[;{}<>]/;
+ const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
+ const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
+ const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
+-const DESIGN_REGIONS = { tokens: 'asd:tokens', vars: 'asd:vars' };
++/** Marker comment form per region: HTML in the token table, CSS inside the vars `<style>` (an HTML comment there breaks the `:root` selector). */
++const DESIGN_REGIONS = { tokens: (edge) => `<!-- asd:tokens:${edge} -->`, vars: (edge) => `/* asd:vars:${edge} */` };
+ 
+ /** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
+ function designScalar(rest, where) {
+@@ -1791,10 +1815,10 @@ function designCssValue(leaf, file) {
+   return value;
+ }
+ 
+-/** Text with the content between the `name` start/end markers replaced by `content`; the markers must each appear exactly once, start first. */
+-function replaceMarkedRegion(html, name, content, eol, file) {
+-  const start = `<!-- ${name}:start -->`;
+-  const end = `<!-- ${name}:end -->`;
++/** Text with the content between the `marker` start/end comments replaced by `content`; the markers must each appear exactly once, start first. */
++function replaceMarkedRegion(html, marker, content, eol, file) {
++  const start = marker('start');
++  const end = marker('end');
+   const from = html.indexOf(start);
+   const to = html.indexOf(end);
+   if (from === -1 || to === -1 || to < from || html.indexOf(start, from + 1) !== -1 || html.indexOf(end, to + 1) !== -1) fail(`${file}: needs exactly one ${start} ... ${end} marker pair`);
+diff --git a/.asd/skills/asd-phase-impl/SKILL.md b/.asd/skills/asd-phase-impl/SKILL.md
+index a33832b4..9fe3f579 100644
+--- a/.asd/skills/asd-phase-impl/SKILL.md
++++ b/.asd/skills/asd-phase-impl/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-impl",
+   "description": "Runs the ASD impl phase in one of three modes detected from state.json: initial mode dispatches plan.md Task blocks to devs, review-fix mode resolves impl-review findings, test-fix mode resolves code defects found by impl-test. Devs write production code only (no tests; a plan-declared Test-only Task goes to asd-tester instead), run build/lint, and commit; the phase enforces a build+lint completion gate before COMPLETED and always routes to impl-test. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task Skill" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-scope/SKILL.md b/.asd/skills/asd-phase-scope/SKILL.md
+index 83d1bb2a..c0917a9a 100644
+--- a/.asd/skills/asd-phase-scope/SKILL.md
++++ b/.asd/skills/asd-phase-scope/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-scope",
+   "description": "Runs the ASD scope phase of a sprint: the main orchestrator asks the user to choose the sprint workflow (standard or lite, frozen into state.json), creates the sprint folder, state.json and branch, runs staged solution design (requirements interview, its own best-practice research, approach choice into research.md), and refines scope under the active gate policy; under self-hosting it also triages open ASD retro issues at the retro intake. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task Skill" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 467f80d4..6b15981d 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -47,7 +47,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
+ 1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`
+ 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
+ 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Workflows"), neither offers `design`, `design-review` or `design-promote`.
+-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md`, reading the definition's `rollback_reset` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
++4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
+ 
+ ### Step 3: phase chain advancement
+ After any phase skill returns:
+@@ -66,7 +66,7 @@ After any phase skill returns:
+ ## Delegates
+ 
+ ```json
+-{"agents": ["asd-advisor"], "skills": ["asd-phase-* of the frozen workflow's phases (.asd/workflows/<workflow>.json)", "asd-init sprint-mediated mode: plan-declared settings change (asd-phase-impl.md step 6)", "asd-update sprint-mediated mode: Step 2A update choice (asd-phase-scope.md step 1)"]}
++{"agents": ["asd-advisor"], "skills": ["asd-phase-* of the frozen workflow's phases (.asd/workflows/<workflow>.json)", "asd-init sprint-mediated mode: sprint.md-declared settings change (asd-phase-scope.md step 2b), plan-declared one (asd-phase-impl.md step 6)", "asd-update sprint-mediated mode: Step 2A update choice (asd-phase-scope.md step 1)"]}
+ ```
+ 
+ ## Outputs
+diff --git a/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-02.md b/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-02.md
+new file mode 100644
+index 00000000..3bf71757
+--- /dev/null
++++ b/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-02.md
+@@ -0,0 +1,36 @@
++# Test plan entry 02 — sprint 033-retro-intake-model-choice
++
++Rotated narrative rows of `Entry log` entry 2 (HEAD analysed 14898f4a). Never edited.
++
++## Risk → check decisions
++
++Entry 2 delta (`97cdd2f3...f41b2995`, canon only): test-fix commits b5edbb1f (D-1/D-2/D-4) and 6c66383c (D-3 prose trims). Entry 1 rows rotated to `test-plan.entry-01.md`.
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `asd-scout` WebFetch deny and Codex `web_search = "disabled"`; `asd-external-review` description and README row without the wrapper floor (D-1, D-2, D-4) | scout re-gaining web access, a roster claim contradicting `persist-review --floor` | contract | none | The failing pins (sprint-018 AC-1/AC-2/AC-3 and sprint-033 AC-25 README) are the regression proof — red at entry 1, green at this HEAD; no further check |
++| D-3 prose trims in `providers.md`, `sprint-lifecycle.md`, `artifact-layout.md`, `git-strategy.md`, `review-policy.md`, `asd-phase-impl.md`, plus `release-manifest.json` hashes | a trim dropping a token another file or test reads (heading, command, field, parsed literal, AC pin), or a README mirror | contract | none | Every pin of those tokens (sprint-010/020/022/025/026/027/028, 033 leftover-term, AC-12, AC-6, workflow/agent form sweeps) is in the one runner and green at this HEAD; a trimmed contract with no pin is prose, judged by impl-review's quality reviewer |
++| sprint-026 AC-16 load ceiling after D-3 (headroom about 148 B of the 0.70 ceiling) | the next prose addition to an orchestrator/impl-loaded section re-breaches the ceiling | contract | keep | Existing pin is the guard and is exact to the byte; a second budget test would duplicate it. Risk recorded, not tested: any later impl-phase canon edit re-runs it in the impacted set |
++
++## Removed tests
++
++None. No test is redundant with a surviving one in this delta; none was touched.
++
++| Test | Reason | In change scope |
++|---|---|---|
++| — | — | — |
++
++## Added tests
++
++None this entry: the delta adds no behaviour or parsed token without a pin.
++
++| Test | Regression proof |
++|---|---|
++| — | — |
++
++## Suite run
++
++- Command: `node tests/run.js`
++- Scope: impacted
++- Result: pass — 361 passed, 0 failed, 0 skipped of 361, exit 0
++- HEAD: f41b2995
+diff --git a/.asd/sprints/033-retro-intake-model-choice/test-plan.md b/.asd/sprints/033-retro-intake-model-choice/test-plan.md
+index 6c0a3cb3..acfeb814 100644
+--- a/.asd/sprints/033-retro-intake-model-choice/test-plan.md
++++ b/.asd/sprints/033-retro-intake-model-choice/test-plan.md
+@@ -13,16 +13,20 @@ responsibility:
+ |---|---|---|
+ | 1 | 97cdd2f3 | full change surface |
+ | 2 | 14898f4a | delta since entry 1 (D-1..D-4 fixes) |
++| 3 | 245bed7a | delta since entry 2 (review-fix wave-1/iter-01, bcd4f6ac..c6d460a8) |
+ 
+ ## Risk → check decisions
+ 
+-Entry 2 delta (`97cdd2f3...f41b2995`, canon only): test-fix commits b5edbb1f (D-1/D-2/D-4) and 6c66383c (D-3 prose trims). Entry 1 rows rotated to `test-plan.entry-01.md`.
++Entry 3 delta (`14898f4a...HEAD`, canon only: runtime, migration 14.5.0, rule/workflow/agent prose, README, templates, release-manifest hashes). Entry 2 rows rotated to `test-plan.entry-02.md`.
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `asd-scout` WebFetch deny and Codex `web_search = "disabled"`; `asd-external-review` description and README row without the wrapper floor (D-1, D-2, D-4) | scout re-gaining web access, a roster claim contradicting `persist-review --floor` | contract | none | The failing pins (sprint-018 AC-1/AC-2/AC-3 and sprint-033 AC-25 README) are the regression proof — red at entry 1, green at this HEAD; no further check |
+-| D-3 prose trims in `providers.md`, `sprint-lifecycle.md`, `artifact-layout.md`, `git-strategy.md`, `review-policy.md`, `asd-phase-impl.md`, plus `release-manifest.json` hashes | a trim dropping a token another file or test reads (heading, command, field, parsed literal, AC pin), or a README mirror | contract | none | Every pin of those tokens (sprint-010/020/022/025/026/027/028, 033 leftover-term, AC-12, AC-6, workflow/agent form sweeps) is in the one runner and green at this HEAD; a trimmed contract with no pin is prose, judged by impl-review's quality reviewer |
+-| sprint-026 AC-16 load ceiling after D-3 (headroom about 148 B of the 0.70 ceiling) | the next prose addition to an orchestrator/impl-loaded section re-breaches the ceiling | contract | keep | Existing pin is the guard and is exact to the byte; a second budget test would duplicate it. Risk recorded, not tested: any later impl-phase canon edit re-runs it in the impacted set |
++| `persist-review --floor` `applyFloor`: FAIL rewritten like CONCERNS, stalemate FAIL kept | an all-dropped external FAIL stays a blocking verdict; a stalemate FAIL turned into APPROVE | component | add | Two cases added to the existing AC-25 test (FAIL to APPROVE with its count line, stalemate FAIL unchanged); the existing CONCERNS cases never reach the FAIL branch |
++| `collapsePatch`/`sectionPath`/`gitPath`: rename and mode header lines kept, C-quoted path decoded | a collapsed rename or chmod invisible to the reviewer; a non-ASCII file named by its quoted form and never discounted from the wave size | component (real git repo) | add | One new test over a renamed file, a chmod file and an `é.js` file, all substitution-only, asserting patch text and `review-waves` lines; the existing AC-35 test has none of these shapes |
++| migration `14.5.0.js` `liveAgentNames`: an unparsable agent frontmatter returns null with a warning | a live variant's memory deleted because its frontmatter failed to parse | component | add | One case appended to the existing AC-19/AC-33 test beside the missing-agents-directory case |
++| `design-tokens` vars region moved to `/* asd:vars:start */`...`/* asd:vars:end */` | an HTML comment inside `<style>` breaks the `:root` selector; a stale marker pair accepted | component | keep | Existing AC-32 tests re-pointed (fixture markers, missing-end-marker pattern): they were red at this entry's start (test defects, pinned the old markers); the byte-exact expected output now has no `<!--` inside `<style>`, so one fixture covers the validity risk |
++| prose-only fixes: `core.md`, `agent-protocol.md`, `review-policy.md`, `sprint-lifecycle.md`, `artifact-layout.md`, `external-review.md`, `providers.md`, `design-system.md`, workflows (design-review, impl-review, impl-test), `asd-advisor`/`asd-tester`/`asd-reviewer-quality` agents, skills, `t_AGENTS.md`/`t_design-system.html`, README, `release-manifest.json` | a reworded rule dropping a token another file or test reads | contract | none | No parsed token ties files together beyond the ones the surviving pins already read (sprint-010/018/020/026/027/028/032/033 pins, phase-chain, form sweeps, README mirrors) — all green at this HEAD; impl-review's quality reviewer judges the prose |
++| sprint-026 AC-16 load ceiling (headroom now about 56 B of the 0.70 ceiling) | the next prose addition to an orchestrator/impl-loaded section re-breaches the ceiling | contract | keep | Existing byte-exact pin is the guard, green at this HEAD; a second budget test would duplicate it. Risk recorded: any later canon edit in those sections re-runs it |
+ 
+ ## Removed tests
+ 
+@@ -34,19 +38,22 @@ None. No test is redundant with a surviving one in this delta; none was touched.
+ 
+ ## Added tests
+ 
+-None this entry: the delta adds no behaviour or parsed token without a pin.
++Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`git archive 14898f4a` extracted outside the repo, new runner copied in) — no production file was touched; the extraction was deleted afterwards.
+ 
+ | Test | Regression proof |
+ |---|---|
+-| — | — |
++| tests/run.js: sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines… | `node tests/run.js --filter "AC-24 (review-fix)"` in the pre-fix tree → exit 1, that test (1 matched), patch lacked `rename from` and named the file `"a/src/\303\251.js" "b/src/\303\251.js"`; green at HEAD; runs: 1 |
++| tests/run.js: sprint-033 AC-25: persist-review --floor… (FAIL and stalemate cases added) | `--filter "AC-25: persist-review"` in the pre-fix tree → exit 1, that test (1 matched), `a FAIL whose every row dropped becomes APPROVE`; runs: 1 |
++| tests/run.js: sprint-033 AC-19/AC-33: the 14.5.0 migration… (unparsable-frontmatter case added) | `--filter "AC-19/AC-33"` in the pre-fix tree → exit 1, that test (1 matched), `.claude/agent-memory/asd-pm` deleted; runs: 1 |
++| tests/run.js: sprint-033 AC-32: design-tokens (both tests, markers re-pointed) | `--filter "AC-32"` in the pre-fix tree → exit 1, 2 matched, the new CSS-comment fixture refused for lacking `<!-- asd:vars:start -->`; runs: 1 |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+ - Scope: impacted (the one runner holds every impacted test; the shared-infrastructure valve would give the same set)
+-- Result: pass — 361 passed, 0 failed, 0 skipped of 361, exit 0
+-- Lint / build: build pass at the orchestrator's post-sync `node .asd/sync.js --check`; lint runs at commit (`git diff --cached --check`)
+-- HEAD: f41b2995
++- Result: pass — 362 passed, 0 failed, 0 skipped of 362, exit 0
++- Lint / build: `node .asd/sync.js --check` exit 0 (`ok: true`); lint runs at commit (`git diff --cached --check`)
++- HEAD: a6109932
+ 
+ ## Defects
+ 
+diff --git a/.asd/sync-state.json b/.asd/sync-state.json
+index 3f16929c..efb0fc63 100644
+--- a/.asd/sync-state.json
++++ b/.asd/sync-state.json
+@@ -4,7 +4,7 @@
+   "entries": {
+     "AGENTS.md": {
+       "kind": "managed-block",
+-      "content_digest": "sha256:60264d776662369991b7fcd7242704b5cda6c7bf1ffc83cfc06f2c5389acd368"
++      "content_digest": "sha256:aac5f2e719612500afee6b5283b650be0ad6c2c9caa2ec7871dc887f92c86930"
+     },
+     "CLAUDE.md": {
+       "kind": "managed-block",
+diff --git a/.asd/templates/t_AGENTS.md b/.asd/templates/t_AGENTS.md
+index 6eb9107d..d0639297 100644
+--- a/.asd/templates/t_AGENTS.md
++++ b/.asd/templates/t_AGENTS.md
+@@ -43,6 +43,6 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ ### Hard rules
+ 
+-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
++- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `scope`/`impl` for a sprint- or plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+ - One active sprint at a time. New sprint blocked until active one archived, except a merged sprint, which the next sprint's scope archives.
+diff --git a/.asd/templates/t_design-system.html b/.asd/templates/t_design-system.html
+index 7a9f18b6..e490f2ed 100644
+--- a/.asd/templates/t_design-system.html
++++ b/.asd/templates/t_design-system.html
+@@ -95,11 +95,11 @@ responsibility:
+ </section>
+ 
+ <style>
+-<!-- asd:vars:start -->
++/* asd:vars:start */
+ :root {
+   --{{token-path-with-dashes}}: {{value}};
+ }
+-<!-- asd:vars:end -->
++/* asd:vars:end */
+ </style>
+ 
+ <section id="dos-and-donts">
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index 685e0358..ca10dc84 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -11,12 +11,12 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+ ## Inputs
+ 
+ ```json
+-[".asd/project/config.yaml (review.external_review, review.iterations_low/medium/high/critical, self_hosting, language.chat, language.docs)", "state.json frozen documents.*, reviews.design", "in-scope drafts in <sprint>/design/, and <sprint>/design/mockups/ when present (reviewer input)", "previous iteration's review files and snapshot (iter 2+)"]
++[".asd/project/config.yaml (review.external_review, review.iterations_low/medium/high/critical, self_hosting, language.chat, language.docs)", "state.json frozen documents.*, reviews.design", "in-scope drafts in <sprint>/design/, files under <sprint>/design/mockups/ included with ux_spec enabled (step 1)", "previous iteration's review files and snapshot (iter 2+)"]
+ ```
+ 
+ ## Steps
+ 
+-1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute review scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` — a draft whose flag is disabled is NOT in scope, NOT reviewed, NOT counted toward DoD.
++1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute review scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` — a draft whose flag is disabled is NOT in scope, NOT reviewed, NOT counted toward DoD. With `ux_spec` enabled, every file under `<sprint>/design/mockups/`, at any depth, is an in-scope draft too, so the snapshot and manifests list it.
+ 2. **No-op path** — a design-block collapse (`sprint-lifecycle.md` "Design/design-review/design-promote collapse") never reaches this phase; this defensive fallback covers an empty intersected scope on a direct re-dispatch: write inline (mechanical, no gate, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)"; emit phase COMPLETED; skip remaining steps.
+ 3. Read `.asd/project/config.yaml`; `self_hosting: enabled` adds `--self-hosting` to step 7's `emit-manifest`.
+ 3a. Before External Review dispatch or diff assembly, run `node .asd/runtime.js external-preflight --input <path>`, `cachePath` set to the canonical path from `external-review.md` "Detection and negative cache" (sole SSoT — not restated here). Its local-ready result means only executable/auth readiness; model access remains `unknown`. On non-ready — only then — record the transparent availability skip (`external-review.md` "Outcome contract"), still computing step 7's scope-manifest `files[]` for its `Unreviewed files`; after a real authentication/quota/reachability/command failure call `external-record-failure` with the returned fingerprint, the same cache path, and bounded retry data.
+@@ -28,9 +28,9 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+    - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <the draft list above> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`, adding `--snapshot <sprint>/reviews/design/iter-(NN-1)/` on iter 2+. It builds that reviewer's own file list (`review-policy.md` "Reviewer responsibility") and writes `<reviewer>.manifest.json`, plus on iter 2+ its list's `<fingerprint>.diff` against the previous iteration's snapshot copies (none at iter 1, `review-policy.md` "Scope hand-off").
+    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.design.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 8 for it. The one internal reviewer, `asd-reviewer-combined`, is dispatched when not latch-skipped, for any non-empty draft set, and counted toward DoD.
+    - if `review.external_review=enabled` AND not latch-skipped → `asd-external-review` with phase=`design-review`, scoped to whichever drafts are present. Its `files[]` = the draft list above unioned with the previous iteration's `Unreviewed files` (`external-review.md` "Iteration semantics"), minus the design-review exclusions (`external-review.md` "Phase-scoped payload"), written to a scratch file; step 3a ready → run `emit-manifest --reviewer external --phase design-review --iteration <N> --files <that list> --out <sprint>/reviews/design/iter-NN/`, adding the same `--snapshot` on iter 2+ and, when any are carried over, `--full-files <the carried-over Unreviewed files>`, which keeps them out of the diff so they are read whole: it writes `external.scope.json`, plus its `<fingerprint>.diff` on iter 2+
+-   - payloads per `## Dispatch` and `agent-protocol.md` "Dispatch payload", `inputs` naming `<sprint>/design/mockups/` when it exists (latch-skipped reviewers receive no dispatch, hence no payload); a payload carries no authoring rationale, no prior-iteration verdicts; a step-8a re-dispatch's `interrupted` record is rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration")
++   - payloads per `## Dispatch` and `agent-protocol.md` "Dispatch payload" (latch-skipped reviewers receive no dispatch, hence no payload); a payload carries no authoring rationale, no prior-iteration verdicts; a step-8a re-dispatch's `interrupted` record is rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration")
+    - **this workflow persists each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` through `persist-review`** (step 8); the commit carrying it also carries any agent memory that reviewer authored (`git-strategy.md` "Commit before review")
+-8. Wait all REVIEW_DONE; run `node .asd/runtime.js persist-review --phase design --reviewer <key> --in <that reviewer's return file; External Review: its returned text, written to a scratch file> --out-dir <sprint>/reviews/design/iter-NN/` — the sole write of `<reviewer>.md` and `<reviewer>.findings.json`, never re-authored by hand (`review-policy.md` "Coverage ledger" Persistence). Exit 2 writes nothing: no verdict token, or any External Review failure (`external-review.md` "Outcome contract") → step 8a's interrupted path; an internal reviewer's ledger failure earns one transcription, re-run on the transcribed text per `review-policy.md` "Coverage ledger" enforcement — passing, the deviation is appended to `<sprint>/friction-log.md`; any other failure, or a failing re-run, rejects and re-dispatches fresh. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
++8. Wait all REVIEW_DONE; run `node .asd/runtime.js persist-review --phase design --reviewer <key> --in <that reviewer's return file; External Review: its returned text, written to a scratch file> --out-dir <sprint>/reviews/design/iter-NN/`, plus `--floor <its iteration's step-5 floor>` for External Review, a late return included — the sole write of `<reviewer>.md` and `<reviewer>.findings.json`, never re-authored by hand (`review-policy.md` "Coverage ledger" Persistence). Exit 2 writes nothing: no verdict token, or any External Review failure (`external-review.md` "Outcome contract") → step 8a's interrupted path; an internal reviewer's ledger failure earns one transcription, re-run on the transcribed text per `review-policy.md` "Coverage ledger" enforcement — passing, the deviation is appended to `<sprint>/friction-log.md`; any other failure, or a failing re-run, rejects and re-dispatches fresh. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
+ 8a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is `iter-NN`. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → escalation consult, then request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 9 recorded its replacement's verdict, once admitted, is persisted by step 8's `persist-review` plus `--late` to `<sprint>/reviews/design/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 9 already ran.
+@@ -39,12 +39,12 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+    - **Memory findings** — each finding located in `.claude/agent-memory/<owner>/`, plus each `memory-check` hit of step 8's commit, goes to its owner's memory-fix dispatch per `review-policy.md` "Memory-fix dispatch", its `resolved: <ids> — memory-fix, <YYYY-MM-DD>` lines included — never an inline fix or an extra iteration
+    - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy [GATE adaptive: design-review green handoff] and append the decision inline; emit phase COMPLETED
+    - **Any FAIL** → escalation [GATE hard: FAIL escalation]:
+-     - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Gate Verdict Format")
++     - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Verdict format")
+      - escalation consult, then request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
+      - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → escalation consult, then request user decision; options and routing per that section, instead of the accept/override bullets below
+      - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings), continue
+      - on accept → apply exactly the approved changes to the drafts inline; loop step 4 (increment iteration)
+-   - **Only CONCERNS** (no FAIL) → autofix loop; the route of an ambiguous finding is the orchestrator's, `asd-advisor` consulted (`review-policy.md` "Gate Verdict Format"):
++   - **Only CONCERNS** (no FAIL) → autofix loop; the route of an ambiguous finding is the orchestrator's, `asd-advisor` consulted (`review-policy.md` "Verdict format"):
+      - fix every finding in the drafts inline per `review-policy.md` "Autofix vs escalation"
+      - loop step 4
+ 10. Iteration cap reached (no severity tier has remaining budget for next iter) [GATE hard: review-cap override]:
+@@ -64,7 +64,7 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-reviewer-combined", "when": "step 7", "payload": ["turn_budget", "inputs.context", "inputs", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "step 9 memory finding or memory-check hit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
++[{"agent": "asd-reviewer-combined", "when": "step 7", "payload": ["turn_budget", "inputs.context", "inputs", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation; routing consult on an ambiguous CONCERNS route (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "step 9 memory finding or memory-check hit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index ac4d6540..c7b2ad61 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -34,7 +34,7 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read the wave node's `latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 7 for it. The latch is the only agent-level skip. Every key of the definition's `reviewers.impl` NOT latch-skipped is always dispatched to its agent (`## Dispatch`); `external` only if `review.external_review=enabled`, with phase=`impl-review`
+    - payloads per `agent-protocol.md` "Dispatch payload", role keys per `## Dispatch`. Internal reviewer (a latch-skipped one receives no dispatch, hence no payload): `manifest` (every id it must cover in its `review-policy.md` coverage ledger, `n/a` authorizations included) and `diff` — the hand-off per `review-policy.md` "Scope hand-off"; `wave` K, `iteration` NN; `out_dir` `<sprint>/reviews/impl/<id>/`; `return_file` `.asd/tmp/<NNN-slug>-impl-wave-<K>-iter-NN-<reviewer>.return.md` (`review-policy.md` "Coverage ledger" Persistence; `<id>`'s `/` written `-`); `floor`; `inputs` (context paths, `<sprint>/test-plan.md` included, `mockups` (`docs/ux/mockups/`; `lite`: `<sprint>/design/mockups/`), when the folder exists); `language` (`language.chat`, `language.docs`). No authoring rationale, no prior-iteration verdicts; `interrupted` is set only on a step-7a re-dispatch: that reviewer's interrupted-attempt record for this iteration, count and cause rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration"); the incremental diff scopes the *input*, not the reviewer's context. `asd-external-review`: `manifest` its `external.scope.json`, `diff` (same hand-off), `out_dir`, `floor`, `inputs` (the reference paths from `external-review.md`'s consumer/self-hosting row), `preflight` (step 1a's result, its `platform` included), `language`; on the wave's iteration ≥ 2 also `findings` per `external-review.md` "Stalemate detection"
+    - each return (`## Rules`) is persisted to `<sprint>/reviews/impl/<id>/<reviewer>.md` by step 7's `persist-review`; the commit carrying it also carries any agent memory that reviewer authored (`git-strategy.md` "Commit before review")
+-7. Wait REVIEW_DONE; run `node .asd/runtime.js persist-review --phase impl --reviewer <key> --in <that reviewer's return file; External Review: its returned text, written to a scratch file> --out-dir <sprint>/reviews/impl/<id>/` — the sole write of `<reviewer>.md` and `<reviewer>.findings.json`, never re-authored by hand (`review-policy.md` "Coverage ledger" Persistence). Exit 2 writes nothing: no verdict token, or any External Review failure (`external-review.md` "Outcome contract") → step 7a's interrupted path; an internal reviewer's ledger failure earns one transcription, re-run on the transcribed text per `review-policy.md` "Coverage ledger" enforcement — passing, the deviation is appended to `<sprint>/friction-log.md`; any other failure, or a failing re-run, rejects and re-dispatches fresh. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
++7. Wait REVIEW_DONE; run `node .asd/runtime.js persist-review --phase impl --reviewer <key> --in <that reviewer's return file; External Review: its returned text, written to a scratch file> --out-dir <sprint>/reviews/impl/<id>/`, plus `--floor <its iteration's step-3 floor>` for External Review, a late return included — the sole write of `<reviewer>.md` and `<reviewer>.findings.json`, never re-authored by hand (`review-policy.md` "Coverage ledger" Persistence). Exit 2 writes nothing: no verdict token, or any External Review failure (`external-review.md` "Outcome contract") → step 7a's interrupted path; an internal reviewer's ledger failure earns one transcription, re-run on the transcribed text per `review-policy.md` "Coverage ledger" enforcement — passing, the deviation is appended to `<sprint>/friction-log.md`; any other failure, or a failing re-run, rejects and re-dispatches fresh. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
+ 7a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is this iteration's. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → escalation consult, then request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 8 recorded its replacement's verdict, once admitted, is persisted by step 7's `persist-review` plus `--late` to `<reviewer>.late.md` in the replaced dispatch's iteration dir (`<sprint>/reviews/impl/<id>/`), linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 8 already ran — for a closed wave, its `.late.md` goes to this iteration's `<sprint>/reviews/impl/<id>/` instead, `--manifest` naming the closed wave's manifest, and its finding joins step 8's unresolved set.
+@@ -42,14 +42,14 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+    - **Reviewer questions first** [GATE hard: reviewer question] — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 7a): escalation consult, then request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, so review-fix reads it with the findings
+    - **Memory findings** — each finding located in `.claude/agent-memory/<owner>/`, plus each `memory-check` hit of step 7's commit, goes to its owner's memory-fix dispatch per `review-policy.md` "Memory-fix dispatch", its `resolved: <ids> — memory-fix, <YYYY-MM-DD>` lines included, before FAIL handling and before any later bullet tests its predicate: a FAIL whose findings all lie in agent memory is resolved here without the user gate, and the memory-fix leaves it nothing to escalate.
+    - **Any FAIL** [GATE hard: review FAIL escalation] — on the findings left after memory-fix → impl-review owns review escalation:
+-     - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Gate Verdict Format")
++     - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Verdict format")
+      - escalation consult, then request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
+      - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → escalation consult, then request user decision; options and routing per that section, instead of the accept/override bullets below
+      - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings); exclude from fix set
+      - on accept → keep finding in fix set; note approved change in its reviewer file
+      - then continue to routing below with surviving findings
+    - **Minor test-only findings** — `review-policy.md` "Minor test-only findings" is the sole SSoT for the condition and the fix; test it on the surviving findings, read from this iteration's `*.findings.json` (step 7), judging each test-only checklist finding behaviour-neutral or not (neutral qualifies whatever its severity). Fires → delegate them to a fresh `asd-tester`, unrouted (`providers.md` "Task-class variants and routing"), its `route <ids>: standard, dispatch HEAD <sha>` decisions-log line appended at the dispatch, payload per `agent-protocol.md` "Dispatch payload", to fix and commit in place (`## Rules`); on its COMPLETED append `resolved: <ids> — test-fix, <YYYY-MM-DD>`, naming only the findings it reports fixed, to each affected reviewer file (`sprint-lifecycle.md` "State recovery" "User-resolved findings"); any finding left, or the branch not firing, falls to the bullet below.
+-   - **Any unresolved finding remains** (CONCERNS findings — each route the orchestrator's, `asd-advisor` consulted on an ambiguous one (`review-policy.md` "Gate Verdict Format") — FAIL findings user accepted for fix, and any closed-wave late finding admitted at step 7a) → route to impl review-fix mode (the sprint returns here via impl-test, re-entering wave K) — step 9 is skipped, reviewer DoD was not met:
++   - **Any unresolved finding remains** (CONCERNS findings — each route the orchestrator's, `asd-advisor` consulted on an ambiguous one (`review-policy.md` "Verdict format") — FAIL findings user accepted for fix, and any closed-wave late finding admitted at step 7a) → route to impl review-fix mode (the sprint returns here via impl-test, re-entering wave K) — step 9 is skipped, reviewer DoD was not met:
+      - write `state.json.review_fixes_pending = "<id>"` and the decisions-log entry inline.
+      - emit phase COMPLETED with `NEXT: impl`
+    - **Otherwise — all APPROVE or latched**, or escalation left zero unresolved findings (all FAIL overridden, no CONCERNS) → wave K's roster met (`sprint-lifecycle.md` "Review iteration counters" lifecycle): K < n → write `reviews.impl.wave` = K+1 inline and return to step 1 for wave K+1's iteration 1 in this same entry, no `impl`/`impl-test` between; K = n → reviewer DoD met → proceed to step 9
+@@ -79,7 +79,7 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs.context", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs.context", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 minor test-only fix; step 9 red triage and test fix", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or memory-check hit (step 8), a memory-caused suite red (step 9); Claude only", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
++[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs.context", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs.context", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 minor test-only fix; step 9 red triage and test fix", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or memory-check hit (step 8), a memory-caused suite red (step 9); Claude only", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation; routing consult on an ambiguous CONCERNS route (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index 58d8c340..64c2dca9 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -14,7 +14,7 @@ Owner: inline orchestrator; dispatches one fresh `asd-tester` per entry, `asd-te
+ 
+ ## Steps
+ 
+-Autonomous: no user gate on a green impacted-set run, none on routing defects back to impl short of a stalemate. The one live `asd-tester` of an entry runs steps 3, 4, 7 and 8 and is never resumed into a later entry — `test-plan.md` is the only hand-off; recover from on-disk evidence only after session loss.
++Autonomous: no user gate on a green impacted-set run, none on routing defects back to impl short of a stalemate. The one live `asd-tester` of an entry runs steps 3, 4 and 7, then 8 only when step 7 changed a test (else it returns and the runner takes step 8), and is never resumed into a later entry — `test-plan.md` is the only hand-off; recover from on-disk evidence only after session loss.
+ 
+ 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Detect the mode per `## Entry` `modes` from `<sprint>/test-plan.md`'s `Entry log`. **Resume**: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4), its memory hits fixed at step 7a
+ 1a. `asd-tester` is unrouted (`providers.md` "Task-class variants and routing"): no `route-task` call, no `task_routing` record. Dispatch the base agent (`asd-tester-runner` only at step 8's no-test-change gate), payload per `agent-protocol.md` "Dispatch payload" with `## Dispatch`'s role keys, appending the decisions-log line `- YYYY-MM-DD — route <taskId>: standard, dispatch HEAD <sha>` (`git rev-parse HEAD`) at each tester dispatch.
+@@ -33,7 +33,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+    - **entry 1**: resolves each stub a `plan.md` `Stub <ref> → impl-test` line routes here (`sprint-lifecycle.md` "Plan file format") per `git-strategy.md` "TODO stubs": its TODO resolved in the test file, its `.asd/project/stubs.md` row deleted
+    - commits per Conventional Commits; emits COMPLETED
+ 7a. **Memory fix** — before step 8, each hit in `.claude/agent-memory/<owner>/` the tester reports (step 4's leftover-term check, step 9's memory class) goes to its owner's memory-fix dispatch in this entry (`review-policy.md` "Memory-fix dispatch"), never a `D-N`.
+-8. **Suite gate** — **reuse first**: an earlier green run at or above the impacted scope counts as this gate's run, with no new run, when `sprint-lifecycle.md` "Impacted test set" (reuse) holds — no code, test or stub path changed since its `HEAD`; record its `HEAD` in the `Suite run` section and the entry's decisions-log line. Otherwise the tester runs the impacted suite, lint/build and records raw results; when step 7 changed no test (decision `none`, no removal, no authored file), a fresh `asd-tester-runner` runs it instead (route line `route <taskId>: runner, dispatch HEAD <sha>`); its red goes to the base `asd-tester` for step 9's triage. Verdict per `## Rules` suite gate.
++8. **Suite gate** — **reuse first**: an earlier green run at or above the impacted scope counts as this gate's run, with no new run, when `sprint-lifecycle.md` "Impacted test set" (reuse) holds — no code, test or stub path changed since its `HEAD`; record its `HEAD` in the `Suite run` section and the entry's decisions-log line. Otherwise the tester runs the impacted suite, lint/build and records raw results; when step 7 changed no test (decision `none`, no removal, no authored file), a fresh `asd-tester-runner` runs it instead (route line `route <taskId>: runner, dispatch HEAD <sha>`); its red goes to a fresh base `asd-tester` for step 9's triage. Verdict per `## Rules` suite gate.
+ 9. **Triage** on any failure:
+    - **AC deviation with no failing test** (the tester found the implementation departing from an AC-N while no test fails) → a `D-N` row, `Failing test: none (AC-N)`, `Symptom` naming the AC and the deviation, never rated acceptable; routed as a code defect below
+    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 7 for the offending tests, then step 8 again
+@@ -60,7 +60,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-9", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 8 suite gate when step 7 changed no test", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory hit (Claude only), step 7a", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "ADVICE_NEEDED relay; escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
++[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-7; 8-9 only when it changed a test; step 9 on a runner red", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 8 suite gate when step 7 changed no test", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory hit (Claude only), step 7a", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "ADVICE_NEEDED relay; escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
+ ```
+ 
+ ## Signals
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 0d93b6a1..ee261520 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -23,3 +23,5 @@
+ - [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "a finding from <agent>" lines, combined's return rules
+ - [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
+ - [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
++- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
++- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_inserted-dispatch-reachability.md b/.claude/agent-memory/asd-reviewer-combined/feedback_inserted-dispatch-reachability.md
+new file mode 100644
+index 00000000..a1196556
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_inserted-dispatch-reachability.md
+@@ -0,0 +1,16 @@
++---
++name: inserted-dispatch-reachability
++description: a new agent or skill dispatched at a step: check that no other single dispatch already spans that step, and check the caller's Delegates/hard-rule/never-list for the new invocation site
++metadata:
++  type: feedback
++---
++
++A workflow step can gain a new dispatch: a cheaper variant, a skill run at a new phase, or a new advisor consult kind. Check that it is reachable and authorised:
++
++- Does another agent's single dispatch already cover that step? Look for "the one live X runs steps …" lines and a Dispatch row "when" such as "steps 3-9". If so, the new dispatch never fires unless the earlier agent returns before that step.
++- Is the new invocation site listed in the dispatching skill's `## Delegates` (guarded by "never: delegate outside `## Delegates`")? Is it named in core.md "Invariants" and the t_AGENTS.md hard rule when it writes settings? Does the README command row mention it? Does the phase skill's `allowed-tools` include `Skill`?
++- For a new consult kind, check the callee's `description` and Inputs `required`, the agent-protocol "Relay" cases, and every Dispatch row "when".
++
++**Why:** each of these gaps leaves the new path unreachable, or refusable under "Declared tool policy", while the suite stays green.
++
++**How to apply:** for every Dispatch row the diff adds, grep the receiving agent or skill name across `.asd/skills/*/SKILL.md` `## Delegates`, core.md, t_AGENTS.md and README. Related: [[delegation-vs-never-list]], [[dispatch-payload-vs-required]].
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_redefined-boundary-local-lists.md b/.claude/agent-memory/asd-reviewer-combined/feedback_redefined-boundary-local-lists.md
+new file mode 100644
+index 00000000..b39119b7
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_redefined-boundary-local-lists.md
+@@ -0,0 +1,12 @@
++---
++name: redefined-boundary-local-lists
++description: when a verdict/gate boundary is redefined, diff every workflow's local cause list against the home; a new "fits no cause → downgrade" clause turns a missing item into a silent demotion
++metadata:
++  type: feedback
++---
++
++When a change redefines a boundary (e.g. FAIL vs CONCERNS), each phase workflow often keeps its own enumerated copy of the causes (FAIL grouping lists in design-review and impl-review). Compare every copy item by item with the home's list and with each reviewer agent's rule.
++
++**Why:** one workflow's copy lacked "complexity increase". The same change added "a finding fitting no cause is CONCERNS", so `escalate` findings in that phase would have been silently autofixed instead of reaching the user.
++
++**How to apply:** grep for the list's anchor phrase (e.g. "group by escalation cause") in every workflow. Check that the home's own enumeration is complete too, and that the cited section is the one that actually holds the rule. Related: [[enumerated-reach-vs-trigger-sites]], [[dispatch-payload-vs-required]].
+diff --git a/.claude/agent-memory/asd-tester/MEMORY.md b/.claude/agent-memory/asd-tester/MEMORY.md
+index 3282d557..f5bd333b 100644
+--- a/.claude/agent-memory/asd-tester/MEMORY.md
++++ b/.claude/agent-memory/asd-tester/MEMORY.md
+@@ -6,3 +6,4 @@
+ - [Canned gh and fake-clock preload](feedback_canned-gh-and-fake-clock-preload.md) — test gh-polling CLIs via a --require stub (spawnSync + Date.now + timers); includes-pins can pass vacuously.
+ - [Edit tool for regex, mutation script](feedback_edit-tool-for-regex-and-mutation-script.md) — Bash tool halves backslashes in scripts; prove fail-first with a restoring mutation script.
+ - [Review-found sweep gaps](feedback_review-found-sweep-gaps.md) — extend the leftover-term array with base-branch clauses a review found; skip the sprint's own intermediate wording.
++- [Fail-first via pre-fix tree](feedback_failfirst-pre-fix-tree.md) — prove a committed fix red by running the new runner in a git-archive of the pre-fix commit; tar needs cd, not -C C:.
+diff --git a/.claude/agent-memory/asd-tester/feedback_edit-tool-for-regex-and-mutation-script.md b/.claude/agent-memory/asd-tester/feedback_edit-tool-for-regex-and-mutation-script.md
+index a77a0780..df76cacb 100644
+--- a/.claude/agent-memory/asd-tester/feedback_edit-tool-for-regex-and-mutation-script.md
++++ b/.claude/agent-memory/asd-tester/feedback_edit-tool-for-regex-and-mutation-script.md
+@@ -9,6 +9,6 @@ Edit `tests/run.js` lines that hold regex literals or `\n`/`\b` escapes with the
+ 
+ **Why:** a find string with `\\b` or `\\s` never matched the file; the same edit through the Edit tool applied cleanly and kept LF endings.
+ 
+-**How to apply:** use a scripted rewrite only for backslash-free substitutions. For a mutation proof, keep one small script outside the repo that takes file, find, replace and a `--filter` name, applies the mutation, runs the filtered suite, prints exit code, matched count and the FAIL/ok lines, and restores the file in a `finally` — then confirm `git status` shows no canon file modified. Build a find string that contains a backslash from `String.fromCharCode(92)`.
++**How to apply:** use a scripted rewrite only for backslash-free substitutions. For a mutation proof, keep one small script in the git-ignored `.asd/tmp/` (remove it after use) that takes file, find, replace and a `--filter` name, applies the mutation, runs the filtered suite, prints exit code, matched count and the FAIL/ok lines, and restores the file in a `finally` — then confirm `git status` shows no canon file modified. Build a find string that contains a backslash from `String.fromCharCode(92)`.
+ 
+ Related: [[feedback_universal-reach-sweeps]].
+diff --git a/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md b/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md
+new file mode 100644
+index 00000000..c713586c
+--- /dev/null
++++ b/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md
+@@ -0,0 +1,12 @@
++---
++name: failfirst-pre-fix-tree
++description: Fail-first proof for a runtime/migration fix without mutating production - run the new tests/run.js in a git-archive of the pre-fix commit
++metadata:
++  type: feedback
++---
++
++When the fix is already committed and production edits are out of scope, prove fail-first by extracting the pre-fix commit (`git archive <sha> | tar -x -f -` run from inside the target dir) outside the repo, copying the new `tests/run.js` over its copy, and running `node tests/run.js --filter "<name>"` there; record the non-zero exit and the failing test name, then delete the extraction.
++
++**Why:** a mutation of production is forbidden to this role, and the old-tree run proves the same thing with nothing to restore.
++
++**How to apply:** `tar -x -C C:/...` fails ("Cannot connect to C") - `cd` into the target instead. The system temp volume can be full; extract on the project drive, beside the repo, never inside it.
+diff --git a/AGENTS.md b/AGENTS.md
+index 59b0fcfd..99fe9077 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -44,7 +44,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ ### Hard rules
+ 
+-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
++- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `scope`/`impl` for a sprint- or plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+ - One active sprint at a time. New sprint blocked until active one archived, except a merged sprint, which the next sprint's scope archives.
+ <!-- asd:end -->
+diff --git a/README.md b/README.md
+index 5943a5b2..bd22e89b 100644
+--- a/README.md
++++ b/README.md
+@@ -206,7 +206,7 @@ User-facing commands available at any time. Invocation form differs per provider
+ 
+ | Claude Code | Codex | Purpose |
+ |---|---|---|
+-| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode; `impl` also runs it for a plan-declared settings change |
++| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode; `scope` and `impl` also run it for a `sprint.md`- or plan-declared settings change |
+ | `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
+ | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (proposed from the concept; same 4 variants) |
+ | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
+@@ -220,7 +220,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
+ 
+ ## Agents
+ 
+-Eight specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort; `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`. The `haiku` alias resolves through `model_families` to the Haiku 4.5 family: on Bedrock, Vertex and Foundry that is Haiku 4.5 unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set.
++Eight specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort; `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`. The `haiku` family passes through to Claude Code's own `haiku` alias: Haiku 5.5 on the Anthropic API, Haiku 4.5 on Bedrock, Vertex and Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set.
+ 
+ **Orchestrator session model.** ASD never sets the main orchestrator's model; it is your session model. Recommended: Opus at `medium` effort as the default, Fable for long unattended or large runs. Raise effort before changing models; the dispatched agents below carry their own tiers.
+ 
+@@ -269,11 +269,11 @@ Read-only, dispatched by the orchestrator only for scans at audit, plan and clea
+ 
+ ### Advisor (1)
+ 
+-Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything, and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
++Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you, and on an ambiguous review-finding route. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything, and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
+ 
+ | Agent | Claude | Codex | Role |
+ |---|---|---|---|
+-| `asd-advisor` | fable/high | sol/high | Advisory consultation on non-gate uncertainty and before orchestrator escalations during any phase |
++| `asd-advisor` | fable/high | sol/high | Advisory consultation on non-gate uncertainty, before orchestrator escalations and on ambiguous review-finding routes |
+ 
+ ---
+ 
+diff --git a/tests/run.js b/tests/run.js
+index fcd102f6..dcad99ae 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -9546,6 +9546,40 @@ test('sprint-033 AC-35, AC-24: emit-manifest collapses a whole-file deletion to
+   assert.ok(designReview.status === 2 && /impl-review with --base\/--head only/.test(designReview.stderr), `--rename-map outside an impl-review range is refused (got ${JSON.stringify(designReview)})`);
+ });
+ 
++test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path by its literal name', () => {
++  const { repo, env, git } = sandboxGitRepo();
++  const OLD = 'oldName';
++  const NEW = 'newName';
++  const NON_ASCII = 'src/é.js';
++  const body = (name) => `${Array.from({ length: 40 }, (unused, index) => (index === 2 ? `use ${name} here` : `line ${index + 1}`)).join('\n')}\n`;
++  for (const file of ['src/before.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
++  git('add', '-A');
++  git('commit', '-q', '-m', 'base');
++  const base = git('rev-parse', 'HEAD').trim();
++  git('mv', 'src/before.js', 'src/after.js');
++  for (const file of ['src/after.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(NEW));
++  git('add', '-A');
++  git('update-index', '--chmod=+x', 'src/run.sh');
++  git('commit', '-q', '-m', 'head');
++  const head = git('rev-parse', 'HEAD').trim();
++
++  const work = mkTempDir();
++  const scopeFile = path.join(work, 'scope.txt');
++  const mapFile = path.join(work, 'map.json');
++  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
++  fs.writeFileSync(mapFile, JSON.stringify({ [OLD]: NEW }), 'utf8');
++  const range = ['--base', base, '--head', head, '--rename-map', mapFile];
++  const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', work, ...range], { cwd: repo, env });
++  assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
++  const patch = fs.readFileSync(emitted.result.diff, 'utf8');
++  assert.ok(patch.includes('rename from src/before.js\nrename to src/after.js\n# collapsed: src/after.js: 1 rename-map substitutions\n'), `AC-24: a renamed file whose only edit applies the map still shows the rename (got ${patch})`);
++  assert.ok(patch.includes('old mode 100644\nnew mode 100755\n# collapsed: src/run.sh: 1 rename-map substitutions\n'), 'AC-24: a mode change survives the collapse of its only hunk');
++  assert.ok(patch.includes(`# collapsed: ${NON_ASCII}: 1 rename-map substitutions\n`) && !patch.includes('\\303'), 'AC-24: a C-quoted path is named by its decoded characters');
++  assert.ok(!patch.includes(`use ${NEW} here`), 'every substitution hunk is collapsed');
++  const measured = runtimeCliResult(['review-waves', '--files', scopeFile, ...range], { cwd: repo, env });
++  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted one included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
++});
++
+ test('sprint-033 AC-25: persist-review --floor drops each external finding below the floor and records the count, rewrites a CONCERNS whose rows all dropped to APPROVE, leaves the skip form alone, and refuses a non-external reviewer or a floor outside the four levels', () => {
+   const root = mkTempDir();
+   const header = ['| # | Severity | Location | Description | Suggested fix |', '|---|---|---|---|---|'];
+@@ -9575,6 +9609,14 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
+   const kept = persist(external, 'external', 'low');
+   assert.deepStrictEqual([kept.result.token, kept.result.dropped, kept.result.findings.length], ['CONCERNS', 0, 3], 'a floor at the lowest level drops nothing');
+ 
++  const failing = `[REVIEW-impl-external]: FAIL\nFAIL: 1\n\n${[...header, rows.low].join('\n')}\n`;
++  const failFloored = persist(failing, 'external', 'medium');
++  assert.deepStrictEqual(failFloored.result, { token: 'APPROVE', findings: [], dropped: 1 }, 'AC-25: a FAIL whose every row dropped becomes APPROVE');
++  assert.ok(fs.readFileSync(path.join(failFloored.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\nAPPROVE\n'), 'the verdict line and the FAIL count line are rewritten');
++  const stalemate = persist(failing.replace('FAIL: 1', 'FAIL: 1\nStalemate: D-1'), 'external', 'medium');
++  assert.deepStrictEqual([stalemate.result.token, stalemate.result.dropped], ['FAIL', 1], 'AC-25: a stalemate FAIL keeps its verdict whatever the floor drops');
++  assert.ok(fs.readFileSync(path.join(stalemate.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: FAIL\n'), 'the persisted stalemate verdict line stays FAIL');
++
+   const skipped = '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n';
+   assert.deepStrictEqual(persist(skipped, 'external', 'high').result, { token: skipped.trim().slice('[REVIEW-impl-external]: '.length), findings: [] }, 'the availability skip carries no table and no floor');
+ 
+@@ -9672,7 +9714,7 @@ const DESIGN_FIXTURE = {
+     ['typography.body.fontFamily', 'Inter', 'typography'], ['typography.body.fontSize', '14px', 'typography'],
+   ],
+   vars: ['--colors-primary: #112233;', '--colors-accent: var(--colors-primary);', '--spacing-md: 16px;', '--typography-body-fontFamily: Inter;', '--typography-body-fontSize: 14px;'],
+-  html: (eol) => ['<table><tbody>', '<!-- asd:tokens:start -->', 'stale row', '<!-- asd:tokens:end -->', '</tbody></table>', '<style>', '<!-- asd:vars:start -->', ':root { --stale: 1; }', '<!-- asd:vars:end -->', '</style>', '<p>keep me</p>', ''].join(eol),
++  html: (eol) => ['<table><tbody>', '<!-- asd:tokens:start -->', 'stale row', '<!-- asd:tokens:end -->', '</tbody></table>', '<style>', '/* asd:vars:start */', ':root { --stale: 1; }', '/* asd:vars:end */', '</style>', '<p>keep me</p>', ''].join(eol),
+ };
+ 
+ test('sprint-033 AC-32: design-tokens rewrites only the two marked regions of design-system.html from the DESIGN.md front matter - token rows with a type chip, :root variables with references as var() - keeps the file\'s line endings, and a second run changes nothing', () => {
+@@ -9717,7 +9759,7 @@ test('sprint-033 AC-32: design-tokens fails naming the line on YAML beyond neste
+ 
+   fs.writeFileSync(designFile, DESIGN_FIXTURE.md, 'utf8');
+   for (const [label, broken, pattern] of [
+-    ['a missing vars end marker', html.replace('<!-- asd:vars:end -->', ''), /needs exactly one <!-- asd:vars:start --> \.\.\. <!-- asd:vars:end --> marker pair/],
++    ['a missing vars end marker', html.replace('/* asd:vars:end */', ''), /needs exactly one \/\* asd:vars:start \*\/ \.\.\. \/\* asd:vars:end \*\/ marker pair/],
+     ['a repeated tokens marker', html.replace('<!-- asd:tokens:start -->', '<!-- asd:tokens:start --><!-- asd:tokens:start -->'), /needs exactly one <!-- asd:tokens:start -->/],
+     ['tokens markers in the wrong order', html.replace('<!-- asd:tokens:start -->', '@@S@@').replace('<!-- asd:tokens:end -->', '<!-- asd:tokens:start -->').replace('@@S@@', '<!-- asd:tokens:end -->'), /needs exactly one <!-- asd:tokens:start --> \.\.\. <!-- asd:tokens:end --> marker pair/],
+   ]) {
+@@ -9790,6 +9832,12 @@ test('sprint-033 AC-19/AC-33: the 14.5.0 migration deletes the agent-memory dire
+   writeFile(bare, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
+   const guarded = await runMigration1450(bare);
+   assert.deepStrictEqual([guarded.report.deleted, fs.existsSync(path.join(bare, '.claude/agent-memory/asd-pm/MEMORY.md')), /agents is missing/.test(guarded.output)], [[], true, true], 'with no canonical agents directory no live name can be known, so nothing is deleted and the migration warns');
++
++  const broken = makeMigrationFixtureRepo();
++  writeFile(broken, '.asd/agents/asd-dev.md', '---\n{ not json\n---\nbody\n');
++  writeFile(broken, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
++  const unparsable = await runMigration1450(broken);
++  assert.deepStrictEqual([unparsable.report.deleted, fs.existsSync(path.join(broken, '.claude/agent-memory/asd-pm/MEMORY.md')), /asd-dev\.md: frontmatter unparsable/.test(unparsable.output)], [[], true, true], 'AC-19: an agent whose frontmatter fails to parse has unknown variants, so nothing is deleted and the migration names the file');
+ });
+ 
+ test('sprint-033 leftover-term check: no canon, README, AGENTS.md, runtime, sync, hook, workflow definition or agent-memory line keeps a sentence or term this sprint removed - the old rotate subject, the duplicate-of removal reason, the one-suffix variant sentence, the wrapper-applied external floor and the severity-driven iron-rule FAIL', () => {

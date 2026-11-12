@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ce86c4daeb1e58462838ab96ffe008c2f28def4951722163d4bff824e05cfa4e content_digest=sha256:0c8434d45a30f33aa35426cbca6afa9d327a86add1bd8a77834bee59299dcdca asd_version=14.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:c0fb317b6cc24155b8d0442dc74bef844a821465d1522f12d738da3ea2e90751 content_digest=sha256:cd80eb8e2976e2e0c0065b760e4afb297fe1a0da4d1951dd9b49c641fa9a7013 asd_version=14.4.0 schema=1
 name = "asd-reviewer-efficiency"
 description = "Over-engineering, cohesion, complexity-vs-value, duplication/reuse, token cost, doc economy, change size, perf, test-suite cost; standard impl-review. Not: correctness, tests, doc accuracy, UI → asd-reviewer-quality; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 model = "gpt-6.1-sol"
@@ -29,7 +29,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 ## Rules
 
 - must: assess complexity, structure, reuse, token cost, change size, performance and test-suite cost of code against the over-engineering and structure/cohesion checklists of `review-policy.md`.
-- must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with category and severity, return one verdict (APPROVE | CONCERNS | FAIL).
+- must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with category and severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
 - must: mark a section the manifest authorizes `n/a: <predicate>` so in the section-coverage ledger and never review it this dispatch.
 - must: when the conjunctive perf predicate (`asd-phase-impl-review.md` step 5) holds, mark all five performance sections `n/a: <predicate>`; with no perf-budgets section but an executable file in scope, Perf budget compliance alone is `n/a: no budgets defined` and the other four apply.
 - must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
@@ -88,7 +88,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 - logic, a helper, type, rule or pattern the repo already holds re-implemented instead of reused; copy-paste blocks that belong in one unit; a duplicated documentation fact is quality's SSoT
 
 ### Documentation economy [design-review, impl-review]
-- agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply `artifact-layout.md` "Documentation economy"'s three tests and raise nothing against text its preserve-list keeps. Violation = `FAIL`
+- agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply `artifact-layout.md` "Documentation economy"'s three tests and raise nothing against text its preserve-list keeps
 
 ### Runtime token cost [design-review, impl-review]
 - the change grows what agents load per dispatch — a wider context grant, a whole-file read where a section suffices, text moved into an always-loaded file — without behaviour that needs it

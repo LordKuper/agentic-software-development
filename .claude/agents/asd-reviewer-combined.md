@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:11af18f2926651bfa82a88b7514e8d5cdab99ffdc769c527cc79df40de6f89e6 content_digest=sha256:39a2e6b7059fd72dfed97fd2a3081d673c4c6e8d5f89519798edc07dec3df634 asd_version=14.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914 content_digest=sha256:90710a67680e45813b688833790a8186f4d2563b467daf2249a47025e2538252 asd_version=14.4.0 schema=1
 name: asd-reviewer-combined
 description: "One-pass reviewer of standard design-review and lite impl-review: Quality and Efficiency rubrics on every change, documentation entries only when a doc file is in scope, plus overall quality. Not: standard impl-review → asd-reviewer-quality, asd-reviewer-efficiency; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -34,7 +34,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
 ## Rules
 
 - must: review every scope file read-only — design-review: every listed draft; impl-review: code, tests, `test-plan.md` decisions and docs.
-- must: resolve sections from the manifest's `n_a`, scan each entry not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL).
+- must: resolve sections from the manifest's `n_a`, scan each entry not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
 - must: compose the rubric as its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates it — the `## Review rubric` entries of `asd-reviewer-quality.md`, `asd-reviewer-efficiency.md`, then its own; read each entry's detail, carve-outs and severity rules from its home agent file.
 - must: mark every entry whose predicate the manifest authorizes `n/a: <predicate>` — `no documentation file in scope` covers every documentation entry — never ABORT.
 - never: review an entry its manifest n/a's.

@@ -1,7 +1,7 @@
 <!--
 responsibility:
-  owns: ux flows and ui mockups (sprint draft for full sprint scope, persistent for per-subsystem or project-wide ux)
-  excludes: requirements, accessibility (project-wide), design-system components and tokens, new component proposals
+  owns: ux flows and ui mockup references (sprint draft for full sprint scope, persistent for per-subsystem or project-wide ux)
+  excludes: the mockup files (mockups/ folder), requirements, accessibility (project-wide), design-system components and tokens, new component proposals
   delegates_to: prd.html (requirements), accessibility.html (a11y), DESIGN.md (components and tokens), design-md-delta.yaml (new component proposals)
 provenance: original          # original | reverse-engineered | migrated
 source: ""                    # optional path/URL when provenance != original
@@ -18,7 +18,7 @@ flowchart TD
 
 <section id="ui-mockups">
   <h2>UI mockups</h2>
-  <p class="lede">One article per implemented or modified screen. Each mockup MUST reference DESIGN.md tokens only — no raw hex/px/rem/font (<code>design-system.md</code> §6) — and renders an interactive preview of the actual interface.</p>
+  <p class="lede">One article per implemented or modified screen, linking its mockup in the <code>mockups/</code> folder beside this file — never embedding it. Each mockup MUST reference DESIGN.md tokens only — no raw hex/px/rem/font (<code>design-system.md</code> §6).</p>
 
   <article class="mockup">
     <h3>{{screen name}}</h3>
@@ -26,10 +26,8 @@ flowchart TD
       <dt><b>Purpose</b></dt><dd>{{what user does here}}</dd>
       <dt><b>Entry from</b></dt><dd>{{flow step or upstream screen}}</dd>
       <dt><b>Exit to</b></dt><dd>{{next screen or terminal state}}</dd>
+      <dt><b>Mockup</b></dt><dd><a href="{{mockup path relative to this file}}">{{mockup file}}</a></dd>
     </dl>
-    <div class="mockup-preview">
-      <!-- inline html/css preview; DESIGN.md token refs only — no raw hex/px/rem/font (design-system.md §6) -->
-    </div>
     <p><b>Notes</b>: {{states, edge cases, empty/loading/error}}</p>
   </article>
 </section>
@@ -43,7 +41,7 @@ flowchart TD
 
 <section id="component-usage">
   <h2>Component usage (optional, off by default)</h2>
-  <p class="lede">Omit unless the mockups' token usage isn't self-evident from the previews themselves.</p>
+  <p class="lede">Omit unless the mockups' token usage isn't self-evident from the linked mockups themselves.</p>
   <table>
     <thead><tr><th>Component</th><th>Where used</th></tr></thead>
     <tbody>

@@ -35,7 +35,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
 ## Rules
 
 - must: review every scope file read-only — design-review: every listed draft; impl-review: code, tests, `test-plan.md` decisions and docs.
-- must: resolve sections from the manifest's `n_a`, scan each entry not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL).
+- must: resolve sections from the manifest's `n_a`, scan each entry not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
 - must: compose the rubric as its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates it — the `## Review rubric` entries of `asd-reviewer-quality.md`, `asd-reviewer-efficiency.md`, then its own; read each entry's detail, carve-outs and severity rules from its home agent file.
 - must: mark every entry whose predicate the manifest authorizes `n/a: <predicate>` — `no documentation file in scope` covers every documentation entry — never ABORT.
 - never: review an entry its manifest n/a's.

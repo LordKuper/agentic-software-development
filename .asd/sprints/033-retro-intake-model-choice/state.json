@@ -1,0 +1,114 @@
+{
+  "sprint_id": "033-retro-intake-model-choice",
+  "branch": "sprint/033-retro-intake-model-choice",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-11 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "B full: tester/external haiku, opus tier, effort ladder, scout agent, README; Codex untouched",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "032#A-1 A-2 P-1, 031#P-2 included (AC-9..AC-11); all open asd-retro issues included (AC-12..AC-34), #104 modified; #89 closed resolved",
+      "evidence": "decisions-log.md 2026-11-12 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-34 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-11-12 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "AC-22 -> AC-35 all whole-file deletions; AC-29 -> AC-36 scope-time settings change",
+      "evidence": "decisions-log.md 2026-11-12 audit contradictions and scope amendment",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-35, AC-36 added; AC-22, AC-29 retired; no plan yet",
+      "evidence": "decisions-log.md 2026-11-12 audit contradictions and scope amendment",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-36; contradictions user-settled; departures are planned criteria",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-36 traced to Tasks 1-11 and the AC-7 line; decomposition rules met; names bounded by approach B",
+      "evidence": "decisions-log.md 2026-11-12 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all plan.md subtasks ticked; build and lint clean; round diff within write scopes; flagged departures accepted in decisions-log; no stubs",
+      "evidence": "decisions-log.md 2026-11-12 impl assessment approved (adaptive)",
+      "artifact_revision": "plan.md@impl"
+    }
+  ],
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:routing ladder edges", "resolved_model": "sonnet" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "resolved_model": "sonnet" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror prose", "resolved_model": "sonnet" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "resolved_model": "sonnet" },
+    "Task 6a": { "execution": "agent", "tier": "standard", "reason": "risk:migration", "resolved_model": "sonnet" },
+    "Task 6b": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:decided path and wording edits", "resolved_model": "sonnet" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 10": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:ledger close semantics", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 9": { "execution": "agent", "tier": "standard", "reason": "risk:parser edge", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 11": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-2": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-3": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 RF1": { "execution": "agent", "tier": "standard", "reason": "risk:settings writer mirrors", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF2": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF3": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF4": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF5": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF6": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF7": { "execution": "agent", "tier": "escalated", "reason": "risk:migration", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF8": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-01 RF9": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "opus" },
+    "review-fix wave-1/iter-02 F1": { "execution": "agent", "tier": "standard", "reason": "normal", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-02 F2": { "execution": "agent", "tier": "standard", "reason": "normal", "raise_effort": false, "resolved_model": "sonnet" }
+  },
+  "skipped_phases": ["design-promote"],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f2711de3113a4947a4f52f97028907c130a993e2", "iter-02": "7fd70d99e0719196423744b63c450aa590c6beb9", "iter-03": "85771623d90cc84c9e197b8a0ab43f2a7322ed25" }, "latched": { "combined": 3, "external": 3 } } ] }
+  },
+  "created_at": "2026-11-10T21:00:49.000Z",
+  "updated_at": "2026-11-10T21:00:49.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": { "number": 116, "url": "https://github.com/LordKuper/agentic-software-development/pull/116", "state": "open" },
+  "archived_at": null
+}

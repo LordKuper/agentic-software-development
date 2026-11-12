@@ -35,16 +35,18 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
+│       │   │   ├── mockups/                     # ux_spec enabled only; `lite`: made at scope; promoted to docs/ux/mockups/; shape: design-system.md "Mockups"
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
 │       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
+│       │   ├── <rename-map>.json              # optional, the file a plan's `Rename map:` line names, sprint-lifecycle.md "Plan file format"
 │       │   ├── test-plan.md
 │       │   ├── test-plan.entry-NN.md          # rotated narrative segments, "Test plan"
 │       │   ├── manual-steps.md
 │       │   ├── friction-log.md
-│       │   ├── timing.jsonl                   # orchestrator-owned; written only via runtime.js timing*, sprint-lifecycle.md "Operation timing"; archived with the sprint
+│       │   ├── timing.jsonl                   # orchestrator-owned; written only via runtime.js timing*, sprint-lifecycle.md "Operation timing"
 │       │   ├── retrospective.html
 │       │   └── reviews/
 │       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.late.md
@@ -70,11 +72,12 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       ├── DESIGN.md
 │       ├── design-system.html
 │       ├── accessibility.html
+│       ├── mockups/<subsystem>/         # promoted from the sprint mockups/
 │       └── <subsystem>.html             # ux-spec per subsystem
 └── CLAUDE.md
 ```
 
-A sprint folder holds **only** the artifacts named above, plus the per-reviewer coverage evidence `review-policy.md` "Coverage ledger" persists beside each `<reviewer>.md`. Nothing else is written under `.asd/sprints/<NNN-slug>/` — the tree is archived read-only at closure, so any stray file is frozen there and lost to whoever wrote it.
+A sprint folder holds **only** the artifacts named above, plus the per-reviewer coverage evidence `review-policy.md` "Coverage ledger" persists beside each `<reviewer>.md`. Nothing else is written under `.asd/sprints/<NNN-slug>/`: the tree is archived read-only at closure, freezing any stray file.
 
 ## Paths (decomposition disabled)
 
@@ -86,7 +89,7 @@ docs/
 ├── architecture/
 │   ├── stack.html
 │   └── tech-reference/<tech>-<version>.md
-└── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html}
+└── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html, mockups/}
 ```
 
 No registry, no `<subsystem>.md`, no `c4/` directory. No subsystem subfolders.
@@ -97,6 +100,8 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 **Content**: memory holds method only; it never records a sprint id, a Task, a wave, an iteration or a review verdict — that history belongs in the sprint's artefacts. Checked at every memory commit: `git-strategy.md` "Commit before review".
 
+A release retiring an agent deletes its directory in its migration (`.asd/migrations/`), so no consumer keeps a memory no dispatch loads.
+
 **Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
 
 **In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
@@ -105,7 +110,7 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 ## Scratch directory
 
-`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder: every ASD script, test and agent writes its temporary files inside the project and removes them after use, save state meant to outlive its run (the external-review negative cache, `external-review.md` "Detection and negative cache"). Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (its own `.gitignore` holds `*`), so nothing in it is committed or reviewed. `pr` open mode deletes every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote (`asd-phase-pr.md`).
+`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder: every ASD script, test and agent writes its temporary files inside the project and removes them after use, save state meant to outlive its run (the external-review negative cache, `external-review.md` "Detection and negative cache"). Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (`.gitignore` holds `*`): nothing in it is committed or reviewed. `pr` open mode deletes every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote (`asd-phase-pr.md`).
 
 ## Subsystem registry
 
@@ -168,7 +173,7 @@ The shell trims two blocks per document instead of always emitting them: the mer
 
 **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
 
-**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Reviewers FAIL fragments that duplicate shell chrome.
+**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding. Sole exception: `t_design-system.html`'s `<style>` holding only the `asd:vars` `:root` block, generator-owned (`design-system.md` §12 Regeneration).
 
 ## Review verdict placeholder namespace
 
@@ -176,7 +181,7 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Includes canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions. Never a secret.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions; never a secret.
 
 **Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and the main orchestrator writes it. No implementation without verified reference.
 
@@ -188,19 +193,20 @@ Manual step = operational action a human must perform for the plan to complete (
 
 - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
 - `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
-- The main orchestrator validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
-- Status `pending` → `done`. The registering dev flips to `done` only after running `Verification`.
-- Sprint-scoped; archived with the sprint.
+- The main orchestrator validates every new entry before the phase halts, keeping it only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks); else it is rejected and returned to the dev.
+- Status `pending` → `done`, flipped by the registering dev only after running `Verification`.
 
 ## Test plan
 
-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
+`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
 
 **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
 
-SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/quality.md`).
+An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
 
-**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates or re-authors this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test; also the handoff channel for code defects to `impl` test-fix mode (`Defects`). Not a task list (`plan.md`) nor a review verdict (`reviews/impl/wave-<K>/iter-NN/quality.md`).
+
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges it and reports any result as an ordinary finding.
 
 ## Friction log
 
@@ -220,11 +226,11 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 ## Single Source of Truth (iron rule)
 
-Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from `asd-reviewer-quality`, or from `asd-reviewer-combined` applying the Quality rubric's SSoT entry.
+Each fact has exactly one home file. Other files link to it, never copy. Violation = a finding from `asd-reviewer-quality`, or from `asd-reviewer-combined` applying the Quality rubric's SSoT entry.
 
 ## Documentation economy (iron rule)
 
-A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from `asd-reviewer-efficiency`, or from `asd-reviewer-combined` applying the Efficiency rubric's entry.
+A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = a finding from `asd-reviewer-efficiency`, or from `asd-reviewer-combined` applying the Efficiency rubric's entry.
 
 Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition that only negates a positive rule already stated beside it; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
 

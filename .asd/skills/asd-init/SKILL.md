@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-init",
-  "description": "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings.",
+  "description": "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings.",
   "claude": {
     "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion"
   }
@@ -12,7 +12,7 @@
 
 ## Purpose
 
-Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), or apply a plan-declared settings change (sprint-mediated).
+Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), or apply a sprint-declared settings change (sprint-mediated).
 
 ## Preconditions
 
@@ -23,7 +23,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Modes
 
 ```json
-{"fresh": "no .asd/project/config.yaml: full setup", "re-init": "config exists: diff editor", "sprint-mediated": "invoked by asd-phase-impl.md step 6 with an accepted plan's Settings change: pairs (sprint-lifecycle.md Plan file format): applies those pairs only"}
+{"fresh": "no .asd/project/config.yaml: full setup", "re-init": "config exists: diff editor", "sprint-mediated": "invoked by asd-phase-impl.md step 6 with an accepted plan's Settings change: pairs (sprint-lifecycle.md Plan file format), or by asd-phase-scope.md before step 3a's freeze with the drafted sprint.md's Settings change: pairs: applies those pairs only"}
 ```
 
 ## Steps
@@ -97,7 +97,7 @@ Fresh and re-init only.
 
 ### Sprint-mediated
 
-Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
+Plan acceptance (scope invocation: the scope gate) is the approval of record: no config dump, no section prompt, no `accept-all`.
 
 1. Read current `.asd/project/config.yaml`
 2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
@@ -146,10 +146,10 @@ Rules:
 
 ### OS-specific commands written to .asd/project/commands.yaml
 
-Four custom commands emitted only when `documents.design_system: enabled` (else omitted entirely — no design-system gate to serve them). Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows (no-op elsewhere).
+Four custom commands emitted only when `documents.design_system: enabled` (else omitted entirely — no design-system gate to serve them). Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows, a no-save install that never changes `package.json` (no-op elsewhere).
 
 **Windows** (run from project root):
-- `designmd-install: "npm install @google/design.md"`
+- `designmd-install: "npm install --no-save @google/design.md"`
 - `designmd-lint: "node_modules\\.bin\\design.md.cmd lint docs\\ux\\DESIGN.md"`
 - `designmd-diff: "node_modules\\.bin\\design.md.cmd diff"` (path args supplied at call time)
 - `designmd-export: "node_modules\\.bin\\design.md.cmd export --format json-tailwind docs\\ux\\DESIGN.md"`

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:bdc26d872d8e68d3b9ad08ae8321ddf44af9bbf90db4d37ab681798befe274c1 content_digest=sha256:afdb925fd28781a430a0eeaab70bc4c87459f2fe1d244c252ac6e13d4c831344 asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04 content_digest=sha256:ed70a509142ab16c241aaed54041af18b0cc4a1406300fc9f38f5b8c8fc944c9 asd_version=14.4.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) inline, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
@@ -60,7 +60,7 @@ Read `concept.html` (vision, target users, value prop, tone) and `stack.html` (U
 
 ### Phase 4 — convergence (DESIGN.md, per Google Labs spec order)
 
-Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/timing, components (only those the concept needs).
+Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/timing, components (only those the concept needs). With `project.subsystem_decomposition: enabled`, name a token one subsystem owns with its subsystem prefix (`design-system.md` §3).
 
 - Create mode only (`docs/ux/DESIGN.md` absent): write a skeleton (Google Labs format) with placeholder sections first. Edit mode enters the loop against the existing file.
 - Fetch the latest Google Labs DESIGN.md spec before the first section, cached for the session.
@@ -71,7 +71,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 
 ### Phase 5 — design-system.html regeneration
 
-- Render and write `docs/ux/design-system.html` per `t_design-system.html` from the approved DESIGN.md now (only the artifact-level `accept` waits for Phase 7), wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project), as `design-system.md` §12 "Regeneration" states.
+- Render and write `docs/ux/design-system.html` per `t_design-system.html` from the approved DESIGN.md now (only the artifact-level `accept` waits for Phase 7), wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project), as `design-system.md` §12 "Regeneration" states. Then run `node .asd/runtime.js design-tokens --design docs/ux/DESIGN.md --html docs/ux/design-system.html`, which rebuilds the token reference rows and CSS variables between the template's markers.
 
 ### Phase 6 — accessibility baseline
 
@@ -99,7 +99,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 - must: render EVERY user-decision/input request (question text, header, option labels and descriptions, multi-field labels and hints), control options included, in `language.chat` (`language-policy.md` "User-decision options").
 - never: author accessibility rules without checking the concept's target users
 - must: bind token authoring and review by `design-system.md`; UX shaping by `ux-principles.md`
-- must: regenerate design-system.html from the approved DESIGN.md within this session before Phase 7's `accept` — never stale; orthogonal to the in-sprint cadence (`design-system.md` §10)
+- must: regenerate design-system.html from the approved DESIGN.md within this session before Phase 7's `accept` — never stale, token rows and CSS variables only via `design-tokens` (Phase 5); orthogonal to the in-sprint cadence (`design-system.md` §10)
 - must: reach a clean `designmd-lint` (`design-system.md` §11) before Phase 5 and before Phase 7's `accept`; section writes are not gated on it; a warning exclusion needs user approval and recorded rationale
 - must: give every component listed in DESIGN.md a live preview in design-system.html
 - never: mix the multi-field and options request shapes in one request.

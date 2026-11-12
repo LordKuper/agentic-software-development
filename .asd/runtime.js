@@ -12,7 +12,8 @@ const PROBE_TIMEOUT_MS = 3000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
 /** The longest a tool call may run before its silent transcript counts as a stall: the host's maximum command timeout. */
 const TOOL_CALL_CEILING_MS = 600000;
-const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
+const ESCALATED_CHANGE_RISKS = ['migration', 'broad reasoning', 'cross domain'];
+const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'public contract', 'workflow gate', ...ESCALATED_CHANGE_RISKS];
 /** The single review-ledger row vocabulary: allowed statuses per row type, plus the one status carrying `p` and the one carrying `f`. Emitted into every manifest and enforced on every ledger from here, so published and enforced vocabulary cannot drift. */
 const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
 /** One filled ledger row, published beside the vocabulary so a reviewer reads the row shape off its own input too. Its status is taken from the vocabulary constant and paired with the key that status requires, so the example cannot teach a row the validator rejects. */
@@ -106,11 +107,14 @@ const TIMING_LEDGER = 'timing.jsonl';
 const TIMING_KINDS = ['phase', 'dispatch', 'review-iteration', 'suite', 'external-review', 'user-wait'];
 /** Kinds timing a single machine operation, the only ones the slow set ranks; user waits are never slow. */
 const LEAF_MACHINE_KINDS = ['dispatch', 'suite', 'external-review'];
-const TIMING_OUTCOMES = ['done', 'interrupted'];
+/** Close outcomes; `continued` closes an operation a recovery had closed as `interrupted` and the orchestrator carried on. */
+const TIMING_OUTCOMES = ['done', 'interrupted', 'continued'];
 /** Longest leaf machine operations the timing summary always lists as slow. */
 const SLOW_TOP_N = 5;
-/** Minutes past which a leaf machine operation is slow whatever its rank. */
+/** Minutes past which a leaf machine operation is slow, and a phase stretch covered by no operation is idle. */
 const SLOW_MINUTES = 30;
+/** Longest commit header, `<type>(<scope>): <subject>` whole, in characters. */
+const COMMIT_HEADER_MAX = 50;
 
 /** How long a PR may report no check before it counts as having none. */
 const CHECKS_GRACE_MS = 60000;
@@ -152,7 +156,7 @@ function riskEntry(value) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) fail('risks entry must be a name or a typed risk');
   if (typeof entry.name !== 'string' || entry.name.length === 0 || entry.name.includes('\0')) fail('risks entry name must be a non-empty string');
   if (entry.target !== 'change' && entry.target !== 'artifact') fail('risks entry target must be change or artifact');
-  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(entry.name.toLowerCase().replace(/[\s_-]+/g, ' ').trim())) fail(`reserved risk class is change by definition: ${entry.name}`);
+  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(normalizedRiskName(entry.name))) fail(`reserved risk class is change by definition: ${entry.name}`);
   return { name: entry.name, target: entry.target };
 }
 
@@ -316,29 +320,38 @@ function recordExternalFailure(input) {
   return cache.entries[input.fingerprint];
 }
 
-/** Selects a task class without allowing a task to move to a weaker class; a change risk or a failed objective check only forbids `mechanical`, and a legacy `critical` prior tier reads `standard`. */
+function normalizedRiskName(name) {
+  return name.toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+}
+
+/** Selects a task class without allowing a task to move to a weaker class. A change risk forbids `mechanical`, and migration, broad reasoning and cross-domain risks select `escalated`. A failed objective check after its correction attempt first keeps the tier and asks for one effort level higher (`raiseEffort`); once `effortRaised`, it moves one tier up. A legacy `critical` prior tier reads `standard`. */
 function routeTask(input) {
   if (!input || typeof input !== 'object') fail('routing input required');
   if (!['command', 'mechanical', 'standard'].includes(input.kind)) fail('routing kind invalid');
   if (typeof input.objectiveInputs !== 'boolean' || typeof input.failedObjectiveCheck !== 'boolean') fail('routing evidence incomplete');
+  if (input.effortRaised !== undefined && typeof input.effortRaised !== 'boolean') fail('effortRaised invalid');
   const risks = riskArray(input.risks, 'risks');
   const checks = stringArray(input.checks, 'checks');
   if (!Number.isInteger(input.correctionAttempts) || input.correctionAttempts < 0) fail('correctionAttempts invalid');
-  const attempted = input.correctionAttempts;
-  const ranks = { mechanical: 0, standard: 1 };
+  const tiers = ['mechanical', 'standard', 'escalated'];
   const priorTier = input.priorTier === 'critical' ? 'standard' : input.priorTier;
-  if (priorTier !== undefined && !Object.prototype.hasOwnProperty.call(ranks, priorTier)) fail('priorTier invalid');
-  const changeRisk = risks.find((risk) => risk.target === 'change');
+  if (priorTier !== undefined && !tiers.includes(priorTier)) fail('priorTier invalid');
+  const changeRisks = risks.filter((risk) => risk.target === 'change');
+  const escalatingRisk = changeRisks.find((risk) => ESCALATED_CHANGE_RISKS.includes(normalizedRiskName(risk.name)));
+  const changeRisk = escalatingRisk || changeRisks[0];
   const artifactRisk = risks.find((risk) => risk.target === 'artifact');
   const deterministicCommand = input.kind === 'command' && input.objectiveInputs === true && checks.includes('deterministic-state');
   const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
-  const escalated = changeRisk || (input.failedObjectiveCheck && attempted >= 1);
-  const computedTier = !escalated && (deterministicCommand || mechanical) ? 'mechanical' : 'standard';
-  const clamped = Boolean(priorTier) && ranks[priorTier] > ranks[computedTier];
-  const tier = clamped ? priorTier : computedTier;
-  const execution = deterministicCommand && tier === 'mechanical' && risks.length === 0 ? 'command' : 'agent';
-  const reason = changeRisk ? `risk:${changeRisk.name}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : clamped ? 'no-downgrade' : artifactRisk ? `artifact-risk:${artifactRisk.name}` : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
-  return { tier, execution, reason };
+  const failed = input.failedObjectiveCheck && input.correctionAttempts >= 1;
+  const computedRank = escalatingRisk ? 2 : !changeRisk && (deterministicCommand || mechanical) ? 0 : 1;
+  const priorRank = priorTier === undefined ? 0 : tiers.indexOf(priorTier);
+  const clamped = priorRank > computedRank;
+  const baseRank = Math.max(computedRank, priorRank);
+  const raiseEffort = failed && input.effortRaised !== true;
+  const tier = tiers[failed && !raiseEffort ? Math.min(baseRank + 1, 2) : baseRank];
+  const execution = deterministicCommand && tier === 'mechanical' && risks.length === 0 && !failed ? 'command' : 'agent';
+  const reason = raiseEffort ? 'effort-step' : changeRisk ? `risk:${changeRisk.name}` : failed ? 'failed-objective-check' : clamped ? 'no-downgrade' : artifactRisk ? `artifact-risk:${artifactRisk.name}` : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
+  return { tier, execution, reason, raiseEffort };
 }
 
 function rowsById(rows, expected, allowedNa, findings, label) {
@@ -473,7 +486,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
   if (rubrics.includes(COMBINED_REVIEWER) && !(input.scopeFiles || input.files).some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
   if (input.phase === 'design-review') {
-    if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
+    if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$|(^|\/)design\/mockups\//.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
   }
   if (!input.files.some(isUiSurface)) grant('ui', NA_PREDICATES.uiSurface);
@@ -554,13 +567,36 @@ function reviewFindings(text) {
   });
 }
 
-/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). A written review is never overwritten, so the orchestrator's later appends survive. */
+/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a FAIL verdict with a `Stalemate: <N> iterations` line) excepted, its sets being floored already. */
+function applyFloor(body, floor) {
+  const rank = SEVERITIES.indexOf(floor);
+  const lines = body.split('\n');
+  const start = lines.findIndex((line) => line.trim().startsWith('|'));
+  const end = lines.findIndex((line, i) => i > start && !line.trim().startsWith('|'));
+  const tableEnd = end === -1 ? lines.length : end;
+  const isBelow = (line) => tableCells(line)[0] !== '—' && SEVERITIES.indexOf(tableCells(line)[1]) < rank;
+  const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
+  const dropped = lines.length - kept.length;
+  const keptRows = tableEnd - start - 2 - dropped;
+  const isStalemate = /\]: FAIL\s*$/.test(lines[0]) && /^Stalemate: \d+ iterations/m.test(body);
+  const approve = keptRows === 0 && !isStalemate;
+  const verdict = approve ? kept[0].replace(/\]: (?:CONCERNS|FAIL)(\s*)$/, ']: APPROVE$1') : kept[0];
+  const text = [verdict, ...kept.slice(1)].map((line) => {
+    const count = /^(CONCERNS|FAIL): \d+\s*$/.exec(line);
+    if (count === null) return line;
+    return approve ? 'APPROVE' : `${count[1]}: ${keptRows}`;
+  }).join('\n');
+  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, approve };
+}
+
+/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
 function persistReview(input) {
   const { phase, reviewer, text, outDir } = input;
   if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
   const keys = reviewerKeys(phase);
   if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
   if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
+  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
   const start = /^[ \t]*\[REVIEW-/m.exec(text);
   if (start === null) fail('returned text carries no verdict token: an interrupted dispatch, not a verdict');
   const body = text.slice(start.index).trimStart();
@@ -577,9 +613,17 @@ function persistReview(input) {
   }
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
-  fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
-  fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
-  return { token: verdict, findings };
+  if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
+    fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
+    fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+    return { token: verdict, findings };
+  }
+  const floored = applyFloor(body, input.floor);
+  const flooredFindings = findings.filter((finding) => SEVERITIES.indexOf(finding.severity) >= SEVERITIES.indexOf(input.floor));
+  const flooredVerdict = floored.approve ? 'APPROVE' : verdict;
+  fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(flooredFindings) + '\n', 'utf8');
+  fs.writeFileSync(`${stem}.md`, floored.text, 'utf8');
+  return { token: flooredVerdict, findings: flooredFindings, dropped: floored.dropped };
 }
 
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
@@ -744,16 +788,35 @@ function memoryViolations(diff, names) {
   return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
 }
 
-/** Runs the work-history check over the staged agent-memory changes. */
-function memoryCheck(flags) {
+/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (files or directories, repo-root relative) when any are given. */
+function memoryCheck(flags, paths = []) {
   if (Object.keys(flags).length > 0) fail('memory-check takes no flags');
   const diff = runGit(['diff', '--cached', '-U0', '--no-color', '--no-ext-diff', '--no-prefix', '--', AGENT_MEMORY_PATHSPEC]);
   const names = runGit(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACR', '--', AGENT_MEMORY_PATHSPEC]).split('\0').filter(Boolean);
-  return memoryViolations(diff, names);
+  const named = paths.map((entry) => entry.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, ''));
+  const isNamed = (violation) => named.length === 0 || named.some((target) => violation.path === target || violation.path.startsWith(`${target}/`));
+  return memoryViolations(diff, names).filter(isNamed);
 }
 
-/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing. */
-function numstatLines(output, files) {
+/** The pre-commit report for a commit of `paths` (all staged when none): the header's length and the memory-check hits among those paths; `ok` only when the header fits and there is no hit. */
+function commitCheck(flags, paths) {
+  const unknown = Object.keys(flags).filter((name) => name !== 'subject');
+  if (unknown.length > 0 || typeof flags.subject !== 'string' || flags.subject === '') fail('commit-check takes --subject "<header>" [-- <paths...>]');
+  const headerLength = Array.from(flags.subject).length;
+  const memory = memoryCheck({}, paths);
+  return { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+}
+
+/** Runs `commit-check`: `--subject` flag, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
+function commitCheckCommand(args) {
+  const split = args.indexOf('--');
+  const report = commitCheck(parseFlagArgs(split === -1 ? args : args.slice(0, split)), split === -1 ? [] : args.slice(split + 1));
+  process.stdout.write(JSON.stringify(report) + '\n');
+  return report.ok ? 0 : 1;
+}
+
+/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
+function numstatLines(output, files, discounts = new Map()) {
   const listed = new Set(stringArray(files, 'files'));
   const tokens = output.split('\0');
   let lines = 0;
@@ -763,7 +826,8 @@ function numstatLines(output, files) {
     if (!entry) fail(`numstat entry malformed: ${tokens[at]}`);
     const [, added, deleted, file] = entry;
     const isRename = file === '';
-    if (added !== '-' && listed.has(isRename ? tokens[at + 2] : file)) lines += Number(added) + Number(deleted);
+    const counted = isRename ? tokens[at + 2] : file;
+    if (added !== '-' && listed.has(counted)) lines += Number(added) + Number(deleted) - (discounts.get(counted) || 0);
     at += isRename ? 3 : 1;
   }
   return lines;
@@ -907,23 +971,115 @@ function writeGitOutput(file, invocations) {
 }
 
 /** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file; rewritten on every call, since those invocations name refs and paths rather than content and a reused directory may hold an older file under the same name, and renamed into place so it is never seen half-written. */
-function writeManifestDiff(dir, files, ranges, snapshot) {
+function writeManifestDiff(dir, files, ranges, snapshot, renameMap = null) {
   if (ranges === null && snapshot === null) return null;
   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
-  const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
+  const diff = path.join(dir, `${fingerprint(renameMap === null ? invocations : { invocations, renameMap }).slice(0, 16)}.diff`);
   const partial = `${diff}.${process.pid}.tmp`;
-  writeGitOutput(partial, invocations);
+  if (ranges === null) writeGitOutput(partial, invocations);
+  else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
   fs.renameSync(partial, diff);
   return diff;
 }
 
+/** Reads a rename map: a JSON object of old text to new text, each key a non-empty literal substring a plan's rename replaced everywhere; null when no file is given. */
+function readRenameMap(file) {
+  if (file === undefined) return null;
+  const map = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const isMap = map !== null && typeof map === 'object' && !Array.isArray(map) && Object.keys(map).length > 0;
+  if (!isMap || !Object.entries(map).every(([old, now]) => old !== '' && typeof now === 'string')) fail('--rename-map must be a JSON object of non-empty old text to new text strings');
+  return map;
+}
+
+/** A function applying every rename-map substitution to a line at once, longest key first, so one entry's output is never rewritten by another. */
+function substituter(map) {
+  const pattern = new RegExp(Object.keys(map).sort((a, b) => b.length - a.length).map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+  return (line) => line.replace(pattern, (match) => map[match]);
+}
+
+/** Substituted line count of a hunk that only applies the substitutions, else 0: each run of changed lines between context lines must be its removed lines mapped equal to its added lines, with equal end-of-file markers, so a moved or edited line never qualifies. */
+function substitutedLines(hunk, substitute) {
+  let removed = [];
+  let added = [];
+  let markers = [0, 0];
+  let side = null;
+  let count = 0;
+  let isPure = true;
+  const flush = () => {
+    isPure = isPure && removed.length === added.length && markers[0] === markers[1] && removed.every((line, i) => substitute(line) === added[i]);
+    count += removed.filter((line) => substitute(line) !== line).length;
+    [removed, added, markers] = [[], [], [0, 0]];
+  };
+  hunk.split('\n').slice(1).forEach((line) => {
+    if (line.startsWith('-')) [side, removed] = [0, [...removed, line.slice(1)]];
+    else if (line.startsWith('+')) [side, added] = [1, [...added, line.slice(1)]];
+    else if (line.startsWith('\\')) markers[side === null ? 0 : side] += 1;
+    else flush();
+  });
+  flush();
+  return isPure ? count : 0;
+}
+
+const GIT_PATH_ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
+
+/** A patch-header path decoded to the literal repo path numstat `-z` prints: a C-quoted one (`"b/\303\251.js"`) unescaped, octal escapes as UTF-8 bytes; a bare one as is. */
+function gitPath(text) {
+  if (!text.startsWith('"')) return text;
+  const bytes = [];
+  for (const [, escape, plain] of text.slice(1, -1).matchAll(/\\([0-7]{3}|.)|([^\\]+)/g)) {
+    if (plain !== undefined) bytes.push(...Buffer.from(plain, 'utf8'));
+    else bytes.push(escape.length === 3 ? parseInt(escape, 8) : GIT_PATH_ESCAPES[escape]);
+  }
+  return Buffer.from(bytes).toString('utf8');
+}
+
+/** The literal repo path a patch section names: its rename target or `+++` path, else for a deletion the `b/` half of its `diff --git` line. */
+function sectionPath(head) {
+  const renamed = /^rename to (.*)$/m.exec(head);
+  if (renamed !== null) return gitPath(renamed[1]);
+  const plus = /^\+\+\+ (.*?)\t?$/m.exec(head);
+  if (plus !== null && plus[1] !== '/dev/null') return gitPath(plus[1]).slice(2);
+  const pair = head.split('\n', 1)[0].slice('diff --git '.length);
+  return gitPath(pair.slice((pair.length + 1) / 2)).slice(2);
+}
+
+/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file (a fully collapsed file keeping its mode and rename header lines); `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
+function collapsePatch(patch, substitute) {
+  const discounts = [];
+  const text = patch.split(/^(?=diff --git )/m).map((section) => {
+    if (!section.startsWith('diff --git ')) return section;
+    const [head, ...hunks] = section.split(/^(?=@@ )/m);
+    const removedLines = (parts) => parts.join('').split('\n').filter((line) => line.startsWith('-')).length;
+    if (/^deleted file mode /m.test(head)) {
+      discounts.push([sectionPath(head), removedLines(hunks)]);
+      return `# collapsed: ${sectionPath(head)}: deleted, ${removedLines(hunks)} lines\n`;
+    }
+    const counts = substitute === null ? hunks.map(() => 0) : hunks.map((hunk) => substitutedLines(hunk, substitute));
+    const total = counts.reduce((sum, count) => sum + count, 0);
+    if (total === 0) return section;
+    discounts.push([sectionPath(head), 2 * total]);
+    const kept = hunks.filter((hunk, i) => counts[i] === 0);
+    const semantic = head.split('\n').filter((line) => /^(?:old mode|new mode|similarity index|rename from|rename to|copy from|copy to) /.test(line));
+    const header = kept.length > 0 ? head + kept.join('') : semantic.length > 0 ? `${[head.split('\n', 1)[0], ...semantic].join('\n')}\n` : '';
+    return `${header}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
+  }).join('');
+  return { text, discounts };
+}
+
+/** Runs each patch invocation and collapses its output (`collapsePatch`) under `renameMap`; `discounts` is a Map of collapsed file to the numstat lines it no longer contributes. */
+function collapsedPatch(invocations, renameMap) {
+  const substitute = renameMap === null ? null : substituter(renameMap);
+  const results = invocations.map((invocation) => collapsePatch(runGit(invocation.args), substitute));
+  return { text: results.map((result) => result.text).join(''), discounts: new Map(results.flatMap((result) => result.discounts)) };
+}
+
 function positiveInteger(value, name) {
-  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) fail(`${name} <n> must be a positive integer`);
+  if (typeof value !== 'string' || !/^0*[1-9]\d*$/.test(value)) fail(`${name} <n> must be a positive integer`);
   return Number(value);
 }
 
 /** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
-function emitExternalScope(flags, files, ranges, snapshot) {
+function emitExternalScope(flags, files, ranges, snapshot, renameMap) {
   const isImplReview = flags.phase === 'impl-review';
   if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
   if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
@@ -931,14 +1087,14 @@ function emitExternalScope(flags, files, ranges, snapshot) {
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot) },
+    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot, renameMap) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
 }
 
 /** Writes one internal reviewer's coverage manifest and its diff. */
-function emitInternalManifest(flags, files, ranges, snapshot) {
+function emitInternalManifest(flags, files, ranges, snapshot, renameMap) {
   if (flags.iteration !== undefined || flags.wave !== undefined) fail(`--iteration/--wave apply to --reviewer ${EXTERNAL_REVIEWER} only`);
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
@@ -957,7 +1113,7 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
   });
   const stem = path.join(flags.out, flags.reviewer);
   fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
-  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot);
+  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot, renameMap);
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
@@ -970,13 +1126,16 @@ function emitManifestCommand(flags) {
   const ranges = manifestRanges(flags);
   const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
   const files = [...new Set(readFileList(flags.files).concat([...whole]))];
-  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot) : emitInternalManifest(flags, files, ranges, snapshot);
+  const renameMap = readRenameMap(flags['rename-map']);
+  if (renameMap !== null && ranges === null) fail('--rename-map applies to impl-review with --base/--head only');
+  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot, renameMap) : emitInternalManifest(flags, files, ranges, snapshot, renameMap);
 }
 
-/** Bytes of the patch a reviewer reads for `files` over `base...head`, a rename paired with its source so a move is not counted as an add; zero for no files. */
-function patchBytes(base, head, files) {
+/** Bytes of the collapsed patch a reviewer reads for `files` over `base...head`, a rename paired with its source so a move is not counted as an add, and the numstat lines each collapsed file no longer contributes; zero bytes for no files. */
+function measurePatch(base, head, files, renameMap) {
   const ranges = { scope: { base, head, renames: rangeRenames(base, head) }, full: null, fullFiles: new Set() };
-  return rangePatchInvocations(ranges, files).reduce((total, invocation) => total + Buffer.byteLength(runGit(invocation.args)), 0);
+  const { text, discounts } = collapsedPatch(rangePatchInvocations(ranges, files), renameMap);
+  return { bytes: Buffer.byteLength(text), discounts };
 }
 
 /** Measures the scope and, with `--division`, records it; `--single` fixes the wave count at 1 whatever the measure says, so a one-wave division over a scope above a threshold is accepted and the reported and recorded `waves` is 1. Without it the measured count rules. */
@@ -987,8 +1146,8 @@ function reviewWavesCommand(flags) {
   const head = gitRef(flags.head, '--head');
   const scope = readFileList(flags.files);
   const files = new Set(scope).size;
-  const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
-  const bytes = patchBytes(base, head, scope);
+  const { bytes, discounts } = measurePatch(base, head, scope, readRenameMap(flags['rename-map']));
+  const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope, discounts);
   const thresholds = { lines: WAVE_THRESHOLD_LINES, files: WAVE_THRESHOLD_FILES, bytes: WAVE_THRESHOLD_BYTES };
   const measured = { lines, files, bytes, thresholds, waves: flags.single === true ? 1 : reviewWaveCount(lines, files, bytes) };
   if (flags.division === undefined) return measured;
@@ -1113,7 +1272,7 @@ function timingEntries(text) {
   return text.split('\n').map(parse).filter((entry) => entry && (entry.op === 'open' || entry.op === 'close') && typeof entry.id === 'string');
 }
 
-/** Replays ledger entries: the ops still open keyed by id, the close entries, and the ids of closes no open preceded. */
+/** Replays ledger entries: the ops still open keyed by id, the close entries, and the ids of closes no open preceded; a `continued` close needs none, it continues an op an earlier close ended. */
 function ledgerState(entries) {
   const open = new Map();
   const closed = [];
@@ -1123,10 +1282,20 @@ function ledgerState(entries) {
       open.set(entry.id, entry);
       continue;
     }
-    if (!open.delete(entry.id)) unpaired.push(entry.id);
+    if (!open.delete(entry.id) && entry.outcome !== 'continued') unpaired.push(entry.id);
     closed.push(entry);
   }
   return { open, closed, unpaired };
+}
+
+/** Each id's latest close entry, dropped when the id was opened again after it. */
+function latestCloses(entries) {
+  const closes = new Map();
+  for (const entry of entries) {
+    closes.delete(entry.id);
+    if (entry.op === 'close') closes.set(entry.id, entry);
+  }
+  return closes;
 }
 
 function phaseName(id) {
@@ -1138,10 +1307,10 @@ function phaseOrdinal(id) {
   return match === null ? 1 : Number(match[1]);
 }
 
-/** The open op an id names: its exact id, else the latest open phase op its bare phase name names. */
-function resolveOpen(open, id) {
-  if (open.has(id)) return open.get(id);
-  return [...open.values()].reverse().find((entry) => entry.kind === 'phase' && phaseName(entry.id) === id);
+/** The op an id names in `ops` (open ops by id, or latest closes): its exact id, else the latest phase op its bare phase name names. */
+function resolveOp(ops, id) {
+  if (ops.has(id)) return ops.get(id);
+  return [...ops.values()].reverse().find((entry) => entry.kind === 'phase' && phaseName(entry.id) === id);
 }
 
 function closeEntry(entry, end, outcome) {
@@ -1186,19 +1355,39 @@ function timingRequest(flags) {
   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open, or of a phase whose bare name is already open, is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
+/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened is recorded, unpaired, so the summary reports it (warns). */
+function timingCloses(entries, open, id, outcome, now, warnings) {
+  const entry = resolveOp(open, id);
+  if (entry !== undefined) return closeWithChildren(open, entry, now, outcome, warnings);
+  const previous = resolveOp(latestCloses(entries), id);
+  if (previous === undefined) {
+    warnings.push(`close of ${id} matches no open op`);
+    return [closeEntry({ id, kind: null, parent: null, start: null, attrs: {} }, now, outcome)];
+  }
+  if (previous.outcome === 'interrupted' && outcome !== 'interrupted') return [closeEntry({ ...previous, start: previous.end }, now, 'continued')];
+  warnings.push(`close of ${previous.id} skipped: already closed`);
+  return [];
+}
+
+/** Closes `entry` and, before it, every op still open under it, deepest first, all at `end` with `outcome`; each child warns. */
+function closeWithChildren(open, entry, end, outcome, warnings) {
+  const children = [...open.values()].filter((child) => child.parent === entry.id);
+  const closes = children.flatMap((child) => {
+    warnings.push(`close of ${entry.id} closed open child ${child.id}`);
+    return closeWithChildren(open, child, end, outcome, warnings);
+  });
+  open.delete(entry.id);
+  return closes.concat(closeEntry(entry, end, outcome));
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
 function timingAppend(text, flags, now) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
   const { open } = ledgerState(entries);
   const warnings = [];
   const written = [];
-  for (const id of request.close) {
-    const entry = resolveOpen(open, id);
-    if (entry === undefined) warnings.push(`close of ${id} matches no open op`);
-    else open.delete(entry.id);
-    written.push(closeEntry(entry || { id, kind: null, parent: null, start: null, attrs: {} }, now, request.outcome));
-  }
+  for (const id of request.close) written.push(...timingCloses(entries.concat(written), open, id, request.outcome, now, warnings));
   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
   for (const name of request.open) {
     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
@@ -1217,7 +1406,7 @@ function timingAppend(text, flags, now) {
 /** A new op's parent: the open op `--parent` names, kept verbatim when none is open; without `--parent`, the open phase op for any op but a phase. */
 function openParent(open, request) {
   if (request.parent !== undefined) {
-    const named = resolveOpen(open, request.parent);
+    const named = resolveOp(open, request.parent);
     return named === undefined ? request.parent : named.id;
   }
   const phase = request.kind === 'phase' ? undefined : [...open.values()].reverse().find((entry) => entry.kind === 'phase');
@@ -1341,6 +1530,22 @@ function timingBaseline(archivedTexts) {
   return { ledgers: archivedTexts.length, by_phase: medians('by_phase'), by_kind: medians('by_kind') };
 }
 
+/** Stretches over SLOW_MINUTES inside a closed phase op that no other op overlaps, as `{phase, start, seconds}` by start; an op still open covers to the phase's end. */
+function idleStretches(all) {
+  const limitMs = SLOW_MINUTES * 60000;
+  return all.filter((phase) => phase.kind === 'phase' && Number.isFinite(phase.end)).flatMap((phase) => {
+    const covers = all.filter((op) => op.kind !== 'phase').map((op) => ({ start: Math.max(op.start, phase.start), end: Math.min(op.end, phase.end) }))
+      .filter((cover) => cover.end > cover.start).sort((a, b) => a.start - b.start);
+    const stretches = [];
+    let reach = phase.start;
+    for (const cover of covers.concat({ start: phase.end, end: phase.end })) {
+      if (cover.start - reach > limitMs) stretches.push({ phase: phase.id, start: new Date(reach).toISOString(), seconds: seconds(cover.start - reach) });
+      reach = Math.max(reach, cover.end);
+    }
+    return stretches;
+  }).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+}
+
 function timingGaps(ops, open, unpaired) {
   const openOps = [...open.values()].map((entry) => ({ id: entry.id, kind: entry.kind, start: Date.parse(entry.start), end: Infinity }));
   const all = ops.concat(openOps);
@@ -1351,10 +1556,11 @@ function timingGaps(ops, open, unpaired) {
     outside_phase: all.filter((op) => op.kind !== 'phase' && !inPhase(op)).map((op) => op.id),
     open: [...open.values()].map((entry) => ({ id: entry.id, kind: entry.kind, start: entry.start })),
     negative: ops.filter((op) => op.negative).map((op) => op.id),
+    idle: idleStretches(all),
   };
 }
 
-/** The deterministic timing summary of a ledger holding `text` (null when it is missing) against archived sprints' ledger texts; it reads no clock, so an op still open is reported open, never measured. Machine time is the phase union minus the user-wait union; unaccounted time is wall time outside every phase. */
+/** The deterministic timing summary of a ledger holding `text` (null when it is missing) against archived sprints' ledger texts; it reads no clock, so an op still open is reported open, never measured. Machine time is the phase union minus the user-wait union; unaccounted time is wall time outside every phase; `gaps.idle` lists phase stretches no op covers. */
 function timingSummary(text, archivedTexts) {
   if (text === null) return { timing: null };
   const entries = timingEntries(text);
@@ -1500,6 +1706,140 @@ async function waitForChecks({ read, sleep, now }) {
   }
 }
 
+/** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
+function fillHeadAnalysed(text, entry, head) {
+  const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
+  const rows = (text.match(row) || []).length;
+  if (rows !== 1) fail(`test plan holds ${rows} Entry log rows for entry ${entry}, expected 1`);
+  return text.replace(row, `$1 ${head} $2`);
+}
+
+/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; both inputs are validated before either file is written. */
+function implTestClose(flags, now = new Date()) {
+  const missing = ['test-plan', 'entry', 'decisions', 'line'].filter((name) => typeof flags[name] !== 'string');
+  if (missing.length > 0) fail(`impl-test-close requires ${missing.map((name) => `--${name}`).join(', ')}`);
+  if (!/^[1-9]\d*$/.test(flags.entry)) fail('--entry <positive integer> required');
+  if (flags.line.trim() === '' || /[\r\n]/.test(flags.line)) fail('--line must be one non-empty line');
+  const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
+  const filled = fillHeadAnalysed(fs.readFileSync(flags['test-plan'], 'utf8'), flags.entry, head);
+  const log = fs.readFileSync(flags.decisions, 'utf8');
+  fs.writeFileSync(flags['test-plan'], filled, 'utf8');
+  fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
+  return { entry: Number(flags.entry), head };
+}
+
+const DESIGN_KEY_LINE = /^([A-Za-z0-9_.-]+):(?: +(.*))?$/;
+const DESIGN_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
+const DESIGN_CSS_UNSAFE = /[;{}<>]/;
+const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
+const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
+const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
+/** Marker comment form per region: HTML in the token table, CSS inside the vars `<style>` (an HTML comment there breaks the `:root` selector). */
+const DESIGN_REGIONS = { tokens: (edge) => `<!-- asd:tokens:${edge} -->`, vars: (edge) => `/* asd:vars:${edge} */` };
+
+/** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
+function designScalar(rest, where) {
+  if (/^["']/.test(rest)) {
+    const quoted = rest[0] === '"' ? /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/.exec(rest) : /^'((?:[^']|'')*)'\s*(?:#.*)?$/.exec(rest);
+    if (!quoted) fail(`${where}: unterminated or trailing-text quoted scalar`);
+    if (rest[0] === "'") return quoted[1].replace(/''/g, "'");
+    try {
+      return JSON.parse(`"${quoted[1]}"`);
+    } catch (error) {
+      return fail(`${where}: unsupported escape in quoted scalar`);
+    }
+  }
+  if (DESIGN_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
+  return rest.replace(/\s+#.*$/, '').trim();
+}
+
+/** Leaf tokens `{path, value, line}` of a DESIGN.md front matter in document order; only nested maps of scalars parse, anything else fails naming its line. */
+function designLeaves(text, file) {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  if (lines[0].trimEnd() !== '---') fail(`${file}:1: front matter must open with ---`);
+  const close = lines.findIndex((line, index) => index > 0 && line.trimEnd() === '---');
+  if (close === -1) fail(`${file}: front matter is not closed with ---`);
+  const leaves = [];
+  const stack = [{ indent: 0, path: [], keys: new Set() }];
+  let pending = null;
+  for (let index = 1; index < close; index += 1) {
+    const where = `${file}:${index + 1}`;
+    const line = lines[index];
+    if (/^\s*(?:#.*)?$/.test(line)) continue;
+    if (/^ *\t/.test(line)) fail(`${where}: tab indentation is not valid YAML`);
+    const indent = line.length - line.trimStart().length;
+    const match = DESIGN_KEY_LINE.exec(line.trim());
+    if (!match) fail(`${where}: unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)`);
+    if (pending && indent > pending.indent) {
+      stack.push({ indent, path: pending.path, keys: new Set() });
+    } else if (!pending && indent > stack[stack.length - 1].indent) {
+      fail(`${where}: unexpected indentation (multi-line scalar or unsupported construct)`);
+    }
+    pending = null;
+    while (indent < stack[stack.length - 1].indent) stack.pop();
+    const frame = stack[stack.length - 1];
+    if (indent !== frame.indent) fail(`${where}: inconsistent indentation`);
+    if (frame.keys.has(match[1])) fail(`${where}: duplicate key "${match[1]}"`);
+    frame.keys.add(match[1]);
+    const rest = (match[2] || '').trim();
+    const keyPath = [...frame.path, match[1]];
+    if (rest === '' || rest.startsWith('#')) {
+      pending = { indent, path: keyPath };
+      continue;
+    }
+    leaves.push({ path: keyPath.join('.'), value: designScalar(rest, where), line: index + 1 });
+  }
+  return leaves;
+}
+
+/** Token-reference `Type` chip for one leaf: reference, color, dimension, else typography (font family, weight, line height and other typographic scalars). */
+function designTokenType(leaf) {
+  if (DESIGN_REFERENCE.test(leaf.value)) return 'reference';
+  if (DESIGN_COLOR.test(leaf.value)) return 'color';
+  if (leaf.path.startsWith('typography.')) return 'typography';
+  return DESIGN_DIMENSION.test(leaf.value) ? 'dimension' : 'typography';
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function designVarName(tokenPath) {
+  return `--${tokenPath.replace(/\./g, '-')}`;
+}
+
+function designCssValue(leaf, file) {
+  const reference = DESIGN_REFERENCE.exec(leaf.value);
+  const value = reference ? `var(${designVarName(reference[1])})` : leaf.value;
+  if (DESIGN_CSS_UNSAFE.test(value)) fail(`${file}:${leaf.line}: value of ${leaf.path} holds a character unsafe in a CSS declaration`);
+  return value;
+}
+
+/** Text with the content between the `marker` start/end comments replaced by `content`; the markers must each appear exactly once, start first. */
+function replaceMarkedRegion(html, marker, content, eol, file) {
+  const start = marker('start');
+  const end = marker('end');
+  const from = html.indexOf(start);
+  const to = html.indexOf(end);
+  if (from === -1 || to === -1 || to < from || html.indexOf(start, from + 1) !== -1 || html.indexOf(end, to + 1) !== -1) fail(`${file}: needs exactly one ${start} ... ${end} marker pair`);
+  return `${html.slice(0, from + start.length)}${eol}${content}${eol}${html.slice(to)}`;
+}
+
+/** Rebuilds the token-reference rows and the `:root` CSS variables of `--html` from `--design`'s grouped tokens (top-level scalars such as `name` are metadata), touching only the two marked regions. */
+function designTokensCommand(flags) {
+  if (typeof flags.design !== 'string' || typeof flags.html !== 'string') fail('--design <DESIGN.md> and --html <design-system.html> required');
+  const leaves = designLeaves(fs.readFileSync(flags.design, 'utf8'), flags.design).filter((leaf) => leaf.path.includes('.'));
+  if (leaves.length === 0) fail(`${flags.design}: front matter holds no tokens`);
+  const html = fs.readFileSync(flags.html, 'utf8');
+  const eol = html.includes('\r\n') ? '\r\n' : '\n';
+  const rows = leaves.map((leaf) => `      <tr><td><code>${escapeHtml(leaf.path)}</code></td><td>${escapeHtml(leaf.value)}</td><td><span class="chip area">${designTokenType(leaf)}</span></td></tr>`);
+  const declarations = leaves.map((leaf) => `  ${designVarName(leaf.path)}: ${designCssValue(leaf, flags.design)};`);
+  const withRows = replaceMarkedRegion(html, DESIGN_REGIONS.tokens, rows.join(eol), eol, flags.html);
+  const rebuilt = replaceMarkedRegion(withRows, DESIGN_REGIONS.vars, [':root {', ...declarations, '}'].join(eol), eol, flags.html);
+  fs.writeFileSync(flags.html, rebuilt, 'utf8');
+  return { tokens: leaves.length };
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -1522,6 +1862,7 @@ function inputJson(flags) {
 async function main(argv) {
   const command = argv[2];
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
+  if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
@@ -1538,7 +1879,7 @@ async function main(argv) {
   }
   if (command === 'persist-review') {
     if (typeof flags.in !== 'string' || typeof flags['out-dir'] !== 'string') fail('--in <path> and --out-dir <iteration dir> required');
-    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest });
+    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor });
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
@@ -1564,6 +1905,14 @@ async function main(argv) {
     const violations = memoryCheck(flags);
     process.stdout.write(JSON.stringify(violations) + '\n');
     return violations.length === 0 ? 0 : 1;
+  }
+  if (command === 'impl-test-close') {
+    process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    return 0;
+  }
+  if (command === 'design-tokens') {
+    process.stdout.write(JSON.stringify(designTokensCommand(flags)) + '\n');
+    return 0;
   }
   if (command === 'draft-snapshot') {
     if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
@@ -1611,7 +1960,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

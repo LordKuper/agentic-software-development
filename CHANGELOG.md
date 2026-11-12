@@ -2,6 +2,38 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.5.0
+
+Cheaper model tiers for the work that does not need the main model, a read-only scout for orchestrator scans, and a batch of retro-intake fixes to review, impl-test, commits and design-system generation.
+
+### Added
+- **`asd-scout`** (Haiku/medium; Codex Luna/medium): a read-only agent returning path:line-cited summaries of code and documents for the orchestrator's audit, plan and cleanup scans. Judgment and every artifact stay with the orchestrator.
+- **`asd-dev-escalated`** (Opus/high; Codex renders the base's Sol/high): `route-task` has a tier above `standard` for the change risks `migration`, `broad-reasoning` and `cross-domain`; a task failing its objective check is re-dispatched at one effort level higher before it moves to the next tier.
+- **`asd-tester-runner`** (Haiku/medium; Codex Luna/high): runs a named suite scope (impl-review terminal suite, impacted re-runs) and reports pass/fail; authoring, pruning and triage stay on `asd-tester`.
+- **README model guidance**: the recommended orchestrator session model (Opus `medium`, Fable for long unattended or large runs) and the `haiku` alias note (Haiku 4.5 on Bedrock/Vertex/Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set).
+- **`node .asd/runtime.js commit-check`** (issue #91, #99): checks the 50-character commit header and runs `memory-check`; the one-command commit form runs it before `git commit`.
+- **`node .asd/runtime.js impl-test-close`** (issue #109): fills an impl-test entry's `HEAD analysed` and appends the decisions-log line.
+- **`node .asd/runtime.js design-tokens --design <DESIGN.md> --html <design-system.html>`** (issue #113): rebuilds the token tables and CSS variables of `design-system.html` from `DESIGN.md`.
+- **Plan `Rename map:` line** (issue #75): the review manifest diff collapses hunks that only apply the map's substitutions into one line per file with the count; whole-file deletions collapse the same way (issue #93).
+- **UI mockups** (issue #104): `<sprint>/design/mockups/`, promoted to `docs/ux/mockups/`; `lite` makes them at scope.
+- **Scope-time `Settings change`** (issue #103) and a per-subsystem `DESIGN.md` token group and `orphaned-tokens` list (issues #105, #106).
+
+### Changed
+- **External Review's Claude model**: the wrapper runs on Haiku/high instead of Sonnet/medium. The wrapped CLI is unchanged, and Codex agents keep their families, efforts and columns.
+- **Reviewer FAIL** (issue #107): a reviewer returns FAIL only for a finding whose fix needs a design decision; every other finding is CONCERNS, decided by the orchestrator, which consults the advisor on ambiguous ones.
+- **Severity floor in code** (issue #94): `persist-review` applies External Review's floor and records the dropped count.
+- **impl-review**: a FAIL with every finding in agent memory goes to memory-fix without the user gate (issue #102); a checklist finding confined to test files takes the minor test-only path whatever its severity (issue #90); an earlier green run at or above the needed scope counts as the next required suite run when no code, test or stub path changed (issues #76, #86).
+- **Review-fix**: a finding whose fix lies outside the dev allowlist is applied by the orchestrator and named by finding id in the round diff.
+- **Review reset** (issues #95, #96): a scope amendment accepted after design-review resets `reviews.design`, and every review reset moves the existing iteration folders aside first.
+- **Timing ledger** (issues #100, #101, #108, #111): a recovered op closes as a continuation, a repeat close is skipped with a warning, closing an op cascade-closes its open children, a repeat suite run opens a new id, and `timing-summary` lists phase windows over 30 minutes covered by no child op.
+- **Tests**: a tester records an AC deviation found without a failing test as a `D-N` row (issue #88); a test removed as redundant names the surviving test (issue #98).
+- **Background processes** (issue #97): an agent stops every process it started before its signal and names any it could not stop.
+- **`designmd-install`** (issue #112): installs with no save, never changing the project's package manifest; the 14.5.0 migration rewrites an existing `commands.yaml`.
+
+### Fixed
+- **Retired agent memory** (issue #92): the 14.5.0 migration removes `.claude/agent-memory/<agent>/` for every retired agent.
+- **`emit-manifest --iteration`**: impl-review passes the plain integer.
+
 ## v14.4.0
 
 `/asd-update` now finishes the job itself by running `/asd-sync`, which asks only about hand-edited files, and a sprint's PR merges in the run that opened it, with no confirmation and no further `/asd-sprint`.

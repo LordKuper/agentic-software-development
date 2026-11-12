@@ -17,6 +17,7 @@ const migration500 = require('../.asd/migrations/5.0.0.js');
 const migration600 = require('../.asd/migrations/6.0.0.js');
 const migration900 = require('../.asd/migrations/9.0.0.js');
 const migration1400 = require('../.asd/migrations/14.0.0.js');
+const migration1450 = require('../.asd/migrations/14.5.0.js');
 const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -1095,7 +1096,7 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   // on the current word (not a general number-word parser) - it's a guard
   // against silent drift, not a parser: bumping the count must also bump
   // this literal, or the assertion fails loud instead of staying vacuous.
-  const WORD_TO_NUMBER = { Seven: 7, Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const WORD_TO_NUMBER = { Seven: 7, Eight: 8, Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
   const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
   assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
   assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
@@ -2470,13 +2471,14 @@ test('AC-10/11: routing is monotonic and only verified deterministic work is a c
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [] }).tier, 'standard');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], priorTier: 'critical' }).tier, 'standard', 'the retired critical tier no longer exists - a legacy priorTier critical reads standard');
   const mechanicalChecks = ['deterministic-check', 'exhaustive-match-validation'];
-  assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 1 }).tier, 'standard', 'a failed objective check with a correction attempt forbids mechanical, landing on standard - never a tier above it');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 1 }), { tier: 'mechanical', execution: 'agent', reason: 'effort-step', raiseEffort: true }, 'sprint-033 AC-4: a failed objective check with a correction attempt first raises effort on the same tier, never moving a tier in the same step');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 1, effortRaised: true }).tier, 'standard', 'the raised-effort attempt failing too forbids mechanical, landing on standard');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 0 }).tier, 'mechanical', 'a single failed objective check with zero correction attempts must not yet forbid mechanical');
   assert.notStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', objectiveInputs: false, checks: ['deterministic-check', 'exhaustive-match-validation'] }).tier, 'mechanical', 'a mechanical claim without objective inputs must never route mechanical');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', checks: [] }).execution, 'agent', 'a command with no deterministic-state check is not deterministic and must not execute as a bare command');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', objectiveInputs: false, checks: ['deterministic-state'] }).execution, 'agent', 'a command without objective inputs must never auto-execute even with the deterministic-state check present');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 0 }).tier, 'standard', 'a single failed objective check with zero correction attempts must not yet escalate');
-  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: ['auth'] }), { tier: 'standard', execution: 'agent', reason: 'risk:auth' }, 'any named risk must forbid mechanical regardless of otherwise-mechanical evidence');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: ['auth'] }), { tier: 'standard', execution: 'agent', reason: 'risk:auth', raiseEffort: false }, 'any named risk must forbid mechanical regardless of otherwise-mechanical evidence');
 });
 
 test('AC-3/4/5, sprint-021 AC-11: preflight permits only fixed local probes and negative cache is bounded - a provider reset capped at one hour, one hour by default - and expires', () => {
@@ -3420,13 +3422,13 @@ test('AC-10: a typed target:"artifact" risk never escalates by itself - it route
   const mechanicalEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }] };
   assert.deepStrictEqual(
     runtime.routeTask(mechanicalEvidence),
-    { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config', raiseEffort: false },
     'otherwise-mechanical evidence plus an artifact risk must still route mechanical, with the reason recording that a risk was seen and deliberately not escalated'
   );
   const standardEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [], risks: [{ name: 'critical-config', target: 'artifact' }] };
   assert.deepStrictEqual(
     runtime.routeTask(standardEvidence),
-    { tier: 'standard', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    { tier: 'standard', execution: 'agent', reason: 'artifact-risk:critical-config', raiseEffort: false },
     'standard evidence plus an artifact risk must route standard, not escalate'
   );
 });
@@ -3436,7 +3438,7 @@ test('AC-10: the no-downgrade clamp outranks an artifact-risk reason, and any de
     objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
     checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'standard',
   });
-  assert.deepStrictEqual(clamped, { tier: 'standard', execution: 'agent', reason: 'no-downgrade' }, 'an artifact risk must never let a task fall out of a priorTier it already earned - the clamp reason wins over the artifact-risk reason');
+  assert.deepStrictEqual(clamped, { tier: 'standard', execution: 'agent', reason: 'no-downgrade', raiseEffort: false }, 'an artifact risk must never let a task fall out of a priorTier it already earned - the clamp reason wins over the artifact-risk reason');
 
   const commandBase = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'command', checks: ['deterministic-state'] };
   assert.strictEqual(runtime.routeTask({ ...commandBase, risks: [{ name: 'auth', target: 'change' }] }).execution, 'agent', 'a change risk on an otherwise-deterministic command must still force execution:agent');
@@ -3466,15 +3468,16 @@ test('AC-10: a mixed array of one change risk and one artifact risk still routes
     checks: ['deterministic-check', 'exhaustive-match-validation'],
     risks: [{ name: 'auth', target: 'change' }, { name: 'config-file', target: 'artifact' }],
   });
-  assert.deepStrictEqual(result, { tier: 'standard', execution: 'agent', reason: 'risk:auth' }, 'a change risk anywhere in the array must win the tier and the reason over a co-occurring artifact risk');
+  assert.deepStrictEqual(result, { tier: 'standard', execution: 'agent', reason: 'risk:auth', raiseEffort: false }, 'a change risk anywhere in the array must win the tier and the reason over a co-occurring artifact risk');
 });
 
-test('AC-10: a failed objective check with a correction attempt outranks a co-occurring artifact risk in the reason, so state.json.task_routing never mislabels an escalated task as merely risk-annotated', () => {
-  const result = runtime.routeTask({
+test('AC-10, sprint-033 AC-4: a failed objective check with a correction attempt outranks a co-occurring artifact risk in the reason - the effort step first, the tier climb after it - so state.json.task_routing never mislabels an escalated task as merely risk-annotated', () => {
+  const failedWithArtifactRisk = {
     objectiveInputs: true, failedObjectiveCheck: true, correctionAttempts: 1, kind: 'standard',
     checks: [], risks: [{ name: 'config-file', target: 'artifact' }],
-  });
-  assert.deepStrictEqual(result, { tier: 'standard', execution: 'agent', reason: 'failed-objective-check' }, 'a failed objective check with at least one correction attempt must win the reason over a co-occurring artifact risk');
+  };
+  assert.deepStrictEqual(runtime.routeTask(failedWithArtifactRisk), { tier: 'standard', execution: 'agent', reason: 'effort-step', raiseEffort: true }, 'a failed objective check with at least one correction attempt must win the reason over a co-occurring artifact risk, and keeps the tier for one effort step');
+  assert.deepStrictEqual(runtime.routeTask({ ...failedWithArtifactRisk, effortRaised: true }), { tier: 'escalated', execution: 'agent', reason: 'failed-objective-check', raiseEffort: false }, 'the raised-effort attempt failing too climbs one tier and names the failed check');
 });
 
 test('AC-10: an artifact risk whose priorTier does not outrank the computed tier keeps the artifact-risk reason - the no-downgrade clamp must not fire merely because priorTier is set', () => {
@@ -3482,7 +3485,7 @@ test('AC-10: an artifact risk whose priorTier does not outrank the computed tier
     objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
     checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'mechanical',
   });
-  assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
+  assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config', raiseEffort: false }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
 });
 
 test('AC-6/sprint-010 AC-6a: review-policy.md states the bounded one-transcription enforcement branch and keeps an interrupted dispatch out of it; both *-review workflows cite that branch and still route an interrupted dispatch to reject-and-re-dispatch', () => {
@@ -4432,7 +4435,7 @@ test('sprint-010 AC-10: the documentation economy rule carries both its authorin
   const layout = readRepoFile('.asd/rules/artifact-layout.md');
   const rule = layout.split('## Documentation economy')[1].split('\n## ')[0];
   assert.ok(/tests bind while authoring/.test(rule), 'AC-10: stated only as something a reviewer judges, the rule reaches an author after the text is already written, and applying it costs a whole review round. The authoring obligation belongs in the rule\'s own home - the one file every authoring role is granted - not in a file half of them never load');
-  assert.ok(rule.includes('Violation = `FAIL` from `asd-reviewer-efficiency`'), 'AC-10 is two-sided: the authoring sentence must not displace the enforcement one, or the rule degrades to advice with no blocking gate behind it');
+  assert.ok(rule.includes('Violation = a finding from `asd-reviewer-efficiency`') && !rule.includes('Violation = `FAIL`'), 'AC-10 is two-sided: the authoring sentence must not displace the enforcement one, or the rule degrades to advice with no reviewed finding behind it - sprint-033 AC-28 makes the consequence a finding, FAIL being reserved for a fix needing a design decision');
 
   const ironRules = [...layout.matchAll(/^## (.+) \(iron rule\)$/gm)].map((match) => match[1]);
   assert.strictEqual(ironRules.length, 2, 'artifact-layout.md declares the iron rules code-style.md §1 sends authors to, and that bullet enumerates them by name. A third iron rule added here must be named there in the same change, or it inherits the review-only reading AC-10 exists to remove');
@@ -4447,7 +4450,7 @@ test('sprint-010 AC-10: the documentation economy rule carries both its authorin
   const roles = [...new Set(grantRows().map((row) => row.role))];
   assert.ok(roles.length > fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).length, 'the grant table must parse into roles, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
   const without = roles.filter((role) => !grantedRefs(role).includes('.asd/rules/artifact-layout.md#Documentation economy (iron rule)'));
-  assert.deepStrictEqual(without, ['asd-advisor'], "exactly one role is exempt and it is the advisor's - granted only the files and sections its consulting question names, it has no fixed grant of the rule. Every other role writes text a later agent reads, so it must be granted the rule's home section (AC-10); left uncounted, a role reading the economy rule nowhere is reported as covered");
+  assert.deepStrictEqual(without, ['asd-advisor', 'asd-scout'], "exactly two roles are exempt - the advisor, granted only the files and sections its consulting question names, and the read-only scout, which writes no file and returns a cited summary to the orchestrator. Every other role writes text a later agent reads, so it must be granted the rule's home section (AC-10); left uncounted, a role reading the economy rule nowhere is reported as covered");
 });
 
 test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enumeration inside the rule set every nitpick-instructed agent is granted, and the outbound external prompts are the sole exempt copies', () => {
@@ -5974,7 +5977,7 @@ test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web 
   const webTools = ['WebFetch', 'WebSearch'];
   const hasWeb = (a) => webTools.every((tool) => a.meta.claude.tools.includes(tool));
   assert.deepStrictEqual(agents.filter((a) => !hasWeb(a) && webTools.some((tool) => a.meta.claude.tools.includes(tool))).map((a) => a.name), [], 'AC-2: web access is one grant - WebFetch without WebSearch (or the reverse) has no Codex equivalent, which renders only live or disabled');
-  assert.deepStrictEqual(agents.filter((a) => !hasWeb(a)).map((a) => a.name), ['asd-external-review', 'asd-reviewer-efficiency'], 'AC-2: exactly these two keep web withheld; every other agent carries it');
+  assert.deepStrictEqual(agents.filter((a) => !hasWeb(a)).map((a) => a.name), ['asd-external-review', 'asd-reviewer-efficiency', 'asd-scout'], 'AC-2: exactly these three keep web withheld; every other agent carries it');
   for (const a of agents) {
     const denied = webTools.filter((tool) => a.meta.claude.disallowedTools.includes(tool));
     if (hasWeb(a)) assert.deepStrictEqual(denied, [], `AC-2: ${a.name} grants web, so its disallowedTools must not deny it`);
@@ -6031,7 +6034,7 @@ test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - c
   assert.ok(/\bfresh\b/.test(steps[2]) && /original task/.test(steps[2]) && /\banswer\b/.test(steps[2]), 'AC-7: step 3 - a fresh re-dispatch carrying the original task plus the answer; no host resumes a dispatched agent');
 
   const cites = (text) => text.includes('`agent-protocol.md` "Relay"') || text.includes("agent-protocol.md 'Relay'");
-  const creators = canonAgents().map((a) => a.name).filter((name) => !/^asd-(reviewer-|external-review|advisor)/.test(name));
+  const creators = canonAgents().map((a) => a.name).filter((name) => !/^asd-(reviewer-|external-review|advisor|scout)/.test(name));
   assert.deepStrictEqual(creators, ['asd-dev', 'asd-tester'], 'sanity: the QUESTION-emitting roles, derived from the agents directory');
   const workflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.md')).map((file) => `.asd/workflows/${file}`);
   const dispatchers = workflows.filter((rel) => creators.some((name) => canonText(rel).includes(`\`${name}\``)));
@@ -6401,13 +6404,14 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
   assert.ok(compound && reset, 'git-strategy.md must state the compound command and the reset it runs on failure as literal commands');
   const { repo, git } = sandboxGitRepo();
   const put = (rel, text) => fs.writeFileSync(path.join(repo, rel), text, 'utf8');
-  const argsOf = (command, paths) => command.split(/\s+/).slice(1).flatMap((token) => (token === '<paths>' ? paths : [token]));
-  const commitAs = (paths) => {
+  const RUNTIME = path.join(REPO_ROOT, '.asd', 'runtime.js');
+  const argsOf = (command, paths, header) => command.split(/\s+/).filter((token) => token !== '[-m' && token !== '"<body>"]').slice(1).flatMap((token) => (token === '<paths>' ? paths : [token === '"<header>"' ? header : token === '.asd/runtime.js' ? RUNTIME : token]));
+  const commitAs = (paths, header = 'chore(test): agent work') => {
     for (const part of compound[1].split(' && ')) {
-      const args = argsOf(part, paths);
-      if (args[0] === 'commit') args.splice(1, 0, '-m', 'agent work');
+      const args = argsOf(part, paths, header);
       try {
-        git(...args);
+        if (part.startsWith('node ')) execFileSync(process.execPath, args, { cwd: repo, env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(repo) }, stdio: 'pipe' });
+        else git(...args);
       } catch {
         git(...argsOf(reset[1], paths));
         return `failed at: ${part}`;
@@ -6435,6 +6439,13 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
   assert.strictEqual(commitAs(['bad.txt']), 'failed at: git diff --cached --check -- <paths>', 'a whitespace error in the agent\'s own path must stop the commit at the check');
   assert.strictEqual(git('rev-parse', 'HEAD').trim(), head, 'nothing is committed after a failed check');
   assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: after the reset the failed path is unstaged - left staged, the next sibling commit would sweep it under the wrong ASD-Task trailer (018 F-1)');
+
+  put('long.txt', 'fine\n');
+  const longHeader = `chore(test): ${'x'.repeat(40)}`;
+  assert.strictEqual(commitAs(['long.txt'], longHeader), 'failed at: node .asd/runtime.js commit-check --subject "<header>" -- <paths>', 'sprint-033 AC-12: a header over 50 characters stops the commit at commit-check');
+  assert.strictEqual(git('rev-parse', 'HEAD').trim(), head, 'nothing is committed after a failed header check');
+  assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'the reset after a failed commit-check leaves none of the agent\'s paths staged');
+  assert.strictEqual(commitAs(['long.txt']), 'committed', 'the same path commits once its header fits');
 });
 
 test('sprint-019 AC-9/AC-10, sprint-023 AC-1: the dispatch payload header providers.md defines is admitted by both exhaustive reviewer payload lists and cited by both review workflows, and every agent handed a turn budget declares a maxTurns that leaves a report turn and the turn plan\'s earlier ledger turn', () => {
@@ -6761,7 +6772,7 @@ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only
     assert.deepStrictEqual(names.filter((name) => sentence.includes(`\`${name}\``)), holders, `AC-6: sprint-lifecycle.md "Workflows" derives the design-block collapse from phases, so each asd-sprint resume-flow collapse clause must name exactly the workflows whose chain holds design (${holders.join(', ')}) - an unscoped clause dispatches plan for a lite sprint resumed at design-promote, which lite's plan precondition aborts. Clause: ${sentence}`);
   }
   const quoted = new RegExp(`\`(?:${names.join('|')})\``);
-  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (line.split(/(?<=\.)\s+/).some((sentence) => quoted.test(sentence) && /\bdefaults?\b/i.test(sentence)) ? [`${rel}:${index + 1}`] : [])));
+  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (line.split(/(?<=\.)\s+/).some((sentence) => quoted.test(sentence) && /\bthe default\b|\bby default\b|\bdefaults to\b|\(default\)/i.test(sentence)) ? [`${rel}:${index + 1}`] : [])));
   assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no sentence quoting a workflow may call it a default ("the default", "by default", "defaults to", "(default)") - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
 });
 
@@ -7298,7 +7309,7 @@ test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each ag
   };
 
   const suffixes = [...new Set([...tiers.keys()].filter((name) => !baseNames.includes(name)).map((name) => name.split('-').pop()))].sort();
-  assert.deepStrictEqual(suffixes, ['mechanical'], 'sprint-023 AC-7, sprint-028 AC-16: the one variant is mechanical, the critical variant is retired; tier standard has no variant and dispatches the base agent - the fact the deleted matrix repeated on its variant rows - so no canon agent may declare a standard variant, which sync.js would otherwise render');
+  assert.deepStrictEqual(suffixes, ['escalated', 'mechanical', 'runner'], 'sprint-023 AC-7, sprint-033 AC-1/AC-3: the variants are escalated, mechanical and runner, the critical variant is retired; tier standard has no variant and dispatches the base agent - the fact the deleted matrix repeated on its variant rows - so no canon agent may declare a standard variant, which sync.js would otherwise render');
   const standardNote = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('standard') && /\bvariant/.test(sentence) && /\bno\b/.test(sentence) && /\bbase\b/.test(sentence));
   assert.ok(standardNote, 'sprint-023 AC-7: providers.md "Task-class variants and routing" is now the only prose home of "tier standard has no variant, it dispatches the base agent" - the matrix that repeated it is gone');
 
@@ -7326,16 +7337,21 @@ test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each ag
   const wordsIn = (sentence) => new Set([...sentence.toLowerCase().matchAll(/[a-z]+/g)].map(([word]) => word).filter((word) => vocabulary.has(word)));
   const wordsOfTiers = (names) => new Set(names.flatMap((name) => [tiers.get(name).claude, tiers.get(name).codex]).flatMap((tier) => tier.split('/')).filter((word) => word !== 'none'));
   const variantNames = [...tiers.keys()].filter((name) => !baseNames.includes(name));
-  const variantBases = baseNames.filter((name) => tiers.has(`${name}-mechanical`));
+  const variantBases = baseNames.filter((name) => variantNames.some((variant) => variant.startsWith(`${name}-`)));
   const sentenceOf = (rel, isTierSentence) => {
     const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
     assert.strictEqual(hits.length, 1, `${rel} must state the variant tiers in exactly one sentence, or the tier words below are compared with the wrong text`);
     return hits[0];
   };
-  const bare = (sentence) => sentence.replace(/`[^`]*`/g, '');
-  const providersSentence = sentenceOf('.asd/rules/providers.md', (sentence) => /\bmechanical\b/.test(bare(sentence)) && /\bhaiku\b/.test(bare(sentence)));
+  const sentencesOf = (rel, isTierSentence) => {
+    const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
+    const missing = sync.VARIANT_SUFFIXES.filter((suffix) => !hits.some((sentence) => sentence.includes(`\`${suffix}\``) || sentence.includes(`\`-${suffix}\``)));
+    assert.deepStrictEqual(missing, [], `sprint-033 AC-6: ${rel} must state each variant tier in a sentence, or the tier words below are compared with the wrong text`);
+    return hits.join(' ');
+  };
+  const providersSentence = sentencesOf('.asd/rules/providers.md', (sentence) => sync.VARIANT_SUFFIXES.some((suffix) => sentence.includes(`declares \`${suffix}\``)));
   assert.deepStrictEqual([...wordsIn(providersSentence)].sort(), [...wordsOfTiers(variantNames)].sort(), 'AC-9: providers.md "Task-class variants and routing" names exactly the families and efforts the variants render (mechanical: haiku/luna) - none stale, none missing');
-  const readmeSentence = sentenceOf('README.md', (sentence) => sentence.includes('`-mechanical`'));
+  const readmeSentence = sentencesOf('README.md', (sentence) => sync.VARIANT_SUFFIXES.some((suffix) => sentence.includes(`\`-${suffix}\``)));
   assert.deepStrictEqual([...wordsIn(readmeSentence)].sort(), [...new Set([...wordsOfTiers(variantNames), ...wordsOfTiers(variantBases)])].sort(), 'AC-9: README\'s variant sentence names exactly the families and efforts the variants and the base agent they fall back to render');
 
   const aliasSentence = sentenceOf('.asd/rules/providers.md', (sentence) => spans(sentence).includes('wraps_config_key'));
@@ -7745,7 +7761,7 @@ test('sprint-025 AC-1/AC-4 (D2, D4): timingAppend closes before it opens, number
   const dispatch = runtime.timingAppend(scope.text, { open: 'asd-tester impl-test#1', kind: 'dispatch', attrs: 'agent=asd-tester;tier=mechanical' }, minuteAt(5));
   assert.deepStrictEqual(ledgerLines(dispatch.text), [{ op: 'open', id: 'asd-tester impl-test#1', kind: 'dispatch', parent: 'scope#1', start: minuteAt(5), attrs: { agent: 'asd-tester', tier: 'mechanical' } }]);
 
-  const handover = runtime.timingAppend(scope.text + dispatch.text, { close: 'scope', open: 'plan', kind: 'phase' }, minuteAt(10));
+  const handover = runtime.timingAppend(scope.text, { close: 'scope', open: 'plan', kind: 'phase' }, minuteAt(10));
   assert.deepStrictEqual(ledgerLines(handover.text).map((line) => [line.op, line.id]), [['close', 'scope#1'], ['open', 'plan#1']], 'a close is written before the open of the same call');
   assert.deepStrictEqual(ledgerLines(handover.text)[0], { op: 'close', id: 'scope#1', kind: 'phase', parent: null, start: minuteAt(0), end: minuteAt(10), outcome: 'done', attrs: {} }, 'a close carries the full entry of the op it ends');
 
@@ -7763,6 +7779,43 @@ test('sprint-025 AC-1/AC-4 (D2, D4): timingAppend closes before it opens, number
   const torn = runtime.timingAppend(scope.text + '{"op":"op', { close: 'scope' }, minuteAt(50));
   assert.deepStrictEqual(ledgerLines(torn.text).map((line) => line.id), ['scope#1'], 'a half-written tail is ignored and the append starts a new line');
   assert.ok(torn.text.startsWith('\n'));
+});
+
+test('sprint-033 AC-18 (issues #100, #108, #111): a close of an open op cascades to its open children with a warning, an op a recovery closed interrupted closes again as continued from that close, and any other repeat close writes nothing and warns', () => {
+  const scope = runtime.timingAppend('', { open: 'scope', kind: 'phase' }, minuteAt(0));
+  const child = runtime.timingAppend(scope.text, { open: 'dev', kind: 'dispatch' }, minuteAt(5));
+  const open = scope.text + child.text;
+
+  const cascade = runtime.timingAppend(open, { close: 'scope', outcome: 'interrupted' }, minuteAt(10));
+  assert.deepStrictEqual(ledgerLines(cascade.text).map((line) => [line.op, line.id, line.outcome, line.end]), [['close', 'dev', 'interrupted', minuteAt(10)], ['close', 'scope#1', 'interrupted', minuteAt(10)]], 'AC-18: the open child closes first, at the parent\'s end and with its outcome');
+  assert.ok(cascade.warnings.some((warning) => warning.includes('dev')), 'the cascade names the child it closed');
+
+  const recovered = open + runtime.timingRecover(open, minuteAt(20)).text;
+  const continued = runtime.timingAppend(recovered, { close: 'dev' }, minuteAt(40));
+  assert.deepStrictEqual(ledgerLines(continued.text).map((line) => [line.op, line.id, line.outcome, line.start, line.end]), [['close', 'dev', 'continued', minuteAt(20), minuteAt(40)]], 'AC-18: the close after a recovery runs from the recovery close and records continued');
+  assert.deepStrictEqual(continued.warnings, []);
+
+  const repeat = runtime.timingAppend(recovered + continued.text, { close: 'dev' }, minuteAt(50));
+  assert.strictEqual(repeat.text, '', 'AC-18: a second close of the same id writes no line');
+  assert.ok(repeat.warnings.some((warning) => warning.includes('already closed')));
+  const repeatDone = runtime.timingAppend(scope.text + runtime.timingAppend(scope.text, { close: 'scope' }, minuteAt(8)).text, { close: 'scope' }, minuteAt(9));
+  assert.strictEqual(repeatDone.text, '', 'a repeat close of a done op is skipped too');
+
+  const suite = runtime.timingAppend(scope.text, { open: 'suite full', kind: 'suite', attrs: 'scope=full' }, minuteAt(2));
+  const suiteClosed = suite.text + runtime.timingAppend(scope.text + suite.text, { close: 'suite full' }, minuteAt(3)).text;
+  const second = runtime.timingAppend(scope.text + suiteClosed, { open: 'suite full 2', kind: 'suite', attrs: 'scope=full' }, minuteAt(4));
+  assert.deepStrictEqual(ledgerLines(second.text).map((line) => [line.op, line.id]), [['open', 'suite full 2']], 'AC-18: a repeat suite run opens under a new id and is never a reopening of the closed one');
+});
+
+test('sprint-033 AC-26 (issue #101): timingSummary lists as idle every stretch over SLOW_MINUTES of a closed phase that no other op covers, and nothing for a covered or shorter one', () => {
+  const limit = runtime.SLOW_MINUTES;
+  const ledger = opLines('impl#1', 'phase', null, 0, 3 * limit)
+    + opLines('dev', 'dispatch', 'impl#1', 0, 5)
+    + opLines('wait', 'user-wait', 'impl#1', 5 + limit - 5, 5 + limit - 5 + 3)
+    + opLines('dev-2', 'dispatch', 'impl#1', 5 + limit - 5 + 3 + limit + 1, 3 * limit)
+    + opLines('plan#1', 'phase', null, 3 * limit, 3 * limit + limit - 1);
+  const { timing } = runtime.timingSummary(ledger, []);
+  assert.deepStrictEqual(timing.gaps.idle, [{ phase: 'impl#1', start: minuteAt(5 + limit - 5 + 3), seconds: (limit + 1) * 60 }], 'AC-26: only the stretch past the limit is listed, at its start, with its length; a stretch of at most the limit and a phase with no children are not idle');
 });
 
 test('sprint-025 AC-2 (D2): every kind sprint-lifecycle.md "Operation timing" lists is accepted by the runtime and no other kind is', () => {
@@ -8084,7 +8137,7 @@ test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-proto
   assert.deepStrictEqual(protocolTokens, ['COMPLETED', 'QUESTION', 'ADVICE_NEEDED', 'BLOCKED_MANUAL', 'FAILED', 'ABORT', 'REVIEW_DONE'], 'agent-protocol.md "Signals" lists the seven tokens of D8');
   const retired = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => /PLAN_DRAFT|PLAN_READY/.test(canonText(rel)));
   assert.deepStrictEqual(retired, [], 'PLAN_DRAFT and PLAN_READY have no emitter or handler (O3) and must stay out of canon');
-  const creators = FORM_CATEGORIES.agents.files().map((rel) => path.basename(rel, '.md')).filter((name) => !/^asd-(reviewer-|external-review|advisor)/.test(name));
+  const creators = FORM_CATEGORIES.agents.files().map((rel) => path.basename(rel, '.md')).filter((name) => !/^asd-(reviewer-|external-review|advisor|scout)/.test(name));
   assert.deepStrictEqual(creators, ['asd-dev', 'asd-tester'], 'sanity: the creators are the two code-and-test agents - every other artifact is the orchestrator\'s');
   for (const rel of FORM_CATEGORIES.agents.files()) {
     const name = path.basename(rel, '.md');
@@ -8251,7 +8304,7 @@ test('sprint-027 AC-3/AC-4/AC-5 (D2-D4): staged solution design has one home, sc
   assert.ok(step.includes('`research.md`'), 'AC-5: scope step 2 must write the research artifact');
 
   const dispatch = jsonOf('.asd/workflows/asd-phase-scope.md', 'Dispatch');
-  assert.deepStrictEqual(dispatch.map((entry) => entry.agent), ['asd-advisor'], 'AC-3: scope dispatches only the escalation consult - research is the own stage (b) of the orchestrator, so no creator is named');
+  assert.deepStrictEqual(dispatch.map((entry) => entry.agent), ['asd-advisor', 'asd-init (skill, sprint-mediated mode)'], 'AC-3, sprint-033 AC-36: scope dispatches the escalation consult and the scope-time settings change through asd-init - research is the own stage (b) of the orchestrator, so no creator is named');
   assert.ok(!fs.existsSync(path.join(REPO_ROOT, '.asd/agents/asd-ba.md')), 'AC-3: no BA agent is left for the research stage to dispatch');
 
   const readers = headingBody('.asd/rules/sprint-lifecycle.md', 'Input sources').split('\n').find((row) => row.startsWith('| `research` |')) || '';
@@ -8288,7 +8341,7 @@ test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workfl
 test('sprint-027 AC-7 (D7): providers.md "Task-class variants and routing" states every input key and enum routeTask reads and the --input <path|-> form once, route-task accepts stdin, and impl step 5a cites the keys instead of restating them', () => {
   const source = runtime.routeTask.toString();
   const keys = [...new Set([...source.matchAll(/\binput\.(\w+)/g)].map((match) => match[1]))];
-  assert.deepStrictEqual(keys.sort(), ['checks', 'correctionAttempts', 'failedObjectiveCheck', 'kind', 'objectiveInputs', 'priorTier', 'risks'], 'sanity: routeTask reads the seven documented keys - a new key needs a providers.md row');
+  assert.deepStrictEqual(keys.sort(), ['checks', 'correctionAttempts', 'effortRaised', 'failedObjectiveCheck', 'kind', 'objectiveInputs', 'priorTier', 'risks'], 'sanity: routeTask reads the eight documented keys - a new key needs a providers.md row');
   const section = headingBody('.asd/rules/providers.md', 'Task-class variants and routing');
   for (const key of keys) {
     assert.ok(section.includes(`\`${key}\``), `AC-7: providers.md must name the route-task input key \`${key}\``);
@@ -8594,12 +8647,14 @@ test('sprint-028 AC-20 (D14): SessionStart reads an absent documents.design_syst
   assert.deepStrictEqual(observed, cases.map(([label, , next]) => `${label} -> ${next}`), 'the hook must agree with the audit exit: plan only when every frozen design document is a bare false, design_system falling back to ux_spec only while it is absent');
 });
 
-test('sprint-028 AC-2/AC-4 (D3/D4/D7): the cleanup workflow runs inline and dispatches only the advisor, and its decisions-log checkpoint and record lines and its removal commit subject are the forms the rule home, t_decisions-log.md and git-strategy.md state - the evidence its re-entry reads', () => {
+test('sprint-028 AC-2/AC-4 (D3/D4/D7), sprint-033 AC-5: the cleanup workflow runs inline and dispatches only the read-only scout and the advisor, and its decisions-log checkpoint and record lines and its removal commit subject are the forms the rule home, t_decisions-log.md and git-strategy.md state - the evidence its re-entry reads', () => {
   const workflow = canonText('.asd/workflows/asd-phase-cleanup.md');
   const owner = workflow.split('\n').find((line) => line.startsWith('Owner:')) || '';
   const agents = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((file) => file.replace(/\.md$/, ''));
-  assert.ok(owner.includes('inline orchestrator') && !workflow.includes('\n## Dispatch'), 'AC-2: cleanup runs in the orchestrator itself - no Dispatch section');
-  assert.deepStrictEqual(agents.filter((agent) => owner.includes(`\`${agent}\``)), ['asd-advisor'], 'AC-2: the Owner line names no agent but the escalation-consult advisor');
+  const dispatched = jsonOf('.asd/workflows/asd-phase-cleanup.md', 'Dispatch').map((row) => row.agent).sort();
+  assert.ok(owner.includes('inline orchestrator'), 'AC-2: cleanup runs in the orchestrator itself');
+  assert.deepStrictEqual(dispatched, ['asd-advisor', 'asd-scout'], 'AC-2, sprint-033 AC-5: the Dispatch section holds the read-only candidate scan and the escalation consult - no creator');
+  assert.deepStrictEqual(agents.filter((agent) => owner.includes(`\`${agent}\``)), dispatched, 'AC-2: the Owner line names exactly the agents the Dispatch section lists');
   const home = runtime.markdownSection(canonText('.asd/rules/sprint-lifecycle.md'), 'Cleanup phase');
   for (const [label, text] of [['sprint-lifecycle.md "Cleanup phase"', home], ['asd-phase-cleanup.md', workflow], ['t_decisions-log.md', canonText('.asd/templates/t_decisions-log.md')]]) {
     assert.ok(text.includes('— cleanup checkpoint <'), `AC-4/D7: ${label} must state the checkpoint line re-entry looks for`);
@@ -9319,6 +9374,517 @@ test('sprint-032 leftover-term check: no canon, README, AGENTS.md, runtime, hook
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a sentence or term this sprint removed (git diff main...HEAD), taken exactly - one surviving leaves a rule saying a user runs sync after an update, that pr open mode exits at await-merge, or that a dev memory commit is ungated. CHANGELOG.md and sprint folders are history.');
+});
+
+// ===========================================================================
+// sprint 033: routing ladder, model tiers, review pipeline, timing and commit
+// commands, the design-token generator and the 14.5.0 migration.
+// ===========================================================================
+
+test('sprint-033 AC-3/AC-4: route-task sends migration, broad-reasoning and cross-domain change risks to escalated whatever stands beside them, keeps every other change risk at standard, refuses such a class typed artifact, and climbs the failed-check ladder - effort first, then one tier, capped at escalated', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [], risks: [] };
+  const mechanicalChecks = ['deterministic-check', 'exhaustive-match-validation'];
+  const route = (overrides) => runtime.routeTask({ ...base, ...overrides });
+  for (const name of ['migration', 'broad-reasoning', 'cross domain', 'Cross_Domain']) {
+    assert.deepStrictEqual(route({ risks: [name] }), { tier: 'escalated', execution: 'agent', reason: `risk:${name}`, raiseEffort: false }, `AC-3: ${name} is an escalated class`);
+  }
+  assert.deepStrictEqual(route({ risks: ['auth', 'public contract', 'migration'] }), { tier: 'escalated', execution: 'agent', reason: 'risk:migration', raiseEffort: false }, 'AC-3: an escalated class wins the tier and the reason over a standard-class risk listed before it');
+  for (const name of ['security', 'authentication', 'public contract', 'workflow gate', 'ambiguous judgment']) {
+    assert.strictEqual(route({ risks: [name] }).tier, 'standard', `AC-3: ${name} keeps standard`);
+  }
+  for (const name of ['migration', 'broad-reasoning', 'cross-domain']) {
+    assert.throws(() => route({ risks: [{ name, target: 'artifact' }] }), /reserved risk class/, `AC-3: ${name} typed artifact is rejected, or a mistyped declaration would route it off the escalated tier`);
+  }
+
+  const failed = { failedObjectiveCheck: true, correctionAttempts: 1 };
+  const effortStep = (tier) => ({ tier, execution: 'agent', reason: 'effort-step', raiseEffort: true });
+  const climbed = (tier) => ({ tier, execution: 'agent', reason: 'failed-objective-check', raiseEffort: false });
+  assert.deepStrictEqual(route({ ...failed, kind: 'mechanical', checks: mechanicalChecks }), effortStep('mechanical'), 'AC-4: the first failure raises effort and keeps the tier');
+  assert.deepStrictEqual(route({ ...failed, kind: 'mechanical', checks: mechanicalChecks, effortRaised: true }), climbed('standard'), 'AC-4: the raised-effort attempt failing climbs mechanical to standard');
+  assert.deepStrictEqual(route(failed), effortStep('standard'));
+  assert.deepStrictEqual(route({ ...failed, effortRaised: true }), climbed('escalated'), 'AC-4: standard climbs to escalated');
+  assert.deepStrictEqual(route({ ...failed, priorTier: 'escalated' }), effortStep('escalated'), 'AC-4: the top tier still takes its effort step');
+  assert.deepStrictEqual(route({ ...failed, effortRaised: true, priorTier: 'escalated' }), climbed('escalated'), 'AC-4: no tier above escalated exists, so the climb is capped');
+  assert.deepStrictEqual(route({ failedObjectiveCheck: true, correctionAttempts: 0 }), { tier: 'standard', execution: 'agent', reason: 'normal', raiseEffort: false }, 'AC-4: a failure before its correction attempt starts no ladder');
+  assert.deepStrictEqual(route({ kind: 'mechanical', checks: mechanicalChecks, priorTier: 'escalated' }), { tier: 'escalated', execution: 'agent', reason: 'no-downgrade', raiseEffort: false }, 'a task never routes below a tier it earned, escalated included');
+  assert.strictEqual(route({ kind: 'command', checks: ['deterministic-state'], ...failed }).execution, 'agent', 'a failed command is no longer deterministic work, so it never runs as a bare command');
+  assert.throws(() => route({ effortRaised: 'yes' }), /effortRaised invalid/, 'a non-boolean effortRaised fails closed');
+
+  const input = path.join(mkTempDir(), 'route.json');
+  fs.writeFileSync(input, JSON.stringify({ ...base, ...failed, risks: [] }), 'utf8');
+  assert.deepStrictEqual(runtimeCliResult(['route-task', '--input', input]), { status: 0, result: effortStep('standard') }, 'the CLI prints raiseEffort beside the tier');
+});
+
+test('sprint-033 AC-1/AC-2/AC-3/AC-8: the runner variant renders haiku/medium on Claude and luna/high on Codex, the escalated variant opus/high on Claude and the base sol/high on Codex, the External Review wrapper runs haiku/high on Claude with its Codex block at sol/medium, and the scout is a haiku/luna read-only agent', () => {
+  const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
+  const metaOf = (name) => {
+    const item = plan.find((entry) => (entry.metaOverride || entry.source.meta).name === name);
+    assert.ok(item, `${name} must be rendered by the sync plan`);
+    return item.metaOverride || item.source.meta;
+  };
+  const tierOf = (meta) => ({ claude: [meta.claude.model, meta.claude.effort], codex: [meta.codex.model, meta.codex.model_reasoning_effort] });
+  assert.deepStrictEqual(tierOf(metaOf('asd-tester-runner')), { claude: ['haiku', 'medium'], codex: ['luna', 'high'] }, 'AC-1');
+  assert.deepStrictEqual(tierOf(metaOf('asd-dev-escalated')), { claude: ['opus', 'high'], codex: ['sol', 'high'] }, 'AC-3, AC-8: Codex takes the existing family of its base');
+  assert.deepStrictEqual(tierOf(metaOf('asd-dev-mechanical')), { claude: ['haiku', 'high'], codex: ['luna', 'high'] }, 'AC-8: the existing mechanical tier is unchanged');
+  assert.deepStrictEqual(tierOf(metaOf('asd-external-review')), { claude: ['haiku', 'high'], codex: ['sol', 'medium'] }, 'AC-2, AC-8');
+  assert.deepStrictEqual(tierOf(metaOf('asd-scout')), { claude: ['haiku', 'medium'], codex: ['luna', 'medium'] }, 'AC-5, AC-8');
+  const scout = metaOf('asd-scout');
+  assert.deepStrictEqual(scout.claude.tools, ['Read', 'Glob', 'Grep'], 'AC-5: the scout reads only');
+  assert.strictEqual(scout.codex.sandbox_mode, 'read-only', 'AC-5: the Codex scout runs in the read-only sandbox');
+  const wrapper = metaOf('asd-external-review');
+  assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model], ['sol', 'sonnet'], 'AC-2: the wrapped CLI keeps its own model, only the wrapper agent moved to haiku');
+});
+
+test('sprint-033 AC-5: audit step 2, plan step 4 and cleanup step 4 each dispatch the scout for a question plus paths and take COMPLETED or ABORT back, and no other phase workflow names it', () => {
+  const dispatchers = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.md')).map((file) => `.asd/workflows/${file}`)
+    .filter((rel) => canonText(rel).includes('`asd-scout`'));
+  assert.deepStrictEqual(dispatchers, ['.asd/workflows/asd-phase-audit.md', '.asd/workflows/asd-phase-cleanup.md', '.asd/workflows/asd-phase-plan.md'], 'AC-5: scouts serve the orchestrator scans of audit, plan and cleanup only');
+  for (const rel of dispatchers) {
+    const row = jsonOf(rel, 'Dispatch').find((entry) => entry.agent === 'asd-scout');
+    assert.ok(row, `${rel}: the Dispatch section lists the scout`);
+    assert.deepStrictEqual(row.signals, ['COMPLETED', 'ABORT'], `${rel}: the scout's only signals`);
+    assert.ok(row.payload.includes('question and paths'), `${rel}: the payload is a question plus paths`);
+  }
+});
+
+test('sprint-033 AC-9: positiveInteger accepts a zero-padded integer, so an external-review --iteration 02 names iteration 2, and still refuses zero, a fraction and text', () => {
+  const dir = mkTempDir();
+  const scope = path.join(dir, 'scope.txt');
+  fs.writeFileSync(scope, 'docs/a.md\n', 'utf8');
+  const emit = (iteration) => runtimeCliResult(['emit-manifest', '--reviewer', runtime.EXTERNAL_REVIEWER, '--phase', 'design-review', '--iteration', iteration, '--files', scope, '--out', dir]);
+  for (const [padded, expected] of [['02', 2], ['007', 7], ['3', 3]]) {
+    const emitted = emit(padded);
+    assert.strictEqual(emitted.status, 0, `--iteration ${padded} is a positive integer`);
+    assert.strictEqual(JSON.parse(fs.readFileSync(emitted.result.scope, 'utf8')).iteration, expected, `--iteration ${padded} is read as ${expected}`);
+  }
+  for (const bad of ['0', '00', '1.5', 'two']) {
+    const refused = emit(bad);
+    assert.ok(refused.status === 2 && /--iteration <n> must be a positive integer/.test(refused.stderr), `--iteration ${bad} stays refused (got ${JSON.stringify(refused)})`);
+  }
+});
+
+test('sprint-033 AC-34: a design-review manifest lifts the UI conformance entry out of the phase gate for a draft under design/mockups/ at any depth, and not for a similarly named path', () => {
+  const root = mkTempDir();
+  const emit = (files) => {
+    const dir = fs.mkdtempSync(path.join(root, 'emit-'));
+    const scope = path.join(dir, 'scope.txt');
+    fs.writeFileSync(scope, `${files.join('\n')}\n`, 'utf8');
+    const emitted = runtimeCliResult(['emit-manifest', '--reviewer', runtime.COMBINED_REVIEWER, '--phase', 'design-review', '--files', scope, '--out', dir]);
+    assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
+    return JSON.parse(fs.readFileSync(emitted.result.manifest, 'utf8'));
+  };
+  const gated = (manifest) => manifest.rules.filter((id) => (manifest.n_a.rules[id] || []).includes(runtime.NA_PREDICATES.phaseGate) && !id.includes('[impl-review]'));
+  const prdOnly = gated(emit(['s/design/prd.html']));
+  assert.strictEqual(prdOnly.length, 1, 'sanity: without a UI draft exactly the UI conformance entry is gated beyond the impl-review-tagged ones');
+  for (const mockup of ['s/design/mockups/login.html', 's/design/mockups/billing/canvas/project/home.dc.html']) {
+    assert.deepStrictEqual(gated(emit(['s/design/prd.html', mockup])), [], `AC-34: ${mockup} is a UI draft, so UI conformance is reviewed`);
+  }
+  for (const other of ['s/design/mockups-old/login.html', 's/design/mockupsx/login.html', 's/docs/mockups/login.html']) {
+    assert.deepStrictEqual(gated(emit(['s/design/prd.html', other])), prdOnly, `AC-34: ${other} is no mockup folder, so the gate stays`);
+  }
+});
+
+test('sprint-033 AC-35, AC-24: emit-manifest collapses a whole-file deletion to one line naming the path and its deleted line count, with --rename-map a hunk that only applies the map to one line per file with the substitution count - an edited line keeps its hunk - and review-waves counts only what the collapse leaves', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  const GONE_LINES = 30;
+  const FILE_LINES = 40;
+  const OLD = 'oldName';
+  const NEW = 'newName';
+  const lines = (count, edits = {}) => `${Array.from({ length: count }, (unused, index) => edits[index + 1] || `line ${index + 1}`).join('\n')}\n`;
+  const named = (name) => ({ 3: `use ${name} here`, 35: `use ${name} again` });
+  writeFile(repo, 'src/gone.js', lines(GONE_LINES));
+  writeFile(repo, 'src/pure.js', lines(FILE_LINES, named(OLD)));
+  writeFile(repo, 'src/mixed.js', lines(FILE_LINES, { 3: `use ${OLD} here` }));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  git('rm', '-q', 'src/gone.js');
+  writeFile(repo, 'src/pure.js', lines(FILE_LINES, named(NEW)));
+  writeFile(repo, 'src/mixed.js', lines(FILE_LINES, { 3: `use ${NEW} here`, 35: 'edited line 35' }));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+
+  const scope = ['src/gone.js', 'src/pure.js', 'src/mixed.js'];
+  const work = mkTempDir();
+  const write = (name, text) => {
+    const file = path.join(work, name);
+    fs.writeFileSync(file, text, 'utf8');
+    return file;
+  };
+  const scopeFile = write('scope.txt', `${scope.join('\n')}\n`);
+  const mapFile = write('map.json', JSON.stringify({ [OLD]: NEW }));
+  const range = ['--base', base, '--head', head];
+  const emit = (extra) => {
+    const out = fs.mkdtempSync(path.join(work, 'out-'));
+    const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', out, ...range, ...extra], { cwd: repo, env });
+    assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
+    return fs.readFileSync(emitted.result.diff, 'utf8');
+  };
+  const measure = (extra) => runtimeCliResult(['review-waves', '--files', scopeFile, ...range, ...extra], { cwd: repo, env }).result;
+
+  const plain = emit([]);
+  assert.ok(plain.includes(`# collapsed: src/gone.js: deleted, ${GONE_LINES} lines\n`) && !plain.includes('deleted file mode'), 'AC-35: the deleted file is one line naming its path and deleted line count');
+  assert.ok(plain.includes('diff --git a/src/pure.js b/src/pure.js') && plain.includes(`-use ${OLD} here\n+use ${NEW} here\n`) && !plain.includes('rename-map'), 'without a map, substitution hunks stay whole');
+
+  const mapped = emit(['--rename-map', mapFile]);
+  assert.ok(mapped.includes('# collapsed: src/pure.js: 2 rename-map substitutions\n') && !mapped.includes('diff --git a/src/pure.js'), 'AC-24: a file whose every hunk only applies the map is one line with the count');
+  assert.ok(mapped.includes('diff --git a/src/mixed.js b/src/mixed.js') && mapped.includes('-line 35\n+edited line 35\n') && mapped.includes('# collapsed: src/mixed.js: 1 rename-map substitutions\n') && !mapped.includes(`-use ${OLD} here`), 'AC-24: the substitution hunk of a mixed file collapses, its edited line keeps its hunk');
+  assert.ok(mapped.includes(`# collapsed: src/gone.js: deleted, ${GONE_LINES} lines\n`), 'the deletion collapse applies with a map too');
+
+  const raw = git('diff', '-M', '--no-color', `${base}...${head}`, '--', ...scope);
+  const plainMeasure = measure([]);
+  const mappedMeasure = measure(['--rename-map', mapFile]);
+  assert.deepStrictEqual([plainMeasure.bytes, mappedMeasure.bytes], [Buffer.byteLength(plain), Buffer.byteLength(mapped)], 'AC-35: the wave sizing reads the same collapsed patch a reviewer gets');
+  assert.ok(mappedMeasure.bytes < plainMeasure.bytes && plainMeasure.bytes < Buffer.byteLength(raw), 'each collapse shrinks the measured patch');
+  assert.deepStrictEqual([plainMeasure.lines, mappedMeasure.lines], [2 * 2 + 2 * 2, 2 * 1], 'AC-35, AC-24: the deleted file adds no lines, a map substitution counts as no changed line - the pure file 4 lines and the mixed file 4 lines drop to 0 and 2');
+
+  const arrayMap = write('array.json', JSON.stringify([OLD]));
+  const refused = runtimeCliResult(['review-waves', '--files', scopeFile, ...range, '--rename-map', arrayMap], { cwd: repo, env });
+  assert.ok(refused.status === 2 && /--rename-map must be a JSON object/.test(refused.stderr), `a map that is no object of strings is refused (got ${JSON.stringify(refused)})`);
+  const designReview = runtimeCliResult(['emit-manifest', '--reviewer', runtime.COMBINED_REVIEWER, '--phase', 'design-review', '--files', scopeFile, '--out', work, '--rename-map', mapFile]);
+  assert.ok(designReview.status === 2 && /impl-review with --base\/--head only/.test(designReview.stderr), `--rename-map outside an impl-review range is refused (got ${JSON.stringify(designReview)})`);
+});
+
+test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path, substituted or deleted, by its literal name', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  const OLD = 'oldName';
+  const NEW = 'newName';
+  const NON_ASCII = 'src/é.js';
+  const DELETED_NON_ASCII = 'src/ü.js';
+  const body = (name) => `${Array.from({ length: 40 }, (unused, index) => (index === 2 ? `use ${name} here` : `line ${index + 1}`)).join('\n')}\n`;
+  for (const file of ['src/before.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  git('mv', 'src/before.js', 'src/after.js');
+  fs.rmSync(path.join(repo, DELETED_NON_ASCII));
+  for (const file of ['src/after.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(NEW));
+  git('add', '-A');
+  git('update-index', '--chmod=+x', 'src/run.sh');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+
+  const work = mkTempDir();
+  const scopeFile = path.join(work, 'scope.txt');
+  const mapFile = path.join(work, 'map.json');
+  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
+  fs.writeFileSync(mapFile, JSON.stringify({ [OLD]: NEW }), 'utf8');
+  const range = ['--base', base, '--head', head, '--rename-map', mapFile];
+  const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', work, ...range], { cwd: repo, env });
+  assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
+  const patch = fs.readFileSync(emitted.result.diff, 'utf8');
+  assert.ok(patch.includes('rename from src/before.js\nrename to src/after.js\n# collapsed: src/after.js: 1 rename-map substitutions\n'), `AC-24: a renamed file whose only edit applies the map still shows the rename (got ${patch})`);
+  assert.ok(patch.includes('old mode 100644\nnew mode 100755\n# collapsed: src/run.sh: 1 rename-map substitutions\n'), 'AC-24: a mode change survives the collapse of its only hunk');
+  assert.ok(patch.includes(`# collapsed: ${NON_ASCII}: 1 rename-map substitutions\n`) && !patch.includes('\\303'), 'AC-24: a C-quoted path is named by its decoded characters');
+  assert.ok(patch.includes(`# collapsed: ${DELETED_NON_ASCII}: deleted, 40 lines\n`) && !patch.includes('\\303') && !patch.includes('\\274'), 'AC-35, AC-24: a deleted C-quoted path is named by its decoded characters in the deletion collapse');
+  assert.ok(!patch.includes(`use ${NEW} here`), 'every substitution hunk is collapsed');
+  const measured = runtimeCliResult(['review-waves', '--files', scopeFile, ...range], { cwd: repo, env });
+  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted substituted and deleted ones included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
+});
+
+test('sprint-033 AC-25: persist-review --floor drops each external finding below the floor and records the count, rewrites a CONCERNS whose rows all dropped to APPROVE, leaves the skip form alone, and refuses a non-external reviewer or a floor outside the four levels', () => {
+  const root = mkTempDir();
+  const header = ['| # | Severity | Location | Description | Suggested fix |', '|---|---|---|---|---|'];
+  const rows = { low: '| 1 | low | `a.md:1` | d | f |', high: '| 2 | high | `b.md:2` | d | f |', medium: '| 3 | medium | `c.md:3` | d | f |' };
+  const external = `[REVIEW-impl-external]: CONCERNS\n\n## Kept findings\n\n${[...header, rows.low, rows.high, rows.medium].join('\n')}\n`;
+  let runs = 0;
+  const persist = (text, reviewer, floor, extra = []) => {
+    runs += 1;
+    const dir = path.join(root, `run-${runs}`);
+    fs.mkdirSync(dir);
+    const input = path.join(root, `returned-${runs}.md`);
+    fs.writeFileSync(input, text, 'utf8');
+    return { dir, ...runtimeCliResult(['persist-review', '--phase', 'impl', '--reviewer', reviewer, '--in', input, '--out-dir', dir, ...(floor === undefined ? [] : ['--floor', floor]), ...extra]) };
+  };
+
+  const partial = persist(external, 'external', 'medium');
+  assert.deepStrictEqual(partial.result, { token: 'CONCERNS', findings: [{ id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }], dropped: 1 }, 'AC-25: the low row is dropped, the rest kept, and the count is reported');
+  const written = fs.readFileSync(path.join(partial.dir, 'external.md'), 'utf8');
+  assert.ok(written.endsWith('dropped: 1\n') && !written.includes('a.md:1') && written.includes('b.md:2') && written.includes('c.md:3'), 'the persisted review lacks the dropped row and records the count');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(partial.dir, 'external.findings.json'), 'utf8')), partial.result.findings, 'the findings JSON is the floored set the minor test-only route reads');
+
+  const all = persist(external, 'external', 'critical');
+  assert.deepStrictEqual(all.result, { token: 'APPROVE', findings: [], dropped: 3 }, 'AC-25: a CONCERNS whose every row dropped becomes APPROVE');
+  assert.ok(fs.readFileSync(path.join(all.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\n'), 'the persisted verdict line is rewritten too');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(all.dir, 'external.findings.json'), 'utf8')), []);
+
+  const kept = persist(external, 'external', 'low');
+  assert.deepStrictEqual([kept.result.token, kept.result.dropped, kept.result.findings.length], ['CONCERNS', 0, 3], 'a floor at the lowest level drops nothing');
+
+  const failing = `[REVIEW-impl-external]: FAIL\nFAIL: 1\n\n${[...header, rows.low].join('\n')}\n`;
+  const failFloored = persist(failing, 'external', 'medium');
+  assert.deepStrictEqual(failFloored.result, { token: 'APPROVE', findings: [], dropped: 1 }, 'AC-25: a FAIL whose every row dropped becomes APPROVE');
+  assert.ok(fs.readFileSync(path.join(failFloored.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\nAPPROVE\n'), 'the verdict line and the FAIL count line are rewritten');
+  const STALEMATE_LINE = 'Stalemate: 2 iterations, identical findings — options: stop / continue fixing / abort';
+  const stalemate = persist(failing.replace('FAIL: 1', `FAIL: 1\n${STALEMATE_LINE}`), 'external', 'medium');
+  assert.deepStrictEqual([stalemate.result.token, stalemate.result.dropped], ['FAIL', 1], 'AC-25: a stalemate FAIL keeps its verdict whatever the floor drops');
+  assert.ok(fs.readFileSync(path.join(stalemate.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: FAIL\n'), 'the persisted stalemate verdict line stays FAIL');
+  const notStalemate = persist(external.replace('\n\n', '\nStalemate: no\n\n'), 'external', 'critical');
+  assert.deepStrictEqual([notStalemate.result.token, notStalemate.result.dropped], ['APPROVE', 3], 'AC-25: a "Stalemate: no" line is no stalemate FAIL - a CONCERNS whose every row dropped still becomes APPROVE');
+  const concernsWithCount = persist(external.replace('\n\n', `\n${STALEMATE_LINE}\n\n`), 'external', 'critical');
+  assert.deepStrictEqual([concernsWithCount.result.token, concernsWithCount.result.dropped], ['APPROVE', 3], 'AC-25: only a FAIL verdict is a stalemate - a CONCERNS carrying the count line becomes APPROVE when every row dropped');
+
+  const skipped = '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n';
+  assert.deepStrictEqual(persist(skipped, 'external', 'high').result, { token: skipped.trim().slice('[REVIEW-impl-external]: '.length), findings: [] }, 'the availability skip carries no table and no floor');
+
+  const nonExternal = persist(external.replace('external', 'quality'), 'quality', 'medium');
+  assert.ok(nonExternal.status === 2 && /--floor <low\|medium\|high\|critical> applies to external only/.test(nonExternal.stderr), `AC-25: an internal reviewer's severity floor is the dispatch payload's, never persist-review's (got ${JSON.stringify(nonExternal)})`);
+  const badFloor = persist(external, 'external', 'urgent');
+  assert.strictEqual(badFloor.status, 2, 'a floor outside the four severity levels is refused');
+  assert.deepStrictEqual(fs.readdirSync(badFloor.dir), [], 'a refused floor writes nothing');
+  assert.deepStrictEqual(persist(external, 'external').result, { token: 'CONCERNS', findings: [{ id: '1', severity: 'low', location: 'a.md:1' }, { id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }] }, 'without --floor nothing is dropped and no count is reported');
+});
+
+test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 characters counted as characters, fails a longer one and a memory-check hit among the named staged paths only, ignores a sibling\'s staged memory hit, and refuses a missing subject', () => {
+  const memory = '.claude/agent-memory/asd-x';
+  const { repo, env, git } = sandboxGitRepo();
+  writeFile(repo, 'docs/own.md', 'plain\n');
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  writeFile(repo, `${memory}/note.md`, 'seen in sprint 019\n');
+  git('add', '--', `${memory}/note.md`);
+  const check = (subject, paths) => {
+    const args = ['commit-check', ...(subject === undefined ? [] : ['--subject', subject]), ...(paths === undefined ? [] : ['--', ...paths])];
+    try {
+      return { status: 0, report: JSON.parse(runtimeCli(args, { cwd: repo, env, stdio: 'pipe' })) };
+    } catch (error) {
+      return { status: error.status, report: error.stdout ? JSON.parse(error.stdout) : null, stderr: String(error.stderr).trim() };
+    }
+  };
+  const HEADER_MAX = 50;
+  const fits = `chore(test): ${'x'.repeat(HEADER_MAX - 'chore(test): '.length)}`;
+  assert.deepStrictEqual(check(fits, ['docs/own.md']), { status: 0, report: { ok: true, header: { length: HEADER_MAX, max: HEADER_MAX }, memory: [] } }, 'AC-12: a header of exactly the limit passes');
+  const tooLong = check(`${fits}x`, ['docs/own.md']);
+  assert.deepStrictEqual([tooLong.status, tooLong.report.ok, tooLong.report.header], [1, false, { length: HEADER_MAX + 1, max: HEADER_MAX }], 'AC-12: one character over fails with exit 1 and the measured length');
+  assert.strictEqual(check(`feat: ${'é'.repeat(HEADER_MAX - 'feat: '.length)}`, ['docs/own.md']).status, 0, 'AC-12: the limit counts characters, never bytes');
+
+  assert.deepStrictEqual(check(fits, ['docs/own.md']).report.memory, [], 'AC-21: a staged memory hit outside the named paths is a sibling\'s, never this commit\'s');
+  const hit = check(fits, [`${memory}/note.md`]);
+  assert.deepStrictEqual([hit.status, hit.report.ok, hit.report.memory.map((entry) => [entry.path, entry.token])], [1, false, [[`${memory}/note.md`, 'sprint 019']]], 'AC-21: a hit among the named staged paths fails the commit check');
+  assert.strictEqual(check(fits, [memory]).status, 1, 'a named directory covers the memory files under it');
+  assert.strictEqual(check(fits).status, 1, 'with no paths named every staged memory write is checked');
+
+  const missing = check(undefined, ['docs/own.md']);
+  assert.ok(missing.status === 2 && /commit-check takes --subject/.test(missing.stderr), `a missing subject is refused (got ${JSON.stringify(missing)})`);
+});
+
+test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed of the named entry with the short HEAD and appends the decisions-log line, touching no other row, and writes neither file when its input is invalid', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  git('commit', '-q', '--allow-empty', '-m', 'base');
+  const head = git('rev-parse', '--short=8', 'HEAD').trim();
+  const work = mkTempDir();
+  const entryRow = (entry, analysed, scope) => `| ${entry} | ${analysed} | ${scope} |`;
+  const plan = ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', entryRow(1, 'abc12345', 'full change surface'), entryRow(2, '', 'delta since entry 1'), '', '## Defects', ''].join('\n');
+  const planFile = path.join(work, 'test-plan.md');
+  const logFile = path.join(work, 'decisions-log.md');
+  const reset = (log) => {
+    fs.writeFileSync(planFile, plan, 'utf8');
+    fs.writeFileSync(logFile, log, 'utf8');
+  };
+  const close = (...overrides) => {
+    const flags = { 'test-plan': planFile, entry: '2', decisions: logFile, line: 'impl-test: impacted set green', ...Object.fromEntries(overrides) };
+    return runtimeCliResult(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
+  };
+
+  reset('- 2026-01-01 — earlier line\n');
+  assert.deepStrictEqual(close(), { status: 0, result: { entry: 2, head } }, 'the command reports the entry and the HEAD it recorded');
+  assert.strictEqual(fs.readFileSync(planFile, 'utf8'), plan.replace(entryRow(2, '', 'delta since entry 1'), entryRow(2, head, 'delta since entry 1')), 'only the named entry\'s HEAD analysed cell changes');
+  assert.ok(/^- 2026-01-01 — earlier line\n- \d{4}-\d{2}-\d{2} — impl-test: impacted set green\n$/.test(fs.readFileSync(logFile, 'utf8')), 'the line is appended after the existing log, dated');
+
+  reset('- 2026-01-01 — no trailing newline');
+  close(['entry', '1']);
+  assert.ok(fs.readFileSync(logFile, 'utf8').startsWith('- 2026-01-01 — no trailing newline\n- '), 'a log without a final newline still gets the line on its own line');
+  assert.ok(fs.readFileSync(planFile, 'utf8').includes(entryRow(1, head, 'full change surface')), 'a row already holding a sha is refilled with the current HEAD');
+
+  for (const [label, overrides, pattern] of [
+    ['an entry with no row', [['entry', '3']], /holds 0 Entry log rows for entry 3, expected 1/],
+    ['a non-integer entry', [['entry', 'two']], /--entry <positive integer> required/],
+    ['an empty line', [['line', '  ']], /--line must be one non-empty line/],
+    ['a multi-line line', [['line', 'a\nb']], /--line must be one non-empty line/],
+  ]) {
+    reset('- 2026-01-01 — kept\n');
+    const refused = close(...overrides);
+    assert.ok(refused.status === 2 && pattern.test(refused.stderr), `${label} is refused (got ${JSON.stringify(refused)})`);
+    assert.deepStrictEqual([fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')], [plan, '- 2026-01-01 — kept\n'], `${label}: neither file is written`);
+  }
+  reset('');
+  fs.writeFileSync(planFile, `${plan}\n${entryRow(2, '', 'again')}\n`, 'utf8');
+  assert.ok(/holds 2 Entry log rows for entry 2/.test(close().stderr), 'two rows for one entry are ambiguous and refused');
+  const absent = runtimeCliResult(['impl-test-close', '--test-plan', planFile], { cwd: repo, env });
+  assert.ok(absent.status === 2 && /requires --entry, --decisions, --line/.test(absent.stderr), 'a missing flag names every flag still required');
+});
+
+const DESIGN_FIXTURE = {
+  md: ['---', 'name: Demo', 'colors:', '  primary: "#112233"', '  accent: "{colors.primary}"', 'spacing:', '  md: 16px', 'typography:', '  body:', '    fontFamily: Inter', '    fontSize: 14px', '---', '', '# Prose stays out of the tables', ''].join('\n'),
+  tokens: [
+    ['colors.primary', '#112233', 'color'], ['colors.accent', '{colors.primary}', 'reference'], ['spacing.md', '16px', 'dimension'],
+    ['typography.body.fontFamily', 'Inter', 'typography'], ['typography.body.fontSize', '14px', 'typography'],
+  ],
+  vars: ['--colors-primary: #112233;', '--colors-accent: var(--colors-primary);', '--spacing-md: 16px;', '--typography-body-fontFamily: Inter;', '--typography-body-fontSize: 14px;'],
+  html: (eol) => ['<table><tbody>', '<!-- asd:tokens:start -->', 'stale row', '<!-- asd:tokens:end -->', '</tbody></table>', '<style>', '/* asd:vars:start */', ':root { --stale: 1; }', '/* asd:vars:end */', '</style>', '<p>keep me</p>', ''].join(eol),
+};
+
+test('sprint-033 AC-32: design-tokens rewrites only the two marked regions of design-system.html from the DESIGN.md front matter - token rows with a type chip, :root variables with references as var() - keeps the file\'s line endings, and a second run changes nothing', () => {
+  const work = mkTempDir();
+  const designFile = path.join(work, 'DESIGN.md');
+  const htmlFile = path.join(work, 'design-system.html');
+  fs.writeFileSync(designFile, DESIGN_FIXTURE.md, 'utf8');
+  const rows = DESIGN_FIXTURE.tokens.map(([tokenPath, value, type]) => `      <tr><td><code>${tokenPath}</code></td><td>${value}</td><td><span class="chip area">${type}</span></td></tr>`);
+  const expected = (eol) => DESIGN_FIXTURE.html(eol).replace('stale row', rows.join(eol)).replace(':root { --stale: 1; }', [':root {', ...DESIGN_FIXTURE.vars.map((declaration) => `  ${declaration}`), '}'].join(eol));
+  for (const eol of ['\n', '\r\n']) {
+    fs.writeFileSync(htmlFile, DESIGN_FIXTURE.html(eol), 'utf8');
+    const run = () => runtimeCliResult(['design-tokens', '--design', designFile, '--html', htmlFile]);
+    assert.deepStrictEqual(run(), { status: 0, result: { tokens: DESIGN_FIXTURE.tokens.length } }, 'the grouped tokens are counted, the top-level name is metadata');
+    assert.strictEqual(fs.readFileSync(htmlFile, 'utf8'), expected(eol), `AC-32: both regions are rebuilt and every byte outside them, ${JSON.stringify(eol)} line endings included, is untouched`);
+    const once = fs.readFileSync(htmlFile, 'utf8');
+    run();
+    assert.strictEqual(fs.readFileSync(htmlFile, 'utf8'), once, 'a second run is a no-op');
+  }
+});
+
+test('sprint-033 AC-32: design-tokens fails naming the line on YAML beyond nested maps of scalars, and names the marker pair or the empty front matter it cannot work with, writing nothing', () => {
+  const work = mkTempDir();
+  const designFile = path.join(work, 'DESIGN.md');
+  const htmlFile = path.join(work, 'design-system.html');
+  const front = (...lines) => ['---', 'name: Demo', ...lines, '---', ''].join('\n');
+  const run = () => runtimeCliResult(['design-tokens', '--design', designFile, '--html', htmlFile]);
+  const html = DESIGN_FIXTURE.html('\n');
+  for (const [label, text, line] of [
+    ['a flow map', front('colors: { primary: "#fff" }'), 3],
+    ['a block scalar', front('colors:', '  primary: >'), 4],
+    ['a list item', front('colors:', '  - red'), 4],
+    ['a duplicate key', front('colors:', '  primary: "#fff"', '  primary: "#000"'), 5],
+    ['a tab indent', front('colors:', '\tprimary: "#fff"'), 4],
+    ['an unterminated quote', front('colors:', '  primary: "#fff'), 4],
+  ]) {
+    fs.writeFileSync(designFile, text, 'utf8');
+    fs.writeFileSync(htmlFile, html, 'utf8');
+    const failed = run();
+    assert.ok(failed.status === 2 && failed.stderr.includes(`${designFile}:${line}`), `${label} fails naming line ${line} (got ${JSON.stringify(failed)})`);
+    assert.strictEqual(fs.readFileSync(htmlFile, 'utf8'), html, `${label}: the html is untouched`);
+  }
+
+  fs.writeFileSync(designFile, DESIGN_FIXTURE.md, 'utf8');
+  for (const [label, broken, pattern] of [
+    ['a missing vars end marker', html.replace('/* asd:vars:end */', ''), /needs exactly one \/\* asd:vars:start \*\/ \.\.\. \/\* asd:vars:end \*\/ marker pair/],
+    ['a repeated tokens marker', html.replace('<!-- asd:tokens:start -->', '<!-- asd:tokens:start --><!-- asd:tokens:start -->'), /needs exactly one <!-- asd:tokens:start -->/],
+    ['tokens markers in the wrong order', html.replace('<!-- asd:tokens:start -->', '@@S@@').replace('<!-- asd:tokens:end -->', '<!-- asd:tokens:start -->').replace('@@S@@', '<!-- asd:tokens:end -->'), /needs exactly one <!-- asd:tokens:start --> \.\.\. <!-- asd:tokens:end --> marker pair/],
+  ]) {
+    fs.writeFileSync(htmlFile, broken, 'utf8');
+    const failed = run();
+    assert.ok(failed.status === 2 && pattern.test(failed.stderr), `${label} fails naming the pair (got ${JSON.stringify(failed)})`);
+    assert.strictEqual(fs.readFileSync(htmlFile, 'utf8'), broken, `${label}: nothing is written, the tokens region included`);
+  }
+
+  fs.writeFileSync(htmlFile, html, 'utf8');
+  fs.writeFileSync(designFile, front(), 'utf8');
+  assert.ok(/holds no tokens/.test(run().stderr), 'a front matter with metadata only has nothing to render');
+  fs.writeFileSync(designFile, '# no front matter\n', 'utf8');
+  assert.ok(run().stderr.includes(`${designFile}:1`), 'a file not opening with --- fails at line 1');
+});
+
+/** Runs the 14.5.0 migration over `root`, its stdout captured so the warnings are asserted instead of printed. */
+async function runMigration1450(root) {
+  const captured = [];
+  const realWrite = process.stdout.write;
+  process.stdout.write = (chunk) => {
+    captured.push(String(chunk));
+    return true;
+  };
+  try {
+    const report = await migration1450({ repoRoot: root });
+    return { report, output: captured.join('') };
+  } finally {
+    process.stdout.write = realWrite;
+  }
+}
+
+test('sprint-033 AC-19/AC-33: the 14.5.0 migration deletes the agent-memory directory of every name an earlier migration retired that is not a live canonical agent or variant, keeps live and unrelated memory, rewrites exactly the old designmd-install value, and a re-run is a no-op', async () => {
+  const constant = (rel) => [...(/const RETIRED_AGENTS = \[([\s\S]*?)\];/.exec(canonText(rel))[1]).matchAll(/'([a-z-]+)'/g)].map((match) => match[1]);
+  const retired = [...new Set([...constant('.asd/migrations/4.0.0.js'), ...constant('.asd/migrations/14.0.0.js'), /'(asd-[a-z-]+)\.md'/.exec(canonText('.asd/migrations/5.0.0.js'))[1]])];
+  const live = new Set(canonAgents().flatMap((agent) => [agent.name, ...Object.keys(agent.meta.variants || {}).map((suffix) => `${agent.name}-${suffix}`)]));
+  const survivors = ['asd-reviewer-quality', 'asd-dev-mechanical', 'asd-tester-runner', 'asd-scout'];
+  assert.deepStrictEqual(survivors.filter((name) => !live.has(name)), [], 'sanity: the survivors named below are live canonical names');
+  const gone = retired.filter((name) => !live.has(name));
+  assert.ok(gone.includes('asd-tester-mechanical') && gone.includes('asd-pm') && retired.includes('asd-reviewer-quality') && !gone.includes('asd-reviewer-quality'), 'sanity: retired names are gathered across the three earlier migrations, and a name retired then live again is not gone');
+
+  const root = makeMigrationFixtureRepo();
+  fs.cpSync(path.join(REPO_ROOT, '.asd', 'agents'), path.join(root, '.asd', 'agents'), { recursive: true });
+  const memoryDir = (name) => path.join(root, '.claude', 'agent-memory', name);
+  for (const name of [...retired, ...survivors, 'custom-project-agent']) writeFile(root, `.claude/agent-memory/${name}/MEMORY.md`, '# memory\n');
+  const OLD = 'npm install @google/design.md';
+  const NEW = 'npm install --no-save @google/design.md';
+  const commands = (install) => `build: "node .asd/sync.js --check"\n  designmd-install: "${install}"\n  designmd-lint: "npx @google/design.md lint"\n`;
+  writeFile(root, '.asd/project/commands.yaml', commands(OLD));
+
+  const first = await runMigration1450(root);
+  assert.deepStrictEqual([...first.report.deleted].sort(), gone.map((name) => `.claude/agent-memory/${name}`).sort(), 'AC-19: exactly the retired names that are not live lose their memory directory');
+  assert.deepStrictEqual(gone.filter((name) => fs.existsSync(memoryDir(name))), [], 'the directories are gone from disk');
+  assert.deepStrictEqual([...survivors, 'custom-project-agent'].filter((name) => !fs.existsSync(path.join(memoryDir(name), 'MEMORY.md'))), [], 'AC-19: live agents\' memory - a name retired then live again included - and unrelated memory stay');
+  assert.deepStrictEqual([first.report.rewritten, fs.readFileSync(path.join(root, '.asd/project/commands.yaml'), 'utf8')], [['.asd/project/commands.yaml'], commands(NEW)], 'AC-33: only the designmd-install value changes, quoting and neighbours intact');
+
+  const second = await runMigration1450(root);
+  assert.deepStrictEqual([second.report.deleted, second.report.rewritten, second.report.unchanged], [[], [], ['.asd/project/commands.yaml']], 'a re-run deletes and rewrites nothing');
+  assert.deepStrictEqual([...second.report.missing].sort(), gone.map((name) => `.claude/agent-memory/${name}`).sort(), 'a directory already gone is reported missing, never an error');
+
+  for (const [label, text] of [['a customised value', commands(`${OLD} --save`)], ['a commented-out old value', `build: "x"\n  # designmd-install: "${OLD}"\n`], ['an empty value', commands('')]]) {
+    writeFile(root, '.asd/project/commands.yaml', text);
+    const left = await runMigration1450(root);
+    assert.deepStrictEqual([left.report.rewritten, fs.readFileSync(path.join(root, '.asd/project/commands.yaml'), 'utf8')], [[], text], `AC-33: ${label} is left as the consumer wrote it`);
+  }
+  fs.rmSync(path.join(root, '.asd', 'project'), { recursive: true });
+  assert.ok((await runMigration1450(root)).report.missing.includes('.asd/project/commands.yaml'), 'an absent commands.yaml is reported missing');
+
+  const bare = makeMigrationFixtureRepo();
+  writeFile(bare, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
+  const guarded = await runMigration1450(bare);
+  assert.deepStrictEqual([guarded.report.deleted, fs.existsSync(path.join(bare, '.claude/agent-memory/asd-pm/MEMORY.md')), /agents is missing/.test(guarded.output)], [[], true, true], 'with no canonical agents directory no live name can be known, so nothing is deleted and the migration warns');
+
+  const broken = makeMigrationFixtureRepo();
+  writeFile(broken, '.asd/agents/asd-dev.md', '---\n{ not json\n---\nbody\n');
+  writeFile(broken, '.claude/agent-memory/asd-pm/MEMORY.md', '# memory\n');
+  const unparsable = await runMigration1450(broken);
+  assert.deepStrictEqual([unparsable.report.deleted, fs.existsSync(path.join(broken, '.claude/agent-memory/asd-pm/MEMORY.md')), /asd-dev\.md: frontmatter unparsable/.test(unparsable.output)], [[], true, true], 'AC-19: an agent whose frontmatter fails to parse has unknown variants, so nothing is deleted and the migration names the file');
+});
+
+test('sprint-033 leftover-term check: no canon, README, AGENTS.md, runtime, sync, hook, workflow definition or agent-memory line keeps a sentence or term this sprint removed - the old rotate subject, the duplicate-of removal reason, the one-suffix variant sentence, the wrapper-applied external floor and the severity-driven iron-rule FAIL', () => {
+  const removed = [
+    'chore(sprint): rotate decisions log for', 'duplicate of <test>', 'The one fixed suffix is `mechanical`', "VARIANT_SUFFIXES = ['mechanical', 'standard']",
+    'apply the floor from `payload.floor`, never one of its own or the CLI\'s', 'Dropped findings (below severity floor, nitpick) are never rendered as per-finding rows — only a count per category',
+    'Violation = `FAIL` from', 'Violation = FAIL from',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/sync.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a sentence or term this sprint removed (git diff main...HEAD), taken exactly - one surviving restates the old rotate subject, the duplicate-of reason, the single variant suffix, a wrapper that applies the floor itself or an iron rule whose violation is a FAIL. CHANGELOG.md and sprint folders are history.');
+});
+
+test('sprint-033 AC-25: README no longer says the External Review wrapper applies the severity floor - persist-review does, so its roster row names no wrapper-applied floor', () => {
+  const row = canonText('README.md').split('\n').find((line) => line.startsWith('| `asd-external-review` |')) || '';
+  assert.ok(row.includes('Wraps the *other* provider\'s CLI'), 'sanity: the README roster row of the wrapper is found');
+  assert.ok(!/applies severity floor/.test(row), 'AC-25: persist-review --floor applies the floor, but the README roster row of asd-external-review still says the wrapper does');
+});
+
+test('sprint-033 AC-12: every commit header the canon templates over a phase or a sprint number fits 50 characters for the longest phase and a three-digit sprint number, and git-strategy.md states the limit', () => {
+  const longest = ['standard', 'lite'].flatMap((name) => runtime.loadWorkflow(name).phases).reduce((a, b) => (b.length > a.length ? b : a));
+  const headerPattern = /`((?:feat|fix|chore|docs|refactor|test)\([a-z-]+\): [^`]*)`/g;
+  const templated = [...new Set([...canonMarkdownFiles(), 'README.md'].flatMap((rel) => [...canonText(rel).matchAll(headerPattern)].map((match) => match[1])))].filter((header) => /<phase>|<NNN>/.test(header));
+  assert.ok(templated.length >= 2, `sanity: the canon templates at least the rotate and timing headers, got ${JSON.stringify(templated)}`);
+  const HEADER_MAX = 50;
+  for (const header of templated) {
+    const filled = header.replace('<phase>', longest).replace('<NNN>', '999');
+    assert.ok(!/<[^>]+>/.test(filled) && filled.length <= HEADER_MAX, `AC-12: "${filled}" is ${filled.length} characters, over ${HEADER_MAX}`);
+  }
+  assert.ok(sectionOf('.asd/rules/git-strategy.md', 'Commits').split('\n').some((line) => /^- Header .*≤ 50 chars/.test(line)), 'AC-12: "Commits" states the header limit it enforces through commit-check');
+});
+
+test('sprint-033 AC-6: README names the orchestrator session-model recommendation and the haiku alias environment variable', () => {
+  const readme = canonText('README.md');
+  const session = readme.split('\n').find((line) => line.startsWith('**Orchestrator session model.**')) || '';
+  assert.ok(session.includes('Opus') && session.includes('Fable') && session.includes('`medium`'), `AC-6: the session-model paragraph recommends Opus at medium effort and Fable for long or large runs; got: ${session}`);
+  assert.ok(readme.includes('`ANTHROPIC_DEFAULT_HAIKU_MODEL`') && readme.includes('Haiku 4.5'), 'AC-6: the haiku alias note names Haiku 4.5 and the variable that overrides it');
 });
 
 // ===========================================================================

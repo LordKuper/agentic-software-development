@@ -1,0 +1,254 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 643ad147..5eb42b8d 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "2263e126150c377768f7ae7163d897ef91fbd2c961cb67dcf5e24905319c75b0",
++    ".asd/runtime.js": "e76a78b2c8428f839741b25a68622807977be8e5f10e10e2707d044282b36544",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 54d3a4c3..dd3e30cc 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -567,7 +567,7 @@ function reviewFindings(text) {
+   });
+ }
+ 
+-/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a `Stalemate:` line) excepted, its sets being floored already. */
++/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a FAIL verdict with a `Stalemate: <N> iterations` line) excepted, its sets being floored already. */
+ function applyFloor(body, floor) {
+   const rank = SEVERITIES.indexOf(floor);
+   const lines = body.split('\n');
+@@ -578,7 +578,8 @@ function applyFloor(body, floor) {
+   const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
+   const dropped = lines.length - kept.length;
+   const keptRows = tableEnd - start - 2 - dropped;
+-  const approve = keptRows === 0 && !/^Stalemate: /m.test(body);
++  const isStalemate = /\]: FAIL\s*$/.test(lines[0]) && /^Stalemate: \d+ iterations/m.test(body);
++  const approve = keptRows === 0 && !isStalemate;
+   const verdict = approve ? kept[0].replace(/\]: (?:CONCERNS|FAIL)(\s*)$/, ']: APPROVE$1') : kept[0];
+   const text = [verdict, ...kept.slice(1)].map((line) => {
+     const count = /^(CONCERNS|FAIL): \d+\s*$/.exec(line);
+@@ -1058,7 +1059,6 @@ function collapsePatch(patch, substitute) {
+     if (total === 0) return section;
+     discounts.push([sectionPath(head), 2 * total]);
+     const kept = hunks.filter((hunk, i) => counts[i] === 0);
+-    // With every hunk collapsed, a mode change or rename still reaches the reviewer through its header lines.
+     const semantic = head.split('\n').filter((line) => /^(?:old mode|new mode|similarity index|rename from|rename to|copy from|copy to) /.test(line));
+     const header = kept.length > 0 ? head + kept.join('') : semantic.length > 0 ? `${[head.split('\n', 1)[0], ...semantic].join('\n')}\n` : '';
+     return `${header}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
+diff --git a/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-03.md b/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-03.md
+new file mode 100644
+index 00000000..ee9266d3
+--- /dev/null
++++ b/.asd/sprints/033-retro-intake-model-choice/test-plan.entry-03.md
+@@ -0,0 +1,43 @@
++# Test plan entry 03 — sprint 033-retro-intake-model-choice
++
++Rotated narrative rows of `Entry log` entry 3 (HEAD analysed 245bed7a), plus the review-fix wave-1/iter-01 in-place tester rows. Never edited.
++
++## Risk → check decisions
++
++Entry 3 delta (`14898f4a...HEAD`, canon only: runtime, migration 14.5.0, rule/workflow/agent prose, README, templates, release-manifest hashes). Entry 2 rows rotated to `test-plan.entry-02.md`.
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `persist-review --floor` `applyFloor`: FAIL rewritten like CONCERNS, stalemate FAIL kept | an all-dropped external FAIL stays a blocking verdict; a stalemate FAIL turned into APPROVE | component | add | Two cases added to the existing AC-25 test (FAIL to APPROVE with its count line, stalemate FAIL unchanged); the existing CONCERNS cases never reach the FAIL branch |
++| `collapsePatch`/`sectionPath`/`gitPath`: rename and mode header lines kept, C-quoted path decoded | a collapsed rename or chmod invisible to the reviewer; a non-ASCII file named by its quoted form and never discounted from the wave size | component (real git repo) | add | One new test over a renamed file, a chmod file and an `é.js` file, all substitution-only, asserting patch text and `review-waves` lines; the existing AC-35 test has none of these shapes |
++| migration `14.5.0.js` `liveAgentNames`: an unparsable agent frontmatter returns null with a warning | a live variant's memory deleted because its frontmatter failed to parse | component | add | One case appended to the existing AC-19/AC-33 test beside the missing-agents-directory case |
++| `design-tokens` vars region moved to `/* asd:vars:start */`...`/* asd:vars:end */` | an HTML comment inside `<style>` breaks the `:root` selector; a stale marker pair accepted | component | keep | Existing AC-32 tests re-pointed (fixture markers, missing-end-marker pattern): they were red at this entry's start (test defects, pinned the old markers); the byte-exact expected output now has no `<!--` inside `<style>`, so one fixture covers the validity risk |
++| prose-only fixes: `core.md`, `agent-protocol.md`, `review-policy.md`, `sprint-lifecycle.md`, `artifact-layout.md`, `external-review.md`, `providers.md`, `design-system.md`, workflows (design-review, impl-review, impl-test), `asd-advisor`/`asd-tester`/`asd-reviewer-quality` agents, skills, `t_AGENTS.md`/`t_design-system.html`, README, `release-manifest.json` | a reworded rule dropping a token another file or test reads | contract | none | No parsed token ties files together beyond the ones the surviving pins already read (sprint-010/018/020/026/027/028/032/033 pins, phase-chain, form sweeps, README mirrors) — all green at this HEAD; impl-review's quality reviewer judges the prose |
++| sprint-026 AC-16 load ceiling (headroom now about 56 B of the 0.70 ceiling) | the next prose addition to an orchestrator/impl-loaded section re-breaches the ceiling | contract | keep | Existing byte-exact pin is the guard, green at this HEAD; a second budget test would duplicate it. Risk recorded: any later canon edit in those sections re-runs it |
++
++## Removed tests
++
++None. No test is redundant with a surviving one in this delta; none was touched.
++
++| Test | Reason | In change scope |
++|---|---|---|
++| — | — | — |
++
++## Added tests
++
++Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`git archive 14898f4a` extracted outside the repo, new runner copied in) — no production file was touched; the extraction was deleted afterwards.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js: sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines… | `node tests/run.js --filter "AC-24 (review-fix)"` in the pre-fix tree → exit 1, that test (1 matched), patch lacked `rename from` and named the file `"a/src/\303\251.js" "b/src/\303\251.js"`; green at HEAD; runs: 1. Review finding F3 (iter-02): the sandbox also deletes `src/ü.js` (40 lines) and asserts `# collapsed: src/ü.js: deleted, 40 lines` with no `Ã`/`¼` escape and `review-waves` `lines` 0; `node tests/run.js --filter "AC-24 (review-fix)"` in `git archive 70c67011` (before the sectionPath decode fix) under `.asd/tmp/`, the earlier rename/mode/substitution asserts dropped from the copy so the new one is first → exit 1, that test (1 matched), `a deleted C-quoted path is named by its decoded characters in the deletion collapse`, output `"a/src/Ã¼.js" "b/src/Ã¼.js": deleted, 40 lines`; green at HEAD; runs: 1 |
++| tests/run.js: sprint-033 AC-25: persist-review --floor… (FAIL and stalemate cases added) | `--filter "AC-25: persist-review"` in the pre-fix tree → exit 1, that test (1 matched), `a FAIL whose every row dropped becomes APPROVE`; runs: 1 |
++| tests/run.js: sprint-033 AC-19/AC-33: the 14.5.0 migration… (unparsable-frontmatter case added) | `--filter "AC-19/AC-33"` in the pre-fix tree → exit 1, that test (1 matched), `.claude/agent-memory/asd-pm` deleted; runs: 1 |
++| tests/run.js: sprint-033 AC-32: design-tokens (both tests, markers re-pointed) | `--filter "AC-32"` in the pre-fix tree → exit 1, 2 matched, the new CSS-comment fixture refused for lacking `<!-- asd:vars:start -->`; runs: 1 |
++
++## Suite run
++
++- Command: `node tests/run.js`
++- Scope: impacted (the one runner holds every impacted test; the shared-infrastructure valve would give the same set)
++- Result: pass — 362 passed, 0 failed, 0 skipped of 362, exit 0
++- Lint / build: `node .asd/sync.js --check` exit 0 (`ok: true`); lint runs at commit (`git diff --cached --check`)
++- HEAD: 50c9f5de (F3 in-place test fix: `--filter "sprint-033"` 21/21, full 362/362, exit 0)
+diff --git a/.asd/sprints/033-retro-intake-model-choice/test-plan.md b/.asd/sprints/033-retro-intake-model-choice/test-plan.md
+index acfeb814..6870037e 100644
+--- a/.asd/sprints/033-retro-intake-model-choice/test-plan.md
++++ b/.asd/sprints/033-retro-intake-model-choice/test-plan.md
+@@ -14,19 +14,18 @@ responsibility:
+ | 1 | 97cdd2f3 | full change surface |
+ | 2 | 14898f4a | delta since entry 1 (D-1..D-4 fixes) |
+ | 3 | 245bed7a | delta since entry 2 (review-fix wave-1/iter-01, bcd4f6ac..c6d460a8) |
++| 4 | 6141dc76 | delta since entry 3 (review-fix wave-1/iter-02) |
+ 
+ ## Risk → check decisions
+ 
+-Entry 3 delta (`14898f4a...HEAD`, canon only: runtime, migration 14.5.0, rule/workflow/agent prose, README, templates, release-manifest hashes). Entry 2 rows rotated to `test-plan.entry-02.md`.
++Entry 4 delta (`245bed7a...HEAD`, canon only: `.asd/runtime.js`, `release-manifest.json` hashes, agent memory; review-fix wave-1/iter-02 a5dbb6a9, a2c3a591, in-place test fix f830dbab, manifest sync 5349e5dc). Entry 3 rows rotated to `test-plan.entry-03.md`.
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `persist-review --floor` `applyFloor`: FAIL rewritten like CONCERNS, stalemate FAIL kept | an all-dropped external FAIL stays a blocking verdict; a stalemate FAIL turned into APPROVE | component | add | Two cases added to the existing AC-25 test (FAIL to APPROVE with its count line, stalemate FAIL unchanged); the existing CONCERNS cases never reach the FAIL branch |
+-| `collapsePatch`/`sectionPath`/`gitPath`: rename and mode header lines kept, C-quoted path decoded | a collapsed rename or chmod invisible to the reviewer; a non-ASCII file named by its quoted form and never discounted from the wave size | component (real git repo) | add | One new test over a renamed file, a chmod file and an `é.js` file, all substitution-only, asserting patch text and `review-waves` lines; the existing AC-35 test has none of these shapes |
+-| migration `14.5.0.js` `liveAgentNames`: an unparsable agent frontmatter returns null with a warning | a live variant's memory deleted because its frontmatter failed to parse | component | add | One case appended to the existing AC-19/AC-33 test beside the missing-agents-directory case |
+-| `design-tokens` vars region moved to `/* asd:vars:start */`...`/* asd:vars:end */` | an HTML comment inside `<style>` breaks the `:root` selector; a stale marker pair accepted | component | keep | Existing AC-32 tests re-pointed (fixture markers, missing-end-marker pattern): they were red at this entry's start (test defects, pinned the old markers); the byte-exact expected output now has no `<!--` inside `<style>`, so one fixture covers the validity risk |
+-| prose-only fixes: `core.md`, `agent-protocol.md`, `review-policy.md`, `sprint-lifecycle.md`, `artifact-layout.md`, `external-review.md`, `providers.md`, `design-system.md`, workflows (design-review, impl-review, impl-test), `asd-advisor`/`asd-tester`/`asd-reviewer-quality` agents, skills, `t_AGENTS.md`/`t_design-system.html`, README, `release-manifest.json` | a reworded rule dropping a token another file or test reads | contract | none | No parsed token ties files together beyond the ones the surviving pins already read (sprint-010/018/020/026/027/028/032/033 pins, phase-chain, form sweeps, README mirrors) — all green at this HEAD; impl-review's quality reviewer judges the prose |
+-| sprint-026 AC-16 load ceiling (headroom now about 56 B of the 0.70 ceiling) | the next prose addition to an orchestrator/impl-loaded section re-breaches the ceiling | contract | keep | Existing byte-exact pin is the guard, green at this HEAD; a second budget test would duplicate it. Risk recorded: any later canon edit in those sections re-runs it |
++| `applyFloor` stalemate guard narrowed (a2c3a591): stalemate = verdict line FAIL and a `Stalemate: <N> iterations` line | a `Stalemate: no` line, or a count line under a non-FAIL verdict, keeps a CONCERNS whose every row dropped from becoming APPROVE (review finding F2) | component | add | Two cases added to the existing AC-25 test. Its stalemate-FAIL fixture used the off-grammar `Stalemate: D-1` (red at this entry's start, test defect, pinned the old broad `^Stalemate: ` match): re-pointed to the `t_review-report.md` `## Stalemate` line, so the kept-FAIL branch is exercised by the grammar the guard now reads |
++| `collapsePatch` in-body comment removed (a5dbb6a9) | none: no behaviour change | — | none | The existing AC-24 (review-fix) test over the same function is green at this HEAD |
++| f830dbab C-quoted deleted path case (AC-24 review-fix test) | covered at its own entry | component | keep | Already fail-first proven (entry 3 row, review finding F3); green at this HEAD |
++| `release-manifest.json` hashes, agent-memory edits | a hash or memory line out of step with canon | contract | none | `sync --check` and the leftover-term / manifest pins already read both; green at this HEAD |
+ 
+ ## Removed tests
+ 
+@@ -38,14 +37,11 @@ None. No test is redundant with a surviving one in this delta; none was touched.
+ 
+ ## Added tests
+ 
+-Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`git archive 14898f4a` extracted outside the repo, new runner copied in) — no production file was touched; the extraction was deleted afterwards.
++Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`git archive a5dbb6a9`, the parent of the guard fix, extracted under `.asd/tmp/`, new runner copied in) — no production file was touched; the extraction was deleted afterwards.
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js: sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines… | `node tests/run.js --filter "AC-24 (review-fix)"` in the pre-fix tree → exit 1, that test (1 matched), patch lacked `rename from` and named the file `"a/src/\303\251.js" "b/src/\303\251.js"`; green at HEAD; runs: 1 |
+-| tests/run.js: sprint-033 AC-25: persist-review --floor… (FAIL and stalemate cases added) | `--filter "AC-25: persist-review"` in the pre-fix tree → exit 1, that test (1 matched), `a FAIL whose every row dropped becomes APPROVE`; runs: 1 |
+-| tests/run.js: sprint-033 AC-19/AC-33: the 14.5.0 migration… (unparsable-frontmatter case added) | `--filter "AC-19/AC-33"` in the pre-fix tree → exit 1, that test (1 matched), `.claude/agent-memory/asd-pm` deleted; runs: 1 |
+-| tests/run.js: sprint-033 AC-32: design-tokens (both tests, markers re-pointed) | `--filter "AC-32"` in the pre-fix tree → exit 1, 2 matched, the new CSS-comment fixture refused for lacking `<!-- asd:vars:start -->`; runs: 1 |
++| tests/run.js: sprint-033 AC-25: persist-review --floor… (grammatical stalemate FAIL fixture; `Stalemate: no` CONCERNS and CONCERNS-with-count cases added) | `node tests/run.js --filter "AC-25: persist-review"` in the pre-fix tree → exit 1, that test (1 matched), `AC-25: a "Stalemate: no" line is no stalemate FAIL - a CONCERNS whose every row dropped still becomes APPROVE` (actual `CONCERNS`, expected `APPROVE`). Second run, that assert dropped from the copy → exit 1, that test (1 matched), `AC-25: only a FAIL verdict is a stalemate - a CONCERNS carrying the count line becomes APPROVE when every row dropped`. Reword control: the grammatical stalemate-FAIL asserts (kept FAIL, persisted verdict line FAIL) sit ahead of both and pass in the pre-fix tree and at HEAD; green at HEAD; runs: 2 |
+ 
+ ## Suite run
+ 
+@@ -53,7 +49,7 @@ Fail-first proof is a run of the new `tests/run.js` against the pre-fix tree (`g
+ - Scope: impacted (the one runner holds every impacted test; the shared-infrastructure valve would give the same set)
+ - Result: pass — 362 passed, 0 failed, 0 skipped of 362, exit 0
+ - Lint / build: `node .asd/sync.js --check` exit 0 (`ok: true`); lint runs at commit (`git diff --cached --check`)
+-- HEAD: a6109932
++- HEAD: 373fa77e (entry 4 commit; pre-strategy run at 5349e5dc was 361/362, exit 1, the AC-25 stalemate fixture test defect fixed here)
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index ee261520..1ee9208a 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -25,3 +25,4 @@
+ - [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
+ - [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
+ - [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
++- [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_prose-marker-guards.md b/.claude/agent-memory/asd-reviewer-combined/feedback_prose-marker-guards.md
+new file mode 100644
+index 00000000..a3635578
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_prose-marker-guards.md
+@@ -0,0 +1,12 @@
++---
++name: prose-marker-guards
++description: a runtime guard keyed on a line an agent writes in free text (e.g. ^Stalemate: ): grep archived reports for informal forms of that line, and check the guard is limited to the verdict it is meant for
++metadata:
++  type: feedback
++---
++
++When runtime code changes behaviour based on a line that a model writes into a report (for example `^Stalemate: ` in an External Review body), the template grammar is not enough evidence. Grep the archived review files for that prefix and for nearby informal wording ("Stalemate: no.", "Stalemate check:"). Also check whether the guard runs for verdicts that can never carry the marker, such as a CONCERNS verdict guarded by a FAIL-only marker.
++
++**Why:** a guard that is too loose suppresses a rewrite whenever the agent adds commentary. The reports already contain such commentary, and the suite stays green because its fixture uses only the template form.
++
++**How to apply:** anchor the guard on the template's full grammar (e.g. `Stalemate: \d+ iterations`) and on the verdict it belongs to. Ask for a negative test with the informal form. Related: [[none-row-coverage-claims]].
+diff --git a/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md b/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md
+index c713586c..57e1fd48 100644
+--- a/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md
++++ b/.claude/agent-memory/asd-tester/feedback_failfirst-pre-fix-tree.md
+@@ -5,8 +5,8 @@ metadata:
+   type: feedback
+ ---
+ 
+-When the fix is already committed and production edits are out of scope, prove fail-first by extracting the pre-fix commit (`git archive <sha> | tar -x -f -` run from inside the target dir) outside the repo, copying the new `tests/run.js` over its copy, and running `node tests/run.js --filter "<name>"` there; record the non-zero exit and the failing test name, then delete the extraction.
++When the fix is already committed and production edits are out of scope, prove fail-first by extracting the pre-fix commit (`git archive <sha> | tar -x -f -` run from inside the target dir) beneath the git-ignored `.asd/tmp/` (e.g. `.asd/tmp/prefix-<sha>/`), copying the new `tests/run.js` over its copy, and running `node tests/run.js --filter "<name>"` there; record the non-zero exit and the failing test name, then delete the extraction.
+ 
+ **Why:** a mutation of production is forbidden to this role, and the old-tree run proves the same thing with nothing to restore.
+ 
+-**How to apply:** `tar -x -C C:/...` fails ("Cannot connect to C") - `cd` into the target instead. The system temp volume can be full; extract on the project drive, beside the repo, never inside it.
++**How to apply:** `tar -x -C C:/...` fails ("Cannot connect to C") - `cd` into the target instead. The system temp volume can be full; extract under `.asd/tmp/` on the project drive, never OS temp or outside the project, and remove it after use.
+diff --git a/tests/run.js b/tests/run.js
+index dcad99ae..362f77ba 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -9546,17 +9546,19 @@ test('sprint-033 AC-35, AC-24: emit-manifest collapses a whole-file deletion to
+   assert.ok(designReview.status === 2 && /impl-review with --base\/--head only/.test(designReview.stderr), `--rename-map outside an impl-review range is refused (got ${JSON.stringify(designReview)})`);
+ });
+ 
+-test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path by its literal name', () => {
++test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and mode header lines of a file it collapses whole, and names and discounts a C-quoted non-ASCII path, substituted or deleted, by its literal name', () => {
+   const { repo, env, git } = sandboxGitRepo();
+   const OLD = 'oldName';
+   const NEW = 'newName';
+   const NON_ASCII = 'src/é.js';
++  const DELETED_NON_ASCII = 'src/ü.js';
+   const body = (name) => `${Array.from({ length: 40 }, (unused, index) => (index === 2 ? `use ${name} here` : `line ${index + 1}`)).join('\n')}\n`;
+-  for (const file of ['src/before.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
++  for (const file of ['src/before.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(OLD));
+   git('add', '-A');
+   git('commit', '-q', '-m', 'base');
+   const base = git('rev-parse', 'HEAD').trim();
+   git('mv', 'src/before.js', 'src/after.js');
++  fs.rmSync(path.join(repo, DELETED_NON_ASCII));
+   for (const file of ['src/after.js', NON_ASCII, 'src/run.sh']) writeFile(repo, file, body(NEW));
+   git('add', '-A');
+   git('update-index', '--chmod=+x', 'src/run.sh');
+@@ -9566,7 +9568,7 @@ test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and
+   const work = mkTempDir();
+   const scopeFile = path.join(work, 'scope.txt');
+   const mapFile = path.join(work, 'map.json');
+-  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
++  fs.writeFileSync(scopeFile, ['src/before.js', 'src/after.js', NON_ASCII, DELETED_NON_ASCII, 'src/run.sh'].join('\n') + '\n', 'utf8');
+   fs.writeFileSync(mapFile, JSON.stringify({ [OLD]: NEW }), 'utf8');
+   const range = ['--base', base, '--head', head, '--rename-map', mapFile];
+   const emitted = runtimeCliResult(['emit-manifest', '--reviewer', 'efficiency', '--phase', 'impl-review', '--files', scopeFile, '--out', work, ...range], { cwd: repo, env });
+@@ -9575,9 +9577,10 @@ test('sprint-033 AC-24 (review-fix): a rename-map collapse keeps the rename and
+   assert.ok(patch.includes('rename from src/before.js\nrename to src/after.js\n# collapsed: src/after.js: 1 rename-map substitutions\n'), `AC-24: a renamed file whose only edit applies the map still shows the rename (got ${patch})`);
+   assert.ok(patch.includes('old mode 100644\nnew mode 100755\n# collapsed: src/run.sh: 1 rename-map substitutions\n'), 'AC-24: a mode change survives the collapse of its only hunk');
+   assert.ok(patch.includes(`# collapsed: ${NON_ASCII}: 1 rename-map substitutions\n`) && !patch.includes('\\303'), 'AC-24: a C-quoted path is named by its decoded characters');
++  assert.ok(patch.includes(`# collapsed: ${DELETED_NON_ASCII}: deleted, 40 lines\n`) && !patch.includes('\\303') && !patch.includes('\\274'), 'AC-35, AC-24: a deleted C-quoted path is named by its decoded characters in the deletion collapse');
+   assert.ok(!patch.includes(`use ${NEW} here`), 'every substitution hunk is collapsed');
+   const measured = runtimeCliResult(['review-waves', '--files', scopeFile, ...range], { cwd: repo, env });
+-  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted one included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
++  assert.strictEqual(measured.result.lines, 0, `AC-24: each collapsed file, the C-quoted substituted and deleted ones included, is discounted from the changed-line count (got ${JSON.stringify(measured)})`);
+ });
+ 
+ test('sprint-033 AC-25: persist-review --floor drops each external finding below the floor and records the count, rewrites a CONCERNS whose rows all dropped to APPROVE, leaves the skip form alone, and refuses a non-external reviewer or a floor outside the four levels', () => {
+@@ -9613,9 +9616,14 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
+   const failFloored = persist(failing, 'external', 'medium');
+   assert.deepStrictEqual(failFloored.result, { token: 'APPROVE', findings: [], dropped: 1 }, 'AC-25: a FAIL whose every row dropped becomes APPROVE');
+   assert.ok(fs.readFileSync(path.join(failFloored.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: APPROVE\nAPPROVE\n'), 'the verdict line and the FAIL count line are rewritten');
+-  const stalemate = persist(failing.replace('FAIL: 1', 'FAIL: 1\nStalemate: D-1'), 'external', 'medium');
++  const STALEMATE_LINE = 'Stalemate: 2 iterations, identical findings — options: stop / continue fixing / abort';
++  const stalemate = persist(failing.replace('FAIL: 1', `FAIL: 1\n${STALEMATE_LINE}`), 'external', 'medium');
+   assert.deepStrictEqual([stalemate.result.token, stalemate.result.dropped], ['FAIL', 1], 'AC-25: a stalemate FAIL keeps its verdict whatever the floor drops');
+   assert.ok(fs.readFileSync(path.join(stalemate.dir, 'external.md'), 'utf8').startsWith('[REVIEW-impl-external]: FAIL\n'), 'the persisted stalemate verdict line stays FAIL');
++  const notStalemate = persist(external.replace('\n\n', '\nStalemate: no\n\n'), 'external', 'critical');
++  assert.deepStrictEqual([notStalemate.result.token, notStalemate.result.dropped], ['APPROVE', 3], 'AC-25: a "Stalemate: no" line is no stalemate FAIL - a CONCERNS whose every row dropped still becomes APPROVE');
++  const concernsWithCount = persist(external.replace('\n\n', `\n${STALEMATE_LINE}\n\n`), 'external', 'critical');
++  assert.deepStrictEqual([concernsWithCount.result.token, concernsWithCount.result.dropped], ['APPROVE', 3], 'AC-25: only a FAIL verdict is a stalemate - a CONCERNS carrying the count line becomes APPROVE when every row dropped');
+ 
+   const skipped = '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n';
+   assert.deepStrictEqual(persist(skipped, 'external', 'high').result, { token: skipped.trim().slice('[REVIEW-impl-external]: '.length), findings: [] }, 'the availability skip carries no table and no floor');

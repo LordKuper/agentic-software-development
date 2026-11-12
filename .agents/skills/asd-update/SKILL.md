@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:69eae18f67ef8e9edbab663730c2fba54f799d7700d78f1cdd00ee9904ef771f content_digest=sha256:51498e0fabaa79ba1bd4913359b121fba5ef1c904c6536b3976d4c121c9016ac asd_version=14.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b content_digest=sha256:aa379a829623999d4d1461dd8f4e2f81e80c27f6f90df8217086701a5cd5e708 asd_version=14.4.0 schema=1
 name: asd-update
-description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and a migration's rewrite of a changed shipped command in commands.yaml or removal of a retired agent's memory directory), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -50,7 +50,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 ## Rules
 
 - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
-- never: the update run touches `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`; `asd-sync`'s writes excepted.
+- never: the update run touches `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and `commands.yaml`, whose command values a migration may rewrite when a release changes a shipped command), `.claude/agent-memory/**` (except the directory of an agent a release retired, which its migration removes), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`; `asd-sync`'s writes excepted.
 - never: write a diverged (**conflict**) file without explicit confirmation.
 
 ## Delegates
@@ -62,7 +62,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 ## Outputs
 
 ```json
-["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/), the managed blocks of AGENTS.md and CLAUDE.md, and its owned entries in .claude/settings.json, .codex/hooks.json"]
+["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", ".asd/project/commands.yaml: migration command-value rewrites only", ".claude/agent-memory/<agent>/: removal of a retired agent's directory by its migration", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/), the managed blocks of AGENTS.md and CLAUDE.md, and its owned entries in .claude/settings.json, .codex/hooks.json"]
 ```
 
 ## Reference

@@ -47,7 +47,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`
 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Workflows"), neither offers `design`, `design-review` or `design-promote`.
-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md`, reading the definition's `rollback_reset` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
+4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
@@ -58,7 +58,7 @@ After any phase skill returns:
 
 ## Rules
 
-- must: before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` (condition: `.asd/rules/artifact-layout.md` "Decisions log"); when it prints `"rotated": true`, commit the renamed and recreated files as `chore(sprint): rotate decisions log for <phase>`. None for new-sprint scope (no sprint folder yet).
+- must: before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` (condition: `.asd/rules/artifact-layout.md` "Decisions log"); when it prints `"rotated": true`, commit the renamed and recreated files as `chore(sprint): rotate log for <phase>`. None for new-sprint scope (no sprint folder yet).
 - must: phase ops (`sprint-lifecycle.md` "Operation timing"): before each phase-skill delegation run `node .asd/runtime.js timing --ledger <sprint>/timing.jsonl --open <phase> --kind phase`, Step 3 closing the returned phase in the same call (`--close <phase>`); on return close it `done` on `COMPLETED`, `--outcome interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open: the relayed question opens a `user-wait` (`gate`: short question label) closed once the answer is processed, and the re-delegation reuses the open phase op (a repeat open is skipped). None for new-sprint scope (its step 1 opens its own), when pr open mode ran (it closed its own), for merge mode (resume at `phase="pr"`, `pr.state="open"`) or the release retry.
 - must: re-detect state on every invocation; the user may interrupt anytime.
 - never: delegate to a skill outside `## Delegates`.
@@ -66,7 +66,7 @@ After any phase skill returns:
 ## Delegates
 
 ```json
-{"agents": ["asd-advisor"], "skills": ["asd-phase-* of the frozen workflow's phases (.asd/workflows/<workflow>.json)", "asd-init sprint-mediated mode: plan-declared settings change (asd-phase-impl.md step 6)", "asd-update sprint-mediated mode: Step 2A update choice (asd-phase-scope.md step 1)"]}
+{"agents": ["asd-advisor"], "skills": ["asd-phase-* of the frozen workflow's phases (.asd/workflows/<workflow>.json)", "asd-init sprint-mediated mode: sprint.md-declared settings change (asd-phase-scope.md step 2b), plan-declared one (asd-phase-impl.md step 6)", "asd-update sprint-mediated mode: Step 2A update choice (asd-phase-scope.md step 1)"]}
 ```
 
 ## Outputs

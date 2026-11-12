@@ -36,7 +36,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 | Test | Reason | In change scope |
 |---|---|---|
-| {{file:name}} | {{trivial \| duplicate of <test> \| mock-confirming \| implementation-coupled \| flaky}} | {{yes \| no — user approved <date>}} |
+| {{file:name}} | {{trivial \| redundant: survivor <file:name>, branch <what it exercises> \| mock-confirming \| implementation-coupled \| flaky}} | {{yes \| no — user approved <date>}} |
 
 ## Added tests
 
@@ -60,7 +60,7 @@ analysed, not any tree produced later
 - Scope: {{impacted \| full}}
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
-- HEAD: {{sha}} — commit this run was verified at; pr phase compares current HEAD against this to decide whether to skip re-running
+- HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
 
 ## Defects
 
@@ -68,7 +68,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
-| D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim}} | {{runner-reported test name}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
+| D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim \| AC-N and the deviation, when no test fails}} | {{runner-reported test name \| none (AC-N)}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
 
 ## Manual verification (optional)
 

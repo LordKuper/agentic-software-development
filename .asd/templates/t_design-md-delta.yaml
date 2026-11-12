@@ -2,7 +2,7 @@
 # applied in design-promote phase after approval under checkpoints.md
 
 add:
-  - path: {{token path, e.g. colors.primary}}
+  - path: {{token path, e.g. colors.primary; subsystem-owned under decomposition: colors.<subsystem>-<purpose>, design-system.md §3}}
     new_value: {{value}}
     usage: {{where + when used, one line — required, becomes inline YAML comment in DESIGN.md per design-system.md §4}}
     reason: {{why}}
@@ -22,3 +22,10 @@ remove:
     reason: {{why no longer needed}}
     affects_components: []
     breaking: true
+
+# optional: DESIGN.md Markdown sections to write, applied beside the token changes (design-system.md §12)
+prose:
+  - section: {{DESIGN.md section heading, e.g. Overview}}
+    text: |
+      {{Markdown replacing that section's body}}
+    reason: {{why}}

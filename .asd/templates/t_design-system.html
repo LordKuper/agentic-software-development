@@ -87,10 +87,20 @@ responsibility:
   <table>
     <thead><tr><th>Path</th><th>Value</th><th>Type</th></tr></thead>
     <tbody>
+<!-- asd:tokens:start -->
       <tr><td><code>{{token.path}}</code></td><td>{{value}}</td><td><span class="chip area">{{color | dimension | typography | reference}}</span></td></tr>
+<!-- asd:tokens:end -->
     </tbody>
   </table>
 </section>
+
+<style>
+/* asd:vars:start */
+:root {
+  --{{token-path-with-dashes}}: {{value}};
+}
+/* asd:vars:end */
+</style>
 
 <section id="dos-and-donts">
   <h2>Do's and Don'ts (optional)</h2>
