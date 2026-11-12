@@ -1058,7 +1058,6 @@ function collapsePatch(patch, substitute) {
     if (total === 0) return section;
     discounts.push([sectionPath(head), 2 * total]);
     const kept = hunks.filter((hunk, i) => counts[i] === 0);
-    // With every hunk collapsed, a mode change or rename still reaches the reviewer through its header lines.
     const semantic = head.split('\n').filter((line) => /^(?:old mode|new mode|similarity index|rename from|rename to|copy from|copy to) /.test(line));
     const header = kept.length > 0 ? head + kept.join('') : semantic.length > 0 ? `${[head.split('\n', 1)[0], ...semantic].join('\n')}\n` : '';
     return `${header}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
