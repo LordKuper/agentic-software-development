@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:333f5a854aac5af54e48b3deac3d247a38136b534e247649906b5dfb43816a8b content_digest=sha256:6c23bd36ebde3b33427bc004190e4bc63d7b14202d8b72377381fff15f5f71f9 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1107d009c6e1dca898455b84b7df89dc6027ffdf71718095372dd6d892df6357 content_digest=sha256:b3d1afb9166914be62eeae31599eed9848087c8880f60de65f8f064d14c46306 asd_version=14.5.0 schema=1
 name: asd-external-review
-description: "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, floor, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator."
+description: "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator."
 tools: [Read, Glob, Grep, Bash]
 disallowedTools: [Edit, WebFetch]
 model: haiku

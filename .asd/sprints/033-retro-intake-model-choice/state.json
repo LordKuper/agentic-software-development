@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "impl-test",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -83,7 +83,11 @@
     "Task 10": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:ledger close semantics", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 9": { "execution": "agent", "tier": "standard", "reason": "risk:parser edge", "raise_effort": false, "resolved_model": "sonnet" },
-    "Task 11": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" }
+    "Task 11": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-2": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-3": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "test-fix D-4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror tables", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
@@ -93,7 +97,7 @@
   "created_at": "2026-11-10T21:00:49.000Z",
   "updated_at": "2026-11-10T21:00:49.000Z",
   "review_fixes_pending": null,
-  "test_defects_pending": true,
+  "test_defects_pending": null,
   "pr": null,
   "archived_at": null
 }

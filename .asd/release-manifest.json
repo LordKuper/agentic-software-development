@@ -28,7 +28,7 @@
     }
   },
   "canon_hashes": {
-    "agents/asd-external-review.md": "sha256:333f5a854aac5af54e48b3deac3d247a38136b534e247649906b5dfb43816a8b",
+    "agents/asd-external-review.md": "sha256:1107d009c6e1dca898455b84b7df89dc6027ffdf71718095372dd6d892df6357",
     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
     "skills/asd-init/SKILL.md": "sha256:40b53f72b0d8d5827beac4c7c493bab564a031a8d81bb2522e86e9399f319878",
@@ -54,23 +54,23 @@
     "agents/asd-reviewer-combined.md": "sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914",
     "agents/asd-reviewer-quality.md": "sha256:060a4d5d7b92eef6027ae8a0a28bf77dd353191a71ff4435a261c741466840f5",
     "skills/asd-phase-cleanup/SKILL.md": "sha256:67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
-    "agents/asd-scout.md": "sha256:bb3a7964ec3fd45dc75d1bf5bbf98a302e1aa60d74d4169c2bf245a44f852a03"
+    "agents/asd-scout.md": "sha256:91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6"
   },
   "upstream_hashes": {
-    ".asd/agents/asd-external-review.md": "333f5a854aac5af54e48b3deac3d247a38136b534e247649906b5dfb43816a8b",
+    ".asd/agents/asd-external-review.md": "1107d009c6e1dca898455b84b7df89dc6027ffdf71718095372dd6d892df6357",
     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
-    ".asd/rules/artifact-layout.md": "1bc1a5e46ba729e29b0a3b30d7a8ce272e3f363050ca4f6fae5e5fe584995a1a",
+    ".asd/rules/artifact-layout.md": "cf11563b2c59f20b8e36cf2f7df5975c9ee80d4e3cd6f3a271b196f0a5824986",
     ".asd/rules/checkpoints.md": "b51da7fe1c832826cf35e428b43f55fd5b238ee62a35d1c44d7c06544040192f",
     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
     ".asd/rules/core.md": "39fffc9da6ddc10134f27c692cecd8d6e8f69aa146dcf018cd06a268ac05cc6b",
     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
     ".asd/rules/design-system.md": "b8524b7d3dac666bef4cd81421b052803a6c9f36070b288bae83837bee5e69c1",
     ".asd/rules/external-review.md": "481bccc7327b54abdbcbfd7c643a0e18705b3b9ddb9dc3a87ac2ef3862f776f1",
-    ".asd/rules/git-strategy.md": "212312b53bcd74cde17ba8f3c689a6e0156c224aa59d98a8977360c3aa87c4e8",
+    ".asd/rules/git-strategy.md": "af215d40ef7fe7a7ef5579c0582e7964418dcb85726e28639832b17f16bc4073",
     ".asd/rules/language-policy.md": "834a43edbf2cb11a6aee45392cfc8cbc1dc39427364fedc1be2f2e1266df9eae",
-    ".asd/rules/providers.md": "1542fa63e68d7421400a17d7fbad82c25e93b9be24189c842e137e856a5b7ca6",
-    ".asd/rules/review-policy.md": "abf6679cb61c4dbc1609573a08679ff13610e22e0b9423277cba48359502af43",
-    ".asd/rules/sprint-lifecycle.md": "44a41dcd0681cb298619c40f8ea74ebc3a56abe7b78a186240edc4f02fa01ac6",
+    ".asd/rules/providers.md": "3fc005f4d6fb44e05e75518594ccf84653734ce7127ecb0fbd590c5ea3c2e83a",
+    ".asd/rules/review-policy.md": "bec58c2a01ec62467029461f81b25ec4d3da6a244af616b8c708b2c049208dc5",
+    ".asd/rules/sprint-lifecycle.md": "2defb922784673d902e6f8bf651d4e5141cba253a5917bebe2226c84c84f1308",
     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
@@ -129,7 +129,7 @@
     ".asd/workflows/asd-phase-design.md": "f7cbb2a79463cb59b8c8c6ce82039a3b14808004f74ce59b22e4df4530f26b9d",
     ".asd/workflows/asd-phase-impl-review.md": "e85f3be5b2a0e326188d89a53251c6cfb593c75ca5eca88cb6fd197c2362974c",
     ".asd/workflows/asd-phase-impl-test.md": "56b4550077fa50a1f56266885c4d2ebf2bfdfa1dfe9521bbd06e142c2dcb1d99",
-    ".asd/workflows/asd-phase-impl.md": "bedf60b682ab7d0ad762a8494e19517fa6aa10242a64a46ba847048200a2289b",
+    ".asd/workflows/asd-phase-impl.md": "d7d08c9c4872794405160581b3246ff0b5e04ea67093156c6bff1b1e863187dc",
     ".asd/workflows/asd-phase-plan.md": "0d81578d127130246efe6e21563f9cc3c967e63f237bf5d8c27f101d8a176124",
     ".asd/workflows/asd-phase-pr.md": "f6187154d55f16db1577fb8ce8856bd2db819de996311d9cd5fc00e07eff229d",
     ".asd/workflows/asd-phase-scope.md": "d0ff13f0438c3b2a9058c9464c18ab1dc6c37a74abda6b7ac475482b8f63cf0d",
@@ -160,7 +160,7 @@
     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
     ".asd/workflows/asd-phase-cleanup.md": "1c679b0a71289bc261704413d9fc9dcd1e70d35c76e9b10b11dec5fd10d62ce3",
     ".asd/migrations/14.2.0.js": "a230f4824213e0f1b18fb49ac629c93d7836b39e619cd1f22ceea1add816f16b",
-    ".asd/agents/asd-scout.md": "bb3a7964ec3fd45dc75d1bf5bbf98a302e1aa60d74d4169c2bf245a44f852a03",
+    ".asd/agents/asd-scout.md": "91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6",
     ".asd/migrations/14.5.0.js": "e80e313da6d150bf00892b8d9f1d81e6818ec2221be4855b6c004e620d3246fc"
   }
 }

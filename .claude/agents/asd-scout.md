@@ -1,9 +1,9 @@
 ---
-# ASD generated. Edit .asd/agents/asd-scout.md. source_digest=sha256:bb3a7964ec3fd45dc75d1bf5bbf98a302e1aa60d74d4169c2bf245a44f852a03 content_digest=sha256:933c2a958f3d53bcc47fabdcfb486ac642a06038f0a7a5702e3fd039c97c5bec asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-scout.md. source_digest=sha256:91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6 content_digest=sha256:eba9f2c70c4cddea540ee8891240c4680ee1baed3a4638c636e41bb02751371c asd_version=14.5.0 schema=1
 name: asd-scout
 description: "Read-only scout: path:line-cited summary of code or documents for a question and paths; dispatched by the orchestrator for audit, plan and cleanup scans. Not: judgment, decision, artifact → orchestrator; recommendation → asd-advisor; review → asd-reviewer-*; writing → none."
 tools: [Read, Glob, Grep]
-disallowedTools: [Edit, Write, Bash]
+disallowedTools: [Edit, Write, Bash, WebFetch]
 model: haiku
 effort: medium
 maxTurns: 100

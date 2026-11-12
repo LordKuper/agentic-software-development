@@ -1,9 +1,10 @@
-# ASD generated. Edit .asd/agents/asd-scout.md. source_digest=sha256:bb3a7964ec3fd45dc75d1bf5bbf98a302e1aa60d74d4169c2bf245a44f852a03 content_digest=sha256:0e4d6b086a92e1fe322845ce9b68782969ff6e4b051b81f62fcdcd659ec4551f asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-scout.md. source_digest=sha256:91e1c14581e83d251593f241365cbda8b1a9ad22b903340e335149972ff073c6 content_digest=sha256:aa888091884d3bafc52587fd4e65de16924fb6d9510a18eb372c3b607d0c0783 asd_version=14.5.0 schema=1
 name = "asd-scout"
 description = "Read-only scout: path:line-cited summary of code or documents for a question and paths; dispatched by the orchestrator for audit, plan and cleanup scans. Not: judgment, decision, artifact → orchestrator; recommendation → asd-advisor; review → asd-reviewer-*; writing → none."
 model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
+web_search = "disabled"
 developer_instructions = """
 # Role
 
