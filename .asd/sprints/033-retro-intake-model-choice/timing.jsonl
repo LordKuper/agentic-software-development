@@ -7,3 +7,4 @@
 {"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:24:42.863Z","end":"2026-11-12T06:27:07.094Z","outcome":"done","attrs":{"gate":"approach choice"}}
 {"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:30:49.906Z","attrs":{"gate":"scope"}}
 {"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:30:49.906Z","end":"2026-11-12T06:52:50.384Z","outcome":"done","attrs":{"gate":"scope"}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-10T21:00:49.217Z","end":"2026-11-12T06:57:46.711Z","outcome":"done","attrs":{}}
