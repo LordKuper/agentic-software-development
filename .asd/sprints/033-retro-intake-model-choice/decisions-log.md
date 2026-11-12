@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Sprint 033-retro-intake-model-choice opened on branch `sprint/033-retro-intake-model-choice` from main at 5f3dd335; workflow `lite`.
 - **Rationale**: Workflow choice answered by the user: "lite (Рекомендуется)"; sprint 032 closed by the closure write (ba95f4d1), its release v14.4.0 complete.
 - **Affected docs**: `state.json`
+
+## 2026-11-12 — approach choice
+
+- **Decision**: Approach B (full) for the model-choice strand: haiku tester run variant, haiku External Review wrapper, Opus tier above `standard` for risky tasks, effort step in the escalation ladder, README orchestrator-model guidance and haiku-alias note, plus a haiku read-only scout agent for orchestrator scans; reviewers keep `high`; Codex untouched.
+- **Rationale**: User answer "B полностью" over the recommended B′ (no scout); requirements: token savings without noticeable quality loss, every article recommendation applied or rejected with a reason (research.md F1-F12).
+- **Affected docs**: `research.md`

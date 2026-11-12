@@ -3,3 +3,5 @@
 {"op":"close","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-10T21:00:49.289Z","end":"2026-11-10T21:10:22.405Z","outcome":"done","attrs":{"gate":"workflow choice"}}
 {"op":"open","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-10T21:10:46.199Z","attrs":{"gate":"requirements interview"}}
 {"op":"close","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-10T21:10:46.199Z","end":"2026-11-12T06:23:27.791Z","outcome":"done","attrs":{"gate":"requirements interview"}}
+{"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:24:42.863Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:24:42.863Z","end":"2026-11-12T06:27:07.094Z","outcome":"done","attrs":{"gate":"approach choice"}}
