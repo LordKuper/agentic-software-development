@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 | F-1 | scope | Host auto-mode classifier refused the gate-free triage close of a resolved issue | — |
 | F-2 | scope | Two scope criteria were written undeliverable and caught only at audit | — |
 | F-3 | impl-review | External Review could not pipe the full rendered prompt through a heredoc | reviews/impl/wave-1/iter-01/external.md |
+| F-4 | retro | Timing ledger dispatch ops carry no tier or model, so the per-model totals are empty | — |
 
 ## F-1 — Host auto-mode classifier refused the gate-free triage close of a resolved issue
 
@@ -45,3 +46,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: The Bash tool rejected heredoc commands above roughly 3 KB; the rendered `t_prompt-external-impl.md` exceeded it, so the wrapper sent a compact slot-filled prompt naming the template by path. The wrapped run was also auto-backgrounded after 180 s despite a 600 s timeout.
 - **Impact**: The rule's "prompt alone via heredoc, never written to disk" was bent; Codex read the template itself. Review still completed.
 - **Refs**: reviews/impl/wave-1/iter-01/external.md
+
+## F-4 — Timing ledger dispatch ops carry no tier or model, so the per-model totals are empty
+
+- **Phase**: retro
+- **Surface**: runtime — `node .asd/runtime.js timing --open --kind dispatch` vs `sprint-lifecycle.md` "Operation timing" Kinds (attrs)
+- **What happened**: `timing-summary` `by_model` lists every one of 27 dispatches with `tier: null` and `model: null`, and 7 with `agent: null`; the orchestrator opened dispatch ops without the `agent`/`tier`/`model` attrs the rule names, and the runtime accepted them silently although `task_routing` already held the values.
+- **Impact**: The sprint whose goal was model-tier choice has no per-tier time or cost evidence for its own routing.
+- **Refs**: —

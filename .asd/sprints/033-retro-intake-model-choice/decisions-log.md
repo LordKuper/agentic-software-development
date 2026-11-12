@@ -103,3 +103,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — design-promote (lite): no-op, every promotable document disabled (prd, ux_spec, design_system, adr, c4 false); skipped
 - 2026-11-12 — cleanup checkpoint c405758edac07a35233788dc472bb857820a2ae2
 - 2026-11-12 — cleanup: removed none; reverted none; verified n/a: no removals
+- 2026-11-12 — retro: retrospective.html written; 4 friction entries (F-4 added at retro), 4 actions, 2 systemic proposals; remediation branch; upstream publish skipped (self_hosting)
