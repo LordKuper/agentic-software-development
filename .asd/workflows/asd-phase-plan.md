@@ -1,11 +1,11 @@
 # ASD Workflow: Plan
 
-Owner: inline orchestrator; dispatches none.
+Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
 
 ## Entry
 
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["context: node .asd/runtime.js context --phase plan --role orchestrator at entry, read it; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["context: node .asd/runtime.js context --phase plan --role orchestrator at entry, read it; --role asd-scout before each ## Dispatch delegation, passed as inputs.context; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation, user-wait ops (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
@@ -28,6 +28,7 @@ Owner: inline orchestrator; dispatches none.
      - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column — except a stub whose files are all tests: it gets no Task and routes to `impl-test` as a plain-text line `Stub <ref> → impl-test` outside every `### Task N:` block, never a checkbox, also recorded in the decisions-log entry below
      - per "accepted-debt": edit stubs.md Reason field prepending `(accepted-debt)` inline after its applicable gate
      - decisions-log entry summarising stub decisions
+   - Locating the code a Task touches may be delegated to `asd-scout` (a question plus paths; read-only, returns a `path:line`-cited summary); the orchestrator reads every section a summary cites that it relies on before writing a Task, and the plan stays its own.
    - **Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations, Wave declaration, Decomposition rules), plus:
      - one Task per coherent unit of work; each Task cites in its body the AC-N it satisfies
      - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
@@ -36,6 +37,12 @@ Owner: inline orchestrator; dispatches none.
    - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
    - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`
 5. Apply `checkpoints.md` to the completed plan [GATE write-then-review-accept: plan] and record either user approval (explicit `accept` in strict) or adaptive evidence; append decisions-log entry ("`<sprint>/plan.md` accepted"); exit per `## Exit`.
+
+## Dispatch
+
+```json
+[{"agent": "asd-scout", "when": "locating touched code before task decomposition, step 4", "payload": ["inputs.context", "question and paths"], "signals": ["COMPLETED", "ABORT"]}]
+```
 
 ## Exit
 
