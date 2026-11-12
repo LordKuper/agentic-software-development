@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -100,7 +100,7 @@
     "review-fix wave-1/iter-02 F1": { "execution": "agent", "tier": "standard", "reason": "normal", "raise_effort": false, "resolved_model": "sonnet" },
     "review-fix wave-1/iter-02 F2": { "execution": "agent", "tier": "standard", "reason": "normal", "raise_effort": false, "resolved_model": "sonnet" }
   },
-  "skipped_phases": [],
+  "skipped_phases": ["design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f2711de3113a4947a4f52f97028907c130a993e2", "iter-02": "7fd70d99e0719196423744b63c450aa590c6beb9", "iter-03": "85771623d90cc84c9e197b8a0ab43f2a7322ed25" }, "latched": { "combined": 3, "external": 3 } } ] }
