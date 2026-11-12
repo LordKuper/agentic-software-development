@@ -269,11 +269,11 @@ Read-only, dispatched by the orchestrator only for scans at audit, plan and clea
 
 ### Advisor (1)
 
-Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything, and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
+Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you, and on an ambiguous review-finding route. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything, and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
 
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
-| `asd-advisor` | fable/high | sol/high | Advisory consultation on non-gate uncertainty and before orchestrator escalations during any phase |
+| `asd-advisor` | fable/high | sol/high | Advisory consultation on non-gate uncertainty, before orchestrator escalations and on ambiguous review-finding routes |
 
 ---
 
