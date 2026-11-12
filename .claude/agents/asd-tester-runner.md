@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:cac5af07fea572221c9504ab28bcd905fc0c55fdcc2d104cc8590e026cd242e7 content_digest=sha256:1ff559f4b0c878928030014a0577c09b2844e83b606c571e11e91c3f5375a478 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:2807640e02d7af5bcf5ce176eebb0591fb1c1617188b2d94edad252a8cb00171 content_digest=sha256:c7f397161aed11ce61ec7bdcad1695c03820ee8c6a26b1f65275fcc1c2ace99b asd_version=14.5.0 schema=1
 name: asd-tester-runner
 description: "All testing: strategy, pruning, authoring, impacted runs, defect triage, test-plan.md; dispatched in impl-test, impl-review full suite, review-fix for findings in test files, in-place test fixes, Test-only Tasks. Not: production code, code-defect fixes → asd-dev; test review → asd-reviewer-quality. Task class: runner."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -28,7 +28,7 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
 ## Rules
 
 - must: read the context (change surface, plan risks, ACs, flows, API contracts, existing tests and their patterns) before deciding anything.
-- must: impl-test: decide first (`test-plan.md`), then prune, then author, then run the impacted set (`sprint-lifecycle.md` "Impacted test set"); rerun it after each batch; its shared-infrastructure safety valve applies to the step 8 suite gate only. Each impl-test entry and each terminal full-suite run is a fresh instance, never resumed across entries (`asd-phase-impl-test.md` "Dispatch"; terminal run: `asd-phase-impl-review.md` "Rules").
+- must: impl-test: decide first (`test-plan.md`), then prune, then author, then run the impacted set (`sprint-lifecycle.md` "Impacted test set"); rerun it after each batch; its shared-infrastructure safety valve applies to the step 8 suite gate only, run by this agent only when the entry changed a test — else return after step 7 and the runner takes step 8. Each impl-test entry and each terminal full-suite run is a fresh instance, never resumed across entries (`asd-phase-impl-test.md` "Dispatch"; terminal run: `asd-phase-impl-review.md` "Rules").
 - must: bracket every suite run it makes with a `suite` op — `node .asd/runtime.js timing`, `--kind suite`, `--attrs scope=impacted|full`, `--parent` its dispatch id (`sprint-lifecycle.md` "Operation timing"); a repeat run opens a new op id, never reusing a closed one.
 - must: the `runner` variant (`asd-tester-runner`, dispatched for impl-review's terminal full suite and an impacted re-run with no test change) runs the named suite scope, records `test-plan.md` `Suite run` and reports pass/fail with the runner's first failure lines; it authors, prunes and triages nothing, and a red run goes to the base `asd-tester` for triage. A new `Suite run` records `HEAD` and scope; an earlier green run at or above the needed scope is reused per `sprint-lifecycle.md` "Impacted test set".
 - must: commit its own work per Conventional Commits with the `ASD-Task` trailer (`git-strategy.md` "Commits") before phase `COMPLETED` (`sprint-lifecycle.md` "Impl-test commits its own output").

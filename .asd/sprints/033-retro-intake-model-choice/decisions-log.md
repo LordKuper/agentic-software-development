@@ -82,3 +82,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: combined F1-F10 and external 1-7 (all CONCERNS, no FAIL, no minor test-only finding) route to impl review-fix; external 8 resolved by memory-fix.
 - **Rationale**: Every finding is a canon fix inside the self-hosting dev allowlist needing no requirements or architecture decision; combined F5 and external 1 share `t_design-system.html`'s vars region, combined F2 and F8 share two workflow lines.
 - **Affected docs**: reviews/impl/wave-1/iter-01/combined.md, external.md
+- 2026-11-12 — route review-fix wave-1/iter-01 RF1-RF9: escalated, dispatch HEAD 9bba025f; risk RF1 change: settings writer mirrors, RF2 RF3 RF4 RF8 change: workflow gate, RF5 RF9 change: public contract, RF6 change: security, RF7 change: migration
+
+## 2026-11-12 — impl fix for wave-1/iter-01: findings resolved
+
+- **Decision**: combined F1-F10 and external 1-7 resolved in bcd4f6ac..c6d460a8 by `asd-dev-escalated`; flagged extras accepted: `Skill` also on asd-phase-impl, a runner red at impl-test step 8 goes to a fresh base tester, `applyFloor` rewrites a `FAIL: n` count too.
+- **Rationale**: Each extra closes the same gap the finding named at a sibling site; orchestrator/impl load stays 56 B under the AC-16 ceiling. Two design-tokens tests pin the old `asd:vars` HTML markers — for impl-test.
+- **Affected docs**: reviews/impl/wave-1/iter-01/
