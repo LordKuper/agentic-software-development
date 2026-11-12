@@ -1705,6 +1705,117 @@ function implTestClose(flags, now = new Date()) {
   return { entry: Number(flags.entry), head };
 }
 
+const DESIGN_KEY_LINE = /^([A-Za-z0-9_.-]+):(?: +(.*))?$/;
+const DESIGN_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
+const DESIGN_CSS_UNSAFE = /[;{}<>]/;
+const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
+const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
+const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
+const DESIGN_REGIONS = { tokens: 'asd:tokens', vars: 'asd:vars' };
+
+/** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
+function designScalar(rest, where) {
+  if (/^["']/.test(rest)) {
+    const quoted = rest[0] === '"' ? /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/.exec(rest) : /^'((?:[^']|'')*)'\s*(?:#.*)?$/.exec(rest);
+    if (!quoted) fail(`${where}: unterminated or trailing-text quoted scalar`);
+    if (rest[0] === "'") return quoted[1].replace(/''/g, "'");
+    try {
+      return JSON.parse(`"${quoted[1]}"`);
+    } catch (error) {
+      return fail(`${where}: unsupported escape in quoted scalar`);
+    }
+  }
+  if (DESIGN_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
+  return rest.replace(/\s+#.*$/, '').trim();
+}
+
+/** Leaf tokens `{path, value, line}` of a DESIGN.md front matter in document order; only nested maps of scalars parse, anything else fails naming its line. */
+function designLeaves(text, file) {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  if (lines[0].trimEnd() !== '---') fail(`${file}:1: front matter must open with ---`);
+  const close = lines.findIndex((line, index) => index > 0 && line.trimEnd() === '---');
+  if (close === -1) fail(`${file}: front matter is not closed with ---`);
+  const leaves = [];
+  const stack = [{ indent: 0, path: [], keys: new Set() }];
+  let pending = null;
+  for (let index = 1; index < close; index += 1) {
+    const where = `${file}:${index + 1}`;
+    const line = lines[index];
+    if (/^\s*(?:#.*)?$/.test(line)) continue;
+    if (/^ *\t/.test(line)) fail(`${where}: tab indentation is not valid YAML`);
+    const indent = line.length - line.trimStart().length;
+    const match = DESIGN_KEY_LINE.exec(line.trim());
+    if (!match) fail(`${where}: unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)`);
+    if (pending && indent > pending.indent) {
+      stack.push({ indent, path: pending.path, keys: new Set() });
+    } else if (!pending && indent > stack[stack.length - 1].indent) {
+      fail(`${where}: unexpected indentation (multi-line scalar or unsupported construct)`);
+    }
+    pending = null;
+    while (indent < stack[stack.length - 1].indent) stack.pop();
+    const frame = stack[stack.length - 1];
+    if (indent !== frame.indent) fail(`${where}: inconsistent indentation`);
+    if (frame.keys.has(match[1])) fail(`${where}: duplicate key "${match[1]}"`);
+    frame.keys.add(match[1]);
+    const rest = (match[2] || '').trim();
+    const keyPath = [...frame.path, match[1]];
+    if (rest === '' || rest.startsWith('#')) {
+      pending = { indent, path: keyPath };
+      continue;
+    }
+    leaves.push({ path: keyPath.join('.'), value: designScalar(rest, where), line: index + 1 });
+  }
+  return leaves;
+}
+
+/** Token-reference `Type` chip for one leaf: reference, color, dimension, else typography (font family, weight, line height and other typographic scalars). */
+function designTokenType(leaf) {
+  if (DESIGN_REFERENCE.test(leaf.value)) return 'reference';
+  if (DESIGN_COLOR.test(leaf.value)) return 'color';
+  if (leaf.path.startsWith('typography.')) return 'typography';
+  return DESIGN_DIMENSION.test(leaf.value) ? 'dimension' : 'typography';
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function designVarName(tokenPath) {
+  return `--${tokenPath.replace(/\./g, '-')}`;
+}
+
+function designCssValue(leaf, file) {
+  const reference = DESIGN_REFERENCE.exec(leaf.value);
+  const value = reference ? `var(${designVarName(reference[1])})` : leaf.value;
+  if (DESIGN_CSS_UNSAFE.test(value)) fail(`${file}:${leaf.line}: value of ${leaf.path} holds a character unsafe in a CSS declaration`);
+  return value;
+}
+
+/** Text with the content between the `name` start/end markers replaced by `content`; the markers must each appear exactly once, start first. */
+function replaceMarkedRegion(html, name, content, eol, file) {
+  const start = `<!-- ${name}:start -->`;
+  const end = `<!-- ${name}:end -->`;
+  const from = html.indexOf(start);
+  const to = html.indexOf(end);
+  if (from === -1 || to === -1 || to < from || html.indexOf(start, from + 1) !== -1 || html.indexOf(end, to + 1) !== -1) fail(`${file}: needs exactly one ${start} ... ${end} marker pair`);
+  return `${html.slice(0, from + start.length)}${eol}${content}${eol}${html.slice(to)}`;
+}
+
+/** Rebuilds the token-reference rows and the `:root` CSS variables of `--html` from `--design`'s grouped tokens (top-level scalars such as `name` are metadata), touching only the two marked regions. */
+function designTokensCommand(flags) {
+  if (typeof flags.design !== 'string' || typeof flags.html !== 'string') fail('--design <DESIGN.md> and --html <design-system.html> required');
+  const leaves = designLeaves(fs.readFileSync(flags.design, 'utf8'), flags.design).filter((leaf) => leaf.path.includes('.'));
+  if (leaves.length === 0) fail(`${flags.design}: front matter holds no tokens`);
+  const html = fs.readFileSync(flags.html, 'utf8');
+  const eol = html.includes('\r\n') ? '\r\n' : '\n';
+  const rows = leaves.map((leaf) => `      <tr><td><code>${escapeHtml(leaf.path)}</code></td><td>${escapeHtml(leaf.value)}</td><td><span class="chip area">${designTokenType(leaf)}</span></td></tr>`);
+  const declarations = leaves.map((leaf) => `  ${designVarName(leaf.path)}: ${designCssValue(leaf, flags.design)};`);
+  const withRows = replaceMarkedRegion(html, DESIGN_REGIONS.tokens, rows.join(eol), eol, flags.html);
+  const rebuilt = replaceMarkedRegion(withRows, DESIGN_REGIONS.vars, [':root {', ...declarations, '}'].join(eol), eol, flags.html);
+  fs.writeFileSync(flags.html, rebuilt, 'utf8');
+  return { tokens: leaves.length };
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -1775,6 +1886,10 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
     return 0;
   }
+  if (command === 'design-tokens') {
+    process.stdout.write(JSON.stringify(designTokensCommand(flags)) + '\n');
+    return 0;
+  }
   if (command === 'draft-snapshot') {
     if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
     process.stdout.write(draftSnapshot(readFileList(flags.files), flags.out, flags.previous).map((file) => `${file}\n`).join(''));
@@ -1821,7 +1936,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
