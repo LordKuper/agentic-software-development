@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -34,6 +34,27 @@
       "reason": "sprint.md AC-1..AC-34 accepted as one sprint, no split",
       "evidence": "decisions-log.md 2026-11-12 scope gate and retro intake dispositions",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "AC-22 -> AC-35 all whole-file deletions; AC-29 -> AC-36 scope-time settings change",
+      "evidence": "decisions-log.md 2026-11-12 audit contradictions and scope amendment",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-35, AC-36 added; AC-22, AC-29 retired; no plan yet",
+      "evidence": "decisions-log.md 2026-11-12 audit contradictions and scope amendment",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-36; contradictions user-settled; departures are planned criteria",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},

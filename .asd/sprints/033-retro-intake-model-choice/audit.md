@@ -45,8 +45,8 @@ The main orchestrator writes all applicable sections. Product/domain ambiguity a
 - `docs/architecture/tech-reference/gh-2.90.md`: gh commands used by triage.
 
 ## Contradictions
-- AC-22 vs issue #93 and canon: the AC limits the collapse to "generated provider views", but those views are already outside the self-hosting change surface (`sprint-lifecycle.md` "Self-hosting") and #93 came from a consumer project, where "generated" has no canon definition; as written the criterion changes nothing; winner=unsettled → user.
-- AC-29 vs canon: "plan-declared" cannot exist at scope (`plan.md` is written after audit); a declaration needs a scope-time home and must apply before step 3a's freeze, while `sprint-lifecycle.md` "Plan file format" says a settings change binds only from the next sprint; winner=unsettled → user.
+- AC-22 vs issue #93 and canon: the AC limits the collapse to "generated provider views", but those views are already outside the self-hosting change surface (`sprint-lifecycle.md` "Self-hosting") and #93 came from a consumer project, where "generated" has no canon definition; as written the criterion changes nothing; winner=unsettled → user: collapse every whole-file deletion (AC-22 retired by AC-35).
+- AC-29 vs canon: "plan-declared" cannot exist at scope (`plan.md` is written after audit); a declaration needs a scope-time home and must apply before step 3a's freeze, while `sprint-lifecycle.md` "Plan file format" says a settings change binds only from the next sprint; winner=unsettled → user: a scope-time `sprint.md` declaration applied before the freeze (AC-29 retired by AC-36).
 
 Planned changes (criterion deliberately changes canon, no gate): AC-3 re-introduces a tier above `standard`, reversing 14.0.0, under a new name (never `critical`); AC-5 and AC-10 widen the orchestrator delegation list in `core.md` and `sprint-lifecycle.md`; AC-1 ends "`asd-tester` is unrouted"; AC-4 replaces "one failed check routes `standard`"; AC-19 and AC-33 let a migration write outside `config.yaml` (precedent `4.0.0.js:21`); AC-23 turns "full suite exactly once" into "once, or reused"; AC-28 replaces severity-driven "Violation = FAIL".
 

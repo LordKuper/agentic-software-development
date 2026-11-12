@@ -37,3 +37,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-12 — audit contradictions and scope amendment
+
+- **Decision**: AC-22 retired by AC-35 (collapse every whole-file deletion, not only provider views); AC-29 retired by AC-36 (scope-time `sprint.md` settings-change declaration applied before the step 3a freeze). No plan exists yet, so no Task carries them; plan places both.
+- **Rationale**: User answers "Все удаления файлов (Рекомендуется)" and "Объявление на scope (Рекомендуется)" on the hard audit-contradiction gate; criterion cost 0 iterations / 0 fix rounds for AC-22, AC-29, AC-35, AC-36 (lower bound, no review yet).
+- **Affected docs**: `sprint.md`, `audit.md`
+
+## 2026-11-12 — audit accepted (adaptive)
+
+- **Decision**: Audit passes adaptively: every `t_audit.md` section written for AC-1..AC-36; both contradictions settled by the user; remaining canon departures are planned criteria; host facts (Agent tool per-call `effort`, Artifact `Design` type) verified live in this session.
+- **Rationale**: Exact user authority covers scope and both answers; no unresolved material alternative; checks ran (stubs none, no decomposition registry needed).
+- **Affected docs**: `audit.md`
