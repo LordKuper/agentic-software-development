@@ -20,6 +20,6 @@
 - [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
 - [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
 - [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
-- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "FAIL from <agent>" lines, combined's return rules
+- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "a finding from <agent>" lines, combined's return rules
 - [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
 - [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
