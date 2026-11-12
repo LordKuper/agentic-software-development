@@ -5,3 +5,5 @@
 {"op":"close","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-10T21:10:46.199Z","end":"2026-11-12T06:23:27.791Z","outcome":"done","attrs":{"gate":"requirements interview"}}
 {"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:24:42.863Z","attrs":{"gate":"approach choice"}}
 {"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:24:42.863Z","end":"2026-11-12T06:27:07.094Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:30:49.906Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-12T06:30:49.906Z","end":"2026-11-12T06:52:50.384Z","outcome":"done","attrs":{"gate":"scope"}}

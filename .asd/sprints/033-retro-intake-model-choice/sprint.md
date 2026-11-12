@@ -38,6 +38,14 @@ Retro rows and issues:
 - AC-21: The one-command commit form runs `memory-check` before `git commit`, and the orchestrator uses that form (issue #99).
 - AC-22: The review manifest diff collapses whole-file deletions of generated provider views into one line with a line count, and wave sizing counts only the remainder (issue #93).
 - AC-23: An earlier green run at or above the needed scope counts as the next required impl-test or terminal suite run when no code, test or stub path changed since its HEAD (issues #76, #86).
-
-## Out of scope (optional)
-- Deferred issues: #75, #94, #101, #103, #104, #105, #106, #107, #109, #112, #113.
+- AC-24: A plan may declare a rename map; the review manifest diff collapses hunks that only apply its substitutions into one line per file with the count (issue #75).
+- AC-25: `persist-review` applies the external reviewer's severity floor in code and records the dropped count (issue #94).
+- AC-26: A build or acceptance handoff to the user opens a user-wait, and `timing-summary` gaps list every phase window over 30 minutes covered by no child op (issue #101).
+- AC-27: A runtime command closes an impl-test entry: it fills `HEAD analysed` in the Entry log and appends the decisions-log line (issue #109).
+- AC-28: A reviewer returns FAIL only for a finding whose fix needs a design decision changing requirements or complicating the architecture; every other finding is CONCERNS, decided by the orchestrator, which consults the advisor on ambiguous cases (issue #107).
+- AC-29: A plan-declared settings change that audit or design read (e.g. `project.subsystem_decomposition`) is applied at scope, before audit (issue #103).
+- AC-30: With subsystem decomposition enabled, `DESIGN.md` allows a per-subsystem token group prefixed by the subsystem, described in the design-system rule (issue #105).
+- AC-31: The DESIGN.md delta template has a prose section, and the rule allows a recorded `orphaned-tokens` exclusion list for tokens selected at runtime (issue #106).
+- AC-32: A generator rebuilds the token tables and CSS variables of `design-system.html` from `DESIGN.md`, used by design promotion (issue #113).
+- AC-33: `designmd-install` is a no-save install that never changes the project's package manifest, with a migration for existing `commands.yaml` (issue #112).
+- AC-34: UI mockups live in `<sprint>/design/mockups/` beside the sprint ux-spec draft and are promoted to `docs/ux/mockups/` beside the persistent ux-spec; under Claude Code each mockup is a Claude Design artifact whose source files sit in its own subfolder there, published from it, with an index linking every artifact; under any other host each screen or state is a separate HTML file in the same folder, split as Claude Design frames, outside ux-spec; under `lite` mockups are made at scope; dev and reviewers receive the folder as an input (issue #104).
