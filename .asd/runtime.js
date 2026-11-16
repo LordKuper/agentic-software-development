@@ -1355,14 +1355,14 @@ function timingRequest(flags) {
   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
 }
 
-/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened is recorded, unpaired, so the summary reports it (warns). */
+/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened writes nothing (warns). */
 function timingCloses(entries, open, id, outcome, now, warnings) {
   const entry = resolveOp(open, id);
   if (entry !== undefined) return closeWithChildren(open, entry, now, outcome, warnings);
   const previous = resolveOp(latestCloses(entries), id);
   if (previous === undefined) {
     warnings.push(`close of ${id} matches no open op`);
-    return [closeEntry({ id, kind: null, parent: null, start: null, attrs: {} }, now, outcome)];
+    return [];
   }
   if (previous.outcome === 'interrupted' && outcome !== 'interrupted') return [closeEntry({ ...previous, start: previous.end }, now, 'continued')];
   warnings.push(`close of ${previous.id} skipped: already closed`);
@@ -1380,8 +1380,23 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
-function timingAppend(text, flags, now) {
+/** The dispatch `attrs` with a missing `tier`/`model` filled from `lookups.routed(id)`, then from `lookups.agentAttrs(attrs.agent)`, each returning `{tier, model}` or undefined; an attr still missing, or a failing lookup, warns. */
+function fillDispatchAttrs(id, attrs, lookups, warnings) {
+  const filled = { ...attrs };
+  const missing = () => ['tier', 'model'].filter((key) => filled[key] === undefined);
+  const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
+  try {
+    if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
+    if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
+  } catch (error) {
+    warnings.push(`open of ${id}: dispatch attrs lookup failed: ${error.message}`);
+  }
+  if (missing().length > 0) warnings.push(`open of ${id}: ${missing().join(', ')} unresolved`);
+  return filled;
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
   const { open } = ledgerState(entries);
@@ -1395,7 +1410,8 @@ function timingAppend(text, flags, now) {
       warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
       continue;
     }
-    const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs: request.attrs };
+    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
+    const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs };
     open.set(id, entry);
     if (request.kind === 'phase') phaseOpens.push(name);
     written.push(entry);
@@ -1423,6 +1439,30 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+function timingLookups(ledger) {
+  const statePath = path.join(path.dirname(ledger), 'state.json');
+  return {
+    routed: (id) => {
+      if (!fs.existsSync(statePath)) return undefined;
+      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[id];
+      return routed && { tier: routed.tier, model: routed.resolved_model };
+    },
+    agentAttrs: (agent) => {
+      const { VARIANT_SUFFIXES, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
+      const suffix = VARIANT_SUFFIXES.find((candidate) => agent.endsWith(`-${candidate}`));
+      const base = suffix === undefined ? agent : agent.slice(0, -(suffix.length + 1));
+      const file = path.join(__dirname, 'agents', `${base}.md`);
+      if (!/^[a-z0-9-]+$/.test(base) || !fs.existsSync(file)) return undefined;
+      const { meta } = parseCanonicalFrontmatter(normalizeText(fs.readFileSync(file, 'utf8')));
+      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
+      const variant = suffix === undefined ? undefined : (meta.variants || {})[suffix];
+      const model = [variant, meta].map((source) => source && source[host] && source[host].model).find((value) => value !== undefined);
+      return { tier: suffix === undefined ? 'standard' : suffix, model };
+    },
+  };
+}
+
 /** Runs `timing` or `timing-recover` as one append to `--ledger`, a missing ledger a no-op unless `timing --create`. Any failure, a malformed command line included, prints one stderr warning and still exits 0, so recording never stops the workflow. */
 function timingCommand(command, args) {
   try {
@@ -1431,7 +1471,7 @@ function timingCommand(command, args) {
     const exists = fs.existsSync(flags.ledger);
     if (!exists && !(command === 'timing' && flags.create === true)) return 0;
     const text = exists ? fs.readFileSync(flags.ledger, 'utf8') : '';
-    const result = command === 'timing' ? timingAppend(text, flags, new Date().toISOString()) : timingRecover(text, runGit(['log', '-1', '--format=%cI']).trim());
+    const result = command === 'timing' ? timingAppend(text, flags, new Date().toISOString(), timingLookups(flags.ledger)) : timingRecover(text, runGit(['log', '-1', '--format=%cI']).trim());
     if (result.text !== '') fs.appendFileSync(flags.ledger, result.text, 'utf8');
     if (result.warnings.length > 0) process.stderr.write(`${command}: ${result.warnings.join('; ')}\n`);
   } catch (error) {
