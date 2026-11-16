@@ -1436,10 +1436,10 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** The dispatch `attrs` with a missing `tier`/`model` filled from `lookups.routed(id)`, then from `lookups.agentAttrs(attrs.agent)`, each returning `{tier, model}` or undefined; an attr still missing, or a failing lookup, warns. */
+/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. */
 function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const filled = { ...attrs };
-  const missing = () => ['tier', 'model'].filter((key) => filled[key] === undefined);
+  const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
   const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
   try {
     if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
@@ -1451,7 +1451,7 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   return filled;
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
 function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
@@ -1495,14 +1495,15 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[id];
-      return routed && { tier: routed.tier, model: routed.resolved_model };
+      const agent = routed && routed.execution === 'agent' && routed.tier !== undefined ? (routed.tier === 'standard' ? 'asd-dev' : `asd-dev-${routed.tier}`) : undefined;
+      return routed && { agent, tier: routed.tier, model: routed.resolved_model };
     },
     agentAttrs: (agent) => {
       const { VARIANT_SUFFIXES, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
