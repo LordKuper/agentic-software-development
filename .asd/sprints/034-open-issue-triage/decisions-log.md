@@ -37,4 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-16 — retro: retrospective.html written; 4 entries (A-1, A-3 actions; A-2, A-4 covered), 3 systemic proposals (P-1..P-3); analysed branch; upstream publish skipped (self_hosting)
+- 2026-11-16 — pr open: DoD met (Tasks 1-10 ticked, impl wave 1 iter-03 combined+external APPROVE, Suite run full 375/375 @ 805b85b1 with no code/test/stub change since, retrospective.html present); asd_version 14.5.0 → 14.6.0 (feat → MINOR) with CHANGELOG v14.6.0
+- 2026-11-16 — five agent commit subjects exceed 50 chars (461e3d3d, 97405154, 5eceaa72, f3898eb6, 909aa105); not rewritten — the squash merge subject is the only one reaching base, and a rewrite would orphan every sha the sprint artifacts cite; supersedes the earlier reword-before-push line

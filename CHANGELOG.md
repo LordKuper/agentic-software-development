@@ -2,6 +2,27 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.6.0
+
+Scope now offers every open issue of your project's own GitHub repository, in consumer projects too, and a batch of retro-intake fixes to External Review, timing, test reuse and review bookkeeping.
+
+### Added
+- **Project-issue triage at scope** (issue #110): scope lists the open issues of the repository behind `origin` (resolved with `git remote get-url origin`, then `gh repo view <origin>`), up to 200, and puts each to you for include / reject / defer. Nothing is auto-closed. An included issue becomes an `AC-N … (issue #N)`; a rejected one is closed "not planned" with `wontfix`; a deferred one gets `deferred`. A missing or unauthenticated `gh`, or no GitHub `origin`, skips it with one log line.
+- **Consumer issue close**: a consumer sprint PR lists included issues as `Closes #N`, and merge mode closes any the merge left open (a base branch other than the default), commenting in `language.docs`.
+- **One triage-authorisation request** (033 A-1): before scope's first GitHub write, every planned issue write is listed in one request, so a host permission refusal never lands mid-triage.
+- **Deliverability check at scope** (033 A-2): each `AC-N` drafted from a retro row or issue is checked against the change surface and phase that would apply it before the scope gate.
+- **`node .asd/runtime.js record-verdicts`** (issue #118): records an iteration's review verdicts and APPROVE latches in `state.json` for design-review and impl-review, replacing hand edits.
+- **`findings_header`** (issue #114): every internal reviewer payload carries the literal findings-table header row.
+
+### Changed
+- **External Review under Claude Code** (033 A-3): the rendered prompt goes to the wrapped CLI's stdin from a git-ignored `.asd/tmp/` file deleted after the run, never a heredoc; Codex is unchanged.
+- **Timing dispatch attrs** (033 A-4): `timing --open --kind dispatch` fills a missing `agent`, `tier` or `model` from `state.json.task_routing` or the agent's frontmatter, and warns when neither has it.
+- **`Suite run` Scope** (033 P-1, issues #86, #119): `full` whenever every test file ran with no test-name filter, even when invoked as the impacted set; a review-fix tester's named-test run records `named` and is never reused, while its impacted or full run counts for impl-test reuse.
+- **Label ensures** list first and create only a missing label, never recolouring an existing one; `deferred` and `wontfix` are ensured right before the step-4 disposition writes.
+
+### Fixed
+- **`timing --close` of a never-opened id** (issue #115) appends nothing and warns, instead of an unpaired close.
+
 ## v14.5.0
 
 Cheaper model tiers for the work that does not need the main model, a read-only scout for orchestrator scans, and a batch of retro-intake fixes to review, impl-test, commits and design-system generation.
