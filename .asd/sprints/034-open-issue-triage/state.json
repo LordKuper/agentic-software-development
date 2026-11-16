@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -55,6 +55,13 @@
       "reason": "Tasks 1-10 ticked; every flag resolved within D1-D11; build, lint, round-diff paths clean; no sprint stubs",
       "evidence": "decisions-log.md 2026-11-16 impl assessment approved (adaptive)",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave-1/iter-03 combined and external APPROVE (latched); terminal full suite reused green 375/375 @ 805b85b1, no code/test/stub change since",
+      "evidence": "decisions-log.md 2026-11-16 impl-review DoD met",
+      "artifact_revision": "reviews/impl/wave-1/iter-03"
     }
   ],
   "task_routing": {
@@ -84,7 +91,7 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" } }, "iteration_heads": { "iter-01": "e7f70e76be64f402f7f60365c0c556d5523ee261", "iter-02": "eab734a0db435211a100dfd2ca37024aa9259e82" }, "latched": {} } ] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "e7f70e76be64f402f7f60365c0c556d5523ee261", "iter-02": "eab734a0db435211a100dfd2ca37024aa9259e82", "iter-03": "f9ea1d4c745eda3536b6250c3296549c95519bab" }, "latched": { "combined": 3, "external": 3 } } ] }
   },
   "created_at": "2026-11-16T16:20:23.000Z",
   "updated_at": "2026-11-16T16:57:28.000Z",
