@@ -60,3 +60,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — route impl-test-3: standard, dispatch HEAD 6500df83
 - 2026-11-16 — impl-test: impacted set green (reused full 374/374 @ 4b7caea4), 0/0 tests
 - 2026-11-16 — impl-review wave-1/iter-02: combined CONCERNS (4), external CONCERNS (3) → impl review-fix (external-1=combined-2 origin lookup unchecked, external-2=combined-1 AC-10 full-scope case dropped, external-3=combined-3 label ensure recolors)
+- 2026-11-16 — route review-fix iter-02 combined-1+external-2, combined-2+external-1, combined-3+external-3, combined-4: standard, dispatch HEAD 3666182b; risk combined-1+external-2 change: suite reuse gate, combined-2+external-1 change: repo resolution, combined-3+external-3 change: label write semantics, combined-4 change: label write order
+- 2026-11-16 — commit subjects over 50 chars (5eceaa72, 909aa105) are reworded before push at pr
+- 2026-11-16 — route review-fix iter-02 tests: standard, dispatch HEAD 4bc78661
+- 2026-11-16 — impl fix for wave-1/iter-02: findings resolved (dev 909aa105, 2b71716c, ff55b8a9, 9bcbce7c; sync 4bc78661; tester 805b85b1, d4e246ec; Suite run full 375/375 at 805b85b1)
