@@ -50,9 +50,9 @@ analysed, not any tree produced later
 
 - Command: `node tests/run.js`
 - Scope: full — the suite is the one file `tests/run.js`, which references every changed path, so the impacted set is the whole suite
-- Result: fail — 368 passed, 5 failed, 0 skipped of 373. Failing: `release-manifest.json: every upstream_hashes entry matches…` (D-2); `sprint-026 AC-16 (D13)…` (D-1); `sprint-030 AC-1/AC-2/AC-3/AC-6…` (D-3); `sprint-034 AC-4 (issue #110): pr merge mode closes a consumer…` (D-4); `sprint-034 leftover-term check…` (7 agent-memory hits, step 7a)
+- Result: pass — 374 passed, 0 failed, 0 skipped of 374, exit 0
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
-- HEAD: 824520a2
+- HEAD: 48ec3ece
 
 ## Defects
 
