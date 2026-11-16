@@ -21,7 +21,7 @@ responsibility:
 - `gh issue close <n> -R <owner/repo> -r {completed|"not planned"|duplicate} -c <comment>`; `--duplicate-of <n|url>` marks a duplicate of an issue; `-r duplicate -c <comment>` alone closes a duplicate with no issue original.
 - `gh issue edit <n> -R <owner/repo> --add-label <name>[,<name>]`.
 - `gh issue edit <n> -R <owner/repo> -t <title> -F <body-file>`: rewrites the title and body in place; the number and links stay, the prior body stays in GitHub's edit history.
-- `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
+- `gh label list -R <owner/repo> -S <name> --json name -q '.[].name'`: names matching the search (best match, so compare for an exact line); `gh label create <name> -R <owner/repo>` creates one, a random color when `-c` is omitted. `-f` updates an existing label's color and description, so an ensure never passes it: it creates only after the list shows the name missing.
 - `gh release view v<version> --json url`: release link for the post-release close comment.
 - `gh pr checks <n> --json bucket`: one read of a PR's checks; each `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`.
 - `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it. On a base branch with a merge queue it exits 0 having queued the PR or enabled auto-merge (https://cli.github.com/manual/gh_pr_merge), so exit 0 alone does not prove the merge landed.
