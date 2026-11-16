@@ -1198,6 +1198,62 @@ function rotateDecisions(flags) {
   return { ...unchanged, rotated: true, segment };
 }
 
+const VERDICT_VALUE = /^(?:APPROVE|CONCERNS|FAIL|APPROVE \(skipped: .+\))$/;
+
+/** Parses `<key>=<value>[;<key>=<value>…]` into `[key, value]` pairs of the review node's reviewer keys; a value may itself hold `;`, a pair starts only at `;<key>=`. */
+function parseVerdictPairs(text, keys) {
+  const pairs = text.split(/;(?=[a-z]+=)/).map((part) => {
+    const split = part.indexOf('=');
+    if (split < 0) fail(`--verdict part has no key=value form: ${part}`);
+    return [part.slice(0, split), part.slice(split + 1)];
+  });
+  pairs.forEach(([key, value]) => {
+    if (!keys.includes(key)) fail(`--verdict key ${key} is not a reviewer key (${keys.join(', ')})`);
+    if (!VERDICT_VALUE.test(value)) fail(`--verdict value for ${key} must be APPROVE, CONCERNS, FAIL or APPROVE (skipped: <reason>)`);
+  });
+  if (new Set(pairs.map(([key]) => key)).size !== pairs.length) fail('--verdict repeats a key');
+  return pairs;
+}
+
+/** Renders a JSON value on one line in the `{ "k": v }` / `[ v ]` style the sprint state file uses for review nodes. */
+function inlineJson(value) {
+  if (Array.isArray(value)) return value.length === 0 ? '[]' : `[ ${value.map(inlineJson).join(', ')} ]`;
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value);
+    return keys.length === 0 ? '{}' : `{ ${keys.map((key) => `${JSON.stringify(key)}: ${inlineJson(value[key])}`).join(', ')} }`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Merges one iteration's reviewer verdicts into the design node or the current impl wave node of a sprint `state.json` and keeps `latched` in step: a bare `APPROVE` latches the iteration unless the key is already latched, any other value clears the key's latch. Only the `reviews` block is rewritten; bad input or an unexpected layout writes nothing. */
+function recordVerdicts(flags) {
+  if (typeof flags.state !== 'string' || typeof flags.verdict !== 'string') fail('--state <path> and --verdict <key=value[;key=value…]> required');
+  if (!REVIEW_NODES.includes(flags.phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
+  if (!/^[1-9]\d*$/.test(flags.iteration)) fail('--iteration <positive integer> required');
+  const iteration = Number(flags.iteration);
+  const pairs = parseVerdictPairs(flags.verdict, reviewerKeys(flags.phase));
+  const text = fs.readFileSync(flags.state, 'utf8');
+  const { reviews } = JSON.parse(text);
+  const node = flags.phase === 'design' ? reviews && reviews.design : reviews && reviews.impl && reviews.impl.waves && reviews.impl.waves[reviews.impl.wave - 1];
+  if (!node || typeof node !== 'object') fail(`${flags.state} has no ${flags.phase} review node${flags.phase === 'impl' ? ' with waves (a legacy flat reviews.impl needs the wave-aware entry write first)' : ''}`);
+  const span = /\r?\n  "reviews": (\{[\s\S]*?\r?\n  \})/.exec(text);
+  if (!span || stable(JSON.parse(span[1])) !== stable(reviews)) fail(`${flags.state} reviews block is not in the expected layout`);
+  const key = `iter-${String(iteration).padStart(2, '0')}`;
+  node.verdicts = { ...node.verdicts };
+  node.verdicts[key] = { ...node.verdicts[key] };
+  node.latched = { ...node.latched };
+  pairs.forEach(([reviewer, value]) => {
+    node.verdicts[key][reviewer] = value;
+    if (value !== 'APPROVE') delete node.latched[reviewer];
+    else if (!(reviewer in node.latched)) node.latched[reviewer] = iteration;
+  });
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const rendered = ['{', ...Object.keys(reviews).map((name, index, names) => `    ${JSON.stringify(name)}: ${inlineJson(reviews[name])}${index < names.length - 1 ? ',' : ''}`), '  }'].join(eol);
+  const start = span.index + span[0].length - span[1].length;
+  fs.writeFileSync(flags.state, text.slice(0, start) + rendered + text.slice(start + span[1].length), 'utf8');
+  return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
+}
+
 /** What a liveness decision reads off a Claude subagent transcript (JSONL): when the agent started, when its newest still-unanswered tool call began (null when none is open), and whether its last message is a final assistant answer. An unparseable line, such as a half-written tail, is skipped. */
 function transcriptProgress(text) {
   const parse = (line) => {
@@ -1980,6 +2036,10 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(rotateDecisions(flags)) + '\n');
     return 0;
   }
+  if (command === 'record-verdicts') {
+    process.stdout.write(JSON.stringify(recordVerdicts(flags)) + '\n');
+    return 0;
+  }
   if (command === 'section' || command === 'context') {
     try {
       process.stdout.write(command === 'section' ? sectionCommand(flags) : JSON.stringify(contextCommand(flags)) + '\n');
@@ -2000,7 +2060,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
