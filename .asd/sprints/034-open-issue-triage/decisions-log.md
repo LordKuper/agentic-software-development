@@ -64,3 +64,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — commit subjects over 50 chars (5eceaa72, 909aa105) are reworded before push at pr
 - 2026-11-16 — route review-fix iter-02 tests: standard, dispatch HEAD 4bc78661
 - 2026-11-16 — impl fix for wave-1/iter-02: findings resolved (dev 909aa105, 2b71716c, ff55b8a9, 9bcbce7c; sync 4bc78661; tester 805b85b1, d4e246ec; Suite run full 375/375 at 805b85b1)
+- 2026-11-16 — route impl-test-4: standard, dispatch HEAD 46dfcb31
+- 2026-11-16 — impl-test: impacted set green (reused full 375/375 @ 805b85b1), 0/0 tests
