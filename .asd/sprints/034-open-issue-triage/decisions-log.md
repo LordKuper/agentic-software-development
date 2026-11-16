@@ -50,3 +50,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — route test-fix D-1, D-3, D-4, D-5: standard, dispatch HEAD 44ae2c5d; risk D-1 change: rule rewording, D-3 artifact: mirror prose via sprint-030 AC-1 test, D-4 artifact: tech reference via sprint-034 AC-4 test, D-5 change: ledger attrs
 - 2026-11-16 — test-fix flags accepted: D-1 trimmed 1198 B (orchestrator/impl 144090 B, 58 B under the 0.70 ceiling; further cuts hit test-pinned phrases, no rule meaning changed); D-5 fills `agent` from a routed id's tier, unrouted dispatches pass `--attrs agent=<name>` (AC-9 met; test to be added at impl-test)
 - 2026-11-16 — impl test-fix: defects D-1, D-2, D-3, D-4, D-5 resolved
+- 2026-11-16 — route impl-test-2: standard, dispatch HEAD 031fad36
+- 2026-11-16 — impl-test: impacted set green (374/374, Scope full), 1/0 tests
