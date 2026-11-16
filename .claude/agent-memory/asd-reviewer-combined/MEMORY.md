@@ -27,3 +27,5 @@
 - [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
 - [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
 - [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — guard narrowed to A and B: does a revert of each conjunct alone turn some test red?
+- [Reuse scope labels](feedback_reuse-scope-labels.md) — a recorded run reused by Scope label: can a named-test or filtered run (one-file suite) write that label?
+- [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare `gh repo view` follows set-default/upstream ranking, not `origin`; pass the origin URL
