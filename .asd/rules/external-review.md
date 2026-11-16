@@ -10,7 +10,7 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from the `external-preflight` output's `platform` (`process.platform`). Stdin syntax follows the shell that runs the command, not `platform` alone: Claude Code's run-command shell is POSIX bash on every OS (Git Bash on Windows); Codex's is PowerShell on `win32`.
 
-The rendered prompt alone is passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**; the scope manifest travels by path, never in it — the prompt names the review output dir's `external.scope.json`, which `emit-manifest` already wrote ("Phase-scoped payload"). This agent runs read-only on both providers and the wrapper writes nothing, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+The rendered prompt alone reaches the wrapped CLI's stdin: under Codex by **here-string/heredoc, never written to disk**; under Claude Code from one scratch file, `<scratch-dir>/<NNN-slug>-external-<phase>-<iteration id, "/" as "-">.prompt.md` (`<scratch-dir>`: the directory of `payload.inputs.context`, `artifact-layout.md` "Scratch directory"), written with the file-write operation, redirected into stdin and deleted after the run, pass or fail. That file is the sole filesystem write of the invocation. The scope manifest travels by path, never in the prompt — the prompt names the review output dir's `external.scope.json`, which `emit-manifest` already wrote ("Phase-scoped payload"). The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`.
 
 The command TAIL differs per wrapped CLI — this is a real syntax difference. Canonical tail per CLI, including explicit model, effort, and read-only boundary, lives once in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter) — not restated here.
 
@@ -19,8 +19,10 @@ The command TAIL differs per wrapped CLI — this is a real syntax difference. C
 | Host, `platform` | Preflight | Review command |
 |---|---|---|
 | Codex, `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
-| Claude Code, any; Codex, any other (`linux`, `darwin`) | runtime helper with direct arguments (fixed PowerShell shim allowed on `win32`) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt>` / `EOF` (heredoc piped to stdin) |
-Both forms read the rendered prompt from stdin; the wrapped CLI's own read-only filesystem tools read `external.scope.json` first, then resolve `files[]` and `diff` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
+| Claude Code, any | runtime helper with direct arguments (fixed PowerShell shim allowed on `win32`) | `<resolved-command> <wraps_invoke_args> < <prompt file>`, then delete the file |
+| Codex, any other (`linux`, `darwin`) | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt>` / `EOF` (heredoc piped to stdin) |
+
+All forms read the rendered prompt from stdin; the wrapped CLI's own read-only filesystem tools read `external.scope.json` first, then resolve `files[]` and `diff` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
 `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
 

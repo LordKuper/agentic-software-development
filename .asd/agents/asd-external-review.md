@@ -55,9 +55,9 @@ External review wrapper (its row in `review-policy.md` "Reviewer responsibility"
 ## Tools
 
 ```json
-{"run": ["{{wraps_cli}} (or the {{wraps_config_key}} override) in the heredoc/here-string form of 'Invocation', in the foreground, awaited inside this dispatch, with an explicit timeout of at least 10 minutes (external-review.md 'Outcome contract')"],
- "deny": ["any other command", "backgrounding, detaching or polling the run, or returning while it still runs: its captured stdout IS the review text", "the host's shorter default timeout", "redirecting its stdout", "writing the prompt, the scope manifest or the review file: prompt by heredoc/here-string stdin, manifest by the path emit-manifest wrote, review by stdout capture; the phase orchestrator writes external.md"],
- "write": ["own memory directory only, with the Write that memory: project serves on Claude; a finding located there goes to this agent's memory-fix dispatch (review-policy.md 'Autofix vs escalation'; scope: 'Gate Verdict Format')"]}
+{"run": ["{{wraps_cli}} (or the {{wraps_config_key}} override) in the form of 'Invocation', in the foreground, awaited inside this dispatch, with an explicit timeout of at least 10 minutes (external-review.md 'Outcome contract')", "Claude Code: deleting the prompt file after the run, pass or fail"],
+ "deny": ["any other command", "backgrounding, detaching or polling the run, or returning while it still runs: its captured stdout IS the review text", "the host's shorter default timeout", "redirecting its stdout", "writing the scope manifest or the review file: manifest by the path emit-manifest wrote, review by stdout capture; the phase orchestrator writes external.md"],
+ "write": ["Claude Code: the one prompt file of 'Invocation'", "own memory directory only, with the Write that memory: project serves on Claude; a finding located there goes to this agent's memory-fix dispatch (review-policy.md 'Autofix vs escalation'; scope: 'Gate Verdict Format')"]}
 ```
 
 ## Escalation
@@ -94,11 +94,12 @@ Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orche
 
 ## Invocation
 
-Per host shell and preflight `platform` (`external-review.md` "OS-specific invocation"). Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). The prompt alone is sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers); the scope manifest travels by path, never in it. Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
+Per host shell and preflight `platform` (`external-review.md` "OS-specific invocation"). Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). The prompt alone reaches the wrapped CLI's stdin; the scope manifest travels by path, never in it. Capture stdout directly as the review text — no `-o <out-file>`.
 
-- Codex host on `win32` (PowerShell): `@'`<rendered prompt>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
-- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt>` / `EOF` — heredoc piped straight to stdin (or override)
+- Codex host on `win32` (PowerShell): `@'`<rendered prompt>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin, never written to disk (or `{{wraps_config_key}}` override)
+- Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt>` / `EOF` — heredoc piped straight to stdin, never written to disk (or override)
+- Claude Code host on any platform (bash, Git Bash on Windows): write the rendered prompt with the file-write operation to `<scratch-dir>/<NNN-slug>-external-<phase>-<iteration id, "/" as "-">.prompt.md` (`<scratch-dir>`: the directory of `payload.inputs.context`), run `{{wraps_cli}} {{wraps_invoke_args}} < <that file>` (or override), then delete the file whatever the run's outcome. The file is the only path this agent writes besides its memory.
 
-Both forms feed the rendered prompt alone via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools read the manifest the prompt names, then resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output.
+All forms feed the rendered prompt alone via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools read the manifest the prompt names, then resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output.
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}`) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
