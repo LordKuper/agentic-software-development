@@ -8784,12 +8784,13 @@ test('sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro wri
   assert.ok(retroGhCalls.includes('issue create') && retroGhCalls.includes('auth status'), 'sanity: retro step 7 must still name its gh calls');
   assert.deepStrictEqual(retroGhCalls.filter((call) => !retroGrants.includes(`Bash(gh ${call}:*)`)), [], 'AC-1: every gh call retro step 7 runs must be pre-approved in asd-phase-retro allowed-tools, or the inline step stalls on a permission prompt before any issue is published');
 
-  const ensured = (/Labels to ensure: ([^;]*?) \(`gh label create/.exec(triage) || [])[1];
+  const ensured = (/Labels to ensure: ([^(;]*?) \(/.exec(triage) || [])[1];
   assert.ok(ensured, 'sanity: scope step 2a must name the labels it ensures');
   const ensuredLabels = spans(ensured);
-  const applied = [...(triage + accept).matchAll(/--add-label ([a-z,-]+)/g)].flatMap((match) => match[1].split(','));
+  const applied = [...labelsAdded(triage), ...labelsAdded(accept)];
   assert.ok(applied.includes('wontfix') && applied.includes('deferred') && applied.includes('duplicate'), 'AC-4/AC-6: scope must apply the duplicate, wontfix and deferred labels');
-  assert.deepStrictEqual([...new Set(applied)].filter((label) => !ensuredLabels.includes(label)), [], 'AC-4/AC-6: every label scope applies must be one it first ensures exists, or `gh issue edit --add-label` fails on a fresh repo');
+  assert.deepStrictEqual([...new Set(labelsAdded(triage))].filter((label) => !ensuredLabels.includes(label)), [], 'AC-4/AC-6: every label step 2a applies must be one step 2a first ensures exists, or `gh issue edit --add-label` fails on a fresh repo');
+  assert.ok(accept.includes('each label a disposition writes is first ensured') && accept.includes('ensured as in step 2a'), 'AC-4/AC-6: every label step 4 applies (wontfix, deferred) is ensured by step 4 before its write, by the step 2a ensure');
 
   assert.ok(accept.includes('the `AC-N` text ends `(issue #N)`'), 'AC-6: scope step 4 writes an included issue into its AC-N as (issue #N)');
   const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)');
@@ -10102,6 +10103,17 @@ test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev 
   assert.strictEqual(lastAttrs().agent, 'my-agent', 'AC-9: an agent attr the caller gave is never overwritten by the routed one');
 });
 
+/** Every label a step's `--add-label` writes, comma lists split. */
+function labelsAdded(text) {
+  return [...text.matchAll(/--add-label ([a-z,-]+)/g)].flatMap((match) => match[1].split(','));
+}
+
+/** True when the `<origin>` lookup is named before the `gh repo view <origin>` that consumes it. */
+function originCheckedBeforeRepoView(text) {
+  const lookup = text.indexOf('`<origin>` = `git remote get-url origin`');
+  return lookup !== -1 && text.indexOf('`gh repo view <origin> --json nameWithOwner -q .nameWithOwner`') > lookup;
+}
+
 test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages the project repository\'s open issues in every project and sends each to the user without a close, plans every write behind one logged authorisation request and skips on an unusable gh or origin; step 4 writes the dispositions to the project repository', () => {
   const steps = sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps');
   const intake = stepOf(steps, '2a');
@@ -10109,23 +10121,22 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   const project = bullet('**Project-issue triage**');
   assert.ok(project, 'AC-1: step 2a must keep its Project-issue triage bullet');
   assert.ok(project.includes('every project') && !project.includes('`self_hosting: enabled` only'), 'AC-1: project-issue triage runs in every project, consumer and self-hosting alike');
-  const originLookup = '`gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner`';
-  assert.ok(project.includes(originLookup) && project.includes('gh issue list -R <project> -s open -L 200'), 'AC-1 (combined-2, external-1): the project repo is the one the origin URL names - never gh\'s bare default, which ranks an upstream remote above origin - listed up to the existing 200 limit');
+  assert.ok(originCheckedBeforeRepoView(project) && project.includes('gh issue list -R <project> -s open -L 200'), 'AC-1 (combined-2, external-1): the project repo is the one the checked origin URL names - `gh repo view` runs only after the `<origin>` lookup, never on gh\'s bare default, which ranks an upstream remote above origin - listed up to the existing 200 limit');
   assert.ok(!project.includes('asd-retro-finding') && project.includes('an exact `[asd-retro] ` title prefix') && project.includes('a marker issue without the prefix stays here') && bullet('**Issue triage**').includes('keeping exact `[asd-retro] ` title prefixes'), 'AC-1 (external-2): under self-hosting the project list drops exactly the issues the retro list keeps by title prefix, so a marker issue without the prefix goes to the user instead of being dropped by its body marker');
   assert.ok(project.includes('`deferred`-labelled included') && project.includes('every issue taking one explicit choice, none by default'), 'AC-2: every listed issue, deferred included, takes one explicit choice');
   assert.ok(!project.includes('gh issue close') && project.includes('none is rewritten or auto-closed'), 'AC-2: project issues are never auto-closed - the bullet carries no close command');
-  assert.ok(project.includes('`gh auth status`') && project.includes('a failing lookup (no `origin`, or a non-GitHub one)') && project.includes('skips it with one decisions-log line') && project.includes('scope continues'), 'AC-5: an unusable gh or origin skips project triage with one decisions-log line and scope continues');
+  assert.ok(project.includes('`gh auth status`') && project.includes('an `<origin>` lookup with a non-zero exit or empty output') && project.includes('skips it with one decisions-log line') && project.includes('scope continues'), 'AC-5 (combined-2, external-1): an unusable gh, a failed or empty origin lookup or a non-GitHub origin skips project triage with one decisions-log line and scope continues');
 
   const authorisation = bullet('**Triage authorisation**');
   assert.ok(authorisation.includes('request user decision') && authorisation.includes('before the first runs'), 'AC-6: one request user decision lists every planned write before the first runs');
   assert.ok(authorisation.includes('`issue triage authorised: <writes>`') && authorisation.includes('`issue triage declined`') && authorisation.includes('read before any request'), 'AC-6: the authorisation is a logged write point read before any request, so a re-entry never asks twice');
-  assert.ok(bullet('**Issue triage**').includes('runs only after "Triage authorisation"') && project.includes('after "Triage authorisation"'), 'AC-6: both triage bullets run their writes only after the authorisation');
+  assert.ok(bullet('**Issue triage**').includes('runs only after "Triage authorisation"') && !/gh (?:issue (?:edit|close)|label)/.test(project), 'AC-6 (combined-4): the retro-issue bullet runs its writes only after the authorisation, and the project bullet plans no write of its own - its dispositions and label ensures are step 4\'s, under the gate');
   assert.ok(/`AC-N` drafted from a retro row or issue/.test(steps) && /change surface/.test(steps) && /undeliverable/.test(steps), 'AC-7: scope checks each AC-N drafted from a retro row or issue against the change surface and the phase that applies it, before the step 4 gate');
 
   const accept = stepOf(steps, 4);
   assert.ok(accept.includes('project issues included') && accept.includes('`-R <project>` for a project issue'), 'AC-2/AC-3: step 4 puts project issues to the user and writes them to the project repository');
   assert.ok(accept.includes('`gh issue close <n> -R <repo|project> -r "not planned" -c <reason>`') && accept.includes('--add-label wontfix') && accept.includes('--add-label deferred') && accept.includes('the `AC-N` text ends `(issue #N)`'), 'AC-3: include ends the AC-N with (issue #N), reject closes not planned with wontfix, defer labels deferred');
-  assert.ok(accept.includes('`gh label create <name> -R <repo|project> -f`') && accept.includes('each label a disposition writes is first ensured'), 'AC-3 (combined-3): step 4 ensures each label a disposition writes before the label write, so a declined authorisation leaves no missing-label failure');
+  assert.ok(accept.includes('each label a disposition writes is first ensured, ensured as in step 2a'), 'AC-3 (combined-3, combined-4): step 4 ensures each label a disposition writes before the label write, by the step 2a ensure, so a declined authorisation leaves no missing-label failure');
   assert.ok(accept.includes('`language.docs`') && accept.includes('`language-policy.md` "Matrix"'), 'AC-3: a consumer project\'s issue comment is written in language.docs by the Matrix rows');
 
   const { inputs, writes } = { inputs: jsonOf('.asd/workflows/asd-phase-scope.md', 'Inputs'), writes: jsonOf('.asd/workflows/asd-phase-scope.md', 'Exit').writes };
@@ -10133,7 +10144,7 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   assert.ok(writes.some((write) => write.includes('project-repo issue labels and dispositions')), 'AC-3: the scope Exit lists the project-repo issue writes');
   assert.ok(sync.parseCanonicalFrontmatter(canonText('.asd/skills/asd-phase-scope/SKILL.md')).meta.description.includes('in every project'), 'AC-1: the scope skill description, its trigger text, names the every-project triage');
   const reference = canonText('docs/architecture/tech-reference/gh-2.90.md');
-  assert.ok(reference.includes('`gh repo view [<repository>] --json nameWithOwner -q .nameWithOwner`') && reference.includes('"$(git remote get-url origin)"'), 'AC-15 (combined-2): the gh tech reference documents the repository argument and the origin URL project triage passes');
+  assert.ok(reference.includes('`gh repo view [<repository>] --json nameWithOwner -q .nameWithOwner`') && reference.includes('`<origin>` = `git remote get-url origin`') && reference.includes('a non-zero exit or empty output is unresolved'), 'AC-15 (combined-2): the gh tech reference documents the repository argument and the checked origin URL project triage passes');
 });
 
 test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s included issues the merge left open from the (issue #N) of the merged sprint.md, skipping a closed one, with no gate and no FAILED; every gh call it names is in the tech reference and its exit writes and the gate inventory name it', () => {
@@ -10141,7 +10152,7 @@ test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s i
   const consumer = merge.slice(merge.indexOf('Consumer project:'), merge.indexOf('Then, every project:'));
   assert.ok(consumer.startsWith('Consumer project:'), 'AC-4: merge step 2 must keep its consumer-project clause ahead of the every-project tail');
   assert.ok(consumer.includes('git show origin/<git.base_branch>:.asd/sprints/<NNN-slug>/sprint.md') && consumer.includes('`(issue #N)`'), 'AC-4: the included issues are read from the merged sprint.md on base');
-  assert.ok(consumer.includes('`gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner`'), 'AC-4 (combined-2): the consumer close resolves its repository from the origin URL, never gh\'s bare default');
+  assert.ok(originCheckedBeforeRepoView(consumer) && consumer.includes('an `<origin>` lookup with a non-zero exit or empty output'), 'AC-4 (combined-2, external-1): the consumer close resolves its repository from the checked origin URL, never gh\'s bare default, and names a failed or empty origin lookup as an unresolved `<project>`');
   assert.ok(consumer.includes('`gh issue view <n> -R <project> --json state`') && consumer.includes('`CLOSED`') && consumer.includes('`gh issue close <n> -R <project> -r completed -c "<PR url>"`'), 'AC-4: an issue already closed by the merge is skipped, an open one is closed completed with the PR url');
   assert.ok(consumer.includes('`language.docs`') && consumer.includes('never retried and never `FAILED`') && consumer.includes('No gate (`checkpoints.md` "Gate inventory")'), 'AC-4: the comment is language.docs, a failure is reported never retried or FAILED, and no gate applies');
   const reference = canonText('docs/architecture/tech-reference/gh-2.90.md');
@@ -10154,20 +10165,40 @@ test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s i
   assert.ok(inventory.includes('Step 2a\'s triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate'), 'AC-6: the gate inventory separates the one triage authorisation from its gates');
 });
 
-test('sprint-034 AC-10/AC-11 (033#P-1, issues #86, #119): "Impacted test set" defines Suite run Scope full as the whole suite whatever its invocation and counts a review-fix tester\'s recorded check for reuse; the template and the tester agent carry the same rule', () => {
+test('sprint-034 AC-10/AC-11 (033#P-1, issues #86, #119): "Impacted test set" defines Suite run Scope full as every test file run with no test-name filter, an impacted set holding them all included, and counts a review-fix tester\'s recorded check for reuse; the template and the tester agent carry the same rule', () => {
   const impacted = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impacted test set');
   const scopeRule = impacted.split('\n').find((line) => line.startsWith('**Scope.**')) || '';
-  assert.ok(scopeRule.includes('`full` for the unscoped command or safety valve, no test filter') && scopeRule.includes('`impacted` for the impacted set'), 'AC-10 (combined-1): "Impacted test set" must define Scope full as the unscoped command or safety valve with no test filter, else impacted');
+  assert.ok(scopeRule.includes('`full` when every test file ran with no test-name filter') && scopeRule.includes('an impacted set holding all of them') && scopeRule.includes('else `impacted`'), 'AC-10 (combined-1, external-2): "Impacted test set" must define Scope full as every test file run with no test-name filter - the unscoped command, the safety valve or an impacted set holding all of them - else impacted, so an exhaustive impacted run counts as the full suite');
   assert.ok(scopeRule.includes('`named` for a review-fix run of a named test or name-filtered selection, never reused'), 'AC-10 (combined-1): a review-fix run of a named test or filtered selection is Scope named and never reused, so a filtered run cannot gate a suite');
   const reuse = impacted.split('\n').find((line) => line.startsWith('**Reuse.**')) || '';
   assert.ok(reuse.includes('review-fix tester') && reuse.includes('`Suite run` counts on the same terms'), 'AC-11: a review-fix tester\'s recorded `Suite run` counts for reuse on the reuse rule\'s terms');
   const template = canonText('.asd/templates/t_test-plan.md');
   const scopeLine = template.split('\n').find((line) => line.startsWith('- Scope:')) || '';
-  assert.ok(scopeLine.includes('`full` only for the unscoped suite command or safety valve with no test filter') && scopeLine.includes('`named` for a named test or name-filtered run (never reused)') && scopeLine.includes('"Impacted test set"'), 'AC-10 (combined-1): the t_test-plan.md Scope line states the full and named rules and cites their home');
+  assert.ok(scopeLine.includes('`full` when every test file ran with no test-name filter') && scopeLine.includes('`named` for a named test or name-filtered run (never reused)') && scopeLine.includes('"Impacted test set" **Scope.**'), 'AC-10 (combined-1, external-2): the t_test-plan.md Scope line states the full and named rules and cites their home');
   assert.ok(template.includes('review-fix tester also records here the check a finding requires') && template.includes('step 8 reuses it'), 'AC-11: the template\'s Suite run section says the review-fix tester records there and impl-test step 8 reuses it');
   const tester = canonText('.asd/agents/asd-tester.md');
-  assert.ok(tester.split('\n').some((line) => line.includes('A new `Suite run` records `HEAD` and Scope (`full` when the run executed the whole suite, else `impacted`')), 'AC-10: the tester agent records Scope by the same rule, runner and base alike');
+  assert.ok(tester.split('\n').some((line) => line.includes('A new `Suite run` records `HEAD` and Scope (Scope per `sprint-lifecycle.md` "Impacted test set" **Scope.**)') && !line.includes('`full` when the run executed the whole suite')), 'AC-10 (combined-1): the tester agent records Scope by citing the rule\'s home, runner and base alike, never restating a narrower full');
   assert.ok(tester.split('\n').some((line) => line.includes('review-fix') && line.includes('`Suite run` (Command, Scope, Result, HEAD)') && line.includes('`artifact-layout.md` "Test plan"') && line.includes('Scope `named` for a named test or name-filtered run')), 'AC-11 (combined-1): the tester agent\'s review-fix mode writes Suite run inside the Test plan grant, Scope named for a named or filtered run');
+});
+
+test('sprint-034 AC-1/AC-3 (combined-3, combined-4, external-3): every label ensure in canon and the gh reference lists first and creates only a missing label without -f, and step 4 alone ensures the deferred and wontfix labels it writes', () => {
+  const sites = [...canonMarkdownFiles(), 'docs/architecture/tech-reference/gh-2.90.md'].flatMap((rel) => [...canonText(rel).matchAll(/gh label create [^`]*/g)].map((match) => ({ rel, command: match[0] })));
+  assert.ok(sites.some((site) => site.rel === '.asd/workflows/asd-phase-scope.md'), 'sanity: scope step 2a must still name its label create');
+  assert.deepStrictEqual(sites.filter((site) => /(^|\s)(-f|--force)(\s|$)/.test(site.command)).map((site) => `${site.rel}: ${site.command}`), [], 'AC-3 (external-3): no label ensure passes -f, which recolors an existing label and rewrites its description');
+
+  const steps = sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps');
+  const intake = stepOf(steps, '2a');
+  const accept = stepOf(steps, 4);
+  const project = intake.split('\n').find((line) => line.includes('**Project-issue triage**')) || '';
+  const ensure = (/Labels to ensure: [^;]*?(?=; list `gh issue list)/.exec(intake) || [])[0] || '';
+  assert.ok(ensure.includes('gh label list -R <r> -S <name> --json name -q') && ensure.indexOf('gh label list') < ensure.indexOf('gh label create'), 'AC-3 (combined-3, external-3): the step 2a ensure lists labels first and creates only after that list, so an existing label is never touched');
+  assert.ok(/equal to `<name>`, case-insensitive/.test(ensure), 'AC-3 (combined-3): the existing-label test compares exact names case-insensitively, since the list search is a best match');
+
+  const writtenByStep4 = [...new Set(labelsAdded(accept))];
+  assert.deepStrictEqual(writtenByStep4.sort(), ['deferred', 'wontfix'], 'sanity: step 4 writes the deferred and wontfix labels');
+  assert.deepStrictEqual(spans(ensure).filter((span) => writtenByStep4.includes(span)), [], 'AC-3 (combined-4): step 2a ensures only the labels it writes itself; deferred and wontfix are step 4\'s');
+  assert.ok(!/ensur/i.test(project) && !accept.includes('gh label create'), 'AC-3 (combined-4): the project bullet plans no ensure and step 4 restates no create - one home, the step 2a ensure');
+  assert.ok(accept.includes('each label a disposition writes is first ensured, ensured as in step 2a'), 'AC-3 (combined-4): step 4 ensures each label its disposition writes, by the step 2a ensure, before the label write');
 });
 
 test('sprint-034 AC-12 (issue #114): every internal reviewer dispatch entry of both review workflows carries findings_header and External Review\'s never does, and the dispatch-payload rule defines it as the t_review.md findings header row for internal reviewers only', () => {
