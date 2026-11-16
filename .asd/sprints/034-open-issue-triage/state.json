@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "design-promote",
+  "phase": "cleanup",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,

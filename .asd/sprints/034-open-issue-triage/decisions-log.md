@@ -37,4 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-16 — design-promote (lite): no-op, every promotable document disabled (prd, ux_spec, design_system, adr, c4 false); skipped
