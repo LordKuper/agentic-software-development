@@ -51,13 +51,14 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
 it with the cycle's one **full-suite** run once the last review wave's reviewers are
-APPROVE/latched. The `pr` gate always reads whatever is recorded here last — the full-suite
+APPROVE/latched. The review-fix tester also records here the check a finding requires; `impl-test`
+step 8 reuses it per "Impacted test set". The `pr` gate always reads whatever is recorded here last — the full-suite
 record, by the time `pr` runs. Each per-entry record measures only the tree that entry
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}
-- Scope: {{impacted \| full}}
+- Scope: {{impacted \| full}} — `full` when the run executed the whole suite, else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
 - HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
