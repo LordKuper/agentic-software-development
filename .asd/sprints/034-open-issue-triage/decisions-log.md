@@ -57,3 +57,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — review-fix flags accepted: external-2 excludes from the project list exactly what the retro list takes (title prefix), a marker issue without the prefix goes to the user; combined-3 needs no `checkpoints.md` change (its gate-free line names no step-4 label write)
 - 2026-11-16 — route review-fix wave-1/iter-01 tests: standard, dispatch HEAD 8c2ca8c5
 - 2026-11-16 — impl fix for wave-1/iter-01: findings resolved (dev faf97aec, e32635b7, 853ec77a, 920b16b8; sync 8c2ca8c5; tester 4b7caea4, 05ce724f; Suite run full 374/374 at 4b7caea4)
+- 2026-11-16 — route impl-test-3: standard, dispatch HEAD 6500df83
+- 2026-11-16 — impl-test: impacted set green (reused full 374/374 @ 4b7caea4), 0/0 tests
