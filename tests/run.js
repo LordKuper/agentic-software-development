@@ -10066,6 +10066,42 @@ test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the s
   assert.ok(ghost.stderr.includes('never-opened matches no open op'), `AC-13: the close warns on stderr, got ${JSON.stringify(ghost.stderr)}`);
 });
 
+test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev for tier standard and asd-dev-<tier> otherwise, an execution-command id gets no agent and warns naming it, and a given agent attr is never overwritten', () => {
+  const { spawnSync } = require('node:child_process');
+  const dir = mkTempDir();
+  const ledger = path.join(dir, 'timing.jsonl');
+  const route = (execution, tier) => ({ execution, tier, resolved_model: `${tier}-model` });
+  const routing = {
+    'Task standard': route('agent', 'standard'),
+    'Task escalated': route('agent', 'escalated'),
+    'Task mechanical': route('agent', 'mechanical'),
+    'Task command': route('command', 'mechanical'),
+    'Task given': route('agent', 'escalated'),
+  };
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: routing }));
+  const timing = (args) => {
+    const outcome = spawnSync(process.execPath, [RUNTIME_JS, 'timing', '--ledger', ledger, ...args], { encoding: 'utf8' });
+    assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
+    return outcome;
+  };
+  const openDispatch = (id, ...attrs) => timing(['--open', id, '--kind', 'dispatch', ...attrs]);
+  const lastAttrs = () => ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs;
+
+  timing(['--create', '--open', 'impl', '--kind', 'phase']);
+  for (const [id, agent] of [['Task standard', 'asd-dev'], ['Task escalated', 'asd-dev-escalated'], ['Task mechanical', 'asd-dev-mechanical']]) {
+    const outcome = openDispatch(id);
+    assert.deepStrictEqual(lastAttrs(), { agent, tier: routing[id].tier, model: routing[id].resolved_model }, `AC-9: ${id} is recorded with its agent, tier and model from task_routing`);
+    assert.ok(!outcome.stderr.includes('unresolved'), `AC-9: ${id} resolves every attr, got ${JSON.stringify(outcome.stderr)}`);
+  }
+
+  const command = openDispatch('Task command');
+  assert.deepStrictEqual(lastAttrs(), { tier: 'mechanical', model: 'mechanical-model' }, 'AC-9: an execution-command id names no agent');
+  assert.ok(command.stderr.includes('Task command: agent unresolved'), `AC-9: the unresolved agent is named in the warning, got ${JSON.stringify(command.stderr)}`);
+
+  openDispatch('Task given', '--attrs', 'agent=my-agent');
+  assert.strictEqual(lastAttrs().agent, 'my-agent', 'AC-9: an agent attr the caller gave is never overwritten by the routed one');
+});
+
 test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages the project repository\'s open issues in every project and sends each to the user without a close, plans every write behind one logged authorisation request and skips on an unusable gh or origin; step 4 writes the dispositions to the project repository', () => {
   const steps = sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps');
   const intake = stepOf(steps, '2a');
