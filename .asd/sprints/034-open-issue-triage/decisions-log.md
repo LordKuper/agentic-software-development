@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-16 — plan accepted (adaptive)
+
+- **Decision**: `plan.md` accepted: Tasks 1-10 in three waves cover AC-1..AC-15; decisions D1-D11 fix the repo resolution, triage authorisation, consumer close, language row, timing fill, Suite run Scope, review-fix run, findings header, `record-verdicts` and the External Review prompt file.
+- **Rationale**: Every decision stays inside approach A and the accepted criteria; each rule doc several ACs edit sits in one Task; no two wave-mates share a path; no open stubs (audit). D5's host signal `CLAUDECODE=1` verified in this session's shell.
+- **Affected docs**: `plan.md`

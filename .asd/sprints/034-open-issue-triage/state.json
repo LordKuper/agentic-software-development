@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -41,6 +41,13 @@
       "reason": "all t_audit.md sections for AC-1..AC-15; no unsettled contradiction; AC-6 reading settled from 033 F-1",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-15 traced to Tasks 1-10; decisions D1-D11 bounded by approach A and accepted ACs; decomposition rules met",
+      "evidence": "decisions-log.md 2026-11-16 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
