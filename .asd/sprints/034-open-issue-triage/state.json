@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -34,6 +34,13 @@
       "reason": "sprint.md AC-1..AC-15 accepted as one sprint, no split",
       "evidence": "decisions-log.md 2026-11-16 scope gate and retro intake dispositions",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-15; no unsettled contradiction; AC-6 reading settled from 033 F-1",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -43,7 +50,7 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
   },
   "created_at": "2026-11-16T16:20:23.000Z",
-  "updated_at": "2026-11-16T16:20:23.000Z",
+  "updated_at": "2026-11-16T16:57:28.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
