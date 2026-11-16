@@ -17,6 +17,7 @@ responsibility:
 - `gh issue create -R <owner/repo> -t <title> -F <body-file>`: publish one retro-finding issue; prints the issue URL.
 - `gh issue list -R <owner/repo> -s open -S <query> -L <n> --json number,title,body,labels,author,createdAt,url`: sweep open issues; `-L` defaults to 30.
 - `gh issue list -R <owner/repo> -s closed -l <label> -L <n> --json number,title,body,url`: closed issues carrying a label; the comparison set for duplicate triage.
+- `gh issue view <n> -R <owner/repo> --json state`: `state` is `OPEN` or `CLOSED` (`gh issue view --help` lists `state` among the JSON fields); read before a close so an already-closed issue is skipped.
 - `gh issue close <n> -R <owner/repo> -r {completed|"not planned"|duplicate} -c <comment>`; `--duplicate-of <n|url>` marks a duplicate of an issue; `-r duplicate -c <comment>` alone closes a duplicate with no issue original.
 - `gh issue edit <n> -R <owner/repo> --add-label <name>[,<name>]`.
 - `gh issue edit <n> -R <owner/repo> -t <title> -F <body-file>`: rewrites the title and body in place; the number and links stay, the prior body stays in GitHub's edit history.
