@@ -125,9 +125,9 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 
 **Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after the last review wave's required reviewers return `APPROVE` or are latched and before the phase's green exit — dispatched to `asd-tester` (reviewers are read-only, `providers.md`). Recorded in `test-plan.md`'s `Suite run` with `HEAD`, which the `pr` gate reads (`asd-phase-pr.md` "Open mode" step 1). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
 
-**Reuse.** A green run recorded in `test-plan.md`'s `Suite run` at a scope at or above the one needed (full ≥ impacted), after the last latch clear ("APPROVE latch"), counts as the next required `impl-test` or terminal run when no code, test or stub path changed between its recorded `HEAD` and the current one. A reused run is recorded as such, never re-run. A review-fix tester's run of a finding's required check, recorded in `Suite run` (Command, Scope, Result, HEAD), counts on the same terms.
+**Reuse.** A green run recorded in `test-plan.md`'s `Suite run` at a scope at or above the one needed (full ≥ impacted), after the last latch clear ("APPROVE latch"), counts as the next required `impl-test` or terminal run when no code, test or stub path changed between its recorded `HEAD` and the current one. A reused run is recorded as such, never re-run. A review-fix tester's `Suite run` counts on the same terms.
 
-**Scope.** `Suite run` Scope is `full` when the run executed the whole suite (unscoped command, safety valve, or every test file selected), else `impacted`.
+**Scope.** `Suite run` Scope: `full` for the unscoped command or safety valve, no test filter; `impacted` for the impacted set; `named` for a review-fix run of a named test or name-filtered selection, never reused.
 
 Each `impl-test` entry's `Suite run` record measures the tree that entry analysed; only the terminal full-suite run measures the final tree. `cleanup`'s verification run measures the tree after its removals, recorded in the decisions log alone.
 

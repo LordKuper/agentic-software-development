@@ -58,7 +58,7 @@ analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}
-- Scope: {{impacted \| full}} — `full` when the run executed the whole suite, else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
+- Scope: {{impacted \| full \| named}} — `full` only for the unscoped suite command or safety valve with no test filter, `named` for a named test or name-filtered run (never reused), else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
 - HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")

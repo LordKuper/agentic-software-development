@@ -231,7 +231,7 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
 | `asd-dev` | sonnet/high | sol/high | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
-| `asd-tester` | sonnet/high | sol/high | All tests: risk-based selection, pruning, authoring at every level, suite runs (recorded with Scope `full` when the whole suite ran, else `impacted`), manual verification specs; in review-fix, runs and records the check a finding requires; a plan-declared `Test-only` Task in `impl` |
+| `asd-tester` | sonnet/high | sol/high | All tests: risk-based selection, pruning, authoring at every level, suite runs (recorded with Scope `full` for the unscoped suite, `named` for a named or name-filtered run, else `impacted`), manual verification specs; in review-fix, runs and records the check a finding requires; a plan-declared `Test-only` Task in `impl` |
 | `asd-dev-escalated` (variant) | opus/high | sol/high | `asd-dev` for a task routed above `standard` (migration, broad repository reasoning, unfamiliar cross-domain work); Codex renders the base's family and effort |
 | `asd-dev-mechanical` (variant) | haiku/high | luna/high | `asd-dev` for verified deterministic, low-risk tasks |
 | `asd-tester-runner` (variant) | haiku/medium | luna/high | `asd-tester` running a named suite scope (impl-review terminal suite, impacted re-runs), recording its `Suite run`, and reporting pass/fail with the first failure lines; never authors, prunes or triages |
