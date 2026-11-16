@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -77,7 +77,7 @@
   "created_at": "2026-11-16T16:20:23.000Z",
   "updated_at": "2026-11-16T16:57:28.000Z",
   "review_fixes_pending": null,
-  "test_defects_pending": null,
+  "test_defects_pending": true,
   "pr": null,
   "archived_at": null
 }

@@ -43,3 +43,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — Task 9 flag (latch-skipped reviewer's inherited APPROVE re-recorded each iteration) resolved by meeting `sprint-lifecycle.md` "APPROVE latch": Task 8's `record-verdicts` leaves an existing `latched[key]` untouched on a bare APPROVE
 - 2026-11-16 — route Task 10: standard, dispatch HEAD 4083fc74
 - 2026-11-16 — impl assessment approved (adaptive): Tasks 1-10 ticked; AC-1..AC-15 delivered by 461e3d3d, 588c15a2, ef6124b2, 0ce7bc3b, 97405154, f3898eb6, 5eceaa72, fa4217e2, dbae46e4, b9f5b76b; build `sync.js --check` ok, lint clean, round-diff paths inside each Task's scope plus synced views; no sprint stubs. Flags accepted within plan decisions: Task 1 (`[asd-retro]`-titled non-marker issues join the project list, label ensure is a planned write under D2), Task 8 (legacy flat `reviews.impl` refused, reviewer-key and value validation, only the `reviews` block rewritten), Task 9 latch (resolved above); Task 7's 51-char subject is reworded before push
+- 2026-11-16 — route impl-test-1: standard, dispatch HEAD 991415df
+- 2026-11-16 — route impl-test-1-memfix: standard, dispatch HEAD 89768baf
+- 2026-11-16 — memory-fix asd-external-review: leftover heredoc-only invocation lines in 4 memory files updated to the prompt-file form (impl-test entry 1 leftover-term hits)
+- 2026-11-16 — impl-test: defects D-1, D-2, D-3, D-4, D-5 → impl test-fix (digest 0a5e08623f032461bd1cfa137761b7ca2c1e7b7474694fd27d6ef16515a6677f)

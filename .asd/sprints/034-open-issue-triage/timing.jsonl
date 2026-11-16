@@ -39,3 +39,12 @@
 {"op":"close","id":"Task 8","kind":"dispatch","parent":"impl#1","start":"2026-11-16T17:05:58.951Z","end":"2026-11-16T17:09:47.853Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"open","id":"Task 10","kind":"dispatch","parent":"impl#1","start":"2026-11-16T17:10:51.850Z","attrs":{"tier":"standard","model":"sonnet"}}
 {"op":"close","id":"Task 10","kind":"dispatch","parent":"impl#1","start":"2026-11-16T17:10:51.850Z","end":"2026-11-16T17:15:10.549Z","outcome":"done","attrs":{"tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-16T17:00:15.624Z","end":"2026-11-16T17:15:39.499Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-16T17:15:39.623Z","attrs":{}}
+{"op":"open","id":"impl-test-1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-16T17:15:54.540Z","attrs":{}}
+{"op":"open","id":"impl-test-1 suite full","kind":"suite","parent":"impl-test-1","start":"2026-11-16T17:26:32.545Z","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-test-1 suite full","kind":"suite","parent":"impl-test-1","start":"2026-11-16T17:26:32.545Z","end":"2026-11-16T17:27:17.716Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-test-1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-16T17:15:54.540Z","end":"2026-11-16T17:29:00.648Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test-1-memfix","kind":"dispatch","parent":"impl-test#1","start":"2026-11-16T17:29:07.245Z","attrs":{"agent":"asd-external-review","tier":"standard","model":"haiku"}}
+{"op":"close","id":"impl-test-1-memfix","kind":"dispatch","parent":"impl-test#1","start":"2026-11-16T17:29:07.245Z","end":"2026-11-16T17:30:30.548Z","outcome":"done","attrs":{"agent":"asd-external-review","tier":"standard","model":"haiku"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-16T17:15:39.623Z","end":"2026-11-16T17:31:22.878Z","outcome":"done","attrs":{}}
