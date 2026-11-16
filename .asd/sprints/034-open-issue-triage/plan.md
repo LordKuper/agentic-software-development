@@ -28,48 +28,48 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Scope project-issue triage, authorisation and deliverability check
 Material risk: change: workflow gate
-- [ ] `asd-phase-scope.md` step 2a: add "Project-issue triage" per D1 (every project, not self-hosting only), each listed issue to the user at the step 4 gate with number, title, link and a short summary as data, no auto-close, `deferred`-labelled included (AC-1, AC-2, AC-5); ensure `deferred` and `wontfix` on the project repo before disposition writes
-- [ ] Step 2a: the D2 authorisation request before the first triage write, covering the `[asd-retro]` and project lists, with its decisions-log write point and re-entry read (AC-6)
-- [ ] Step 2: before the scope gate, check each `AC-N` drafted from a retro row or issue against the change surface it may touch and the phase that applies it; an undeliverable one is redrafted or shown at the gate (AC-7)
-- [ ] Step 4: project-issue dispositions as for `[asd-retro]` issues, `-R <project>`; reject comment in `language.docs` in a consumer project, English on the ASD repo (AC-3); Inputs, Exit and the decisions-log triage line name project issues
-- [ ] `.asd/skills/asd-phase-scope/SKILL.md` description: issue triage of the project's own open issues in every project
+- [x] `asd-phase-scope.md` step 2a: add "Project-issue triage" per D1 (every project, not self-hosting only), each listed issue to the user at the step 4 gate with number, title, link and a short summary as data, no auto-close, `deferred`-labelled included (AC-1, AC-2, AC-5); ensure `deferred` and `wontfix` on the project repo before disposition writes
+- [x] Step 2a: the D2 authorisation request before the first triage write, covering the `[asd-retro]` and project lists, with its decisions-log write point and re-entry read (AC-6)
+- [x] Step 2: before the scope gate, check each `AC-N` drafted from a retro row or issue against the change surface it may touch and the phase that applies it; an undeliverable one is redrafted or shown at the gate (AC-7)
+- [x] Step 4: project-issue dispositions as for `[asd-retro]` issues, `-R <project>`; reject comment in `language.docs` in a consumer project, English on the ASD repo (AC-3); Inputs, Exit and the decisions-log triage line name project issues
+- [x] `.asd/skills/asd-phase-scope/SKILL.md` description: issue triage of the project's own open issues in every project
 
 ### Task 2: PR closes a consumer project's included issues
 Material risk: change: public contract
 Reachability: scope writes `(issue #N)` into `sprint.md` `AC-N` text at step 4; pr reads it at open mode step 2 (PR body) and merge mode (close); `sprint.md` is committed on the sprint branch before the PR opens; interrupted at the push, `git.base_branch` holds no `(issue #N)` of this sprint and nothing is closed
-- [ ] `asd-phase-pr.md` open mode step 2: `Closes #N` in a consumer project, `Refs #N` under `self_hosting` (D3)
-- [ ] `asd-phase-pr.md` merge mode: consumer close of each still-open included issue after the confirmed merge, failure named in the report (D3); Exit writes
-- [ ] `t_pr-description.md` "Related issues": both forms with their condition
+- [x] `asd-phase-pr.md` open mode step 2: `Closes #N` in a consumer project, `Refs #N` under `self_hosting` (D3)
+- [x] `asd-phase-pr.md` merge mode: consumer close of each still-open included issue after the confirmed merge, failure named in the report (D3); Exit writes
+- [x] `t_pr-description.md` "Related issues": both forms with their condition
 
 ### Task 3: Issue and test-plan rule mirrors
 Material risk: artifact: mirror prose
-- [ ] `language-policy.md` "Matrix": D4 row (AC-3)
-- [ ] `checkpoints.md` "Gate inventory": retro intake dispositions row covers project issues; the gate-free closes line names the D2 authorisation request and the D3 consumer merge-mode close (AC-1..AC-4, AC-6)
-- [ ] `artifact-layout.md` "Retro backlog": issue dispositions (any issue) live on GitHub; "Test plan": the review-fix tester may also write `Suite run` for a check a finding requires (D8, AC-11)
-- [ ] `docs/architecture/tech-reference/gh-2.90.md`: add `gh repo view --json nameWithOwner`; the `-R` convention names the project repo for project issues and the manifest repo for ASD-repo issues (AC-15)
+- [x] `language-policy.md` "Matrix": D4 row (AC-3)
+- [x] `checkpoints.md` "Gate inventory": retro intake dispositions row covers project issues; the gate-free closes line names the D2 authorisation request and the D3 consumer merge-mode close (AC-1..AC-4, AC-6)
+- [x] `artifact-layout.md` "Retro backlog": issue dispositions (any issue) live on GitHub; "Test plan": the review-fix tester may also write `Suite run` for a check a finding requires (D8, AC-11)
+- [x] `docs/architecture/tech-reference/gh-2.90.md`: add `gh repo view --json nameWithOwner`; the `-R` convention names the project repo for project issues and the manifest repo for ASD-repo issues (AC-15)
 
 ### Task 4: sprint-lifecycle.md rule edits
 Material risk: artifact: mirror prose
-- [ ] Phase table scope row: project issues triaged in every project (AC-1)
-- [ ] "Operation timing": the runtime fills a dispatch op's missing `tier`/`model` per D5; a close of a never-opened id writes nothing (D6) (AC-9, AC-13)
-- [ ] "Impacted test set": Scope `full` per D7; a review-fix tester's recorded run counts for reuse (D8) (AC-10, AC-11)
-- [ ] "APPROVE latch": verdicts and latch entries are written through `record-verdicts` (D10) (AC-14)
+- [x] Phase table scope row: project issues triaged in every project (AC-1)
+- [x] "Operation timing": the runtime fills a dispatch op's missing `tier`/`model` per D5; a close of a never-opened id writes nothing (D6) (AC-9, AC-13)
+- [x] "Impacted test set": Scope `full` per D7; a review-fix tester's recorded run counts for reuse (D8) (AC-10, AC-11)
+- [x] "APPROVE latch": verdicts and latch entries are written through `record-verdicts` (D10) (AC-14)
 
 ### Task 5: Timing dispatch attrs and never-opened close
 Material risk: change: host detection and ledger close edge
-- [ ] `runtime.js` `timingAppend`/`timingRequest`: D5 fill for `--kind dispatch` opens, reading `state.json` beside the ledger and the agent frontmatter through `sync.js` exports (AC-9)
-- [ ] `runtime.js` `timingCloses`: D6, update its doc comment (AC-13)
+- [x] `runtime.js` `timingAppend`/`timingRequest`: D5 fill for `--kind dispatch` opens, reading `state.json` beside the ledger and the agent frontmatter through `sync.js` exports (AC-9)
+- [x] `runtime.js` `timingCloses`: D6, update its doc comment (AC-13)
 
 ### Task 6: Suite run Scope and review-fix tester run
 Material risk: change: public contract
-- [ ] `t_test-plan.md` "Suite run": Scope `full` per D7; who writes it includes the review-fix tester (D8) (AC-10, AC-11)
-- [ ] `asd-tester.md`: the runner and base tester record Scope per D7; review-fix mode runs and records the check a finding requires (D8)
-- [ ] `asd-phase-impl.md` step 5: the test-file findings chain's tester runs and records that check (D8)
+- [x] `t_test-plan.md` "Suite run": Scope `full` per D7; who writes it includes the review-fix tester (D8) (AC-10, AC-11)
+- [x] `asd-tester.md`: the runner and base tester record Scope per D7; review-fix mode runs and records the check a finding requires (D8)
+- [x] `asd-phase-impl.md` step 5: the test-file findings chain's tester runs and records that check (D8)
 
 ### Task 7: External Review prompt from a scratch file under Claude Code
 Material risk: change: invocation form
-- [ ] `external-review.md` "OS-specific invocation": D11 row for Claude Code, Codex rows unchanged; the "never written to disk" sentence narrowed to the D11 file (AC-8)
-- [ ] `asd-external-review.md` `## Tools` run/deny and `## Invocation`: D11 form, write grant limited to that file
+- [x] `external-review.md` "OS-specific invocation": D11 row for Claude Code, Codex rows unchanged; the "never written to disk" sentence narrowed to the D11 file (AC-8)
+- [x] `asd-external-review.md` `## Tools` run/deny and `## Invocation`: D11 form, write grant limited to that file
 
 ### Task 8: record-verdicts runtime command
 Material risk: change: state.json writer
@@ -80,6 +80,7 @@ Material risk: change: workflow gate
 Reachability: impl-review writes `verdicts["iter-NN"]` through `record-verdicts` at step 8 (late return step 7a); pr open mode step 1 reads it from `state.json` on the same branch
 - [ ] `asd-phase-impl-review.md` steps 7a and 8, `asd-phase-design-review.md` steps 8a and 9: record verdicts and latches through `record-verdicts` (D10); Exit lines (AC-14)
 - [ ] `agent-protocol.md` "Dispatch payload" reviewer keys, impl-review step 6 payload and both workflows' Dispatch JSON: `findings_header` (D9, AC-12)
+- [ ] `providers.md` line on artifact writes: the External Review prompt-to-stdin example no longer claims it "never touches the filesystem" under Claude Code (D11, AC-8; restating site Task 7 flagged)
 
 ### Task 10: README mirrors
 Material risk: artifact: mirror tables
