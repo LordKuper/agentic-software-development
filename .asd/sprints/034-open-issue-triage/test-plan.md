@@ -13,22 +13,19 @@ responsibility:
 |---|---|---|
 | 1 | 5922badb | full change surface |
 | 2 | 5a0e9aaa | delta since entry 1 |
+| 3 |  | delta since entry 2 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `.asd/runtime.js` `fillDispatchAttrs` agent fill (AC-9, D-5) | a wrong agent name (`asd-dev-standard`), an agent given to an `execution: command` id, an overwritten caller `agent` or an unnamed unresolved agent mis-records every dispatch | CLI over a real `state.json` (the lookups are not exported) | add | one test over five routed ids: standard gives `asd-dev`, the other tiers `asd-dev-<tier>`, a command id no agent and the warning `agent unresolved`, a given `agent=` kept |
-| `sprint-lifecycle.md` "Operation timing" agent sentence (D-5) | prose restating the code mapping drifts | none | none | the mapping is pinned in behaviour by the row above; a prose pin would copy the same fact (`code-style.md` §17 hypothetical-risk) |
-| D-1 trim of six rule docs and `asd-phase-impl.md` (no meaning change intended) | a removed clause carried a rule no other text states | review of the commit's word diff against each clause's remaining or cited home | none | every changed fragment kept its meaning or its home; three removed standalone sentences are reported, none tied to an AC-N, none a gate or safety clause: the `null` verdict write (`sprint-lifecycle.md`), `Reviewers stay strong and fresh` (`providers.md`), the `where the clearing happens is out of scope` clause (`sprint-lifecycle.md`) |
-| D-1 trim, superseding the D-1 row above (combined-4): every removed standalone sentence of `26326883` | the row above counts three, and a later reader relies on its list | review of the commit's word diff, each sentence traced to its surviving home | none | ten removed sentences or sentence tails, none tied to an AC-N, none a gate or safety clause. Surviving home: "Use `checkpoints.md` for every user-gate decision." (`sprint-lifecycle.md`) → `core.md` "Autonomy and escalation" and "See also" name `checkpoints.md` as the gate policy, and the audit paragraph above it cites `checkpoints.md` "Gate policy"; "`design-review` has no matching precondition: it builds its manifest from on-disk drafts." → the clean-worktree precondition stays stated for `impl-review` alone, and `asd-phase-design-review.md` `requires` holds no worktree check; "n = 1 is one unsplit review." (`sprint-lifecycle.md` "Review iteration counters") → the kept "at least 1" in the same sentence and "Under `lite` n is always 1"; `Examples: [REVIEW-impl-quality]: APPROVE · …` (`review-policy.md` "Gate Verdict Format") → example only, the token shape and its `<phase>` and `<reviewer>` values stay in the lines above it; "`null` is never written deliberately." (`sprint-lifecycle.md`) → the verdict-write rule beside it, which names no `null` value; "Reviewers stay strong and fresh." (`providers.md`) → `review-policy.md` "Clean-context review iteration" (fresh) and `providers.md` "Model family resolution", which fixes an agent's tier in its canonical frontmatter alone (strong); "where in that step the clearing happens is out of scope" (`sprint-lifecycle.md` "Red-full-suite invalidation") → the kept "This paragraph is the contract the full-suite step must satisfy"; "test authoring, pruning and running belong to `impl-test`, a `Test-only` Task excepted" (`asd-phase-impl.md` step 9) → `code-style.md` §17 first paragraph, same carve-out; "no `-standard` variant exists" (`asd-phase-impl.md` step 5a) → `providers.md` "Task-class variants and routing" fixed suffixes, `tier: standard` dispatches the base `asd-dev`; "not a fixed linear chain" (`sprint-lifecycle.md`) → the phase table and each workflow's `NEXT:` token, which already route non-linearly |
-| D-3 Matrix cite, D-4 `gh issue view` | the fixed assertions regress | existing tests | keep | the sprint-030 Matrix test and the sprint-034 AC-4 test, red at entry 1, are green and pin both fixes; no gap |
+| review-fix delta `5a0e9aaa...HEAD` (`faf97aec` origin-URL project repo, `e32635b7` `[asd-retro] ` prefix list, `853ec77a` step 4 `gh label create -f`, `920b16b8` Scope `full`/`impacted`/`named`, sync `8c2ca8c5`) | a regression of any of the four fixes, or a stale generated mirror | existing tests (the review-fix pins of `4b7caea4`) and `node .asd/sync.js --check` | none | each fix is pinned with recorded fail-first and mutation proof in the rotated `entry-02` rows: origin URL and the prefix list and the label ensure by sprint-034 AC-1/AC-2 and AC-4 (issue), Scope `named` by sprint-034 AC-10/AC-11; mirrors by the build check. No unpinned behaviour remains, so a new test would duplicate a check (`code-style.md` §17 hypothetical-risk) |
 
 ## Removed tests
 
 | Test | Reason | In change scope |
 |---|---|---|
-| none | no test is trivial, redundant, mock-confirming, implementation-coupled or flaky on the delta | yes |
+| none | no review-fix removal row to carry forward, and no test is trivial, redundant, mock-confirming, implementation-coupled or flaky on the delta | yes |
 
 ## Added tests
 
@@ -36,10 +33,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110), review-fix: the project repo is the `origin` URL's (`gh repo view "$(git remote get-url origin)"`), a failing lookup skips triage, the retro list takes exactly the `[asd-retro] ` title prefix so a marker issue without it stays in the project list, step 4 ensures each label with `gh label create -f` before the label write (combined-2, combined-3, external-1, external-2) | fail-first vs 1ab0bc36 (git archive plus the new run.js): `node tests/run.js --filter "sprint-034 AC-1/AC-2"` → exit 1, this test (1 matched), first assertion `AC-1 (combined-2, external-1)`; mutations on the current tree in a scratch copy, each restored: M1 (bare `gh repo view` back), M2 (body-marker drop back), M3 (step 4 label ensure removed), M9 (tech reference without the repository argument): same filter → exit 1 each, this test (1 matched); control C1 (unpinned prose of step 2a reworded) → exit 0, 1 matched; runs: 5 |
-| tests/run.js: sprint-034 AC-4 (issue #110), review-fix: the consumer close resolves `<project>` from the `origin` URL (combined-2) | fail-first vs 1ab0bc36: `node tests/run.js --filter "sprint-034 AC-4 (issue"` → exit 1, this test (1 matched), assertion `AC-4 (combined-2)`; mutation M4 (pr merge step 2 back to the bare `gh repo view`) in the scratch copy: same filter → exit 1, this test (1 matched); runs: 1 |
-| tests/run.js: sprint-034 AC-10/AC-11 (033#P-1, issues #86, #119), review-fix: Scope `full` is the unscoped command or safety valve with no test filter, a review-fix named or name-filtered run is Scope `named` and never reused, in the rule, the template and the tester agent (combined-1) | fail-first vs 1ab0bc36: `node tests/run.js --filter "sprint-034 AC-10/AC-11"` → exit 1, this test (1 matched), assertion `AC-10 (combined-1)`; mutations in the scratch copy, each restored: M5 (`named … never reused` clause removed from "Impacted test set"), M6 (full-suite wording back), M7 (template Scope line back), M8 (tester agent `named` clause removed): same filter → exit 1 each, this test (1 matched); runs: 4 |
-| tests/run.js: sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev for tier standard and asd-dev-<tier> otherwise, an execution-command id gets no agent and warns naming it, and a given agent attr is never overwritten | fail-first vs 43dd1920~1 (git archive plus the new run.js): `node tests/run.js --filter "sprint-034 AC-9 (D-5)"` → exit 1, this test (`AC-9: Task standard is recorded with its agent, tier and model from task_routing`, 1 matched); mutations on the fixed runtime, each in the scratch copy: M7 (command ids also get an agent), M8 (standard gives `asd-dev-standard`), M9 (fill overwrites a given agent), M10 (agent dropped from the unresolved list): same filter → exit 1 each, this test (1 matched); runs: 4 |
+| none | no test authored at entry 3: the delta's tests are the review-fix pins rotated to `test-plan.entry-02.md` |
 
 ## Suite run
 
@@ -57,6 +51,7 @@ analysed, not any tree produced later
 - Result: pass — 374 passed, 0 failed, 0 skipped of 374, exit 0 (before the pin updates 372/374: the two sprint-034 pins whose contracts changed)
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
 - HEAD: 4b7caea4
+- Reuse (entry 3, steps 3 and 8): this green full run is reused, not re-run. Between `4b7caea4` and `6500df83` only `test-plan.md` and sprint bookkeeping changed (`git diff 4b7caea4..HEAD` outside `.asd/sprints/` is empty), so no code, test or stub path changed; the run measures the entry 3 tree.
 
 ## Defects
 
