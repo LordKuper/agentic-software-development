@@ -52,3 +52,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — impl test-fix: defects D-1, D-2, D-3, D-4, D-5 resolved
 - 2026-11-16 — route impl-test-2: standard, dispatch HEAD 031fad36
 - 2026-11-16 — impl-test: impacted set green (374/374, Scope full), 1/0 tests
+- 2026-11-16 — impl-review wave-1/iter-01: combined CONCERNS (4), external CONCERNS (2) → impl review-fix (combined-2 and external-1 share one root: project repo from `origin`, not gh default resolution)
