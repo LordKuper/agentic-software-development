@@ -117,7 +117,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 2. tests exercising a changed unit, resolved by repo search over references/imports of the changed modules;
 3. tests tagged with an AC-N the change touches (the AC-citation convention — the tag lives in the test's name/path, `t_test-plan.md` "Added tests"; the one exception to `code-style.md` §8's in-code document-reference ban).
 
-**Native selector override.** When `commands.yaml` carries a `test_affected` field (a native runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that field's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field's shape and `t_commands.yaml`/`asd-init` detection are defined where `commands.yaml` is.
+**Native selector override.** When `commands.yaml` carries a `test_affected` field (a native runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that field's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set.
 
 **Safety valve — mandatory, not heuristic, checked BEFORE the selector or the search-derived set is used.** The runner of a scoped run — `asd-tester` at `impl-test`'s step 8 suite gate, or the orchestrator in `cleanup` — MUST apply this test before every such run: when the change surface touches shared infrastructure — build config, CI config, shared/common modules, any framework-wide file — the impacted set degrades to the **full suite** for that run. `impl-test`'s step 3 pre-authoring run and its reruns after each authoring batch use the impacted set without the valve.
 
@@ -127,7 +127,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 
 **Reuse.** A green run recorded in `test-plan.md`'s `Suite run` at a scope at or above the one needed (full ≥ impacted), after the last latch clear ("APPROVE latch"), counts as the next required `impl-test` or terminal run when no code, test or stub path changed between its recorded `HEAD` and the current one. A reused run is recorded as such, never re-run. A review-fix tester's `Suite run` counts on the same terms.
 
-**Scope.** `Suite run` Scope: `full` for the unscoped command or safety valve, no test filter; `impacted` for the impacted set; `named` for a review-fix run of a named test or name-filtered selection, never reused.
+**Scope.** `Suite run` Scope: `full` when every test file ran with no test-name filter (unscoped command, safety valve, or an impacted set holding all of them); `named` for a review-fix run of a named test or name-filtered selection, never reused; else `impacted`.
 
 Each `impl-test` entry's `Suite run` record measures the tree that entry analysed; only the terminal full-suite run measures the final tree. `cleanup`'s verification run measures the tree after its removals, recorded in the decisions log alone.
 
