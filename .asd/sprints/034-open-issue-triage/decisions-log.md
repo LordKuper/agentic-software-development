@@ -37,9 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-11-16 — audit accepted (adaptive)
-
-- **Decision**: audit.md accepted: every `t_audit.md` section for AC-1..AC-15, no unsettled contradiction. AC-6's "host permission" is read as one user authorisation request naming every planned triage write, before the first one; tech-reference `gh-2.90.md:35` (`-R` never from the checkout's remote) and the closing-keyword, Matrix, heredoc and timing tests are planned changes under AC-1..AC-15, not contradictions.
-- **Rationale**: AC-6's reading is settled by source: sprint 033 F-1 and its scope gate show a user authorisation, not a host API, cleared the refused close; each other conflict is a sprint criterion deliberately changing canon (`asd-phase-audit.md` "Contradictions").
-- **Affected docs**: `audit.md`

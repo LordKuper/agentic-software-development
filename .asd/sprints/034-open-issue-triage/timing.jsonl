@@ -15,3 +15,4 @@
 {"op":"close","id":"asd-scout audit#1","kind":"dispatch","parent":"audit#1","start":"2026-11-16T16:53:38.114Z","end":"2026-11-16T16:55:12.456Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
 {"op":"close","id":"asd-scout audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-16T16:53:38.114Z","end":"2026-11-16T16:56:04.195Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
 {"op":"close","id":"asd-scout audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-16T16:53:38.114Z","end":"2026-11-16T16:56:56.214Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-16T16:53:15.328Z","end":"2026-11-16T16:57:37.301Z","outcome":"done","attrs":{}}
