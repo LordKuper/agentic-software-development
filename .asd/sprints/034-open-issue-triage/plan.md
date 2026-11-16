@@ -73,14 +73,14 @@ Material risk: change: invocation form
 
 ### Task 8: record-verdicts runtime command
 Material risk: change: state.json writer
-- [ ] `runtime.js`: `record-verdicts` per D10, usage string, CLI dispatch (AC-14)
+- [x] `runtime.js`: `record-verdicts` per D10, usage string, CLI dispatch (AC-14)
 
 ### Task 9: Review workflows use record-verdicts; reviewer payload header
 Material risk: change: workflow gate
 Reachability: impl-review writes `verdicts["iter-NN"]` through `record-verdicts` at step 8 (late return step 7a); pr open mode step 1 reads it from `state.json` on the same branch
-- [ ] `asd-phase-impl-review.md` steps 7a and 8, `asd-phase-design-review.md` steps 8a and 9: record verdicts and latches through `record-verdicts` (D10); Exit lines (AC-14)
-- [ ] `agent-protocol.md` "Dispatch payload" reviewer keys, impl-review step 6 payload and both workflows' Dispatch JSON: `findings_header` (D9, AC-12)
-- [ ] `providers.md` line on artifact writes: the External Review prompt-to-stdin example no longer claims it "never touches the filesystem" under Claude Code (D11, AC-8; restating site Task 7 flagged)
+- [x] `asd-phase-impl-review.md` steps 7a and 8, `asd-phase-design-review.md` steps 8a and 9: record verdicts and latches through `record-verdicts` (D10); Exit lines (AC-14)
+- [x] `agent-protocol.md` "Dispatch payload" reviewer keys, impl-review step 6 payload and both workflows' Dispatch JSON: `findings_header` (D9, AC-12)
+- [x] `providers.md` line on artifact writes: the External Review prompt-to-stdin example no longer claims it "never touches the filesystem" under Claude Code (D11, AC-8; restating site Task 7 flagged)
 
 ### Task 10: README mirrors
 Material risk: artifact: mirror tables

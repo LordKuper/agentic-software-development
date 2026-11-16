@@ -40,3 +40,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — route Task 1, Task 2, Task 3, Task 4, Task 5, Task 6, Task 7: standard, dispatch HEAD 4c1f6e66
 - 2026-11-16 — plan amended (no scope change): `providers.md` artifact-write line restates AC-8's old "never touches the filesystem" claim; Task 7 flagged it outside its write scope, so the edit joins Task 9 (wave 2, disjoint paths)
 - 2026-11-16 — route Task 8, Task 9: standard, dispatch HEAD 26eb47fb
+- 2026-11-16 — Task 9 flag (latch-skipped reviewer's inherited APPROVE re-recorded each iteration) resolved by meeting `sprint-lifecycle.md` "APPROVE latch": Task 8's `record-verdicts` leaves an existing `latched[key]` untouched on a bare APPROVE
