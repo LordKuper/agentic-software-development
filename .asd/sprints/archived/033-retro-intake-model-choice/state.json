@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -69,6 +69,13 @@
       "reason": "all plan.md subtasks ticked; build and lint clean; round diff within write scopes; flagged departures accepted in decisions-log; no stubs",
       "evidence": "decisions-log.md 2026-11-12 impl assessment approved (adaptive)",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #116 merged; release v14.5.0 published; included issues closed",
+      "evidence": "merge commit 6fc0e1e3871690854dfea285445c824a19525789",
+      "artifact_revision": "6fc0e1e3"
     }
   ],
   "task_routing": {
@@ -106,9 +113,9 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f2711de3113a4947a4f52f97028907c130a993e2", "iter-02": "7fd70d99e0719196423744b63c450aa590c6beb9", "iter-03": "85771623d90cc84c9e197b8a0ab43f2a7322ed25" }, "latched": { "combined": 3, "external": 3 } } ] }
   },
   "created_at": "2026-11-10T21:00:49.000Z",
-  "updated_at": "2026-11-10T21:00:49.000Z",
+  "updated_at": "2026-11-16T16:20:23.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 116, "url": "https://github.com/LordKuper/agentic-software-development/pull/116", "state": "open" },
-  "archived_at": null
+  "pr": { "number": 116, "url": "https://github.com/LordKuper/agentic-software-development/pull/116", "state": "merged", "merge_commit": "6fc0e1e3871690854dfea285445c824a19525789" },
+  "archived_at": "2026-11-16T16:20:23.000Z"
 }

@@ -1198,6 +1198,62 @@ function rotateDecisions(flags) {
   return { ...unchanged, rotated: true, segment };
 }
 
+const VERDICT_VALUE = /^(?:APPROVE|CONCERNS|FAIL|APPROVE \(skipped: .+\))$/;
+
+/** Parses `<key>=<value>[;<key>=<value>…]` into `[key, value]` pairs of the review node's reviewer keys; a value may itself hold `;`, a pair starts only at `;<key>=`. */
+function parseVerdictPairs(text, keys) {
+  const pairs = text.split(/;(?=[a-z]+=)/).map((part) => {
+    const split = part.indexOf('=');
+    if (split < 0) fail(`--verdict part has no key=value form: ${part}`);
+    return [part.slice(0, split), part.slice(split + 1)];
+  });
+  pairs.forEach(([key, value]) => {
+    if (!keys.includes(key)) fail(`--verdict key ${key} is not a reviewer key (${keys.join(', ')})`);
+    if (!VERDICT_VALUE.test(value)) fail(`--verdict value for ${key} must be APPROVE, CONCERNS, FAIL or APPROVE (skipped: <reason>)`);
+  });
+  if (new Set(pairs.map(([key]) => key)).size !== pairs.length) fail('--verdict repeats a key');
+  return pairs;
+}
+
+/** Renders a JSON value on one line in the `{ "k": v }` / `[ v ]` style the sprint state file uses for review nodes. */
+function inlineJson(value) {
+  if (Array.isArray(value)) return value.length === 0 ? '[]' : `[ ${value.map(inlineJson).join(', ')} ]`;
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value);
+    return keys.length === 0 ? '{}' : `{ ${keys.map((key) => `${JSON.stringify(key)}: ${inlineJson(value[key])}`).join(', ')} }`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Merges one iteration's reviewer verdicts into the design node or the current impl wave node of a sprint `state.json` and keeps `latched` in step: a bare `APPROVE` latches the iteration unless the key is already latched, any other value clears the key's latch. Only the `reviews` block is rewritten; bad input or an unexpected layout writes nothing. */
+function recordVerdicts(flags) {
+  if (typeof flags.state !== 'string' || typeof flags.verdict !== 'string') fail('--state <path> and --verdict <key=value[;key=value…]> required');
+  if (!REVIEW_NODES.includes(flags.phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
+  if (!/^[1-9]\d*$/.test(flags.iteration)) fail('--iteration <positive integer> required');
+  const iteration = Number(flags.iteration);
+  const pairs = parseVerdictPairs(flags.verdict, reviewerKeys(flags.phase));
+  const text = fs.readFileSync(flags.state, 'utf8');
+  const { reviews } = JSON.parse(text);
+  const node = flags.phase === 'design' ? reviews && reviews.design : reviews && reviews.impl && reviews.impl.waves && reviews.impl.waves[reviews.impl.wave - 1];
+  if (!node || typeof node !== 'object') fail(`${flags.state} has no ${flags.phase} review node${flags.phase === 'impl' ? ' with waves (a legacy flat reviews.impl needs the wave-aware entry write first)' : ''}`);
+  const span = /\r?\n  "reviews": (\{[\s\S]*?\r?\n  \})/.exec(text);
+  if (!span || stable(JSON.parse(span[1])) !== stable(reviews)) fail(`${flags.state} reviews block is not in the expected layout`);
+  const key = `iter-${String(iteration).padStart(2, '0')}`;
+  node.verdicts = { ...node.verdicts };
+  node.verdicts[key] = { ...node.verdicts[key] };
+  node.latched = { ...node.latched };
+  pairs.forEach(([reviewer, value]) => {
+    node.verdicts[key][reviewer] = value;
+    if (value !== 'APPROVE') delete node.latched[reviewer];
+    else if (!(reviewer in node.latched)) node.latched[reviewer] = iteration;
+  });
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const rendered = ['{', ...Object.keys(reviews).map((name, index, names) => `    ${JSON.stringify(name)}: ${inlineJson(reviews[name])}${index < names.length - 1 ? ',' : ''}`), '  }'].join(eol);
+  const start = span.index + span[0].length - span[1].length;
+  fs.writeFileSync(flags.state, text.slice(0, start) + rendered + text.slice(start + span[1].length), 'utf8');
+  return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
+}
+
 /** What a liveness decision reads off a Claude subagent transcript (JSONL): when the agent started, when its newest still-unanswered tool call began (null when none is open), and whether its last message is a final assistant answer. An unparseable line, such as a half-written tail, is skipped. */
 function transcriptProgress(text) {
   const parse = (line) => {
@@ -1355,14 +1411,14 @@ function timingRequest(flags) {
   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
 }
 
-/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened is recorded, unpaired, so the summary reports it (warns). */
+/** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened writes nothing (warns). */
 function timingCloses(entries, open, id, outcome, now, warnings) {
   const entry = resolveOp(open, id);
   if (entry !== undefined) return closeWithChildren(open, entry, now, outcome, warnings);
   const previous = resolveOp(latestCloses(entries), id);
   if (previous === undefined) {
     warnings.push(`close of ${id} matches no open op`);
-    return [closeEntry({ id, kind: null, parent: null, start: null, attrs: {} }, now, outcome)];
+    return [];
   }
   if (previous.outcome === 'interrupted' && outcome !== 'interrupted') return [closeEntry({ ...previous, start: previous.end }, now, 'continued')];
   warnings.push(`close of ${previous.id} skipped: already closed`);
@@ -1380,8 +1436,23 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
-function timingAppend(text, flags, now) {
+/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. */
+function fillDispatchAttrs(id, attrs, lookups, warnings) {
+  const filled = { ...attrs };
+  const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
+  const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
+  try {
+    if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
+    if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
+  } catch (error) {
+    warnings.push(`open of ${id}: dispatch attrs lookup failed: ${error.message}`);
+  }
+  if (missing().length > 0) warnings.push(`open of ${id}: ${missing().join(', ')} unresolved`);
+  return filled;
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
   const { open } = ledgerState(entries);
@@ -1395,7 +1466,8 @@ function timingAppend(text, flags, now) {
       warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
       continue;
     }
-    const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs: request.attrs };
+    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
+    const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs };
     open.set(id, entry);
     if (request.kind === 'phase') phaseOpens.push(name);
     written.push(entry);
@@ -1423,6 +1495,31 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+function timingLookups(ledger) {
+  const statePath = path.join(path.dirname(ledger), 'state.json');
+  return {
+    routed: (id) => {
+      if (!fs.existsSync(statePath)) return undefined;
+      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[id];
+      const agent = routed && routed.execution === 'agent' && routed.tier !== undefined ? (routed.tier === 'standard' ? 'asd-dev' : `asd-dev-${routed.tier}`) : undefined;
+      return routed && { agent, tier: routed.tier, model: routed.resolved_model };
+    },
+    agentAttrs: (agent) => {
+      const { VARIANT_SUFFIXES, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
+      const suffix = VARIANT_SUFFIXES.find((candidate) => agent.endsWith(`-${candidate}`));
+      const base = suffix === undefined ? agent : agent.slice(0, -(suffix.length + 1));
+      const file = path.join(__dirname, 'agents', `${base}.md`);
+      if (!/^[a-z0-9-]+$/.test(base) || !fs.existsSync(file)) return undefined;
+      const { meta } = parseCanonicalFrontmatter(normalizeText(fs.readFileSync(file, 'utf8')));
+      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
+      const variant = suffix === undefined ? undefined : (meta.variants || {})[suffix];
+      const model = [variant, meta].map((source) => source && source[host] && source[host].model).find((value) => value !== undefined);
+      return { tier: suffix === undefined ? 'standard' : suffix, model };
+    },
+  };
+}
+
 /** Runs `timing` or `timing-recover` as one append to `--ledger`, a missing ledger a no-op unless `timing --create`. Any failure, a malformed command line included, prints one stderr warning and still exits 0, so recording never stops the workflow. */
 function timingCommand(command, args) {
   try {
@@ -1431,7 +1528,7 @@ function timingCommand(command, args) {
     const exists = fs.existsSync(flags.ledger);
     if (!exists && !(command === 'timing' && flags.create === true)) return 0;
     const text = exists ? fs.readFileSync(flags.ledger, 'utf8') : '';
-    const result = command === 'timing' ? timingAppend(text, flags, new Date().toISOString()) : timingRecover(text, runGit(['log', '-1', '--format=%cI']).trim());
+    const result = command === 'timing' ? timingAppend(text, flags, new Date().toISOString(), timingLookups(flags.ledger)) : timingRecover(text, runGit(['log', '-1', '--format=%cI']).trim());
     if (result.text !== '') fs.appendFileSync(flags.ledger, result.text, 'utf8');
     if (result.warnings.length > 0) process.stderr.write(`${command}: ${result.warnings.join('; ')}\n`);
   } catch (error) {
@@ -1940,6 +2037,10 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(rotateDecisions(flags)) + '\n');
     return 0;
   }
+  if (command === 'record-verdicts') {
+    process.stdout.write(JSON.stringify(recordVerdicts(flags)) + '\n');
+    return 0;
+  }
   if (command === 'section' || command === 'context') {
     try {
       process.stdout.write(command === 'section' ? sectionCommand(flags) : JSON.stringify(contextCommand(flags)) + '\n');
@@ -1960,7 +2061,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

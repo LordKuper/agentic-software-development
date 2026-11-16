@@ -105,3 +105,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — cleanup: removed none; reverted none; verified n/a: no removals
 - 2026-11-12 — retro: retrospective.html written; 4 friction entries (F-4 added at retro), 4 actions, 2 systemic proposals; remediation branch; upstream publish skipped (self_hosting)
 - 2026-11-12 — pr: DoD verified (plan ticked, reviews green wave 1/1, suite 362/362 @373fa77e reused, no stubs); PR #116 opened under adaptive publication (user authorised GitHub writes at scope)
+
+## 2026-11-16 — sprint closure
+
+- **Decision**: Sprint closed: PR #116 merged as 6fc0e1e3871690854dfea285445c824a19525789; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 034 start; release v14.5.0 tagged and published, all 20 included issues closed, so no release retry.
+- **Affected docs**: `state.json`

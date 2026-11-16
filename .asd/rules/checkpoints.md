@@ -23,16 +23,16 @@ For an active sprint, record the actor, gate, artifact revision and short-ref ev
 
 ## Criterion cost surfacing
 
-Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost is stated in the request rather than looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request — stated before the decision, never after it.
+Gates are keyed by gate name, so a criterion’s running cost is stated in the request, not looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request, stated before the decision.
 
 **Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
 
-- *iterations charged* — count of iteration directories (`<sprint>/reviews/<phase>/iter-NN/`; in impl-review `<sprint>/reviews/impl/wave-*/iter-NN/` plus legacy `<sprint>/reviews/impl/iter-NN/`) whose findings name that `AC-N`. A finding is not required to cite an AC (only Correctness traces AC-N), so this count is a lower bound and is stated as one;
+- *iterations charged* — count of iteration directories (`<sprint>/reviews/<phase>/iter-NN/`; in impl-review `<sprint>/reviews/impl/wave-*/iter-NN/` plus legacy `<sprint>/reviews/impl/iter-NN/`) whose findings name that `AC-N`. A finding need not cite an AC (only Correctness traces AC-N), so the count is a lower bound, stated as one;
 - *fix rounds charged* — count of fix-round entries across `<sprint>/decisions-log.md` and its segments (`artifact-layout.md` "Decisions log"), whose iteration id (`wave-<K>/iter-NN`, legacy `iter-NN`; `sprint-lifecycle.md` "Review iteration counters") is one of those iterations, matched on the stable tail `for <id>: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
 
 State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
 
-The actor decides with the pair visible and writes it into the `evidence` of the record that gate already makes (above). Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
+The pair goes into the `evidence` of the record that gate already makes (above), with the actor deciding on it visible. Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
 
 ## Gate inventory
 
@@ -46,12 +46,12 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
 | per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
-| retro intake dispositions (scope gate: one explicit include/reject/defer per retro row or `asd-retro` issue put to the user; written on acceptance) | hard approve-before-write |
+| retro intake dispositions (scope gate: one explicit include/reject/defer per retro row, `asd-retro` issue or project issue put to the user; written on acceptance) | hard approve-before-write |
 | approach choice (scope step 2, staged design, before the `AC-N`) | hard approve-before-write |
 | workflow choice (scope step 1) | hard approve-before-write |
 | ASD update choice (new-sprint start) | hard approve-before-write |
 
-Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a) and post-release closes (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above.
+Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a), post-release closes and a consumer's included-issue closes (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above. Step 2a's triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate.
 
 `cleanup` removals take no gate: test files are outside its reach, so test removal stays the gate above. `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
 
