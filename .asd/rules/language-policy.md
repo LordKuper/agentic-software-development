@@ -10,6 +10,7 @@
 | Workflow infrastructure (rules, agents, skills, hooks, CLAUDE.md) | English, dense imperative prose, always |
 | File names, git branches, commit subjects, PR titles | English, always |
 | Issue titles, bodies and comments ASD writes to the ASD repo | English, always, whatever `language.chat`/`language.docs` |
+| Issue comments ASD writes on a consumer project's own repository | `language.docs` |
 | `DESIGN.md` (Google Labs format) | English, format-mandated YAML + Markdown |
 | LikeC4 `.c4` files | English, format-mandated DSL |
 

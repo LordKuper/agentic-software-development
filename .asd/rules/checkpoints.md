@@ -46,12 +46,12 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
 | per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
-| retro intake dispositions (scope gate: one explicit include/reject/defer per retro row or `asd-retro` issue put to the user; written on acceptance) | hard approve-before-write |
+| retro intake dispositions (scope gate: one explicit include/reject/defer per retro row, `asd-retro` issue or project issue put to the user; written on acceptance) | hard approve-before-write |
 | approach choice (scope step 2, staged design, before the `AC-N`) | hard approve-before-write |
 | workflow choice (scope step 1) | hard approve-before-write |
 | ASD update choice (new-sprint start) | hard approve-before-write |
 
-Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a) and post-release closes (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above.
+Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a), post-release closes and a consumer's included-issue closes (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above. Step 2a's triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate.
 
 `cleanup` removals take no gate: test files are outside its reach, so test removal stays the gate above. `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
 
