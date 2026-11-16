@@ -98,3 +98,4 @@
 {"op":"open","id":"impl-test-4","kind":"dispatch","parent":"impl-test#4","start":"2026-11-16T18:30:14.992Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-test-4","kind":"dispatch","parent":"impl-test#4","start":"2026-11-16T18:30:14.992Z","end":"2026-11-16T18:31:09.841Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-test#4","kind":"phase","parent":null,"start":"2026-11-16T18:30:14.775Z","end":"2026-11-16T18:31:10.017Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-11-16T18:31:10.334Z","attrs":{}}
