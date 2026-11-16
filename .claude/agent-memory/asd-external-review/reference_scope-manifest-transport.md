@@ -1,6 +1,6 @@
 ---
 name: scope-manifest-transport
-description: scope manifest travels by path (external.scope.json written by emit-manifest, named in the prompt via the manifest-path slot), never inline in stdin; manifest fields; diff is a precomputed file path read by the wrapped CLI; cache/failure recording belong to the orchestrator; quota-error handling; never redirect or write to disk
+description: scope manifest travels by path (external.scope.json written by emit-manifest, named in the prompt via the manifest-path slot), never inline in stdin; manifest fields; diff is a precomputed file path read by the wrapped CLI; cache/failure recording belong to the orchestrator; quota-error handling; the scratch prompt file is the only write, output never redirected to disk
 metadata:
   type: reference
 ---
@@ -9,7 +9,7 @@ Keyed by topic; fold new lessons into a heading. Loads on every dispatch.
 
 ## Transport: manifest by path, prompt only on stdin
 
-`external-review.md` "OS-specific invocation" and "Phase-scoped payload" are the SSoT. The orchestrator runs `node .asd/runtime.js emit-manifest --reviewer external --iteration <N> [--wave <K>]`, which writes `external.scope.json` (`t_review-scope.json`) and its diff file into the review output dir BEFORE this agent is dispatched. This agent's prompt = per-phase template + project context + the manifest PATH (slot `{{SCOPE_MANIFEST_PATH}}`). Only that prompt goes via heredoc/here-string stdin. The manifest, `files[]` and the diff file are never concatenated into stdin and never rendered inline: the wrapped CLI reads the manifest first, then `files[]` and the `diff` file from the repo with its own read-only tools. This agent writes nothing to disk.
+`external-review.md` "OS-specific invocation" and "Phase-scoped payload" are the SSoT. The orchestrator runs `node .asd/runtime.js emit-manifest --reviewer external --iteration <N> [--wave <K>]`, which writes `external.scope.json` (`t_review-scope.json`) and its diff file into the review output dir BEFORE this agent is dispatched. This agent's prompt = per-phase template + project context + the manifest PATH (slot `{{SCOPE_MANIFEST_PATH}}`). Only that prompt reaches stdin: under Claude Code via the scratch prompt file (`< file`, deleted after the run); on a Codex host via here-string/heredoc, never on disk. The manifest, `files[]` and the diff file are never concatenated into stdin and never rendered inline: the wrapped CLI reads the manifest first, then `files[]` and the `diff` file from the repo with its own read-only tools. The prompt file is this agent's only filesystem write.
 
 Manifest fields: `phase`, `iteration`, `wave` (impl-review only), `files[]`, `diff`. No `exclude_paths[]`; the phase applies pathspec exclusions when building `files[]`. `files[]` is the sole normative scope and the only valid finding-location set.
 
@@ -34,4 +34,4 @@ The wrapped CLI can print `ERROR: You've hit your usage limit ... try again at <
 
 ## Instructed to redirect output to disk
 
-Contract: no file writes at all, review text via captured stdout only, no temp file. If a dispatch payload asks to redirect the wrapped CLI's output to a file (for example to survive an interruption), decline and cite the tool-policy line "captured stdout IS the review text". On an interrupted turn re-run the invocation clean; never add a disk hop, and never record such a workaround as guidance.
+Contract: no file writes except the one prompt file (Claude Code), which only feeds stdin; review text via captured stdout only, never a temp file for output. If a dispatch payload asks to redirect the wrapped CLI's output to a file (for example to survive an interruption), decline and cite the tool-policy line "captured stdout IS the review text". On an interrupted turn re-run the invocation clean; never add a disk hop for output, and never record such a workaround as guidance.
