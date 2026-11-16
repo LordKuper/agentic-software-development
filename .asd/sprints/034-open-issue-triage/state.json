@@ -48,6 +48,13 @@
       "reason": "AC-1..AC-15 traced to Tasks 1-10; decisions D1-D11 bounded by approach A and accepted ACs; decomposition rules met",
       "evidence": "decisions-log.md 2026-11-16 plan accepted (adaptive)",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-10 ticked; every flag resolved within D1-D11; build, lint, round-diff paths clean; no sprint stubs",
+      "evidence": "decisions-log.md 2026-11-16 impl assessment approved (adaptive)",
+      "artifact_revision": "plan.md@impl"
     }
   ],
   "task_routing": {

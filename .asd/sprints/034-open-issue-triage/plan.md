@@ -84,7 +84,7 @@ Reachability: impl-review writes `verdicts["iter-NN"]` through `record-verdicts`
 
 ### Task 10: README mirrors
 Material risk: artifact: mirror tables
-- [ ] `README.md`: scope and pr phase rows, FAQ :485-486, runtime row :345 (`record-verdicts`, timing fill), External Review invocation, asd-tester rows — matching AC-1..AC-14 (AC-15)
+- [x] `README.md`: scope and pr phase rows, FAQ :485-486, runtime row :345 (`record-verdicts`, timing fill), External Review invocation, asd-tester rows — matching AC-1..AC-14 (AC-15)
 
 ## Risks
 - D5 host detection rests on `CLAUDECODE=1` (verified in this Claude Code session's shell); a Codex shell is assumed otherwise.
