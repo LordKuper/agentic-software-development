@@ -163,7 +163,6 @@ Reviewers write no review artifact, code or doc: the phase workflow writes the r
 - `<reviewer>` = `quality | efficiency | combined | external`
 - External Review's first line may also be the skip form, per `external-review.md` "Outcome contract"
 
-Examples: `[REVIEW-impl-quality]: APPROVE` · `[REVIEW-design-efficiency]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
 **Findings table.** The report's Findings table takes `t_review.md`'s column shape; a literal `|` inside a cell, code spans included, is written `\|`, since `persist-review` splits cells on every unescaped `|`. An empty table is its header and separator rows only, never a placeholder row.
 

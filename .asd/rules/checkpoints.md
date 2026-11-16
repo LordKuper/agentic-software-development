@@ -23,16 +23,16 @@ For an active sprint, record the actor, gate, artifact revision and short-ref ev
 
 ## Criterion cost surfacing
 
-Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost is stated in the request rather than looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request — stated before the decision, never after it.
+Gates are keyed by gate name, so a criterion’s running cost is stated in the request, not looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request, stated before the decision.
 
 **Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
 
-- *iterations charged* — count of iteration directories (`<sprint>/reviews/<phase>/iter-NN/`; in impl-review `<sprint>/reviews/impl/wave-*/iter-NN/` plus legacy `<sprint>/reviews/impl/iter-NN/`) whose findings name that `AC-N`. A finding is not required to cite an AC (only Correctness traces AC-N), so this count is a lower bound and is stated as one;
+- *iterations charged* — count of iteration directories (`<sprint>/reviews/<phase>/iter-NN/`; in impl-review `<sprint>/reviews/impl/wave-*/iter-NN/` plus legacy `<sprint>/reviews/impl/iter-NN/`) whose findings name that `AC-N`. A finding need not cite an AC (only Correctness traces AC-N), so the count is a lower bound, stated as one;
 - *fix rounds charged* — count of fix-round entries across `<sprint>/decisions-log.md` and its segments (`artifact-layout.md` "Decisions log"), whose iteration id (`wave-<K>/iter-NN`, legacy `iter-NN`; `sprint-lifecycle.md` "Review iteration counters") is one of those iterations, matched on the stable tail `for <id>: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
 
 State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
 
-The actor decides with the pair visible and writes it into the `evidence` of the record that gate already makes (above). Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
+The pair goes into the `evidence` of the record that gate already makes (above), with the actor deciding on it visible. Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
 
 ## Gate inventory
 
