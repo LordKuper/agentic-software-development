@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -88,7 +88,7 @@
     "review-fix combined-3+external-3 (iter-02)": { "execution": "agent", "tier": "standard", "reason": "risk:label write semantics", "raise_effort": false, "resolved_model": "sonnet" },
     "review-fix combined-4 (iter-02)": { "execution": "agent", "tier": "standard", "reason": "risk:label write order", "raise_effort": false, "resolved_model": "sonnet" }
   },
-  "skipped_phases": [],
+  "skipped_phases": ["design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "e7f70e76be64f402f7f60365c0c556d5523ee261", "iter-02": "eab734a0db435211a100dfd2ca37024aa9259e82", "iter-03": "f9ea1d4c745eda3536b6250c3296549c95519bab" }, "latched": { "combined": 3, "external": 3 } } ] }
