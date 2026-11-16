@@ -10109,11 +10109,12 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   const project = bullet('**Project-issue triage**');
   assert.ok(project, 'AC-1: step 2a must keep its Project-issue triage bullet');
   assert.ok(project.includes('every project') && !project.includes('`self_hosting: enabled` only'), 'AC-1: project-issue triage runs in every project, consumer and self-hosting alike');
-  assert.ok(project.includes('`gh repo view --json nameWithOwner -q .nameWithOwner`') && project.includes('gh issue list -R <project> -s open -L 200'), 'AC-1: the project repo is the one gh resolves from origin, listed up to the existing 200 limit');
-  assert.ok(project.includes('`<!-- asd-retro-finding v1 -->`') && project.includes('self_hosting'), 'AC-1: under self-hosting a marker issue stays with rules 1-4 and is dropped from the project list');
+  const originLookup = '`gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner`';
+  assert.ok(project.includes(originLookup) && project.includes('gh issue list -R <project> -s open -L 200'), 'AC-1 (combined-2, external-1): the project repo is the one the origin URL names - never gh\'s bare default, which ranks an upstream remote above origin - listed up to the existing 200 limit');
+  assert.ok(!project.includes('asd-retro-finding') && project.includes('an exact `[asd-retro] ` title prefix') && project.includes('a marker issue without the prefix stays here') && bullet('**Issue triage**').includes('keeping exact `[asd-retro] ` title prefixes'), 'AC-1 (external-2): under self-hosting the project list drops exactly the issues the retro list keeps by title prefix, so a marker issue without the prefix goes to the user instead of being dropped by its body marker');
   assert.ok(project.includes('`deferred`-labelled included') && project.includes('every issue taking one explicit choice, none by default'), 'AC-2: every listed issue, deferred included, takes one explicit choice');
   assert.ok(!project.includes('gh issue close') && project.includes('none is rewritten or auto-closed'), 'AC-2: project issues are never auto-closed - the bullet carries no close command');
-  assert.ok(project.includes('`gh auth status`') && project.includes('`gh repo view`') && project.includes('skips it with one decisions-log line') && project.includes('scope continues'), 'AC-5: an unusable gh or origin skips project triage with one decisions-log line and scope continues');
+  assert.ok(project.includes('`gh auth status`') && project.includes('a failing lookup (no `origin`, or a non-GitHub one)') && project.includes('skips it with one decisions-log line') && project.includes('scope continues'), 'AC-5: an unusable gh or origin skips project triage with one decisions-log line and scope continues');
 
   const authorisation = bullet('**Triage authorisation**');
   assert.ok(authorisation.includes('request user decision') && authorisation.includes('before the first runs'), 'AC-6: one request user decision lists every planned write before the first runs');
@@ -10124,6 +10125,7 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   const accept = stepOf(steps, 4);
   assert.ok(accept.includes('project issues included') && accept.includes('`-R <project>` for a project issue'), 'AC-2/AC-3: step 4 puts project issues to the user and writes them to the project repository');
   assert.ok(accept.includes('`gh issue close <n> -R <repo|project> -r "not planned" -c <reason>`') && accept.includes('--add-label wontfix') && accept.includes('--add-label deferred') && accept.includes('the `AC-N` text ends `(issue #N)`'), 'AC-3: include ends the AC-N with (issue #N), reject closes not planned with wontfix, defer labels deferred');
+  assert.ok(accept.includes('`gh label create <name> -R <repo|project> -f`') && accept.includes('each label a disposition writes is first ensured'), 'AC-3 (combined-3): step 4 ensures each label a disposition writes before the label write, so a declined authorisation leaves no missing-label failure');
   assert.ok(accept.includes('`language.docs`') && accept.includes('`language-policy.md` "Matrix"'), 'AC-3: a consumer project\'s issue comment is written in language.docs by the Matrix rows');
 
   const { inputs, writes } = { inputs: jsonOf('.asd/workflows/asd-phase-scope.md', 'Inputs'), writes: jsonOf('.asd/workflows/asd-phase-scope.md', 'Exit').writes };
@@ -10131,7 +10133,7 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   assert.ok(writes.some((write) => write.includes('project-repo issue labels and dispositions')), 'AC-3: the scope Exit lists the project-repo issue writes');
   assert.ok(sync.parseCanonicalFrontmatter(canonText('.asd/skills/asd-phase-scope/SKILL.md')).meta.description.includes('in every project'), 'AC-1: the scope skill description, its trigger text, names the every-project triage');
   const reference = canonText('docs/architecture/tech-reference/gh-2.90.md');
-  assert.ok(reference.includes('`gh repo view --json nameWithOwner -q .nameWithOwner`'), 'AC-15: the gh tech reference documents the command project triage resolves its repository with');
+  assert.ok(reference.includes('`gh repo view [<repository>] --json nameWithOwner -q .nameWithOwner`') && reference.includes('"$(git remote get-url origin)"'), 'AC-15 (combined-2): the gh tech reference documents the repository argument and the origin URL project triage passes');
 });
 
 test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s included issues the merge left open from the (issue #N) of the merged sprint.md, skipping a closed one, with no gate and no FAILED; every gh call it names is in the tech reference and its exit writes and the gate inventory name it', () => {
@@ -10139,6 +10141,7 @@ test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s i
   const consumer = merge.slice(merge.indexOf('Consumer project:'), merge.indexOf('Then, every project:'));
   assert.ok(consumer.startsWith('Consumer project:'), 'AC-4: merge step 2 must keep its consumer-project clause ahead of the every-project tail');
   assert.ok(consumer.includes('git show origin/<git.base_branch>:.asd/sprints/<NNN-slug>/sprint.md') && consumer.includes('`(issue #N)`'), 'AC-4: the included issues are read from the merged sprint.md on base');
+  assert.ok(consumer.includes('`gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner`'), 'AC-4 (combined-2): the consumer close resolves its repository from the origin URL, never gh\'s bare default');
   assert.ok(consumer.includes('`gh issue view <n> -R <project> --json state`') && consumer.includes('`CLOSED`') && consumer.includes('`gh issue close <n> -R <project> -r completed -c "<PR url>"`'), 'AC-4: an issue already closed by the merge is skipped, an open one is closed completed with the PR url');
   assert.ok(consumer.includes('`language.docs`') && consumer.includes('never retried and never `FAILED`') && consumer.includes('No gate (`checkpoints.md` "Gate inventory")'), 'AC-4: the comment is language.docs, a failure is reported never retried or FAILED, and no gate applies');
   const reference = canonText('docs/architecture/tech-reference/gh-2.90.md');
@@ -10154,16 +10157,17 @@ test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s i
 test('sprint-034 AC-10/AC-11 (033#P-1, issues #86, #119): "Impacted test set" defines Suite run Scope full as the whole suite whatever its invocation and counts a review-fix tester\'s recorded check for reuse; the template and the tester agent carry the same rule', () => {
   const impacted = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impacted test set');
   const scopeRule = impacted.split('\n').find((line) => line.startsWith('**Scope.**')) || '';
-  assert.ok(scopeRule.includes('`Suite run` Scope is `full` when the run executed the whole suite') && scopeRule.includes('else `impacted`'), 'AC-10: "Impacted test set" must define Scope full as the run having executed the whole suite, else impacted');
+  assert.ok(scopeRule.includes('`full` for the unscoped command or safety valve, no test filter') && scopeRule.includes('`impacted` for the impacted set'), 'AC-10 (combined-1): "Impacted test set" must define Scope full as the unscoped command or safety valve with no test filter, else impacted');
+  assert.ok(scopeRule.includes('`named` for a review-fix run of a named test or name-filtered selection, never reused'), 'AC-10 (combined-1): a review-fix run of a named test or filtered selection is Scope named and never reused, so a filtered run cannot gate a suite');
   const reuse = impacted.split('\n').find((line) => line.startsWith('**Reuse.**')) || '';
-  assert.ok(reuse.includes('review-fix tester') && reuse.includes('`Suite run` (Command, Scope, Result, HEAD)') && reuse.includes('counts on the same terms'), 'AC-11: a review-fix tester\'s recorded check counts for reuse on the reuse rule\'s terms');
+  assert.ok(reuse.includes('review-fix tester') && reuse.includes('`Suite run` counts on the same terms'), 'AC-11: a review-fix tester\'s recorded `Suite run` counts for reuse on the reuse rule\'s terms');
   const template = canonText('.asd/templates/t_test-plan.md');
   const scopeLine = template.split('\n').find((line) => line.startsWith('- Scope:')) || '';
-  assert.ok(scopeLine.includes('`full` when the run executed the whole suite') && scopeLine.includes('"Impacted test set"'), 'AC-10: the t_test-plan.md Scope line states the full rule and cites its home');
+  assert.ok(scopeLine.includes('`full` only for the unscoped suite command or safety valve with no test filter') && scopeLine.includes('`named` for a named test or name-filtered run (never reused)') && scopeLine.includes('"Impacted test set"'), 'AC-10 (combined-1): the t_test-plan.md Scope line states the full and named rules and cites their home');
   assert.ok(template.includes('review-fix tester also records here the check a finding requires') && template.includes('step 8 reuses it'), 'AC-11: the template\'s Suite run section says the review-fix tester records there and impl-test step 8 reuses it');
   const tester = canonText('.asd/agents/asd-tester.md');
   assert.ok(tester.split('\n').some((line) => line.includes('A new `Suite run` records `HEAD` and Scope (`full` when the run executed the whole suite, else `impacted`')), 'AC-10: the tester agent records Scope by the same rule, runner and base alike');
-  assert.ok(tester.split('\n').some((line) => line.includes('review-fix') && line.includes('`Suite run` (Command, Scope, Result, HEAD)') && line.includes('`artifact-layout.md` "Test plan"')), 'AC-11: the tester agent\'s review-fix mode writes Suite run inside the Test plan grant');
+  assert.ok(tester.split('\n').some((line) => line.includes('review-fix') && line.includes('`Suite run` (Command, Scope, Result, HEAD)') && line.includes('`artifact-layout.md` "Test plan"') && line.includes('Scope `named` for a named test or name-filtered run')), 'AC-11 (combined-1): the tester agent\'s review-fix mode writes Suite run inside the Test plan grant, Scope named for a named or filtered run');
 });
 
 test('sprint-034 AC-12 (issue #114): every internal reviewer dispatch entry of both review workflows carries findings_header and External Review\'s never does, and the dispatch-payload rule defines it as the t_review.md findings header row for internal reviewers only', () => {
