@@ -17,4 +17,5 @@
 - {{api/contract that breaks}}: {{migration path}}
 
 ## Related issues (optional)
-- Refs #{{N}} (never `Closes`/`Fixes`/`Resolves`: the issue closes after the release)
+- Closes #{{N}} (consumer project)
+- Refs #{{N}} (`self_hosting`; never `Closes`/`Fixes`/`Resolves`: the issue closes after the release)
