@@ -37,3 +37,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-11-16 — retro: retrospective.html written; 4 entries (A-1, A-3 actions; A-2, A-4 covered), 3 systemic proposals (P-1..P-3); analysed branch; upstream publish skipped (self_hosting)
