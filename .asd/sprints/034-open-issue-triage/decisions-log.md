@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-11-16 — cleanup checkpoint 7d9cf72f6fede40b1f339151e28ae2c2ddd1e3eb
+- 2026-11-16 — cleanup: removed none (sprint diff: new runtime.js functions all referenced, no debug output, TODO or untracked scratch); reverted none; verified n/a: no removals
