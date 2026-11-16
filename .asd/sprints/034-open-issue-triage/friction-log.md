@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 | F-1 | impl | `runtime.js timing` silently ignores unknown flags, so a mistyped attr flag records a dispatch op with no attrs | D-5 |
 | F-2 | impl-test | tester dispatch payload named a commit trailer (`impl-test-1`) that departs from `git-strategy.md`'s tester trailer form | — |
 | F-3 | impl | `timing` suite op `scope` attr accepts only `impacted`/`full`, so a `named` Suite run (combined-1 fix) cannot be timed as a suite op | reviews/impl/wave-1/iter-01/combined |
+| F-4 | impl-review | External Review iteration-2 `findings` payload passed as a file pointer, not the inline set | reviews/impl/wave-1/iter-02/external |
 
 ## F-1 — `timing` silently ignores unknown flags
 
@@ -45,3 +46,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: the review-fix tester noted that a filtered run (Scope `named`, introduced by the combined-1 fix) cannot be recorded as a suite op, whose `scope` attr admits only `impacted` and `full`.
 - **Impact**: named review-fix runs go untimed; no rework this sprint.
 - **Refs**: reviews/impl/wave-1/iter-01/combined
+
+## F-4 — External Review iteration-2 `findings` passed as a file pointer
+
+- **Phase**: impl-review
+- **Surface**: phase — `.asd/workflows/asd-phase-impl-review.md` step 6 External Review `findings` payload key
+- **What happened**: the orchestrator passed the prior iteration's `external.findings.json` path instead of the inline finding set `external-review.md` "Stalemate detection" requires; the wrapper read it anyway and flagged the deviation.
+- **Impact**: none on the verdict; a protocol deviation the payload shape did not prevent.
+- **Refs**: reviews/impl/wave-1/iter-02/external
