@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -71,7 +71,11 @@
     "test-fix D-1": { "execution": "agent", "tier": "standard", "reason": "risk:rule rewording", "raise_effort": false, "resolved_model": "sonnet" },
     "test-fix D-3": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:mirror prose", "raise_effort": false, "resolved_model": "sonnet" },
     "test-fix D-4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:tech reference", "raise_effort": false, "resolved_model": "sonnet" },
-    "test-fix D-5": { "execution": "agent", "tier": "standard", "reason": "risk:ledger attrs", "raise_effort": false, "resolved_model": "sonnet" }
+    "test-fix D-5": { "execution": "agent", "tier": "standard", "reason": "risk:ledger attrs", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix combined-2+external-1": { "execution": "agent", "tier": "standard", "reason": "risk:repo resolution", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix external-2": { "execution": "agent", "tier": "standard", "reason": "risk:triage filter", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix combined-3": { "execution": "agent", "tier": "standard", "reason": "risk:label write order", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix combined-1": { "execution": "agent", "tier": "standard", "reason": "risk:suite reuse gate", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
@@ -80,7 +84,7 @@
   },
   "created_at": "2026-11-16T16:20:23.000Z",
   "updated_at": "2026-11-16T16:57:28.000Z",
-  "review_fixes_pending": "wave-1/iter-01",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

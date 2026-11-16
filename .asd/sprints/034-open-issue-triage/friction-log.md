@@ -20,6 +20,7 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 |---|---|---|---|
 | F-1 | impl | `runtime.js timing` silently ignores unknown flags, so a mistyped attr flag records a dispatch op with no attrs | D-5 |
 | F-2 | impl-test | tester dispatch payload named a commit trailer (`impl-test-1`) that departs from `git-strategy.md`'s tester trailer form | — |
+| F-3 | impl | `timing` suite op `scope` attr accepts only `impacted`/`full`, so a `named` Suite run (combined-1 fix) cannot be timed as a suite op | reviews/impl/wave-1/iter-01/combined |
 
 ## F-1 — `timing` silently ignores unknown flags
 
@@ -36,3 +37,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: the orchestrator's payload told the tester to use trailer `ASD-Task: impl-test-1`; the tester followed `git-strategy.md` (`ASD-Task: impl-test entry 1`) and flagged the departure.
 - **Impact**: one flagged choice to resolve; no rework.
 - **Refs**: —
+
+## F-3 — suite op scope attr lacks `named`
+
+- **Phase**: impl
+- **Surface**: provider tool — `.asd/runtime.js` `timing` suite op `scope` attr
+- **What happened**: the review-fix tester noted that a filtered run (Scope `named`, introduced by the combined-1 fix) cannot be recorded as a suite op, whose `scope` attr admits only `impacted` and `full`.
+- **Impact**: named review-fix runs go untimed; no rework this sprint.
+- **Refs**: reviews/impl/wave-1/iter-01/combined
