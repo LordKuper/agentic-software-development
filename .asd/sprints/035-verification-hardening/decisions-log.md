@@ -67,3 +67,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — route review-fix wave-1/iter-04 (combined-1, external-1, external-2): standard, dispatch HEAD fd8476ee2d3ac7a172270b8429d33d398427e926; risk change: comment-only equivalence
 - 2026-11-17 — impl fix for wave-1/iter-04: combined-1, external-1, external-2 resolved (260aa5cd, executable-projection equality); hash ledgers recomputed. AC-15 test pins old signature, fails by design → impl-test entry 5.
 - 2026-11-17 — route asd-tester impl-test#5: standard, dispatch HEAD 51dffb2e0ec7ed479bb22d5467f0e19ffd152bed
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), AC-15 test re-authored on projection equality + 5 reviewer repros; smoke absent, skipped

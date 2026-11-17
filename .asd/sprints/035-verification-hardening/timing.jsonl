@@ -132,3 +132,4 @@
 {"op":"open","id":"asd-tester impl-test#5","kind":"dispatch","parent":"impl-test#5","start":"2026-11-17T13:00:13.017Z","attrs":{"model":"sonnet"}}
 {"op":"open","id":"suite impl-test#9","kind":"suite","parent":"asd-tester impl-test#5","start":"2026-11-17T13:09:52.071Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl-test#9","kind":"suite","parent":"asd-tester impl-test#5","start":"2026-11-17T13:09:52.071Z","end":"2026-11-17T13:11:01.099Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"asd-tester impl-test#5","kind":"dispatch","parent":"impl-test#5","start":"2026-11-17T13:00:13.017Z","end":"2026-11-17T13:12:29.356Z","outcome":"done","attrs":{"model":"sonnet"}}
