@@ -40,3 +40,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-16 — pr open: DoD met (Tasks 1-10 ticked, impl wave 1 iter-03 combined+external APPROVE, Suite run full 375/375 @ 805b85b1 with no code/test/stub change since, retrospective.html present); asd_version 14.5.0 → 14.6.0 (feat → MINOR) with CHANGELOG v14.6.0
 - 2026-11-16 — five agent commit subjects exceed 50 chars (461e3d3d, 97405154, 5eceaa72, f3898eb6, 909aa105); not rewritten — the squash merge subject is the only one reaching base, and a rewrite would orphan every sha the sprint artifacts cite; supersedes the earlier reword-before-push line
 - 2026-11-16 — PR #121 opened (https://github.com/LordKuper/agentic-software-development/pull/121); publication adaptive
+
+## 2026-11-17 — sprint closure
+
+- **Decision**: Sprint closed: PR #121 merged as d0c57cd10d12764eec24b61b0976849e7b9f8ea3; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 035 start; release v14.6.0 tagged and published, all 6 included issues closed, so no release retry.
+- **Affected docs**: `state.json`

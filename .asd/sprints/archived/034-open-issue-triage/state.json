@@ -1,7 +1,7 @@
 {
   "sprint_id": "034-open-issue-triage",
   "branch": "sprint/034-open-issue-triage",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -69,6 +69,13 @@
       "reason": "DoD met; user-authorised sprint run merges its PR in the same run without confirmation",
       "evidence": "decisions-log.md 2026-11-16 pr open",
       "artifact_revision": "PR #121"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #121 merged; release v14.6.0 published; included issues closed",
+      "evidence": "merge commit d0c57cd10d12764eec24b61b0976849e7b9f8ea3",
+      "artifact_revision": "d0c57cd1"
     }
   ],
   "task_routing": {
@@ -101,9 +108,9 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "e7f70e76be64f402f7f60365c0c556d5523ee261", "iter-02": "eab734a0db435211a100dfd2ca37024aa9259e82", "iter-03": "f9ea1d4c745eda3536b6250c3296549c95519bab" }, "latched": { "combined": 3, "external": 3 } } ] }
   },
   "created_at": "2026-11-16T16:20:23.000Z",
-  "updated_at": "2026-11-16T16:57:28.000Z",
+  "updated_at": "2026-11-17T07:50:26.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 121, "url": "https://github.com/LordKuper/agentic-software-development/pull/121", "state": "open" },
-  "archived_at": null
+  "pr": { "number": 121, "url": "https://github.com/LordKuper/agentic-software-development/pull/121", "state": "merged", "merge_commit": "d0c57cd10d12764eec24b61b0976849e7b9f8ea3" },
+  "archived_at": "2026-11-17T07:50:26.000Z"
 }
