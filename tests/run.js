@@ -10345,7 +10345,7 @@ test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose ma
   assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
 });
 
-test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a whole-line comment of its extension family - a mixed hunk, an unknown extension, a shebang, a line closing a block comment before code and a `*`-led code line stay code', () => {
+test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a whole-line comment of its extension family - a mixed hunk, an unknown extension, a shebang, an unclosed block-comment line, a block-comment body and a `*`-led code line stay code, a self-closed one-line block comment is a comment', () => {
   const [quality] = runtime.INTERNAL_REVIEWERS;
   const latched = { [quality]: 1 };
   const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
@@ -10356,14 +10356,17 @@ test('sprint-035 AC-15: a changed file counts as code unless every changed line 
   assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
 
   const isComment = (file, lines) => runtime.isCommentOnlyChange(file, lines);
-  assert.strictEqual(isComment('a.js', ['/* block', ' * body', ' */']), true, 'AC-15: block comment lines are comments');
+  assert.strictEqual(isComment('a.js', ['/* block']), false, 'AC-15: an unclosed block-comment opening line is code');
+  assert.strictEqual(isComment('a.js', ['/* note */']), true, 'AC-15: a self-closed one-line block comment is a comment');
+  assert.strictEqual(isComment('a.java', ['/* note */', '  * height;']), false, 'AC-15: a self-closed comment beside a `*`-led code line is code');
+  assert.strictEqual(isComment('a.js', ['/* note */ run();']), false, 'AC-15: a one-line block comment with trailing code is code');
   assert.strictEqual(isComment('a.js', ['*/ run();']), false, 'AC-15: a line that closes a block comment and carries code is code');
   assert.strictEqual(isComment('a.sh', ['#!/bin/sh']), false, 'AC-15: a shebang is code, not a comment');
   assert.strictEqual(isComment('a.sql', ['-- note']), true, 'AC-15: a dash-family comment is a comment');
   assert.strictEqual(isComment('a.css', ['* { margin: 0 }']), false, 'AC-15: a css universal-selector rule is code, not a comment body');
   assert.strictEqual(isComment('a.css', ['/* note */']), true, 'AC-15: a one-line css block comment is a comment');
   assert.strictEqual(isComment('a.js', ['* b = 2;']), false, 'AC-15: a `*`-led code line with no block-comment edge in the change is code');
-  assert.strictEqual(isComment('a.js', [' * body', ' */']), true, 'AC-15: body lines beside a closing edge are comments');
+  assert.strictEqual(isComment('a.js', [' * body', ' */']), false, 'AC-15: body lines beside a closing edge are code, a `*`-led line is never a comment');
   assert.strictEqual(isComment('a.js', []), false, 'AC-15: an empty change is never comment-only');
   assert.strictEqual(isComment('a.js', ['// x', 'x();']), false, 'AC-15: one code line makes the file code');
 });
@@ -10456,6 +10459,12 @@ test('sprint-035 AC-16: --base-ref reads each reviewer rubric and the bundle\'s 
   assert.strictEqual(missingSection.status, 0, `AC-16: a section absent at the ref omits that ref instead of failing the bundle (got ${missingSection.stderr})`);
   assert.ok(missingSection.stderr.includes(`runtime: ${GRANTED} absent at HEAD, omitted`), `AC-16: the omission is noted on stderr, naming the section (got ${missingSection.stderr})`);
   assert.ok(!missingSection.text.includes(`<!-- ${GRANTED} -->`) && missingSection.text.includes('<!-- .asd/rules/review-policy.md#Severity levels -->'), 'AC-16: only the absent section is omitted, the file\'s other granted sections stay');
+
+  put(policyRel, readRepoFile(policyRel).replace(/^## Nitpick drop list.*$/m, (heading) => `${heading}\n\n${heading}`));
+  git('add', '--', policyRel);
+  git('commit', '-q', '-m', 'policy with a duplicated granted heading');
+  const duplicateSection = bundle(['--base-ref', 'HEAD']);
+  assert.ok(duplicateSection.status !== 0 && /2 matches/.test(duplicateSection.stderr) && !duplicateSection.stderr.includes(`runtime: ${GRANTED} absent`), `AC-16: a granted heading present twice at the ref fails the bundle, it is not read as absent (got ${JSON.stringify(duplicateSection)})`);
 });
 
 test('sprint-035 AC-5, AC-2: persist-review gives each finding pre_existing when its Description opens with `pre-existing:` and checklist as the distinct CL-N ids it cites, and no marker otherwise', () => {
