@@ -10,3 +10,13 @@
 {"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:12:48.489Z","attrs":{"gate":"scope"}}
 {"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:12:48.489Z","end":"2026-11-17T08:13:44.684Z","outcome":"done","attrs":{"gate":"scope"}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-17T07:50:43.778Z","end":"2026-11-17T08:13:44.811Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-17T08:13:54.881Z","attrs":{}}
+{"op":"open","id":"asd-scout audit#1","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.586Z","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"open","id":"asd-scout audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.654Z","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"open","id":"asd-scout audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.727Z","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"close","id":"asd-scout audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.654Z","end":"2026-11-17T08:16:29.891Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"close","id":"asd-scout audit#1","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.586Z","end":"2026-11-17T08:17:42.750Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"close","id":"asd-scout audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-17T08:14:29.727Z","end":"2026-11-17T08:17:49.401Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
+{"op":"open","id":"wait audit contradiction","kind":"user-wait","parent":"audit#1","start":"2026-11-17T08:19:33.541Z","attrs":{"gate":"audit contradiction"}}
+{"op":"close","id":"wait audit contradiction","kind":"user-wait","parent":"audit#1","start":"2026-11-17T08:19:33.541Z","end":"2026-11-17T08:21:35.707Z","outcome":"done","attrs":{"gate":"audit contradiction"}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-17T08:13:54.881Z","end":"2026-11-17T08:21:51.826Z","outcome":"done","attrs":{}}
