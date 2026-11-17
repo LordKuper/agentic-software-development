@@ -1,0 +1,378 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index bb1b3127..32ef1678 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "5f96fc58260b383247132dbf78875fe1115af7c4e9296fe1cf25e0e6ea2b24ca",
++    ".asd/runtime.js": "508d8f2671b27749e19bd52d03fadf62571d8f95d58b17e829da167dd50e3ec6",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 473d03b4..44860783 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -1359,102 +1359,90 @@ function recordVerdicts(flags) {
+   return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
+ }
+ 
+-const COMMENT_FAMILIES = [
+-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl|css|scss|less)$/i, isLexed: true },
+-  { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, isComment: (text) => /^#(?!!)/.test(text) },
+-  { extensions: /\.(sql|lua|hs|elm)$/i, isComment: (text) => text.startsWith('--') },
++const COMMENT_LEXERS = [
++  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, line: '//', hasBlock: true, quotes: '\'"`' },
++  { extensions: /\.css$/i, line: '', hasBlock: true, quotes: '\'"' },
++  { extensions: /\.(scss|less)$/i, line: '//', hasBlock: true, quotes: '\'"' },
++  { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, line: '#', hasBlock: false, quotes: '\'"' },
++  { extensions: /\.(sql|lua|hs|elm)$/i, line: '--', hasBlock: false, quotes: "'" },
+ ];
+ 
+-/** Line numbers of `blob` whose every non-whitespace character sits in a comment, found by one pass over states code, line comment (not with `hasLineComments` off), block comment and quoted string. ponytail: regex literals and nested template literals are read naively, so code may be read as a string and counted as code; a string is never read as a comment. */
+-function commentOnlyLines(blob, hasLineComments) {
+-  const lines = new Set();
++/** Whether the `marker` line comment opens at `index`: a `#` not followed by `!` (shebang) and after whitespace (so `$#` stays code), a `//` not after `:` (so `http://` stays code). */
++function startsLineComment(blob, index, marker) {
++  if (marker === '' || !blob.startsWith(marker, index)) return false;
++  const before = blob[index - 1];
++  if (marker === '#') return blob[index + 1] !== '!' && (before === undefined || /\s/.test(before));
++  return !(marker === '//' && before === ':');
++}
++
++/** `blob` with its comments, trailing whitespace outside strings and lines left empty outside a string removed, so two blobs differing only in comments project equal. It stops stripping where it cannot follow: at a line end inside a `'`/`"` string, or inside a block comment opened after code on its line, the rest of the blob comes back verbatim (from the opener for a block). ponytail: regex literals and nested template literals are read naively, so a quote or `/*` inside a regex may start a string or block; the stop rule and plain equality keep such a misread on the code side, never on a comment. Upgrade path: a real tokenizer per language. */
++function projectExecutable(blob, lexer) {
++  const lines = [];
++  let current = '';
+   let state = 'code';
+   let quote = '';
+-  let line = 1;
+-  let hasCode = false;
+-  let hasComment = false;
++  let opener = null;
++  const stopAt = (keep, from) => lines.map((line) => `${line}\n`).join('') + current.slice(0, keep) + blob.slice(from);
+   for (let index = 0; index <= blob.length; index++) {
+     const char = blob[index];
+     const next = blob[index + 1];
+     if (char === '\n' || char === undefined) {
+-      if (hasComment && !hasCode) lines.add(line);
+-      line++;
+-      hasCode = false;
+-      hasComment = false;
+-      if (state === 'line' || (state === 'string' && quote !== '`')) state = 'code';
+-    } else if (state === 'line') {
+-      hasComment = true;
++      if (state === 'string' && quote !== '`') return stopAt(current.length, index);
++      if (state === 'block' && opener !== null) return stopAt(opener.keep, opener.index);
++      if (state === 'string') lines.push(current);
++      else if (current.trim() !== '') lines.push(current.trimEnd());
++      current = '';
++      if (state === 'line') state = 'code';
+     } else if (state === 'block') {
+-      hasComment = true;
+       if (char === '*' && next === '/') {
+         index++;
+         state = 'code';
+       }
+     } else if (state === 'string') {
+-      hasCode = true;
+-      if (char === '\\' && next !== '\n') index++;
+-      else if (char === quote) state = 'code';
+-    } else if (char === '/' && next === '*') {
+-      hasComment = true;
+-      index++;
+-      state = 'block';
+-    } else if (char === '/' && next === '/' && hasLineComments) {
+-      hasComment = true;
+-      index++;
+-      state = 'line';
+-    } else if (!/\s/.test(char)) {
+-      hasCode = true;
+-      if (char === "'" || char === '"' || char === '`') {
+-        state = 'string';
+-        quote = char;
++      current += char;
++      if (char === '\\' && next !== undefined && next !== '\n') {
++        current += next;
++        index++;
++      } else if (char === quote) state = 'code';
++    } else if (state === 'code') {
++      if (lexer.hasBlock && char === '/' && next === '*') {
++        opener = current.trim() === '' ? null : { index, keep: current.length };
++        index++;
++        state = 'block';
++      } else if (startsLineComment(blob, index, lexer.line)) state = 'line';
++      else {
++        current += char;
++        if (lexer.quotes.includes(char)) {
++          state = 'string';
++          quote = char;
++        } else if (char === '\\' && next !== undefined && next !== '\n') {
++          current += next;
++          index++;
++        }
+       }
+     }
+   }
+-  return lines;
++  return lines.join('\n');
+ }
+ 
+-/** True when every changed line of `file` is blank or a comment: a c-family line is judged by `readBlob(side)` (the head blob for `+` lines, the base blob for `-` lines), so a multi-line block-comment line counts, a line carrying code or one in an unreadable blob does not; other families judge the line text. An unknown extension and an empty change are never comment-only, so a doubtful change keeps counting as code. */
+-function isCommentOnlyChange(file, changed, readBlob) {
+-  const family = COMMENT_FAMILIES.find((candidate) => candidate.extensions.test(file));
+-  if (family === undefined || changed.length === 0) return false;
+-  const isBlank = ({ text }) => text.trim() === '';
+-  if (!family.isLexed) return changed.every((entry) => isBlank(entry) || family.isComment(entry.text.trim()));
+-  const hasLineComments = !/\.css$/i.test(file);
+-  const marked = {};
+-  const isMarked = ({ side, number }) => {
+-    if (marked[side] === undefined) marked[side] = commentOnlyLines(readBlob(side), hasLineComments);
+-    return marked[side].has(number);
+-  };
+-  return changed.every((entry) => isBlank(entry) || isMarked(entry));
++/** True when `file` changed only in comments and blank lines: its base and head blobs, read by `readBlob('base' | 'head')` (null when the file is absent on that side), differ yet project to the same executable text. An unknown extension, an added or deleted file and a change that leaves the text identical (a mode change) are never comment-only, so a doubtful change keeps counting as code. */
++function isCommentOnlyChange(file, readBlob) {
++  const lexer = COMMENT_LEXERS.find((candidate) => candidate.extensions.test(file));
++  if (lexer === undefined) return false;
++  const base = readBlob('base');
++  const head = readBlob('head');
++  return base !== null && head !== null && base !== head && projectExecutable(base, lexer) === projectExecutable(head, lexer);
+ }
+ 
+-/** The changed lines of a `-U0` patch as `{side, number, text}`: `+` lines numbered in the head blob, `-` lines in the base blob, read off the `@@` headers. */
+-function patchChangedLines(patch) {
+-  const changed = [];
+-  let removed = 0;
+-  let added = 0;
+-  let inHunk = false;
+-  patch.split('\n').forEach((line) => {
+-    const header = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+-    if (header) {
+-      inHunk = true;
+-      removed = Number(header[1]);
+-      added = Number(header[2]);
+-    } else if (inHunk && line.startsWith('-')) changed.push({ side: '-', number: removed++, text: line.slice(1) });
+-    else if (inHunk && line.startsWith('+')) changed.push({ side: '+', number: added++, text: line.slice(1) });
+-  });
+-  return changed;
+-}
+-
+-/** Production executable files changed between `sha` and HEAD, a file whose every changed line is blank or a comment left out; sprint artefacts never count. */
++/** Production executable files changed between `sha` and HEAD, a file changed only in comments and blank lines left out; sprint artefacts never count. */
+ function changedProductionFiles(sha) {
+   const tokens = runGit(['diff', '--name-status', '--no-renames', '-z', sha, 'HEAD']).split('\0');
+-  const files = tokens.filter((token, index) => index % 2 === 1 && token !== '');
+-  return files.filter((file) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter((file) => {
+-    const patch = runGit(['--literal-pathspecs', 'diff', '-U0', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames', sha, 'HEAD', '--', file]);
+-    const readBlob = (side) => runGit(['show', `${side === '+' ? 'HEAD' : sha}:${file}`], undefined, [0, 128]);
+-    return !isCommentOnlyChange(file, patchChangedLines(patch), readBlob);
+-  });
++  const changes = [];
++  for (let index = 0; index + 1 < tokens.length; index += 2) changes.push({ status: tokens[index], file: tokens[index + 1] });
++  return changes.filter(({ file }) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter(({ status, file }) => {
++    const readBlob = (side) => ((side === 'base' ? status === 'A' : status === 'D') ? null : runGit(['show', `${side === 'head' ? 'HEAD' : sha}:${file}`]));
++    return !isCommentOnlyChange(file, readBlob);
++  }).map(({ file }) => file);
+ }
+ 
+ /** Each reviewer's files across every iteration manifest of a wave's review directory, as reviewer to path set; External Review reads its scope file. */
+diff --git a/.asd/sprints/035-verification-hardening/test-plan.entry-04.md b/.asd/sprints/035-verification-hardening/test-plan.entry-04.md
+new file mode 100644
+index 00000000..085e185f
+--- /dev/null
++++ b/.asd/sprints/035-verification-hardening/test-plan.entry-04.md
+@@ -0,0 +1,23 @@
++# Test plan segment — sprint 035-verification-hardening, entry 4
++
++Rotated from `test-plan.md` at entry 5's strategy pass; never edited.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `isCommentOnlyChange(file, changed, readBlob)` and `patchChangedLines`: c-family lines classified by lexing the blob of their side, `{side, number, text}` entries, hash/dash families keep the line-text rule, an absent blob reads as code (AC-15, review-fix combined-1, user answer: keep AC-15) | the entry-3 test called the old `(file, lines)` signature and pinned block-comment lines as code (test defect against the decided rule); a real JSDoc edit clearing the latch, or a `*`-led code line, code after `*/` or `//` in a string read as a comment (stale latch, the unsafe direction) | unit: the exported function with a blob reader, plus one `latch-refresh` sandbox round per side and per case (`patchChangedLines` is unexported, covered through the CLI) | adapt + add | the old asserts move to the entry shape; added: multi-line opener/body/closer, a lone body line, `*` continuation with no block, css `* { … }`, css `//`, code after `*/` (lines before it stay comment), `//` in a string and in a multi-line template literal, `-` side judged in the base blob, an absent blob, plus the CLI rounds: JSDoc body edit, opener/closer edit and body-line deletion keep the latch, a `* c` continuation and a code edit beside the comment clear it |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | no existing test in the delta is redundant or implementation-coupled | yes |
++
++## Added tests
++
++Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (re-authored on the blob-backed signature, plus the `src/doc.js` fixture in `LATCH_BASE_FILES`) | fail-first on the pre-fix tree (`git archive 68c1bcbe~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `AC-15: editing the body of a multi-line block comment leaves the latch` (pre-fix: latch cleared); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched: `commentOnlyLines` always reads the `+` blob → `AC-15: removing a code line while adding a comment is code`; string state never entered → `AC-15: `//` inside a multi-line template literal is code`; css `hasLineComments` forced true → `AC-15: css has no line comments`; comment-only gate ignoring code (`hasComment` alone) → `AC-15: a one-line block comment with trailing code is code`; reword control (css-rule message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 4 |
+diff --git a/.asd/sprints/035-verification-hardening/test-plan.md b/.asd/sprints/035-verification-hardening/test-plan.md
+index a7beaff4..566719a9 100644
+--- a/.asd/sprints/035-verification-hardening/test-plan.md
++++ b/.asd/sprints/035-verification-hardening/test-plan.md
+@@ -7,7 +7,7 @@ responsibility:
+ 
+ # Test plan — sprint 035-verification-hardening
+ 
+-Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`.
++Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's to `test-plan.entry-04.md`.
+ 
+ ## Entry log
+ 
+@@ -17,12 +17,13 @@ Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry
+ | 2 | 7a05ae53 | delta since entry 1 |
+ | 3 | 113e3066 | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
+ | 4 | 87c3a502 | delta since entry 3 (review-fix 68c1bcbe) |
++| 5 | 97e4e5e9 | delta since entry 4 (review-fix 260aa5cd) |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `isCommentOnlyChange(file, changed, readBlob)` and `patchChangedLines`: c-family lines classified by lexing the blob of their side, `{side, number, text}` entries, hash/dash families keep the line-text rule, an absent blob reads as code (AC-15, review-fix combined-1, user answer: keep AC-15) | the entry-3 test called the old `(file, lines)` signature and pinned block-comment lines as code (test defect against the decided rule); a real JSDoc edit clearing the latch, or a `*`-led code line, code after `*/` or `//` in a string read as a comment (stale latch, the unsafe direction) | unit: the exported function with a blob reader, plus one `latch-refresh` sandbox round per side and per case (`patchChangedLines` is unexported, covered through the CLI) | adapt + add | the old asserts move to the entry shape; added: multi-line opener/body/closer, a lone body line, `*` continuation with no block, css `* { … }`, css `//`, code after `*/` (lines before it stay comment), `//` in a string and in a multi-line template literal, `-` side judged in the base blob, an absent blob, plus the CLI rounds: JSDoc body edit, opener/closer edit and body-line deletion keep the latch, a `* c` continuation and a code edit beside the comment clear it |
++| `isCommentOnlyChange(file, readBlob)`: a changed file is comment-only when its base and head blobs differ yet `projectExecutable` (comments, line-end whitespace outside strings and lines left empty outside a string removed; stop rule at an unterminated `'`/`"` string or a block opened after code) gives the same text; an absent blob, an unknown extension and identical text are code; `patchChangedLines` deleted (AC-15, review-fix combined-1, external-1, external-2) | the entry-4 test called the superseded `(file, changedLines, readBlob)` signature (test defect); real misreads in the unsafe direction, code counted as a comment and a stale latch kept: a regex holding `\/*`, a Kotlin multi-line string holding `//` or `/*`, a comment-boundary shift `/*a*/ x(); /*b*/` to `/*a x(); b*/` that comments out unchanged code, a blank line added inside a template literal, a `#` line changed inside a Python `"""` string | unit: the exported function over base/head blob pairs, one table of comment-only pairs and one of code pairs judged together so a failure lists every misjudged change; the `latch-refresh` sandbox rounds stay (per-side line rules do not apply to them, the cases hold under projection equality) | adapt + add | the `-`/`+`-side, absent-blob-text and `neverRead` asserts belong to the deleted per-line rules and are gone; added the five reviewer repros, the kept comment-only cases (JSDoc body, opener and closer, whole-line `//`, `#`, `--`, trailing `// n`, blank line outside strings, css block) and the code guards (shebang, `http://` after `:`, css `//`, `*`-led continuation, mixed hunk, unknown extension, added and deleted file, identical text) |
+ 
+ ## Removed tests
+ 
+@@ -36,7 +37,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (re-authored on the blob-backed signature, plus the `src/doc.js` fixture in `LATCH_BASE_FILES`) | fail-first on the pre-fix tree (`git archive 68c1bcbe~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `AC-15: editing the body of a multi-line block comment leaves the latch` (pre-fix: latch cleared); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched: `commentOnlyLines` always reads the `+` blob → `AC-15: removing a code line while adding a comment is code`; string state never entered → `AC-15: `//` inside a multi-line template literal is code`; css `hasLineComments` forced true → `AC-15: css has no line comments`; comment-only gate ignoring code (`hasComment` alone) → `AC-15: a one-line block comment with trailing code is code`; reword control (css-rule message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 4 |
++| tests/run.js: sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged … (re-authored on `isCommentOnlyChange(file, readBlob)`, comment-only and code tables of base/head pairs) | fail-first on the pre-fix tree (`git archive 260aa5cd~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `TypeError: changed.every is not a function` (the old `(file, changedLines, readBlob)` signature; this shows the test targets the new shape, the per-assert proof is the mutations); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched, failing entries as the test lists them: string stop removed (state reset at line end) → `an edit of a \`//\` line inside a Kotlin multi-line string`, `a code edit after a Kotlin multi-line string holding an unclosed \`/*\``, `a \`#\` line changed inside a Python triple-quoted string`; block-opener stop removed → `a code edit after a regex whose \`/*\` opens an unclosed block`; blank lines in a string dropped → `a blank line added inside a template literal`; rest of the line after a closed block read as comment → `a comment-boundary shift that comments out unchanged code`; shebang guard removed → `a shebang edit`; `:` guard before `//` removed → `an edit after \`http://\` in code`; code backslash skip removed → `a code edit between a regex holding \`\/*\` and a later block comment`; stop and backslash skip both removed → also `a code edit after a regex holding \`\/*\` (reviewer combined-1 repro)` (that repro survives either removal alone, each guard covers it); identical-text guard removed → `text identical on both sides`; absent base read as empty → `an added file`; unknown extension lexed as c-family → `AC-15: an unknown extension counts as changed` (latch round); css `//` comments enabled → `a \`//\` line in css`; reword control (one table label reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 12 |
+ 
+ ## Suite run
+ 
+@@ -44,7 +45,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ - Scope: full — safety valve (framework-wide files changed): every test file ran with no filter
+ - Result: pass — 391/391 passed, 0 failed, 0 skipped
+ - Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (exit 0)
+-- HEAD: 982c54f335f823130c222e0709064e846444e02f
++- HEAD: 7a75ccff413357d5fa711f9b8dbbba84b6f31f1e
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 45187bc5..08306b7f 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -31,3 +31,4 @@
+ - [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare or empty-arg `gh repo view` follows set-default/upstream ranking, not `origin`; `gh label create -f` sans --color recolors
+ - [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
+ - [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
++- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_lexer-ceiling-claims.md b/.claude/agent-memory/asd-reviewer-combined/feedback_lexer-ceiling-claims.md
+new file mode 100644
+index 00000000..93d00302
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_lexer-ceiling-claims.md
+@@ -0,0 +1,15 @@
++---
++name: lexer-ceiling-claims
++description: a hand-written comment/string lexer whose doc names a "safe-direction" ceiling - trace regex literals and multi-line non-backtick strings through it before accepting the claim
++metadata:
++  type: feedback
++---
++
++A hand-rolled lexer that classifies lines as comment or code often documents its limit as safe ("code may be read as a string, a string is never read as a comment"). Test the claim by tracing inputs, not by reading it.
++
++**Why:** a c-family lexer that resets `'`/`"` strings at end of line and opens a block at any `/*` in code state reads `s.replace(/\/*$/, '')` as a block opener, so every later code line up to the next `*/` becomes "comment-only". Multi-line strings legal in Kotlin, Java text blocks, PHP, Rust, Swift, C# and C++ raw strings get their content lines lexed as code, so a `//` or `/*` there reads as a comment. Both are the unsafe direction.
++
++**How to apply:**
++- Trace at least: a regex holding `\/*`, a regex holding a quote or backtick, a `"""` text block with a `//` line, an unclosed `/*` inside such a string.
++- A fix that stays cheap: stop marking at the first construct that crosses a line end in a way the lexer cannot follow (unterminated `'`/`"`, a block opened after code on its line); later lines count as code.
++- Related: [[fix-overcorrection-vs-ac]].
+diff --git a/tests/run.js b/tests/run.js
+index f626cb8e..10f0f9b8 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -10346,7 +10346,7 @@ test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose ma
+   assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
+ });
+ 
+-test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a comment of its extension family - c-family lines are lexed in the blob of their side, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, a shebang, a `*`-led code line, code after `*/` and `//` inside a string stay code', () => {
++test('sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged - only comments and blank lines outside strings differ, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, an added or deleted file, a shebang, a `*`-led code line, a comment-boundary shift, a regex or multi-line string holding comment markers and a blank line inside a string stay code', () => {
+   const [quality] = runtime.INTERNAL_REVIEWERS;
+   const latched = { [quality]: 1 };
+   const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
+@@ -10356,42 +10356,48 @@ test('sprint-035 AC-15: a changed file counts as code unless every changed line
+   assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\nconst z = 2;\n'), [quality], 'AC-15: a hunk mixing a comment and a code line is code');
+   assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
+ 
+-  const JSDOC = '/**\n * Adds.\n * More.\n */\nfunction add() {}\n';
+   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds two numbers.\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the body of a multi-line block comment leaves the latch');
+   assert.deepStrictEqual(clearsFor('src/doc.js', '/*\n * Adds.\n  */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the opener and the closer of a block comment leaves the latch');
+   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: deleting a block-comment body line, a base-side line, leaves the latch');
+   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() {}\nconst total = a\n  * c;\n'), [quality], 'AC-15: a `*`-led continuation of an expression outside a block comment is code');
+   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() { return 1; }\nconst total = a\n  * b;\n'), [quality], 'AC-15: a code edit beside a block comment is code');
+ 
+-  const comment = (file, blob, ...numbers) => runtime.isCommentOnlyChange(file, numbers.map((number) => ({ side: '+', number, text: blob.split('\n')[number - 1] })), () => blob);
+-  const neverRead = () => assert.fail('AC-15: a hash or dash family line is judged on its text, the blob is never read');
+-  assert.strictEqual(comment('a.js', JSDOC, 1, 2, 3, 4), true, 'AC-15: a multi-line block-comment opener, body and closer are comment-only');
+-  assert.strictEqual(comment('a.js', JSDOC, 3), true, 'AC-15: a lone body line of a multi-line block comment is a comment, whatever its text');
+-  assert.strictEqual(comment('a.js', JSDOC, 3, 5), false, 'AC-15: a body line beside a code line is code');
+-  assert.strictEqual(comment('a.js', '/* note */\n', 1), true, 'AC-15: a self-closed one-line block comment is a comment');
+-  assert.strictEqual(comment('a.java', '/* note */\n  * height;\n', 1, 2), false, 'AC-15: a `*`-led line with no enclosing block is code beside a comment');
+-  assert.strictEqual(comment('a.js', 'a = 1\n  * b = 2;\n', 2), false, 'AC-15: a `*` continuation with no enclosing block comment is code');
+-  assert.strictEqual(comment('a.js', '/* note */ run();\n', 1), false, 'AC-15: a one-line block comment with trailing code is code');
+-  assert.strictEqual(comment('a.js', '/**\n * x\n */ run();\n', 1, 2), true, 'AC-15: the lines of a block comment before a closer carrying code are comments');
+-  assert.strictEqual(comment('a.js', '/**\n * x\n */ run();\n', 1, 2, 3), false, 'AC-15: a line that closes a block comment and carries code is code');
+-  assert.strictEqual(comment('a.js', 'const u = "http://x";\n', 1), false, 'AC-15: `//` inside a string is code');
+-  assert.strictEqual(comment('a.js', 'const t = `\n// not a comment\n`;\n', 2), false, 'AC-15: `//` inside a multi-line template literal is code');
+-  assert.strictEqual(comment('a.js', 'const t = `\n// x\n`;\n// real\n', 4), true, 'AC-15: a line comment after a closed template literal is a comment');
+-  assert.strictEqual(comment('a.css', '* { margin: 0 }\n', 1), false, 'AC-15: a css universal-selector rule is code, not a comment body');
+-  assert.strictEqual(comment('a.css', '/* note */\n', 1), true, 'AC-15: a one-line css block comment is a comment');
+-  assert.strictEqual(comment('a.css', '// x\n', 1), false, 'AC-15: css has no line comments');
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [{ side: '+', number: 1, text: '// note' }], () => ''), false, 'AC-15: a line in an absent blob never proves a comment');
+-  assert.strictEqual(comment('a.js', 'x();\n\n', 2), true, 'AC-15: a blank changed line is comment-only');
+-  assert.strictEqual(comment('a.js', 'x();\n'), false, 'AC-15: an empty change is never comment-only');
+-  assert.strictEqual(comment('a.js', '// x\nx();\n', 1, 2), false, 'AC-15: one code line makes the file code');
+-
+-  const bySide = { '+': '/**\n * new\n */\n', '-': '/**\n * old\n */\n' };
+-  const entry = (side, number, text) => ({ side, number, text });
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [entry('-', 2, ' * old'), entry('+', 2, ' * new')], (side) => bySide[side]), true, 'AC-15: a `-` line is judged in the base blob and a `+` line in the head blob');
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [entry('-', 1, 'f();'), entry('+', 1, '// note')], (side) => (side === '+' ? '// note\n' : 'f();\n')), false, 'AC-15: removing a code line while adding a comment is code');
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.sh', [entry('+', 1, '# note'), entry('+', 2, '')], neverRead), true, 'AC-15: a hash-family comment and a blank line are judged on their text');
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.sh', [entry('+', 1, '#!/bin/sh')], neverRead), false, 'AC-15: a shebang is code, not a comment');
+-  assert.strictEqual(runtime.isCommentOnlyChange('a.sql', [entry('+', 1, '-- note')], neverRead), true, 'AC-15: a dash-family comment is a comment');
++  const commentOnly = (file, base, head) => runtime.isCommentOnlyChange(file, (side) => (side === 'base' ? base : head));
++  const JSDOC = '/**\n * Adds.\n */\nfunction add() {}\n';
++  const REGEX_SLASH_STAR = 'x = s.replace(/\\/*$/, \'\');\n';
++  const REGEX_THEN_BLOCK = 'x = s.replace(/\\/*$/, \'\'); y = 2; /* c */\n';
++  const BOUNDARY_BASE = '/*a*/ x(); /*b*/\n';
++  const COMMENT_ONLY = [
++    ['a.js', JSDOC, '/**\n * Adds two.\n */\nfunction add() {}\n', 'a block-comment body edit'],
++    ['a.js', JSDOC, '/*\n * Adds.\n  */\nfunction add() {}\n', 'a block-comment opener and closer edit'],
++    ['a.js', 'f();\n', 'f();\n// n\n', 'an added whole-line `//` comment'],
++    ['a.js', 'f();\n', 'f(); // n\n', 'an added trailing `//` comment'],
++    ['a.js', 'f();\ng();\n', 'f();\n\ng();\n', 'a blank line outside a string'],
++    ['a.css', 'a { b: c }\n', '/* n */\na { b: c }\n', 'a css block comment'],
++    ['a.sh', 'echo 1\n', 'echo 1\n# n\n', 'an added `#` comment'],
++    ['a.sql', 'select 1;\n', 'select 1; -- n\n', 'an added `--` comment'],
++  ];
++  const CODE = [
++    ['a.js', `${REGEX_SLASH_STAR}run();\n`, `${REGEX_SLASH_STAR}run2();\n`, 'a code edit after a regex holding `\\/*` (reviewer combined-1 repro)'],
++    ['a.js', REGEX_THEN_BLOCK, REGEX_THEN_BLOCK.replace('y = 2', 'y = 3'), 'a code edit between a regex holding `\\/*` and a later block comment'],
++    ['a.js', 'x = /[/*]/;\nrun();\n', 'x = /[/*]/;\nrun2();\n', 'a code edit after a regex whose `/*` opens an unclosed block'],
++    ['a.kt', 'val s = """\n// x\n"""\nrun()\n', 'val s = """\n// y\n"""\nrun()\n', 'an edit of a `//` line inside a Kotlin multi-line string'],
++    ['a.kt', 'val s = """\n/* x\n"""\nrun()\n', 'val s = """\n/* x\n"""\nrun2()\n', 'a code edit after a Kotlin multi-line string holding an unclosed `/*`'],
++    ['a.js', BOUNDARY_BASE, '/*a x(); b*/\n', 'a comment-boundary shift that comments out unchanged code'],
++    ['a.js', 'const t = `a\nb`;\n', 'const t = `a\n\nb`;\n', 'a blank line added inside a template literal'],
++    ['a.py', 'd = """\n# a\n"""\n', 'd = """\n# b\n"""\n', 'a `#` line changed inside a Python triple-quoted string'],
++    ['a.sh', '#!/bin/sh\n', '#!/bin/bash\n', 'a shebang edit'],
++    ['a.scss', 'a { b: url(http://x/a.png) }\n', 'a { b: url(http://x/b.png) }\n', 'an edit after `http://` in code'],
++    ['a.css', 'a { b: c }\n', 'a { b: c }\n// x\n', 'a `//` line in css, which has no line comments'],
++    ['src/doc.js', LATCH_BASE_FILES['src/doc.js'], LATCH_BASE_FILES['src/doc.js'].replace('* b;', '* c;'), 'a `*`-led expression continuation outside a block comment'],
++    ['a.js', 'f();\n', 'f();\n// n\ng();\n', 'a comment added beside a code line'],
++    ['notes.xyz', 'one\n', 'one\n// only a comment\n', 'an unknown extension'],
++    ['a.js', null, '// n\n', 'an added file'],
++    ['a.js', 'f();\n', null, 'a deleted file'],
++    ['a.js', 'f();\n', 'f();\n', 'text identical on both sides'],
++  ];
++  const misjudged = [...COMMENT_ONLY.map((row) => [...row, true]), ...CODE.map((row) => [...row, false])].filter(([file, base, head, , expected]) => commentOnly(file, base, head) !== expected).map(([, , , what, expected]) => `${what} judged ${expected ? 'code' : 'comment-only'}`);
++  assert.deepStrictEqual(misjudged, [], 'AC-15: every change in the comment-only table is comment-only and every change in the code table counts as code');
+ });
+ 
+ test('sprint-035 AC-2: a trigger glob keeps * inside a path segment, lets ** cross segments and match no directory, takes a comma list and backtick-wrapped globs, and anchors on the whole path', () => {

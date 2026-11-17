@@ -12,4 +12,5 @@ A hand-rolled lexer that classifies lines as comment or code often documents its
 **How to apply:**
 - Trace at least: a regex holding `\/*`, a regex holding a quote or backtick, a `"""` text block with a `//` line, an unclosed `/*` inside such a string.
 - A fix that stays cheap: stop marking at the first construct that crosses a line end in a way the lexer cannot follow (unterminated `'`/`"`, a block opened after code on its line); later lines count as code.
+- Even with that stop rule, same-line misreads remain: `//` in a regex class `/[//]/`, scss unquoted `url(//cdn/x)`, `#` lines in a shell heredoc, a comment gluing tokens (`a/**/b` vs `ab` under projection equality). These are edge wrong-behaviour (high at most), so they drop under a `critical` floor; rate them before listing.
 - Related: [[fix-overcorrection-vs-ac]].
