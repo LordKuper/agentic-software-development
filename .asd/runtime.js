@@ -1360,16 +1360,90 @@ function recordVerdicts(flags) {
 }
 
 const COMMENT_FAMILIES = [
-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl|css|scss|less)$/i, isComment: (text) => text.startsWith('//') || /^\/\*(?:(?!\*\/).)*\*\/$/.test(text) },
+  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl|css|scss|less)$/i, isLexed: true },
   { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, isComment: (text) => /^#(?!!)/.test(text) },
   { extensions: /\.(sql|lua|hs|elm)$/i, isComment: (text) => text.startsWith('--') },
 ];
 
-/** True when every changed line of `file` is blank or a whole-line comment of its extension family; an unknown extension, a `*`-led line, a line that may carry code around a block comment, and an empty change are never comment-only, so a doubtful change keeps counting as code. */
-function isCommentOnlyChange(file, lines) {
+/** Line numbers of `blob` whose every non-whitespace character sits in a comment, found by one pass over states code, line comment (not with `hasLineComments` off), block comment and quoted string. ponytail: regex literals and nested template literals are read naively, so code may be read as a string and counted as code; a string is never read as a comment. */
+function commentOnlyLines(blob, hasLineComments) {
+  const lines = new Set();
+  let state = 'code';
+  let quote = '';
+  let line = 1;
+  let hasCode = false;
+  let hasComment = false;
+  for (let index = 0; index <= blob.length; index++) {
+    const char = blob[index];
+    const next = blob[index + 1];
+    if (char === '\n' || char === undefined) {
+      if (hasComment && !hasCode) lines.add(line);
+      line++;
+      hasCode = false;
+      hasComment = false;
+      if (state === 'line' || (state === 'string' && quote !== '`')) state = 'code';
+    } else if (state === 'line') {
+      hasComment = true;
+    } else if (state === 'block') {
+      hasComment = true;
+      if (char === '*' && next === '/') {
+        index++;
+        state = 'code';
+      }
+    } else if (state === 'string') {
+      hasCode = true;
+      if (char === '\\' && next !== '\n') index++;
+      else if (char === quote) state = 'code';
+    } else if (char === '/' && next === '*') {
+      hasComment = true;
+      index++;
+      state = 'block';
+    } else if (char === '/' && next === '/' && hasLineComments) {
+      hasComment = true;
+      index++;
+      state = 'line';
+    } else if (!/\s/.test(char)) {
+      hasCode = true;
+      if (char === "'" || char === '"' || char === '`') {
+        state = 'string';
+        quote = char;
+      }
+    }
+  }
+  return lines;
+}
+
+/** True when every changed line of `file` is blank or a comment: a c-family line is judged by `readBlob(side)` (the head blob for `+` lines, the base blob for `-` lines), so a multi-line block-comment line counts, a line carrying code or one in an unreadable blob does not; other families judge the line text. An unknown extension and an empty change are never comment-only, so a doubtful change keeps counting as code. */
+function isCommentOnlyChange(file, changed, readBlob) {
   const family = COMMENT_FAMILIES.find((candidate) => candidate.extensions.test(file));
-  if (family === undefined || lines.length === 0) return false;
-  return lines.map((line) => line.trim()).every((text) => text === '' || family.isComment(text));
+  if (family === undefined || changed.length === 0) return false;
+  const isBlank = ({ text }) => text.trim() === '';
+  if (!family.isLexed) return changed.every((entry) => isBlank(entry) || family.isComment(entry.text.trim()));
+  const hasLineComments = !/\.css$/i.test(file);
+  const marked = {};
+  const isMarked = ({ side, number }) => {
+    if (marked[side] === undefined) marked[side] = commentOnlyLines(readBlob(side), hasLineComments);
+    return marked[side].has(number);
+  };
+  return changed.every((entry) => isBlank(entry) || isMarked(entry));
+}
+
+/** The changed lines of a `-U0` patch as `{side, number, text}`: `+` lines numbered in the head blob, `-` lines in the base blob, read off the `@@` headers. */
+function patchChangedLines(patch) {
+  const changed = [];
+  let removed = 0;
+  let added = 0;
+  let inHunk = false;
+  patch.split('\n').forEach((line) => {
+    const header = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+    if (header) {
+      inHunk = true;
+      removed = Number(header[1]);
+      added = Number(header[2]);
+    } else if (inHunk && line.startsWith('-')) changed.push({ side: '-', number: removed++, text: line.slice(1) });
+    else if (inHunk && line.startsWith('+')) changed.push({ side: '+', number: added++, text: line.slice(1) });
+  });
+  return changed;
 }
 
 /** Production executable files changed between `sha` and HEAD, a file whose every changed line is blank or a comment left out; sprint artefacts never count. */
@@ -1378,10 +1452,8 @@ function changedProductionFiles(sha) {
   const files = tokens.filter((token, index) => index % 2 === 1 && token !== '');
   return files.filter((file) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter((file) => {
     const patch = runGit(['--literal-pathspecs', 'diff', '-U0', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames', sha, 'HEAD', '--', file]);
-    const lines = patch.split('\n');
-    const firstHunk = lines.findIndex((line) => line.startsWith('@@'));
-    const changed = firstHunk === -1 ? [] : lines.slice(firstHunk).filter((line) => /^[+-]/.test(line)).map((line) => line.slice(1));
-    return !isCommentOnlyChange(file, changed);
+    const readBlob = (side) => runGit(['show', `${side === '+' ? 'HEAD' : sha}:${file}`], undefined, [0, 128]);
+    return !isCommentOnlyChange(file, patchChangedLines(patch), readBlob);
   });
 }
 
