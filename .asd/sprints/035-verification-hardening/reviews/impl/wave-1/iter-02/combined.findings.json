@@ -1,0 +1,1 @@
+[{"id":"combined-1","severity":"medium","location":".asd/runtime.js:1363-1377 (`COMMENT_FAMILIES` C-family `isBlockBody`, `isCommentOnlyChange`); AC-15"},{"id":"combined-2","severity":"medium","location":".asd/runtime.js:1942-1951 (`contextCommand` `sectionAbsent`)"}]
