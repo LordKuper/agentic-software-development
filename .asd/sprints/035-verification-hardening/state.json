@@ -1,9 +1,16 @@
 {
   "sprint_id": "035-verification-hardening",
   "branch": "sprint/035-verification-hardening",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
-  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
   "cleanup": true,
   "user_gates": "adaptive",
   "gate_decisions": [
@@ -48,16 +55,37 @@
       "reason": "all t_audit.md sections for AC-1..AC-16; both contradictions answered by user; load headroom risk recorded",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "all active AC traced; waves disjoint; load budget per Task; tech reference extended",
+      "evidence": "decisions-log.md 2026-11-17 plan gate",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
   "skipped_phases": [],
   "reviews": {
-    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 0,
+          "verdicts": {},
+          "iteration_heads": {},
+          "latched": {}
+        }
+      ]
+    }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T08:21:51.000Z",
+  "updated_at": "2026-11-17T08:29:51.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
