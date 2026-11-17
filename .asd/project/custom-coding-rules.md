@@ -17,5 +17,6 @@ Framework repo specifics (`self_hosting: enabled`):
 - Never hand-edit *generated* `.claude/`, `.codex/`, or `.agents/skills/` files — always edit the `.asd/` canonical source. Hand-authored agent memory is the carve-out: `artifact-layout.md` "Agent memory".
 - A Task adding an external command to a workflow step also widens the running skill's tool grant, passes the target repo explicitly, and cites only shipped `.asd/` paths from any step that runs in a consumer project.
 - A `.asd/runtime.js` parser of a `language.docs` artifact checks its structure (column count, id column, machine tokens), never translated heading text.
+- Before COMPLETED, a dev that edited a file of a baselined role's always-loaded bundle (`tests/run.js` D13 `LOAD_BASELINES`) runs `node tests/run.js --filter "(D13)"` and keeps every role under its ceiling.
 
 ASD never overwrites this file.
