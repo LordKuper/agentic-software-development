@@ -60,3 +60,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — impl-review wave-1/iter-03: combined CONCERNS (1 high: multi-line block comments now count as code, AC-15 'comments keep latch' not met for /** … */ blocks) with reviewer question (a keep AC-15 via blob-based block detection / b narrow AC-15); external skip (quota). Awaiting user decision [GATE hard: reviewer question].
 - 2026-11-17 — reviewer question wave-1/iter-03 #1 answered by user: (a) keep AC-15, resolve block-comment lines against the file blob → impl review-fix (review_fixes_pending=wave-1/iter-03).
 - 2026-11-17 — route review-fix wave-1/iter-03 (combined-1): standard, dispatch HEAD 41b3f8be5a2ae0d208388b01981fd08c6878f5e4; risk change: comment-line classification edge
+- 2026-11-17 — impl fix for wave-1/iter-03: combined-1 resolved (68c1bcbe, blob-lexed c-family comment lines); hash ledgers recomputed. AC-15 test pins old signature, fails by design → impl-test entry 4.
+- 2026-11-17 — route asd-tester impl-test#4: standard, dispatch HEAD c757abd377ed4292642f97e17404d7733fb28f39
