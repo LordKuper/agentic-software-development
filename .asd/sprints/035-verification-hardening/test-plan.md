@@ -7,7 +7,7 @@ responsibility:
 
 # Test plan — sprint 035-verification-hardening
 
-Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`.
+Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's to `test-plan.entry-04.md`.
 
 ## Entry log
 
@@ -17,12 +17,13 @@ Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry
 | 2 | 7a05ae53 | delta since entry 1 |
 | 3 | 113e3066 | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
 | 4 | 87c3a502 | delta since entry 3 (review-fix 68c1bcbe) |
+| 5 | d035fb54 | delta since entry 4 (review-fix 260aa5cd) |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `isCommentOnlyChange(file, changed, readBlob)` and `patchChangedLines`: c-family lines classified by lexing the blob of their side, `{side, number, text}` entries, hash/dash families keep the line-text rule, an absent blob reads as code (AC-15, review-fix combined-1, user answer: keep AC-15) | the entry-3 test called the old `(file, lines)` signature and pinned block-comment lines as code (test defect against the decided rule); a real JSDoc edit clearing the latch, or a `*`-led code line, code after `*/` or `//` in a string read as a comment (stale latch, the unsafe direction) | unit: the exported function with a blob reader, plus one `latch-refresh` sandbox round per side and per case (`patchChangedLines` is unexported, covered through the CLI) | adapt + add | the old asserts move to the entry shape; added: multi-line opener/body/closer, a lone body line, `*` continuation with no block, css `* { … }`, css `//`, code after `*/` (lines before it stay comment), `//` in a string and in a multi-line template literal, `-` side judged in the base blob, an absent blob, plus the CLI rounds: JSDoc body edit, opener/closer edit and body-line deletion keep the latch, a `* c` continuation and a code edit beside the comment clear it |
+| `isCommentOnlyChange(file, readBlob)`: a changed file is comment-only when its base and head blobs differ yet `projectExecutable` (comments, line-end whitespace outside strings and lines left empty outside a string removed; stop rule at an unterminated `'`/`"` string or a block opened after code) gives the same text; an absent blob, an unknown extension and identical text are code; `patchChangedLines` deleted (AC-15, review-fix combined-1, external-1, external-2) | the entry-4 test called the superseded `(file, changedLines, readBlob)` signature (test defect); real misreads in the unsafe direction, code counted as a comment and a stale latch kept: a regex holding `\/*`, a Kotlin multi-line string holding `//` or `/*`, a comment-boundary shift `/*a*/ x(); /*b*/` to `/*a x(); b*/` that comments out unchanged code, a blank line added inside a template literal, a `#` line changed inside a Python `"""` string | unit: the exported function over base/head blob pairs, one table of comment-only pairs and one of code pairs judged together so a failure lists every misjudged change; the `latch-refresh` sandbox rounds stay (per-side line rules do not apply to them, the cases hold under projection equality) | adapt + add | the `-`/`+`-side, absent-blob-text and `neverRead` asserts belong to the deleted per-line rules and are gone; added the five reviewer repros, the kept comment-only cases (JSDoc body, opener and closer, whole-line `//`, `#`, `--`, trailing `// n`, blank line outside strings, css block) and the code guards (shebang, `http://` after `:`, css `//`, `*`-led continuation, mixed hunk, unknown extension, added and deleted file, identical text) |
 
 ## Removed tests
 
@@ -36,7 +37,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (re-authored on the blob-backed signature, plus the `src/doc.js` fixture in `LATCH_BASE_FILES`) | fail-first on the pre-fix tree (`git archive 68c1bcbe~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `AC-15: editing the body of a multi-line block comment leaves the latch` (pre-fix: latch cleared); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched: `commentOnlyLines` always reads the `+` blob → `AC-15: removing a code line while adding a comment is code`; string state never entered → `AC-15: `//` inside a multi-line template literal is code`; css `hasLineComments` forced true → `AC-15: css has no line comments`; comment-only gate ignoring code (`hasComment` alone) → `AC-15: a one-line block comment with trailing code is code`; reword control (css-rule message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 4 |
+| tests/run.js: sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged … (re-authored on `isCommentOnlyChange(file, readBlob)`, comment-only and code tables of base/head pairs) | fail-first on the pre-fix tree (`git archive 260aa5cd~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `TypeError: changed.every is not a function` (the old `(file, changedLines, readBlob)` signature; this shows the test targets the new shape, the per-assert proof is the mutations); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched, failing entries as the test lists them: string stop removed (state reset at line end) → `an edit of a \`//\` line inside a Kotlin multi-line string`, `a code edit after a Kotlin multi-line string holding an unclosed \`/*\``, `a \`#\` line changed inside a Python triple-quoted string`; block-opener stop removed → `a code edit after a regex whose \`/*\` opens an unclosed block`; blank lines in a string dropped → `a blank line added inside a template literal`; rest of the line after a closed block read as comment → `a comment-boundary shift that comments out unchanged code`; shebang guard removed → `a shebang edit`; `:` guard before `//` removed → `an edit after \`http://\` in code`; code backslash skip removed → `a code edit between a regex holding \`\/*\` and a later block comment`; stop and backslash skip both removed → also `a code edit after a regex holding \`\/*\` (reviewer combined-1 repro)` (that repro survives either removal alone, each guard covers it); identical-text guard removed → `text identical on both sides`; absent base read as empty → `an added file`; unknown extension lexed as c-family → `AC-15: an unknown extension counts as changed` (latch round); css `//` comments enabled → `a \`//\` line in css`; reword control (one table label reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 12 |
 
 ## Suite run
 
@@ -44,7 +45,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 - Scope: full — safety valve (framework-wide files changed): every test file ran with no filter
 - Result: pass — 391/391 passed, 0 failed, 0 skipped
 - Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (exit 0)
-- HEAD: 982c54f335f823130c222e0709064e846444e02f
+- HEAD: 7a75ccff413357d5fa711f9b8dbbba84b6f31f1e
 
 ## Defects
 
