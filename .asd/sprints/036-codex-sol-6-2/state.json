@@ -1,0 +1,51 @@
+{
+  "sprint_id": "036-codex-sol-6-2",
+  "branch": "sprint/036-codex-sol-6-2",
+  "phase": "scope",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-18 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: map bump + documented client minimum 0.167.0",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "035#A-1 A-2 A-3 P-1 and issues #123-#127 included (AC-6..AC-14)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate; cost 0 iterations / 0 fix rounds each",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "user answer: accept AC-1..AC-14 (AC-8 redrafted)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+  },
+  "created_at": "2026-11-17T22:39:20.000Z",
+  "updated_at": "2026-11-17T23:21:17.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}

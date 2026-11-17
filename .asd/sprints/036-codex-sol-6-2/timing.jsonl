@@ -1,0 +1,9 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-17T22:39:40.770Z","attrs":{}}
+{"op":"open","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T22:39:40.849Z","attrs":{"gate":"workflow choice"}}
+{"op":"close","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T22:39:40.849Z","end":"2026-11-17T22:57:24.034Z","outcome":"done","attrs":{"gate":"workflow choice"}}
+{"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T22:59:23.290Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T22:59:23.290Z","end":"2026-11-17T23:05:04.858Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"wait triage authorisation","kind":"user-wait","parent":"scope#1","start":"2026-11-17T23:06:06.365Z","attrs":{"gate":"triage authorisation"}}
+{"op":"close","id":"wait triage authorisation","kind":"user-wait","parent":"scope#1","start":"2026-11-17T23:06:06.365Z","end":"2026-11-17T23:08:38.387Z","outcome":"done","attrs":{"gate":"triage authorisation"}}
+{"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T23:09:08.914Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T23:09:08.914Z","end":"2026-11-17T23:21:05.317Z","outcome":"done","attrs":{"gate":"scope"}}

@@ -96,3 +96,7 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 034-open-issue-triage#P-1 | asd | included | 035-verification-hardening | Before COMPLETED, a dev who edited a file of an always-loaded context bundle runs the per-dispatch load check and keeps every role under its ceiling. |
 | 034-open-issue-triage#P-2 | asd | included | 035-verification-hardening | A review-fix that narrows or rewrites a rule re-reads every `AC-N` that rule implements and keeps each case that AC names. |
 | 034-open-issue-triage#P-3 | asd | included | 035-verification-hardening | Record, in the tech reference and before a Task uses it, any command's default-target resolution and any mutation of existing state, verified against the tool's help or source. |
+| 035-verification-hardening#A-1 | asd | included | 036-codex-sol-6-2 | List in the PR body every impl-review wave whose last External Review was an availability skip, with its Unreviewed files. |
+| 035-verification-hardening#A-2 | asd | included | 036-codex-sol-6-2 | Refuse a `timing --open` id the ledger already holds, and warn when `--attrs` is given more than once. |
+| 035-verification-hardening#A-3 | asd | included | 036-codex-sol-6-2 | Before COMPLETED, a dev adds a tech-reference entry for every command or subcommand its diff newly invokes. |
+| 035-verification-hardening#P-1 | asd | included | 036-codex-sol-6-2 | Clear a reviewer's APPROVE latch on any change to an executable file in its scope; drop the comment-only exception and its lexer. |
