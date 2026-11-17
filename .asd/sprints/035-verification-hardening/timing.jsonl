@@ -142,3 +142,6 @@
 {"op":"close","id":"external wave-1/iter-05","kind":"external-review","parent":"impl-review wave-1/iter-05","start":"2026-11-17T13:13:26.280Z","end":"2026-11-17T13:21:59.437Z","outcome":"done","attrs":{"model":"gpt-6.1-sol"}}
 {"op":"close","id":"impl-review wave-1/iter-05","kind":"review-iteration","parent":"impl-review#5","start":"2026-11-17T13:13:03.138Z","end":"2026-11-17T13:22:05.363Z","outcome":"done","attrs":{"wave":"1","iteration":"5"}}
 {"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-11-17T13:12:35.813Z","end":"2026-11-17T13:22:12.805Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-17T13:22:26.064Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-17T13:22:26.064Z","end":"2026-11-17T13:22:31.881Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-17T13:22:31.881Z","attrs":{}}

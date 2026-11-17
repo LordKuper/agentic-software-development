@@ -1,7 +1,7 @@
 {
   "sprint_id": "035-verification-hardening",
   "branch": "sprint/035-verification-hardening",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -194,11 +194,55 @@
   },
   "skipped_phases": [],
   "reviews": {
-    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 5, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" }, "iter-04": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-05": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "cd124372d8c7e6a2ea61b9d4b15837a976c4eb35", "iter-02": "f06ce024f3e11afc9beb18a572ba4a4c8d64d9cc", "iter-03": "bf0d3e9d84b759ba862554aa445f71d9292c3cfe", "iter-04": "fd8476ee2d3ac7a172270b8429d33d398427e926", "iter-05": "17932b9352e035e19c4e0ffc6fcd8cc2797d947b" }, "latched": { "combined": 5, "external": 5 } } ] }
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 5,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-04": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "cd124372d8c7e6a2ea61b9d4b15837a976c4eb35",
+            "iter-02": "f06ce024f3e11afc9beb18a572ba4a4c8d64d9cc",
+            "iter-03": "bf0d3e9d84b759ba862554aa445f71d9292c3cfe",
+            "iter-04": "fd8476ee2d3ac7a172270b8429d33d398427e926",
+            "iter-05": "17932b9352e035e19c4e0ffc6fcd8cc2797d947b"
+          },
+          "latched": {
+            "combined": 5,
+            "external": 5
+          }
+        }
+      ]
+    }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T13:12:50.000Z",
+  "updated_at": "2026-11-17T13:22:31.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
