@@ -11,7 +11,7 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
 ## Inputs
 
 ```json
-[".asd/project/config.yaml (language.chat, language.docs, project.subsystem_decomposition)", "state.json frozen workflow, documents.prd, documents.audit", "<sprint>/sprint.md", "requirements: acceptance-criteria source (sprint-lifecycle.md 'Input sources')", "persistent docs referenced: decomposition enabled — docs/architecture/subsystems.md and each touched subsystem's <id>.md, to locate its code; per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist", ".asd/project/commands.yaml", "lite: <sprint>/audit.md when audit ran", "research (sprint-lifecycle.md 'Input sources'): read first; research only the technical delta it leaves (design-principles.md §11)", ".asd/project/stubs.md", "t_plan.md"]
+[".asd/project/config.yaml (language.chat, language.docs, project.subsystem_decomposition)", "state.json frozen workflow, documents.prd, documents.audit", "<sprint>/sprint.md", "requirements: acceptance-criteria source (sprint-lifecycle.md 'Input sources')", "persistent docs referenced: decomposition enabled — docs/architecture/subsystems.md and each touched subsystem's <id>.md, to locate its code; per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist", ".asd/project/commands.yaml", "lite: <sprint>/audit.md when audit ran", "research (sprint-lifecycle.md 'Input sources'): read first; research only the technical delta it leaves (design-principles.md §11)", "<sprint>/decisions-log.md and every rotated segment (artifact-layout.md 'Decisions log'); an accepted ux-spec — sprint draft, else persistent — only when one exists", ".asd/project/stubs.md", "t_plan.md"]
 ```
 
 ## Steps
@@ -35,6 +35,8 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
      - no test-authoring Tasks or subtasks, except a `Test-only` Task; note per Task only its `Material risk` declaration, as input for impl-test
      - write the wave table into `## Dependencies`; list non-trivial dependencies under the table
    - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
+   - **Decision coverage** (`t_plan.md`): one `## Decision coverage` row per user decision, in the decisions log or an accepted ux-spec, that sets or changes a requirement, behaviour or design choice, mapped to an `AC-N`/Task or an `Out of scope` line; process gates (workflow choice, triage authorisation, retro dispositions, ASD update, an approach choice `research.md` already reflects) are no rows; no such decision: omit the section
+   - **Build check**: run `commands.yaml` `build` once; a non-zero exit is `FAILED` naming the command and its first error lines, before the step 5 gate
    - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`
 5. Apply `checkpoints.md` to the completed plan [GATE write-then-review-accept: plan] and record either user approval (explicit `accept` in strict) or adaptive evidence; append decisions-log entry ("`<sprint>/plan.md` accepted"); exit per `## Exit`.
 
