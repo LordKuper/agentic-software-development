@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:16355a9372983b6ee5d25fac40bae51e9a98346f3d4a0cd0f79ddb77f169ecaa content_digest=sha256:e5dc2d52e0e330753aa58f18357d628cc84138b21f96e3d75d2750dd64f4bb04 asd_version=14.5.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:16355a9372983b6ee5d25fac40bae51e9a98346f3d4a0cd0f79ddb77f169ecaa content_digest=sha256:53cb4ddbf12dd36ec78b391c45930e67d3253de9f6389c51e75cc732a5abf971 asd_version=14.7.0 schema=1
 name = "asd-advisor"
 description = "Read-only advisor: reasoned recommendation on a question and its paths; consulted via a creator's ADVICE_NEEDED relay and by the orchestrator before a user escalation or on an ambiguous finding route. Not: approval, decision → user (checkpoints.md); verdict review → asd-reviewer-*; writing → none."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 web_search = "live"

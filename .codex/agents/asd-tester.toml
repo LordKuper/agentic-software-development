@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:5ec30d6e35a6c07f1174f70dd819fbbf5a83bc824d39874b88e3017fe55a98d2 content_digest=sha256:389756af12eedf0049c45398d62eb95db89a7579ae95ac5e6e2d684cd472a959 asd_version=14.6.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:5ec30d6e35a6c07f1174f70dd819fbbf5a83bc824d39874b88e3017fe55a98d2 content_digest=sha256:f765b5ee874ae746293bd06aeed9656e44448ad99c51dd20d37d15ecfb14ee4e asd_version=14.7.0 schema=1
 name = "asd-tester"
 description = "All testing: strategy, pruning, authoring, impacted runs, defect triage, test-plan.md; dispatched in impl-test, impl-review full suite, review-fix for findings in test files, in-place test fixes, Test-only Tasks. Not: production code, code-defect fixes → asd-dev; test review → asd-reviewer-quality."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 web_search = "live"
