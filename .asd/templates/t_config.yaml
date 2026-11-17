@@ -15,6 +15,10 @@ cleanup: enabled
 # Values: enabled | disabled
 upstream_issues: enabled
 
+# Shared-infrastructure safety valve of the impacted test set. disabled = impl-test's suite gate and cleanup's verification skip it, and the pr gate accepts cleanup's green impacted verification. Absent field = enabled. Read live, never frozen per sprint.
+# Values: enabled | disabled
+safety_valve: enabled
+
 # Optional sprint documents and their persistent docs counterpart.
 # Defaults: see .asd/rules/sprint-lifecycle.md "Optional documents".
 documents:

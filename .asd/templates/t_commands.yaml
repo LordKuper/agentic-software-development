@@ -14,6 +14,11 @@ run: "{{command to start application locally}}"
 # picked/testmon-style plugin); omit entirely for a runner with no such flag — never invent one.
 # test_affected: "{{command to run only tests affected since <BASE_REF>, e.g. jest --changedSince=<BASE_REF>}}"
 
+# optional: smoke command that runs the changed product itself; asd-tester runs it once at impl-test's
+# green exit and a failure is a code defect. Absent -> the step is skipped. Populated by /asd-init only
+# from a detected smoke script or target; omit entirely when none is found — never invent one.
+# smoke: "{{command to run the built product end to end}}"
+
 custom:
   # optional named commands beyond the required four
   # examples: format, typecheck, migrate, seed, e2e, coverage, docker-build, deploy-staging
