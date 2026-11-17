@@ -1927,7 +1927,7 @@ function sectionCommand(flags) {
   return markdownSection(fs.readFileSync(flags.file, 'utf8'), flags.heading);
 }
 
-/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. With `--base-ref`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there is omitted with a stderr note. */
+/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. With `--base-ref`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
 function contextCommand(flags) {
   if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
   const root = path.join(__dirname, '..');
@@ -1935,9 +1935,18 @@ function contextCommand(flags) {
   const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
   const allRefs = contextRefs(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'), flags.role, flags.phase);
   const read = Object.fromEntries([...new Set(allRefs.map(refFile))].map((file) => [file, readText(file)]));
-  const omitted = Object.keys(read).filter((file) => baseRef !== null && BASE_REF_FILES.includes(file) && read[file] === null);
-  omitted.forEach((file) => process.stderr.write(`runtime: ${file} absent at ${baseRef}, omitted from the bundle\n`));
-  const refs = allRefs.filter((ref) => !omitted.includes(refFile(ref)));
+  const sectionAbsent = (ref) => {
+    if (ref === refFile(ref)) return false;
+    try {
+      markdownSection(read[refFile(ref)], ref.slice(ref.indexOf('#') + 1));
+      return false;
+    } catch (error) {
+      return true;
+    }
+  };
+  const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
+  new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
+  const refs = allRefs.filter((ref) => !omitted.includes(ref));
   const bundle = contextBundle(refs, read);
   fs.writeFileSync(flags.out, bundle, 'utf8');
   return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
