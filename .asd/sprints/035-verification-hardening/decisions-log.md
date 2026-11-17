@@ -37,3 +37,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-11-17 — route Task 1, Task 2, Task 3, Task 4, Task 5, Task 6, Task 7, Task 8, Task 9, Task 10, Task 11: standard, dispatch HEAD fb9fecd7fa0aeb882ff2401ac2b6c7d1060784dc
+- 2026-11-17 — impl wave 1 flagged accepted: Task 4 (SKILL.md Bash grant suffices; latch-refresh before iteration head write; base-ref on External context only; issue repo = release-manifest repo under self_hosting, else origin owner/repo), Task 5 (smoke via asd-tester-runner at step 10; Manual-verification 'smoke check' renamed 'manual-verification check', artifact-layout mirror added to Task 9).
+- 2026-11-17 — impl wave 1 done: Tasks 1–11 COMPLETED; flagged accepted: Task 1 (latch-refresh skips .asd/sprints/**; stricter comment-line test; markers on every reviewer, workflow filters), Task 3 (resolved kind written `issue` token, `issue #<N>` in prose; valve wording no longer 'mandatory'). Views synced, full suite 375/375, D13 4/4.

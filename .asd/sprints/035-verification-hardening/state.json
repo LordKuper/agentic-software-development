@@ -64,7 +64,85 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-only hunk classification",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:change-surface exception wording",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:valve-off reach",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:issue filing external action",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:pr gate reuse of cleanup verification",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:first retro project write",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 11": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": {
@@ -85,7 +163,7 @@
     }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T08:30:02.000Z",
+  "updated_at": "2026-11-17T08:30:21.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

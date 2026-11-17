@@ -56,74 +56,74 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 ### Task 1: Runtime mechanics for latch refresh, checklist, base-ref, findings markers, unknown flags
 Material risk: change: comment-only hunk classification misreading code as a comment keeps a latch (unsafe direction)
 Material risk: change: trigger glob grammar and the 3-sprint candidate edge
-- [ ] AC-15: add `latch-refresh` per `## Overview`, a second runtime latch writer beside `recordVerdicts`; reuse `isExecutable`, `isTest`, the wave/iteration path helpers and `INTERNAL_REVIEWERS`/`EXTERNAL_REVIEWER`; legacy flat `reviews.impl` reads as wave 1
-- [ ] AC-2: `emit-manifest --checklist` per `## Overview`, matching each item trigger against that reviewer's `--files`
-- [ ] AC-16: `context --base-ref` and `emit-manifest --base-ref` per `## Overview`, reading via `git show` with no shell
-- [ ] AC-5, AC-4: `persist-review` findings JSON `pre_existing` and `checklist` fields per `## Overview`
-- [ ] AC-4: `checklist-hits` per `## Overview`, preserving the file's other bytes and EOL
-- [ ] AC-9: per-command declared flag sets; warn on stderr for each other flag; `commit-check`/`memory-check` keep their own rejection
+- [x] AC-15: add `latch-refresh` per `## Overview`, a second runtime latch writer beside `recordVerdicts`; reuse `isExecutable`, `isTest`, the wave/iteration path helpers and `INTERNAL_REVIEWERS`/`EXTERNAL_REVIEWER`; legacy flat `reviews.impl` reads as wave 1
+- [x] AC-2: `emit-manifest --checklist` per `## Overview`, matching each item trigger against that reviewer's `--files`
+- [x] AC-16: `context --base-ref` and `emit-manifest --base-ref` per `## Overview`, reading via `git show` with no shell
+- [x] AC-5, AC-4: `persist-review` findings JSON `pre_existing` and `checklist` fields per `## Overview`
+- [x] AC-4: `checklist-hits` per `## Overview`, preserving the file's other bytes and EOL
+- [x] AC-9: per-command declared flag sets; warn on stderr for each other flag; `commit-check`/`memory-check` keep their own rejection
 
 ### Task 2: Review policy: pre-existing marker, checklist citation, base-ref statement
 Material risk: change: wording of the change-surface exception for pre-existing defects
-- [ ] AC-5: "Change-surface rule" — a defect the reviewer sees in unchanged code it read, predating the sprint diff, is reported with Description prefix `pre-existing:` instead of being dropped; External Review findings never carry it; routing lives in `asd-phase-impl-review.md`
-- [ ] AC-2: "Coverage ledger" — manifest `checklist` items are covered like any rule id; a finding an item caught cites its `CL-N` in Description
-- [ ] AC-16: "Scope hand-off" — under `self_hosting` the bundle's `review-policy.md`, `external-review.md`, `t_reliability-checklist.md` and each rubric come from `origin/<git.base_branch>`; the host-loaded reviewer definition body stays the working-tree view (stated limitation)
-- [ ] leave "Autofix vs escalation" and "Gate Verdict Format" untouched (load budget)
+- [x] AC-5: "Change-surface rule" — a defect the reviewer sees in unchanged code it read, predating the sprint diff, is reported with Description prefix `pre-existing:` instead of being dropped; External Review findings never carry it; routing lives in `asd-phase-impl-review.md`
+- [x] AC-2: "Coverage ledger" — manifest `checklist` items are covered like any rule id; a finding an item caught cites its `CL-N` in Description
+- [x] AC-16: "Scope hand-off" — under `self_hosting` the bundle's `review-policy.md`, `external-review.md`, `t_reliability-checklist.md` and each rubric come from `origin/<git.base_branch>`; the host-loaded reviewer definition body stays the working-tree view (stated limitation)
+- [x] leave "Autofix vs escalation" and "Gate Verdict Format" untouched (load budget)
 
 ### Task 3: Sprint lifecycle: fix-round latch clear, valve switch, suite scopes, issue resolution
 Material risk: change: valve-off reach across impl-test, cleanup and the pr gate
-- [ ] AC-15: "APPROVE latch" — add the fix-round clear trigger computed by `latch-refresh`; name it beside `record-verdicts` as a runtime latch writer
-- [ ] AC-14: "Impacted test set" safety valve — `safety_valve: disabled` (live read) skips the valve at impl-test's suite gate and cleanup's verification; the pr gate then accepts cleanup's green verification record when no code, test or stub path changed since its sha
-- [ ] AC-10: "Operation timing" `suite` scope attr `full`|`impacted`|`named`
-- [ ] AC-5: "State recovery" "User-resolved findings" — add kind `issue #<N>` for a pre-existing finding filed as an issue
-- [ ] AC-5: `language-policy.md` "Matrix" — the consumer-repo issue row covers titles, bodies and comments
-- [ ] keep this Task's bytes in the orchestrator/impl bundle net ≤ 0 (`## Overview` Load budget)
+- [x] AC-15: "APPROVE latch" — add the fix-round clear trigger computed by `latch-refresh`; name it beside `record-verdicts` as a runtime latch writer
+- [x] AC-14: "Impacted test set" safety valve — `safety_valve: disabled` (live read) skips the valve at impl-test's suite gate and cleanup's verification; the pr gate then accepts cleanup's green verification record when no code, test or stub path changed since its sha
+- [x] AC-10: "Operation timing" `suite` scope attr `full`|`impacted`|`named`
+- [x] AC-5: "State recovery" "User-resolved findings" — add kind `issue #<N>` for a pre-existing finding filed as an issue
+- [x] AC-5: `language-policy.md` "Matrix" — the consumer-repo issue row covers titles, bodies and comments
+- [x] keep this Task's bytes in the orchestrator/impl bundle net ≤ 0 (`## Overview` Load budget)
 
 ### Task 4: Impl-review workflow: latch refresh, checklist, base-ref, pre-existing routing
 Material risk: change: issue filing as an external action and its pre-existing verification
-- [ ] AC-15: at each iteration start after the first in a wave, run `latch-refresh` before the APPROVE latch filter; record cleared keys in the decisions log
-- [ ] AC-2: pass `--checklist .asd/project/reliability-checklist.md` to `emit-manifest`
-- [ ] AC-16: under `self_hosting`, pass `--base-ref origin/<git.base_branch>` to every reviewer's `context` and to `emit-manifest`
-- [ ] AC-5: after `persist-review`, before routing — each `pre_existing` finding below `critical` from an internal reviewer: the orchestrator confirms the cited lines are unchanged since the sprint's merge-base, files `gh issue create -R <repo>` (project repo; the ASD repo under `self_hosting`) [GATE adaptive: external action] and appends `resolved: <id> — issue #<N>, <date>`; unconfirmed routes as a normal finding; `critical` routes to review-fix
+- [x] AC-15: at each iteration start after the first in a wave, run `latch-refresh` before the APPROVE latch filter; record cleared keys in the decisions log
+- [x] AC-2: pass `--checklist .asd/project/reliability-checklist.md` to `emit-manifest`
+- [x] AC-16: under `self_hosting`, pass `--base-ref origin/<git.base_branch>` to every reviewer's `context` and to `emit-manifest`
+- [x] AC-5: after `persist-review`, before routing — each `pre_existing` finding below `critical` from an internal reviewer: the orchestrator confirms the cited lines are unchanged since the sprint's merge-base, files `gh issue create -R <repo>` (project repo; the ASD repo under `self_hosting`) [GATE adaptive: external action] and appends `resolved: <id> — issue #<N>, <date>`; unconfirmed routes as a normal finding; `critical` routes to review-fix
 
 ### Task 5: Tester: smoke at green exit, differential tests, valve switch
 Material risk: none
-- [ ] AC-3: `asd-phase-impl-test.md` step 10 — run `commands.yaml` `smoke` once at green exit when present; failure → code defect `D-N`, route to impl test-fix; absent → skip
-- [ ] AC-3: `asd-tester.md` suite-run rules and `t_test-plan.md` `Suite run` — a `Smoke:` line (command, pass/fail)
-- [ ] AC-7: `asd-tester.md` "Evidence routing" row — behaviour-preserving refactor or migration → differential test, previous version as oracle, same inputs, each mismatch triaged (bug, intended change, representation, undocumented behaviour), never auto-failed
-- [ ] AC-14: `asd-phase-impl-test.md` step 8 and `asd-tester.md` valve line — skipped when `safety_valve: disabled`
+- [x] AC-3: `asd-phase-impl-test.md` step 10 — run `commands.yaml` `smoke` once at green exit when present; failure → code defect `D-N`, route to impl test-fix; absent → skip
+- [x] AC-3: `asd-tester.md` suite-run rules and `t_test-plan.md` `Suite run` — a `Smoke:` line (command, pass/fail)
+- [x] AC-7: `asd-tester.md` "Evidence routing" row — behaviour-preserving refactor or migration → differential test, previous version as oracle, same inputs, each mismatch triaged (bug, intended change, representation, undocumented behaviour), never auto-failed
+- [x] AC-14: `asd-phase-impl-test.md` step 8 and `asd-tester.md` valve line — skipped when `safety_valve: disabled`
 
 ### Task 6: Cleanup and pr: valve switch
 Material risk: change: pr gate reuse of cleanup's impacted verification
-- [ ] AC-14: `asd-phase-cleanup.md` step 5 — valve skipped when `safety_valve: disabled`; step 6 record keeps `tests @sha`
-- [ ] AC-14: `asd-phase-pr.md` open mode step 1 — with `safety_valve: disabled`, a green cleanup record whose sha has no code/test/stub change to `HEAD` satisfies the re-run check
+- [x] AC-14: `asd-phase-cleanup.md` step 5 — valve skipped when `safety_valve: disabled`; step 6 record keeps `tests @sha`
+- [x] AC-14: `asd-phase-pr.md` open mode step 1 — with `safety_valve: disabled`, a green cleanup record whose sha has no code/test/stub change to `HEAD` satisfies the re-run check
 
 ### Task 7: Retro and scope intake: checklist hits and removal candidates
 Material risk: change: first retro write to a project file and intake apply point
-- [ ] AC-4: `asd-phase-retro.md` — run `checklist-hits`; each candidate becomes a P-row (Guardrail: remove `CL-N`; Home: the checklist); Exit lists the checklist write; Home options include the checklist for a new item
-- [ ] AC-4, AC-2: `asd-phase-scope.md` step 2a — an included checklist row is applied by the orchestrator at intake (add an item, creating the file from the template if absent; or delete the item); rejected/deferred leaves it
+- [x] AC-4: `asd-phase-retro.md` — run `checklist-hits`; each candidate becomes a P-row (Guardrail: remove `CL-N`; Home: the checklist); Exit lists the checklist write; Home options include the checklist for a new item
+- [x] AC-4, AC-2: `asd-phase-scope.md` step 2a — an included checklist row is applied by the orchestrator at intake (add an item, creating the file from the template if absent; or delete the item); rejected/deferred leaves it
 
 ### Task 8: Templates
 Material risk: none
-- [ ] AC-2: new `.asd/templates/t_reliability-checklist.md` per `## Overview` (frontmatter `responsibility`, table header only)
-- [ ] AC-3: `t_commands.yaml` optional `smoke`
-- [ ] AC-14: `t_config.yaml` top-level `safety_valve: enabled` with a one-line comment
-- [ ] AC-13: `t_tech-reference.md` API surface entry shape names default target and mutation
+- [x] AC-2: new `.asd/templates/t_reliability-checklist.md` per `## Overview` (frontmatter `responsibility`, table header only)
+- [x] AC-3: `t_commands.yaml` optional `smoke`
+- [x] AC-14: `t_config.yaml` top-level `safety_valve: enabled` with a one-line comment
+- [x] AC-13: `t_tech-reference.md` API surface entry shape names default target and mutation
 
 ### Task 9: Artifact layout: checklist home, tech-reference clause
 Material risk: none
-- [ ] AC-2: both Paths maps gain `reliability-checklist.md  # lazy, "Reliability checklist"`; new section "Reliability checklist" (owner orchestrator, lazily created at intake, never overwritten by ASD or `/asd-update`, format = template, written by scope intake and retro `checklist-hits`)
-- [ ] AC-13: "Tech reference docs" — each API surface entry records default-target resolution and any state mutation, verified against help or source, before a Task uses it
-- [ ] keep this Task's bytes in the orchestrator/impl bundle net ≤ 0 (`## Overview` Load budget)
+- [x] AC-2: both Paths maps gain `reliability-checklist.md  # lazy, "Reliability checklist"`; new section "Reliability checklist" (owner orchestrator, lazily created at intake, never overwritten by ASD or `/asd-update`, format = template, written by scope intake and retro `checklist-hits`)
+- [x] AC-13: "Tech reference docs" — each API surface entry records default-target resolution and any state mutation, verified against help or source, before a Task uses it
+- [x] keep this Task's bytes in the orchestrator/impl bundle net ≤ 0 (`## Overview` Load budget)
 
 ### Task 10: asd-init: smoke detection, safety_valve setting
 Material risk: none
-- [ ] AC-3: command detection proposes `smoke` from a detected smoke script or target; none → key omitted
-- [ ] AC-14: fresh and re-init prompts carry `safety_valve` (default `enabled`)
+- [x] AC-3: command detection proposes `smoke` from a detected smoke script or target; none → key omitted
+- [x] AC-14: fresh and re-init prompts carry `safety_valve` (default `enabled`)
 
 ### Task 11: Dev rule: re-read implemented ACs on rule narrowing
 Material risk: none
-- [ ] AC-12: `asd-dev.md` `## Rules` — a review-fix that narrows or rewrites a rule re-reads every `AC-N` that rule implements and keeps each case it names
+- [x] AC-12: `asd-dev.md` `## Rules` — a review-fix that narrows or rewrites a rule re-reads every `AC-N` that rule implements and keeps each case it names
 
 ### Task 12: README mirrors
 Material risk: artifact: mirror edits verified by `node tests/run.js`
