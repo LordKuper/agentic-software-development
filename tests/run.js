@@ -10346,7 +10346,7 @@ test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose ma
   assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
 });
 
-test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a comment of its extension family - c-family lines are lexed in the blob of their side, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, a shebang, a `*`-led code line, code after `*/` and `//` inside a string stay code', () => {
+test('sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged - only comments and blank lines outside strings differ, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, an added or deleted file, a shebang, a `*`-led code line, a comment-boundary shift, a regex or multi-line string holding comment markers and a blank line inside a string stay code', () => {
   const [quality] = runtime.INTERNAL_REVIEWERS;
   const latched = { [quality]: 1 };
   const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
@@ -10356,42 +10356,48 @@ test('sprint-035 AC-15: a changed file counts as code unless every changed line 
   assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\nconst z = 2;\n'), [quality], 'AC-15: a hunk mixing a comment and a code line is code');
   assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
 
-  const JSDOC = '/**\n * Adds.\n * More.\n */\nfunction add() {}\n';
   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds two numbers.\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the body of a multi-line block comment leaves the latch');
   assert.deepStrictEqual(clearsFor('src/doc.js', '/*\n * Adds.\n  */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the opener and the closer of a block comment leaves the latch');
   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: deleting a block-comment body line, a base-side line, leaves the latch');
   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() {}\nconst total = a\n  * c;\n'), [quality], 'AC-15: a `*`-led continuation of an expression outside a block comment is code');
   assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() { return 1; }\nconst total = a\n  * b;\n'), [quality], 'AC-15: a code edit beside a block comment is code');
 
-  const comment = (file, blob, ...numbers) => runtime.isCommentOnlyChange(file, numbers.map((number) => ({ side: '+', number, text: blob.split('\n')[number - 1] })), () => blob);
-  const neverRead = () => assert.fail('AC-15: a hash or dash family line is judged on its text, the blob is never read');
-  assert.strictEqual(comment('a.js', JSDOC, 1, 2, 3, 4), true, 'AC-15: a multi-line block-comment opener, body and closer are comment-only');
-  assert.strictEqual(comment('a.js', JSDOC, 3), true, 'AC-15: a lone body line of a multi-line block comment is a comment, whatever its text');
-  assert.strictEqual(comment('a.js', JSDOC, 3, 5), false, 'AC-15: a body line beside a code line is code');
-  assert.strictEqual(comment('a.js', '/* note */\n', 1), true, 'AC-15: a self-closed one-line block comment is a comment');
-  assert.strictEqual(comment('a.java', '/* note */\n  * height;\n', 1, 2), false, 'AC-15: a `*`-led line with no enclosing block is code beside a comment');
-  assert.strictEqual(comment('a.js', 'a = 1\n  * b = 2;\n', 2), false, 'AC-15: a `*` continuation with no enclosing block comment is code');
-  assert.strictEqual(comment('a.js', '/* note */ run();\n', 1), false, 'AC-15: a one-line block comment with trailing code is code');
-  assert.strictEqual(comment('a.js', '/**\n * x\n */ run();\n', 1, 2), true, 'AC-15: the lines of a block comment before a closer carrying code are comments');
-  assert.strictEqual(comment('a.js', '/**\n * x\n */ run();\n', 1, 2, 3), false, 'AC-15: a line that closes a block comment and carries code is code');
-  assert.strictEqual(comment('a.js', 'const u = "http://x";\n', 1), false, 'AC-15: `//` inside a string is code');
-  assert.strictEqual(comment('a.js', 'const t = `\n// not a comment\n`;\n', 2), false, 'AC-15: `//` inside a multi-line template literal is code');
-  assert.strictEqual(comment('a.js', 'const t = `\n// x\n`;\n// real\n', 4), true, 'AC-15: a line comment after a closed template literal is a comment');
-  assert.strictEqual(comment('a.css', '* { margin: 0 }\n', 1), false, 'AC-15: a css universal-selector rule is code, not a comment body');
-  assert.strictEqual(comment('a.css', '/* note */\n', 1), true, 'AC-15: a one-line css block comment is a comment');
-  assert.strictEqual(comment('a.css', '// x\n', 1), false, 'AC-15: css has no line comments');
-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [{ side: '+', number: 1, text: '// note' }], () => ''), false, 'AC-15: a line in an absent blob never proves a comment');
-  assert.strictEqual(comment('a.js', 'x();\n\n', 2), true, 'AC-15: a blank changed line is comment-only');
-  assert.strictEqual(comment('a.js', 'x();\n'), false, 'AC-15: an empty change is never comment-only');
-  assert.strictEqual(comment('a.js', '// x\nx();\n', 1, 2), false, 'AC-15: one code line makes the file code');
-
-  const bySide = { '+': '/**\n * new\n */\n', '-': '/**\n * old\n */\n' };
-  const entry = (side, number, text) => ({ side, number, text });
-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [entry('-', 2, ' * old'), entry('+', 2, ' * new')], (side) => bySide[side]), true, 'AC-15: a `-` line is judged in the base blob and a `+` line in the head blob');
-  assert.strictEqual(runtime.isCommentOnlyChange('a.js', [entry('-', 1, 'f();'), entry('+', 1, '// note')], (side) => (side === '+' ? '// note\n' : 'f();\n')), false, 'AC-15: removing a code line while adding a comment is code');
-  assert.strictEqual(runtime.isCommentOnlyChange('a.sh', [entry('+', 1, '# note'), entry('+', 2, '')], neverRead), true, 'AC-15: a hash-family comment and a blank line are judged on their text');
-  assert.strictEqual(runtime.isCommentOnlyChange('a.sh', [entry('+', 1, '#!/bin/sh')], neverRead), false, 'AC-15: a shebang is code, not a comment');
-  assert.strictEqual(runtime.isCommentOnlyChange('a.sql', [entry('+', 1, '-- note')], neverRead), true, 'AC-15: a dash-family comment is a comment');
+  const commentOnly = (file, base, head) => runtime.isCommentOnlyChange(file, (side) => (side === 'base' ? base : head));
+  const JSDOC = '/**\n * Adds.\n */\nfunction add() {}\n';
+  const REGEX_SLASH_STAR = 'x = s.replace(/\\/*$/, \'\');\n';
+  const REGEX_THEN_BLOCK = 'x = s.replace(/\\/*$/, \'\'); y = 2; /* c */\n';
+  const BOUNDARY_BASE = '/*a*/ x(); /*b*/\n';
+  const COMMENT_ONLY = [
+    ['a.js', JSDOC, '/**\n * Adds two.\n */\nfunction add() {}\n', 'a block-comment body edit'],
+    ['a.js', JSDOC, '/*\n * Adds.\n  */\nfunction add() {}\n', 'a block-comment opener and closer edit'],
+    ['a.js', 'f();\n', 'f();\n// n\n', 'an added whole-line `//` comment'],
+    ['a.js', 'f();\n', 'f(); // n\n', 'an added trailing `//` comment'],
+    ['a.js', 'f();\ng();\n', 'f();\n\ng();\n', 'a blank line outside a string'],
+    ['a.css', 'a { b: c }\n', '/* n */\na { b: c }\n', 'a css block comment'],
+    ['a.sh', 'echo 1\n', 'echo 1\n# n\n', 'an added `#` comment'],
+    ['a.sql', 'select 1;\n', 'select 1; -- n\n', 'an added `--` comment'],
+  ];
+  const CODE = [
+    ['a.js', `${REGEX_SLASH_STAR}run();\n`, `${REGEX_SLASH_STAR}run2();\n`, 'a code edit after a regex holding `\\/*` (reviewer combined-1 repro)'],
+    ['a.js', REGEX_THEN_BLOCK, REGEX_THEN_BLOCK.replace('y = 2', 'y = 3'), 'a code edit between a regex holding `\\/*` and a later block comment'],
+    ['a.js', 'x = /[/*]/;\nrun();\n', 'x = /[/*]/;\nrun2();\n', 'a code edit after a regex whose `/*` opens an unclosed block'],
+    ['a.kt', 'val s = """\n// x\n"""\nrun()\n', 'val s = """\n// y\n"""\nrun()\n', 'an edit of a `//` line inside a Kotlin multi-line string'],
+    ['a.kt', 'val s = """\n/* x\n"""\nrun()\n', 'val s = """\n/* x\n"""\nrun2()\n', 'a code edit after a Kotlin multi-line string holding an unclosed `/*`'],
+    ['a.js', BOUNDARY_BASE, '/*a x(); b*/\n', 'a comment-boundary shift that comments out unchanged code'],
+    ['a.js', 'const t = `a\nb`;\n', 'const t = `a\n\nb`;\n', 'a blank line added inside a template literal'],
+    ['a.py', 'd = """\n# a\n"""\n', 'd = """\n# b\n"""\n', 'a `#` line changed inside a Python triple-quoted string'],
+    ['a.sh', '#!/bin/sh\n', '#!/bin/bash\n', 'a shebang edit'],
+    ['a.scss', 'a { b: url(http://x/a.png) }\n', 'a { b: url(http://x/b.png) }\n', 'an edit after `http://` in code'],
+    ['a.css', 'a { b: c }\n', 'a { b: c }\n// x\n', 'a `//` line in css, which has no line comments'],
+    ['src/doc.js', LATCH_BASE_FILES['src/doc.js'], LATCH_BASE_FILES['src/doc.js'].replace('* b;', '* c;'), 'a `*`-led expression continuation outside a block comment'],
+    ['a.js', 'f();\n', 'f();\n// n\ng();\n', 'a comment added beside a code line'],
+    ['notes.xyz', 'one\n', 'one\n// only a comment\n', 'an unknown extension'],
+    ['a.js', null, '// n\n', 'an added file'],
+    ['a.js', 'f();\n', null, 'a deleted file'],
+    ['a.js', 'f();\n', 'f();\n', 'text identical on both sides'],
+  ];
+  const misjudged = [...COMMENT_ONLY.map((row) => [...row, true]), ...CODE.map((row) => [...row, false])].filter(([file, base, head, , expected]) => commentOnly(file, base, head) !== expected).map(([, , , what, expected]) => `${what} judged ${expected ? 'code' : 'comment-only'}`);
+  assert.deepStrictEqual(misjudged, [], 'AC-15: every change in the comment-only table is comment-only and every change in the code table counts as code');
 });
 
 test('sprint-035 AC-2: a trigger glob keeps * inside a path segment, lets ** cross segments and match no directory, takes a comma list and backtick-wrapped globs, and anchors on the whole path', () => {
