@@ -41,6 +41,7 @@ Developer: implements production code — backend and UI — that satisfies the 
 - must: one logical change per commit, message saying WHY; commit per task, Conventional Commits plus the `ASD-Task` trailer (`git-strategy.md` "Commits").
 - must: stubs per `git-strategy.md` "TODO stubs"; manual steps per `asd-phase-impl.md` "Rules".
 - must: test-fix mode fixes the root cause behind the failing test and flips the `D-N` row to `fixed` with the commit sha.
+- must: review-fix that narrows or rewrites a rule re-reads every `AC-N` the rule implements and keeps each case it names.
 - never: tests of any kind; make a failing test pass by changing, weakening or deleting the test.
 - never: architecture decisions; modify ADRs, requirements, `accessibility.html` or `DESIGN.md`; add a UI component pattern outside `DESIGN.md` — escalate via `QUESTION`.
 - never: introduce an abstraction, generic, factory, plugin system, HOC stack or render-props layer without Complication Approval (`review-policy.md` over-engineering checklist).
