@@ -75,13 +75,28 @@ Material risk: change: plan acceptance preconditions
 ### Task 7: Timing id reuse, latch clear without lexer, liveness return files
 Material risk: change: op id convention across recovery and re-dispatch
 Material risk: change: liveness done semantics for a written return file
-- [ ] `.asd/runtime.js` `timingAppend`: skip and warn on an open of any id the ledger holds, naming the next free `#<n>`; dispatch attr fill strips a trailing `#<n>` for the `task_routing` lookup (AC-7)
-- [ ] `.asd/runtime.js` `parseFlagArgs`: warn on stderr per repeated flag (AC-7)
-- [ ] `.asd/runtime.js`: remove `COMMENT_LEXERS`, `projectExecutable`, its helpers and `isCommentOnlyChange` (and its export); `changedProductionFiles` counts every changed production executable file (AC-9)
-- [ ] `.asd/runtime.js` `agent-liveness`: optional `--returns <json path>`; an id whose return file passes the `persist-review` checks (shared function extracted from `persistReview`) is done (AC-14)
-- [ ] `.asd/rules/sprint-lifecycle.md` "Operation timing": ids are never reused, a repeated op takes the next free `#<n>` (user-wait and re-dispatch included); "Fix-round clear": drop the comment-only exception (AC-7, AC-9)
-- [ ] `.asd/rules/providers.md` "Agent liveness per host" Claude Code bullets: pass `--returns` for reviewer dispatches (AC-14)
-- [ ] `README.md` runtime command list: `agent-liveness --returns`, `timing` id refusal (AC-7, AC-14)
+- [x] `.asd/runtime.js` `timingAppend`: skip and warn on an open of any id the ledger holds, naming the next free `#<n>`; dispatch attr fill strips a trailing `#<n>` for the `task_routing` lookup (AC-7)
+- [x] `.asd/runtime.js` `parseFlagArgs`: warn on stderr per repeated flag (AC-7)
+- [x] `.asd/runtime.js`: remove `COMMENT_LEXERS`, `projectExecutable`, its helpers and `isCommentOnlyChange` (and its export); `changedProductionFiles` counts every changed production executable file (AC-9)
+- [x] `.asd/runtime.js` `agent-liveness`: optional `--returns <json path>`; an id whose return file passes the `persist-review` checks (shared function extracted from `persistReview`) is done (AC-14)
+- [x] `.asd/rules/sprint-lifecycle.md` "Operation timing": ids are never reused, a repeated op takes the next free `#<n>` (user-wait and re-dispatch included); "Fix-round clear": drop the comment-only exception (AC-7, AC-9)
+- [x] `.asd/rules/providers.md` "Agent liveness per host" Claude Code bullets: pass `--returns` for reviewer dispatches (AC-14)
+- [x] `README.md` runtime command list: `agent-liveness --returns`, `timing` id refusal (AC-7, AC-14)
+
+### Task 8: AI attribution setting and its sprint-start check
+Material risk: change: commit contract every agent commits under
+Material risk: change: rewrite of the user's Claude Code settings files
+- [ ] `.asd/templates/t_config.yaml`: `git.ai_attribution: enabled | disabled`, absent = `enabled` (AC-15)
+- [ ] `.asd/sync.js` json-merge of `.claude/settings.json`: with `disabled`, carry `"attribution": {"commit": "", "pr": ""}` as an ASD-owned key; with `enabled` or absent, add nothing (AC-15)
+- [ ] `.asd/runtime.js`: a deterministic attribution check run by `asd-sprint` — reads `git.ai_attribution`; when `disabled` and the Claude view exists, removes every re-enabling entry (non-empty `attribution.commit`/`attribution.pr`, `includeCoAuthoredBy: true`) from `.claude/settings.json` and `.claude/settings.local.json`, printing one line per fix; when the Codex view exists, prints the one-line ChatGPT workspace hint; silent no-op when `enabled` (AC-16)
+- [ ] `.asd/runtime.js` `commitCheck`: with `disabled`, fail on a `Co-authored-by:` trailer naming Claude or Codex (case-insensitive key) (AC-16)
+- [ ] `.asd/skills/asd-sprint/SKILL.md` Step 0: run the check on every invocation; `.asd/workflows/asd-phase-pr.md` open mode: with `disabled`, no AI attribution line in the PR body; `.asd/rules/git-strategy.md` "Commits": the trailer rule names the rejection once (AC-16)
+- [ ] `.asd/skills/asd-init/SKILL.md`: ask/edit `git.ai_attribution`; `README.md`: config schema row and runtime command list (AC-15, AC-16)
+
+### Task 9: Disable AI attribution in this repository
+Material risk: artifact: one config value verified by the AC-16 check output
+Settings change: git.ai_attribution=disabled
+- [ ] `.asd/project/config.yaml`: `git.ai_attribution: disabled` through `asd-init` sprint-mediated mode, then the AC-16 check run once (AC-17)
 
 ## Risks (optional)
 - Task 1 changes the commit form Tasks 2-7 commit under, so it runs alone in wave 1 and its agents commit with the new form from wave 2 on.
@@ -94,8 +109,11 @@ Material risk: change: liveness done semantics for a written return file
 | 1 | Task 1 |
 | 2 | Task 2, Task 3, Task 4, Task 5, Task 6 |
 | 3 | Task 7 |
+| 4 | Task 8 |
+| 5 | Task 9 |
 
 - Task 7 follows wave 2 because it shares `.asd/rules/providers.md` with Task 2 and `README.md` with Tasks 1 and 2; Task 2 owns every wave-2 README edit.
+- Task 8 (scope amendment) follows Task 7: both touch `.asd/runtime.js` and `README.md`. Task 9 carries a `Settings change:` and sits alone in the wave after Task 8, which adds its key to `t_config.yaml`.
 
 Orchestrator after wave 2: `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` over `.codex/agents/` and `.claude/agents/asd-external-review.md` (and any view whose canon changed), commit the regenerated views (AC-2).
 Orchestrator at impl-test: run `codex exec --model gpt-6.2-sol -c model_reasoning_effort="high" --sandbox read-only -` once and record the reply in `test-plan.md` (AC-5).
@@ -108,3 +126,6 @@ Orchestrator at pr open mode: CHANGELOG section states `gpt-6.2-sol`, the Codex 
 | 2026-11-18 approach A: no runtime client-version check, no migration | Out of scope (`sprint.md`) |
 | 2026-11-18 documented minimum is 0.167.0, not the unverified 0.166.0 | Task 2, AC-3 |
 | 2026-11-18 AC-8 redraft: dev returns `FAILED`, orchestrator writes tech reference | Task 4 |
+| 2026-11-18 scope amendment: AI attribution setting, project-level Claude Code settings only | Task 8, AC-15, AC-16 |
+| 2026-11-18 scope amendment: Codex gets commit-check guard, PR body rule and workspace hint (no local key exists) | Task 8, AC-16 |
+| 2026-11-18 scope amendment: this repo sets `git.ai_attribution: disabled` | Task 9, AC-17 |

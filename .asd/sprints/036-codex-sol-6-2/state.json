@@ -55,6 +55,13 @@
       "reason": "user answer: accept",
       "evidence": "decisions-log.md 2026-11-18 plan.md accepted",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "user request: AI attribution setting; answers: project-level Claude, Codex guard + hint, this repo disabled",
+      "evidence": "decisions-log.md 2026-11-18 scope amendment AC-15..AC-17",
+      "artifact_revision": "sprint.md@impl"
     }
   ],
   "task_routing": {
@@ -64,7 +71,8 @@
     "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:refuse-to-implement rule scope", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:scope gate content", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 6": { "execution": "agent", "tier": "standard", "reason": "risk:plan acceptance preconditions", "raise_effort": false, "resolved_model": "sonnet" },
-    "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:op id convention across recovery and re-dispatch", "raise_effort": false, "resolved_model": "sonnet" }
+    "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:op id convention across recovery and re-dispatch", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
