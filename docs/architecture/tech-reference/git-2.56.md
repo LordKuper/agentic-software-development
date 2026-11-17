@@ -17,6 +17,8 @@ responsibility:
 - `git diff --no-index --no-color --no-ext-diff --no-textconv -- <old> <new>`: one design-review draft against its snapshot copy; exit 1 means a difference, not an error.
 - `git show <ref>:<path>`: one file's content at a ref (`<rev>:<path>` names a blob; for a plain blob `git show` prints its plain contents). Default target: none — `<ref>` is resolved locally, never fetched, so `origin/<branch>` is the last-fetched remote-tracking ref. A path absent at `<ref>` exits 128 with `fatal: path '<path>' does not exist in '<ref>'`. Mutates nothing.
 - `git diff --name-status --no-renames <base>..<head>` and `git diff -U0 --no-color --no-ext-diff --no-textconv <base>..<head> -- <path>`: a fix round's changed files with status letters (`A` marks a file new to the range) and one file's changed lines with zero context (`-U<n>` sets context lines; default `diff.context` or 3). Default target: none beyond the named range. Mutates nothing.
+- `git merge-base <base_branch> HEAD`: the best common ancestor of the two commits (`git merge-base -h`); impl-review step 7b diffs from it to tell a pre-existing line. Default target: the named commits only, resolved locally. Mutates nothing.
+- `git rev-parse --verify --quiet <ref>^{commit}`: prints the commit sha `<ref>` names, or exits non-zero with no output when it names none (`git rev-parse` `--verify`, `--quiet`); `runtime.js` checks a `--base-ref` before reading from it. Default target: the named ref, resolved locally, never fetched. Mutates nothing.
 
 ## Version-specific notes
 - `git diff` takes no `--pathspec-from-file`; the documented holders are `add`, `rm`, `commit`, `checkout`, `restore` and `stash push`. A long path list reaches `git diff` only as argv.
