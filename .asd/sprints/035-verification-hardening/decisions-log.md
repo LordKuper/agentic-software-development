@@ -37,4 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-17 — retro: .asd/sprints/035-verification-hardening/retrospective.html written; 4 friction entries analysed (F-4 added at retro), 3 actions (A-1..A-3, asd), 2 systemic proposals (P-1; P-2 covered by asd-dev.md); analysed branch; upstream publish skipped (self_hosting enabled).
