@@ -38,3 +38,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-11-17 — PR #122 opened [GATE adaptive: PR publication]: evidence = plan tasks done, reviews green (wave 1/1 iter-05), full suite 391/391 at e22fa5b1, retrospective written; authority = user request 'Все 1–7' with same-run merge.
+## 2026-11-18 — sprint closure
+
+- **Decision**: Sprint closed: PR #122 merged as 52419011a0a728698e9191044b64402d8afc4d1e; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 036 start; release v14.7.0 tagged and published, included issue #120 closed, so no release retry.
+- **Affected docs**: `state.json`

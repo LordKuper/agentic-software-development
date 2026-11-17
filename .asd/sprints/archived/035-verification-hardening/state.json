@@ -1,7 +1,7 @@
 {
   "sprint_id": "035-verification-hardening",
   "branch": "sprint/035-verification-hardening",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -76,6 +76,13 @@
       "reason": "user answer: a: keep AC-15",
       "evidence": "decisions-log.md 2026-11-17 reviewer question wave-1/iter-03",
       "artifact_revision": "combined.md@wave-1/iter-03"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #122 merged; release v14.7.0 published; included issue #120 closed",
+      "evidence": "merge commit 52419011a0a728698e9191044b64402d8afc4d1e",
+      "artifact_revision": "52419011"
     }
   ],
   "task_routing": {
@@ -242,13 +249,14 @@
     }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T13:25:44.000Z",
+  "updated_at": "2026-11-17T22:39:20.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 122,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/122",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "52419011a0a728698e9191044b64402d8afc4d1e"
   },
-  "archived_at": null
+  "archived_at": "2026-11-17T22:39:20.000Z"
 }
