@@ -8924,7 +8924,7 @@ test('sprint-030 AC-7/AC-8/AC-10/AC-12: the external-review cache lives in the s
   assert.ok(cacheRule.includes('`external-cache.json` in the scratch directory') && cacheRule.includes('`node .asd/runtime.js scratch-dir`'), 'AC-7: the canonical cache path must be external-cache.json in the directory scratch-dir prints, a self-ignoring one - a tracked-folder path shows up untracked in a consumer and breaks the clean-tree check');
   const tester = canonText('.asd/agents/asd-tester.md');
   const duty = tester.split('\n').find((line) => line.startsWith('- must: bracket every suite run')) || '';
-  assert.ok(duty.includes('--kind suite') && duty.includes('scope=impacted|full') && duty.includes('--parent'), 'AC-8: the tester definition must state the duty with the kind, scope attribute and parent a suite op needs, so it reaches every tester dispatch');
+  assert.ok(duty.includes('--kind suite') && duty.includes('--attrs scope=') && duty.includes('--parent'), 'AC-8: the tester definition must state the duty with the kind, scope attribute and parent a suite op needs, so it reaches every tester dispatch');
   assert.deepStrictEqual(canonMarkdownFiles().filter((rel) => canonText(rel).includes('--kind suite')), ['.asd/agents/asd-tester.md'], 'AC-8: the suite-op command form has one home, the tester definition - a workflow restating it drifts from it');
   const valve = headingBody('.asd/rules/sprint-lifecycle.md', 'Impacted test set').split('\n').find((line) => line.startsWith('**Safety valve')) || '';
   assert.ok(/step 8 suite gate/.test(valve) && /step 3 pre-authoring run[^.]*without the valve/.test(valve), 'AC-10: the safety valve home must reach impl-test through the step 8 suite gate and exempt the step 3 run and the reruns after an authoring batch');
@@ -10578,6 +10578,18 @@ test('sprint-035 AC-5: the issue resolution kind impl-review writes is one of th
   assert.ok(kinds[1].split(' | ').includes('issue'), 'AC-5: issue is a listed kind');
   const step = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), '7b');
   assert.ok(step.includes('`resolved: <id> — issue #<N>, <YYYY-MM-DD>`') && home.includes('written `issue #<N>`'), 'AC-5: the appended line and the home name the same issue #<N> form');
+});
+
+test('sprint-035 AC-10: the `suite` scope values "Operation timing" lists are the Scope values the Suite run template names, and the tester attr cites that home', () => {
+  const kindsLine = sectionOf('.asd/rules/sprint-lifecycle.md', 'Operation timing').split('\n').find((line) => line.startsWith('Kinds (attrs):')) || '';
+  const listed = /`suite` \(`scope`: ([^)]+)\)/.exec(kindsLine);
+  assert.ok(listed, 'sanity: "Operation timing" keeps its `suite` (`scope`: …) entry');
+  const templateScope = /^- Scope: \{\{([^}]+)\}\}/m.exec(canonText('.asd/templates/t_test-plan.md'));
+  assert.ok(templateScope, 'sanity: the Suite run template keeps its Scope line');
+  const values = (text) => text.split('|').map((value) => value.replace(/[`\\\s]/g, '')).sort();
+  assert.deepStrictEqual(values(listed[1]), values(templateScope[1]), 'AC-10: the scope values of a suite op must equal the Suite run Scope values');
+  const duty = canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- must: bracket every suite run')) || '';
+  assert.ok(duty.includes('scope=<Suite run Scope>') && duty.includes('"Operation timing"'), 'AC-10: the tester duty must take the scope attr from the Suite run Scope and cite its home');
 });
 
 test('sprint-035 AC-7: the tester\'s Evidence routing carries a blocking differential-test row for a behaviour-preserving refactor or migration', () => {

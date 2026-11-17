@@ -30,7 +30,8 @@ responsibility:
 | Evidence routing differential row (AC-7) | row dropped or de-gated | content contract | add | one row, three literals |
 | checklist home: template, section, both Paths maps, README, scope/retro (AC-2, AC-8) | a mirror missing | content contract | add | two Paths lines counted, not enumerated by prose |
 | removed terms (mandatory-valve wording, user smoke check, dev-never-prunes parenthetical, second-derivation clause, test-plan non-list clause) | a survivor states the superseded rule | static: leftover-term sweep | add | entry-1 leftover-term check over canon, README, docs and agent memory, memory included: no hit on the tree, no memory hit |
-| `asd-dev.md` re-read rule (AC-12); `t_tech-reference.md`, "Tech reference docs" (AC-13); `language-policy.md` row; review-policy `pre-existing`/`CL-N`/base-ref wording (AC-5, AC-2, AC-16); retro and scope intake prose (AC-4); `asd-init` smoke/valve prompts (AC-3, AC-14); `suite` scope attr (AC-10) | prose behaviour with no machine-checkable literal beyond what is pinned above | existing checks | none | the runtime-subcommand, phase-chain, README-mirror, template-shape and D13 load-ceiling checks already in `tests/run.js` cover the mirrors and byte budget; the scope attr values are covered by the sprint-034 Suite run scope test; a further literal pin would only restate prose |
+| `asd-dev.md` re-read rule (AC-12); `t_tech-reference.md`, "Tech reference docs" (AC-13); `language-policy.md` row; review-policy `pre-existing`/`CL-N`/base-ref wording (AC-5, AC-2, AC-16); retro and scope intake prose (AC-4); `asd-init` smoke/valve prompts (AC-3, AC-14) | prose behaviour with no machine-checkable literal beyond what is pinned above | existing checks | none | the runtime-subcommand, phase-chain, README-mirror, template-shape and D13 load-ceiling checks already in `tests/run.js` cover the mirrors and byte budget; a further literal pin would only restate prose |
+| `suite` op scope attr (AC-10): "Operation timing" `Kinds (attrs):` list vs the Suite run Scope values | the attr values drift from the template's Scope values; the tester definition naming a literal instead of citing the home | content contract | add | two lists that must stay equal, both parsed from their homes; the sprint-034 Suite run scope test checks the Suite run Scope, not the op attr |
 
 ## Removed tests
 
@@ -56,6 +57,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 | tests/run.js: sprint-035 AC-3: impl-test step 10 runs `smoke` once … | mutation `none (smoke)` → `none` in step 10: `node tests/run.js --filter "AC-3: impl-test step 10"` → exit 1, that test (1 matched); control: reword "runs it once" → "executes it once": `node tests/run.js --filter "sprint-035 AC-3"` → exit 0 (1 matched); runs: 2 |
 | tests/run.js: sprint-035 AC-14: safety_valve is read live … | mutation `safety_valve` renamed in `asd-phase-cleanup.md`: `node tests/run.js --filter "AC-14: safety_valve"` → exit 1, that test (1 matched); runs: 1 |
 | tests/run.js: sprint-035 AC-5: the issue resolution kind … | mutation `issue` dropped from the kinds list: `node tests/run.js --filter "AC-5: the issue resolution kind"` → exit 1, that test (1 matched); runs: 1 |
+| tests/run.js: sprint-035 AC-10: the `suite` scope values "Operation timing" lists … | mutation superseded `impacted`\|`full` restored in the `Kinds (attrs):` line: `node tests/run.js --filter "sprint-035 AC-10"` → exit 1, that test (1 matched); control: values reordered `named`\|`impacted`\|`full`: same command → exit 0 (1 matched); runs: 2 |
 | tests/run.js: sprint-035 AC-7: the tester's Evidence routing … | mutation oracle wording removed from the row: `node tests/run.js --filter "sprint-035 AC-7"` → exit 1, that test (1 matched); runs: 1 |
 | tests/run.js: sprint-035 AC-2: the reliability checklist has a template … | mutation one Paths-map line stripped of its marker: `node tests/run.js --filter "AC-2: the reliability checklist has"` → exit 1, that test (1 matched); runs: 1 |
 | tests/run.js: sprint-035 leftover-term check … | mutation superseded `mandatory, not heuristic` restored in the valve home: `node tests/run.js --filter "sprint-035 leftover"` → exit 1, that test (1 matched); runs: 1 |
@@ -63,10 +65,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full — the safety valve widened the impacted set (framework-wide files changed; `safety_valve` absent = enabled)
-- Result: pass — 390/390 passed, 0 failed, 0 skipped
+- Scope: full — review-fix combined-4: the named check `node tests/run.js --filter "sprint-035 AC-10"` passed (1/1), then every test file ran with no filter
+- Result: pass — 391/391 passed, 0 failed, 0 skipped
 - Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check`
-- HEAD: 71f6a1b3f687b832306273ed91ff397e62c4aa5d
+- HEAD: b5383e29172d605d1eb5aee920a8d5b9581f1358
 
 ## Defects
 
