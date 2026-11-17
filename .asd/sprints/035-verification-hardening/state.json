@@ -1,7 +1,7 @@
 {
   "sprint_id": "035-verification-hardening",
   "branch": "sprint/035-verification-hardening",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -69,6 +69,13 @@
       "reason": "all Tasks ticked, build/lint clean, flagged accepted, no stubs",
       "evidence": "decisions-log.md 2026-11-17 impl assessment approved",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "reviewer question",
+      "decision_actor": "user",
+      "reason": "user answer: a: keep AC-15",
+      "evidence": "decisions-log.md 2026-11-17 reviewer question wave-1/iter-03",
+      "artifact_revision": "combined.md@wave-1/iter-03"
     }
   ],
   "task_routing": {
@@ -169,16 +176,54 @@
       "reason": "risk:comment-line classification edge",
       "raise_effort": false,
       "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-03": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-line classification edge",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
   "reviews": {
-    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache quota)" } }, "iteration_heads": { "iter-01": "cd124372d8c7e6a2ea61b9d4b15837a976c4eb35", "iter-02": "f06ce024f3e11afc9beb18a572ba4a4c8d64d9cc", "iter-03": "bf0d3e9d84b759ba862554aa445f71d9292c3cfe" }, "latched": {} } ] }
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 3,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "cd124372d8c7e6a2ea61b9d4b15837a976c4eb35",
+            "iter-02": "f06ce024f3e11afc9beb18a572ba4a4c8d64d9cc",
+            "iter-03": "bf0d3e9d84b759ba862554aa445f71d9292c3cfe"
+          },
+          "latched": {}
+        }
+      ]
+    }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T09:30:10.000Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-11-17T12:39:25.000Z",
+  "review_fixes_pending": "wave-1/iter-03",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

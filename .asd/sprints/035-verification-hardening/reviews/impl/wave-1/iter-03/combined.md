@@ -30,3 +30,4 @@ After the user answers the question below, route finding 1 to review-fix. With o
 
 ## Escalations (optional)
 - question: 1 — AC-15 says a round that only changes comments keeps every latch, but the current classifier counts every line of a multi-line `/* … */` block as code. Restore the AC, or narrow the AC to match the code?; options: (a) keep AC-15: resolve block-comment lines against the file blob (a new runtime check, a few lines, plus one test pair) / (b) amend AC-15 and sprint-lifecycle.md: multi-line block-comment lines count as code (doc-only rounds in js/ts/java-style consumer code then clear latches)
+  answer: (a) keep AC-15 — resolve block-comment lines against the file blob (user, 2026-11-17)
