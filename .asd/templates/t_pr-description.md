@@ -13,6 +13,9 @@
 ## Version (self-hosting only)
 {{old_asd_version}} → {{new_asd_version}} — see CHANGELOG.md
 
+## External Review skipped (optional; omit when no wave's last iteration skipped)
+- wave-{{K}}: {{unreviewed files}}
+
 ## Breaking changes (optional)
 - {{api/contract that breaks}}: {{migration path}}
 
