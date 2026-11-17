@@ -15,7 +15,7 @@ Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry
 |---|---|---|
 | 1 | 4278709f | full change surface |
 | 2 | 7a05ae53 | delta since entry 1 |
-| 3 | 834451eb | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
+| 3 | 113e3066 | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
 
 ## Risk → check decisions
 

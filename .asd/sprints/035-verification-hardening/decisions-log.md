@@ -56,3 +56,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — route review-fix wave-1/iter-02 (combined-1, combined-2): standard, dispatch HEAD e83c0dcd1668bd83411948aa9ccb0d73c91c3433; risk change: comment-line classification edge
 - 2026-11-17 — impl fix for wave-1/iter-02: findings resolved (combined-1 8d64971b, combined-2 4f96c54e); hash ledgers recomputed. AC-15 test pinning the removed block-body exception fails by design → impl-test entry 3.
 - 2026-11-17 — route asd-tester impl-test#3: standard, dispatch HEAD 6559c576032f574f4d7f81ecf94405028e2a74d5
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), AC-15/AC-16 tests adapted; smoke absent, skipped
