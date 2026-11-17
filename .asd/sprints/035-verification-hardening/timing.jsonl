@@ -125,3 +125,5 @@
 {"op":"close","id":"impl-review wave-1/iter-04","kind":"review-iteration","parent":"impl-review#4","start":"2026-11-17T12:47:12.077Z","end":"2026-11-17T12:53:15.839Z","outcome":"done","attrs":{"wave":"1","iteration":"4"}}
 {"op":"close","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-11-17T12:47:11.515Z","end":"2026-11-17T12:53:15.959Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#5","kind":"phase","parent":null,"start":"2026-11-17T12:53:15.959Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-04","kind":"dispatch","parent":"impl#5","start":"2026-11-17T12:53:16.478Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"review-fix wave-1/iter-04","kind":"dispatch","parent":"impl#5","start":"2026-11-17T12:53:16.478Z","end":"2026-11-17T12:59:36.938Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
