@@ -8,7 +8,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 
 const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
@@ -8924,7 +8924,7 @@ test('sprint-030 AC-7/AC-8/AC-10/AC-12: the external-review cache lives in the s
   assert.ok(cacheRule.includes('`external-cache.json` in the scratch directory') && cacheRule.includes('`node .asd/runtime.js scratch-dir`'), 'AC-7: the canonical cache path must be external-cache.json in the directory scratch-dir prints, a self-ignoring one - a tracked-folder path shows up untracked in a consumer and breaks the clean-tree check');
   const tester = canonText('.asd/agents/asd-tester.md');
   const duty = tester.split('\n').find((line) => line.startsWith('- must: bracket every suite run')) || '';
-  assert.ok(duty.includes('--kind suite') && duty.includes('scope=impacted|full') && duty.includes('--parent'), 'AC-8: the tester definition must state the duty with the kind, scope attribute and parent a suite op needs, so it reaches every tester dispatch');
+  assert.ok(duty.includes('--kind suite') && duty.includes('--attrs scope=') && duty.includes('--parent'), 'AC-8: the tester definition must state the duty with the kind, scope attribute and parent a suite op needs, so it reaches every tester dispatch');
   assert.deepStrictEqual(canonMarkdownFiles().filter((rel) => canonText(rel).includes('--kind suite')), ['.asd/agents/asd-tester.md'], 'AC-8: the suite-op command form has one home, the tester definition - a workflow restating it drifts from it');
   const valve = headingBody('.asd/rules/sprint-lifecycle.md', 'Impacted test set').split('\n').find((line) => line.startsWith('**Safety valve')) || '';
   assert.ok(/step 8 suite gate/.test(valve) && /step 3 pre-authoring run[^.]*without the valve/.test(valve), 'AC-10: the safety valve home must reach impl-test through the step 8 suite gate and exempt the step 3 run and the reruns after an authoring batch');
@@ -10269,6 +10269,411 @@ test('sprint-034 leftover-term check: no canon, README, AGENTS.md, runtime, hook
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...docs, ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a sentence this sprint removed (git diff main...HEAD) or a memory claim about the behaviour it removed, taken exactly - one surviving states the superseded rule as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
+});
+
+// ===========================================================================
+// 35. Sprint 035: latch refresh (AC-15), reliability checklist (AC-2, AC-4),
+// base-ref reads (AC-16), findings markers (AC-5), unknown-flag warning
+// (AC-9) and the content contracts of the smoke step (AC-3), the safety-valve
+// switch (AC-14), the issue resolution kind (AC-5), the differential evidence
+// row (AC-7) and the checklist home (AC-2).
+// ===========================================================================
+
+const LATCH_BASE_FILES = {
+  'src/a.js': 'const a = 1;\n',
+  'src/b.js': 'const b = 1;\n',
+  'src/c.py': 'c = 1\n',
+  'src/doc.js': '/**\n * Adds.\n */\nfunction add() {}\nconst total = a\n  * b;\n',
+  'notes.xyz': 'one\n',
+  'docs/guide.md': 'one\n',
+  'tests/x.js': 'const x = 1;\n',
+  '.asd/sprints/035-x/tool.js': 'const t = 1;\n',
+};
+
+/** Runs `latch-refresh` over a sandbox repo whose wave 1 latched `latched` at `LATCH_BASE_FILES`, with `change` committed afterwards and `manifests` (reviewer to listed files) on disk in the wave's first iteration; `flat` lays the state and manifests out as the legacy flat impl node, `heads: false` leaves the iteration heads empty. Returns the CLI result, the state text before and after, and the latch map after. */
+function latchScenario({ change, manifests, latched, flat = false, heads = true }) {
+  const { repo, env, git } = sandboxGitRepo();
+  const write = (root, rel, text) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), text, 'utf8');
+  };
+  Object.entries(LATCH_BASE_FILES).forEach(([rel, text]) => write(repo, rel, text));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  Object.entries(change).forEach(([rel, text]) => write(repo, rel, text));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'fix round');
+  const sprintDir = path.join(mkTempDir(), '035-x');
+  const iterationDir = flat ? path.join('reviews', 'impl', 'iter-01') : path.join('reviews', 'impl', 'wave-1', 'iter-01');
+  Object.entries(manifests).forEach(([reviewer, files]) => {
+    const name = reviewer === runtime.EXTERNAL_REVIEWER ? `${reviewer}.scope.json` : `${reviewer}.manifest.json`;
+    write(sprintDir, path.join(iterationDir, name), JSON.stringify({ files }));
+  });
+  const node = `{ "iteration": 2, "verdicts": {}, "iteration_heads": ${heads ? `{ "iter-01": "${base}" }` : '{}'}, "latched": ${JSON.stringify(latched)} }`;
+  const statePath = path.join(sprintDir, 'state.json');
+  write(sprintDir, 'state.json', verdictStateText({ implNode: flat ? node : `{ "wave": 1, "waves": [ ${node} ] }` }));
+  const before = fs.readFileSync(statePath, 'utf8');
+  const outcome = runtimeCliResult(['latch-refresh', '--state', statePath, '--sprint-dir', sprintDir], { cwd: repo, env });
+  const text = fs.readFileSync(statePath, 'utf8');
+  const impl = JSON.parse(text).reviews.impl;
+  return { outcome, before, text, latchedAfter: (flat ? impl : impl.waves[0]).latched };
+}
+
+test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose manifests listed a changed production file, every latch for a file no manifest listed, and keeps them all for a docs, test or sprint-artefact change', () => {
+  const [quality, efficiency] = runtime.INTERNAL_REVIEWERS;
+  const external = runtime.EXTERNAL_REVIEWER;
+  const latched = { [quality]: 1, [efficiency]: 1, [external]: 1 };
+  const manifests = { [quality]: ['src/a.js'], [efficiency]: ['src/b.js'], [external]: ['src/a.js'] };
+
+  const listed = latchScenario({ change: { 'src/a.js': 'const a = 2;\n' }, manifests, latched });
+  assert.deepStrictEqual(listed.outcome.result, { cleared: [quality, external], files: ['src/a.js'] }, `AC-15: a code change in a file Quality and External Review listed clears exactly their latches (got ${JSON.stringify(listed.outcome)})`);
+  assert.deepStrictEqual(listed.latchedAfter, { [efficiency]: 1 }, 'AC-15: the state keeps the latch of the reviewer that never listed the file');
+
+  const flat = latchScenario({ change: { 'src/b.js': 'const b = 2;\n' }, manifests, latched, flat: true });
+  assert.deepStrictEqual([flat.outcome.result.cleared, flat.latchedAfter], [[efficiency], { [quality]: 1, [external]: 1 }], 'AC-15: a legacy flat reviews.impl node reads as wave 1, its manifests under reviews/impl/iter-NN');
+
+  const unlisted = latchScenario({ change: { 'src/c.py': 'c = 2\n' }, manifests, latched });
+  assert.deepStrictEqual([unlisted.outcome.result.cleared, unlisted.latchedAfter], [[quality, efficiency, external], {}], 'AC-15: a production file in no manifest of the wave clears every latch');
+
+  const inert = latchScenario({ change: { 'docs/guide.md': 'two\n', 'tests/x.js': 'const x = 2;\n', '.asd/sprints/035-x/tool.js': 'const t = 2;\n' }, manifests, latched });
+  assert.deepStrictEqual(inert.outcome.result, { cleared: [], files: [] }, 'AC-15: a docs file, a test file and a sprint artefact are not production executable changes');
+  assert.strictEqual(inert.text, inert.before, 'AC-15: nothing cleared writes nothing');
+
+  const noHeads = latchScenario({ change: { 'src/a.js': 'const a = 2;\n' }, manifests, latched, heads: false });
+  assert.deepStrictEqual([noHeads.outcome.result.cleared, noHeads.text === noHeads.before], [[], true], 'AC-15: a wave with no iteration head has nothing to diff against and writes nothing');
+  const noLatch = latchScenario({ change: { 'src/a.js': 'const a = 2;\n' }, manifests, latched: {} });
+  assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
+});
+
+test('sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged - only comments and blank lines outside strings differ, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, an added or deleted file, a shebang, a `*`-led code line, a comment-boundary shift, a regex or multi-line string holding comment markers and a blank line inside a string stay code', () => {
+  const [quality] = runtime.INTERNAL_REVIEWERS;
+  const latched = { [quality]: 1 };
+  const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
+
+  assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\n\n'), [], 'AC-15: an added comment line and a blank line leave the latch');
+  assert.deepStrictEqual(clearsFor('src/c.py', 'c = 1\n# note\n'), [], 'AC-15: a hash-family comment leaves the latch');
+  assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\nconst z = 2;\n'), [quality], 'AC-15: a hunk mixing a comment and a code line is code');
+  assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
+
+  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds two numbers.\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the body of a multi-line block comment leaves the latch');
+  assert.deepStrictEqual(clearsFor('src/doc.js', '/*\n * Adds.\n  */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the opener and the closer of a block comment leaves the latch');
+  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: deleting a block-comment body line, a base-side line, leaves the latch');
+  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() {}\nconst total = a\n  * c;\n'), [quality], 'AC-15: a `*`-led continuation of an expression outside a block comment is code');
+  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() { return 1; }\nconst total = a\n  * b;\n'), [quality], 'AC-15: a code edit beside a block comment is code');
+
+  const commentOnly = (file, base, head) => runtime.isCommentOnlyChange(file, (side) => (side === 'base' ? base : head));
+  const JSDOC = '/**\n * Adds.\n */\nfunction add() {}\n';
+  const REGEX_SLASH_STAR = 'x = s.replace(/\\/*$/, \'\');\n';
+  const REGEX_THEN_BLOCK = 'x = s.replace(/\\/*$/, \'\'); y = 2; /* c */\n';
+  const BOUNDARY_BASE = '/*a*/ x(); /*b*/\n';
+  const COMMENT_ONLY = [
+    ['a.js', JSDOC, '/**\n * Adds two.\n */\nfunction add() {}\n', 'a block-comment body edit'],
+    ['a.js', JSDOC, '/*\n * Adds.\n  */\nfunction add() {}\n', 'a block-comment opener and closer edit'],
+    ['a.js', 'f();\n', 'f();\n// n\n', 'an added whole-line `//` comment'],
+    ['a.js', 'f();\n', 'f(); // n\n', 'an added trailing `//` comment'],
+    ['a.js', 'f();\ng();\n', 'f();\n\ng();\n', 'a blank line outside a string'],
+    ['a.css', 'a { b: c }\n', '/* n */\na { b: c }\n', 'a css block comment'],
+    ['a.sh', 'echo 1\n', 'echo 1\n# n\n', 'an added `#` comment'],
+    ['a.sql', 'select 1;\n', 'select 1; -- n\n', 'an added `--` comment'],
+  ];
+  const CODE = [
+    ['a.js', `${REGEX_SLASH_STAR}run();\n`, `${REGEX_SLASH_STAR}run2();\n`, 'a code edit after a regex holding `\\/*` (reviewer combined-1 repro)'],
+    ['a.js', REGEX_THEN_BLOCK, REGEX_THEN_BLOCK.replace('y = 2', 'y = 3'), 'a code edit between a regex holding `\\/*` and a later block comment'],
+    ['a.js', 'x = /[/*]/;\nrun();\n', 'x = /[/*]/;\nrun2();\n', 'a code edit after a regex whose `/*` opens an unclosed block'],
+    ['a.kt', 'val s = """\n// x\n"""\nrun()\n', 'val s = """\n// y\n"""\nrun()\n', 'an edit of a `//` line inside a Kotlin multi-line string'],
+    ['a.kt', 'val s = """\n/* x\n"""\nrun()\n', 'val s = """\n/* x\n"""\nrun2()\n', 'a code edit after a Kotlin multi-line string holding an unclosed `/*`'],
+    ['a.js', BOUNDARY_BASE, '/*a x(); b*/\n', 'a comment-boundary shift that comments out unchanged code'],
+    ['a.js', 'const t = `a\nb`;\n', 'const t = `a\n\nb`;\n', 'a blank line added inside a template literal'],
+    ['a.py', 'd = """\n# a\n"""\n', 'd = """\n# b\n"""\n', 'a `#` line changed inside a Python triple-quoted string'],
+    ['a.sh', '#!/bin/sh\n', '#!/bin/bash\n', 'a shebang edit'],
+    ['a.scss', 'a { b: url(http://x/a.png) }\n', 'a { b: url(http://x/b.png) }\n', 'an edit after `http://` in code'],
+    ['a.css', 'a { b: c }\n', 'a { b: c }\n// x\n', 'a `//` line in css, which has no line comments'],
+    ['src/doc.js', LATCH_BASE_FILES['src/doc.js'], LATCH_BASE_FILES['src/doc.js'].replace('* b;', '* c;'), 'a `*`-led expression continuation outside a block comment'],
+    ['a.js', 'f();\n', 'f();\n// n\ng();\n', 'a comment added beside a code line'],
+    ['notes.xyz', 'one\n', 'one\n// only a comment\n', 'an unknown extension'],
+    ['a.js', null, '// n\n', 'an added file'],
+    ['a.js', 'f();\n', null, 'a deleted file'],
+    ['a.js', 'f();\n', 'f();\n', 'text identical on both sides'],
+  ];
+  const misjudged = [...COMMENT_ONLY.map((row) => [...row, true]), ...CODE.map((row) => [...row, false])].filter(([file, base, head, , expected]) => commentOnly(file, base, head) !== expected).map(([, , , what, expected]) => `${what} judged ${expected ? 'code' : 'comment-only'}`);
+  assert.deepStrictEqual(misjudged, [], 'AC-15: every change in the comment-only table is comment-only and every change in the code table counts as code');
+});
+
+test('sprint-035 AC-2: a trigger glob keeps * inside a path segment, lets ** cross segments and match no directory, takes a comma list and backtick-wrapped globs, and anchors on the whole path', () => {
+  const matches = runtime.triggerMatches;
+  assert.ok(matches('src/*.js', ['src/a.js']) && !matches('src/*.js', ['src/x/a.js']), 'AC-2: * never crosses a segment');
+  assert.ok(matches('src/**', ['src/x/y/a.js']), 'AC-2: ** crosses segments');
+  assert.ok(matches('**/*.js', ['a.js']) && matches('**/*.js', ['x/y/a.js']), 'AC-2: **/ also matches no directory');
+  assert.ok(matches('docs/*.md, `README.md`', ['README.md']) && !matches('docs/*.md, README.md', ['other.md']), 'AC-2: a comma list matches any member, a backtick-wrapped glob is read without its backticks');
+  assert.ok(!matches('docs/*.md', ['.asd/docs/a.md']) && !matches('a.js', ['xa.js', 'a.jsx']), 'AC-2: a glob is anchored on the whole path');
+  assert.ok(matches('src/*.js', ['src\\a.js']), 'AC-2: a backslash path reads as a slash path');
+});
+
+test('sprint-035 AC-2: emit-manifest --checklist adds each item whose trigger matches the reviewer\'s files to the manifest rules and a checklist array, and an absent checklist file adds nothing', () => {
+  const root = mkTempDir();
+  const checklist = path.join(root, 'reliability-checklist.md');
+  fs.writeFileSync(checklist, ['# Reliability checklist', '', '| ID | Trigger | Check | Severity | Source | Last hit |', '|---|---|---|---|---|---|', '| CL-1 | src/** | Guard every parse | critical | 030-a#F-1 | — |', '| CL-2 | docs/** | Link every claim | low | 030-a#F-2 | — |', ''].join('\n'), 'utf8');
+  const scope = path.join(root, 'scope.txt');
+  fs.writeFileSync(scope, 'src/app.js\n', 'utf8');
+  const [quality] = runtime.INTERNAL_REVIEWERS;
+  const emit = (name, extra) => {
+    const out = path.join(root, name);
+    fs.mkdirSync(out);
+    const emitted = runtimeCliResult(['emit-manifest', '--reviewer', quality, '--phase', 'impl-review', '--files', scope, '--out', out, ...extra]);
+    assert.strictEqual(emitted.status, 0, JSON.stringify(emitted));
+    return JSON.parse(fs.readFileSync(emitted.result.manifest, 'utf8'));
+  };
+
+  const withList = emit('with', ['--checklist', checklist]);
+  assert.deepStrictEqual(withList.checklist, [{ id: 'CL-1', check: 'Guard every parse', severity: 'critical' }], 'AC-2: only the item whose trigger matches a scope file is added, as {id, check, severity}');
+  assert.ok(withList.rules.includes('CL-1') && !withList.rules.includes('CL-2'), 'AC-2: the matched id joins the rules the ledger must cover, the unmatched one does not');
+
+  const absent = emit('absent', ['--checklist', path.join(root, 'missing.md')]);
+  const without = emit('without', []);
+  assert.deepStrictEqual([absent.checklist, absent.rules], [undefined, without.rules], 'AC-2: an absent checklist file adds neither a checklist array nor a rule');
+});
+
+test('sprint-035 AC-16: --base-ref reads each reviewer rubric and the bundle\'s base-ref files from that git ref, omits a bundle file, or a granted section, absent there with a stderr note, and refuses a ref naming no commit or a rubric absent at it', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  const [quality] = runtime.INTERNAL_REVIEWERS;
+  const SENTINEL = 'BASEREF-SENTINEL';
+  const rubricRel = `.asd/agents/asd-reviewer-${quality}.md`;
+  const policyRel = '.asd/rules/review-policy.md';
+  const put = (rel, text) => {
+    fs.mkdirSync(path.dirname(path.join(repo, rel)), { recursive: true });
+    fs.writeFileSync(path.join(repo, rel), text, 'utf8');
+  };
+  put('keep.txt', 'x\n');
+  git('add', '--', 'keep.txt');
+  git('commit', '-q', '-m', 'without rubric');
+  const withoutRubric = git('rev-parse', 'HEAD').trim();
+  put(rubricRel, readRepoFile(rubricRel).replace(/^## Review rubric *$/m, `## Review rubric\n\n### ${SENTINEL}\n`));
+  put(policyRel, readRepoFile(policyRel).replace(/^## Severity levels *$/m, `## Severity levels\n\n${SENTINEL} line.\n`));
+  git('add', '--', rubricRel, policyRel);
+  git('commit', '-q', '-m', 'rubric and policy');
+
+  const scope = path.join(mkTempDir(), 'scope.txt');
+  fs.writeFileSync(scope, 'src/app.js\n', 'utf8');
+  const emit = (extra) => {
+    const out = mkTempDir();
+    const emitted = runtimeCliResult(['emit-manifest', '--reviewer', quality, '--phase', 'impl-review', '--files', scope, '--out', out, ...extra], { cwd: repo, env });
+    return emitted.status === 0 ? { rules: JSON.parse(fs.readFileSync(emitted.result.manifest, 'utf8')).rules } : emitted;
+  };
+  assert.ok(emit(['--base-ref', 'HEAD']).rules.includes(SENTINEL), 'AC-16: the rubric comes from the ref - the sentinel exists only in the committed copy');
+  assert.ok(!emit([]).rules.includes(SENTINEL), 'AC-16: without --base-ref the rubric is the working-tree one');
+  const unknown = emit(['--base-ref', 'no-such-ref']);
+  assert.ok(unknown.status !== 0 && /names no commit/.test(unknown.stderr), `AC-16: an unresolvable ref fails naming it (got ${JSON.stringify(unknown)})`);
+  const absentRubric = emit(['--base-ref', withoutRubric]);
+  assert.ok(absentRubric.status !== 0 && /not found at/.test(absentRubric.stderr), `AC-16: a rubric absent at the ref fails (got ${JSON.stringify(absentRubric)})`);
+
+  const bundle = (extra) => {
+    const out = path.join(mkTempDir(), 'bundle.md');
+    const ran = spawnSync(process.execPath, [RUNTIME_JS, 'context', '--role', 'asd-external-review', '--phase', 'impl-review', '--out', out, ...extra], { cwd: repo, env, encoding: 'utf8' });
+    return { status: ran.status, stderr: ran.stderr, text: ran.status === 0 ? fs.readFileSync(out, 'utf8') : '' };
+  };
+  const fromRef = bundle(['--base-ref', 'HEAD']);
+  assert.strictEqual(fromRef.status, 0, fromRef.stderr);
+  assert.ok(fromRef.text.includes(SENTINEL), 'AC-16: a bundle review-policy section comes from the ref');
+  assert.ok(!fromRef.text.includes('<!-- .asd/rules/external-review.md#') && /external-review\.md absent at HEAD, omitted/.test(fromRef.stderr), 'AC-16: external-review.md is absent at the ref, so its sections are omitted with a stderr note');
+  const fromTree = bundle([]);
+  assert.ok(fromTree.text.includes('<!-- .asd/rules/external-review.md#') && !fromTree.text.includes(SENTINEL) && fromTree.stderr === '', 'AC-16: without --base-ref every file reads from the working tree, nothing omitted');
+
+  const GRANTED = '.asd/rules/review-policy.md#Nitpick drop list (reviewers must NOT raise)';
+  assert.ok(fromTree.text.includes(`<!-- ${GRANTED} -->`), 'sanity: the role is granted that review-policy section');
+  put(policyRel, readRepoFile(policyRel).replace(/^## Nitpick drop list.*$/m, 'Nitpick drop list'));
+  git('add', '--', policyRel);
+  git('commit', '-q', '-m', 'policy without a granted heading');
+  const missingSection = bundle(['--base-ref', 'HEAD']);
+  assert.strictEqual(missingSection.status, 0, `AC-16: a section absent at the ref omits that ref instead of failing the bundle (got ${missingSection.stderr})`);
+  assert.ok(missingSection.stderr.includes(`runtime: ${GRANTED} absent at HEAD, omitted`), `AC-16: the omission is noted on stderr, naming the section (got ${missingSection.stderr})`);
+  assert.ok(!missingSection.text.includes(`<!-- ${GRANTED} -->`) && missingSection.text.includes('<!-- .asd/rules/review-policy.md#Severity levels -->'), 'AC-16: only the absent section is omitted, the file\'s other granted sections stay');
+
+  put(policyRel, readRepoFile(policyRel).replace(/^## Nitpick drop list.*$/m, (heading) => `${heading}\n\n${heading}`));
+  git('add', '--', policyRel);
+  git('commit', '-q', '-m', 'policy with a duplicated granted heading');
+  const duplicateSection = bundle(['--base-ref', 'HEAD']);
+  assert.ok(duplicateSection.status !== 0 && /2 matches/.test(duplicateSection.stderr) && !duplicateSection.stderr.includes(`runtime: ${GRANTED} absent`), `AC-16: a granted heading present twice at the ref fails the bundle, it is not read as absent (got ${JSON.stringify(duplicateSection)})`);
+});
+
+test('sprint-035 AC-5, AC-2: persist-review gives each finding pre_existing when its Description opens with `pre-existing:` and checklist as the distinct CL-N ids it cites, and no marker otherwise', () => {
+  const root = mkTempDir();
+  const header = ['| # | Severity | Location | Description | Suggested fix |', '|---|---|---|---|---|'];
+  const rows = [
+    '| 1 | high | `a.js:1` | pre-existing: unchecked null; CL-3 and CL-3 again | f |',
+    '| 2 | low | `b.js:2` | notes the pre-existing: wording mid-text | f |',
+    '| 3 | medium | `c.js:3` | cites CL-12 then CL-1 | f |',
+    '| 4 | medium | `d.js:4` | plain | f |',
+  ];
+  const input = path.join(root, 'returned.md');
+  fs.writeFileSync(input, `[REVIEW-impl-external]: CONCERNS\n\n## Kept findings\n\n${[...header, ...rows].join('\n')}\n`, 'utf8');
+  const persisted = runtimeCliResult(['persist-review', '--phase', 'impl', '--reviewer', runtime.EXTERNAL_REVIEWER, '--in', input, '--out-dir', root]);
+  assert.strictEqual(persisted.status, 0, JSON.stringify(persisted));
+  const expected = [
+    { id: '1', severity: 'high', location: 'a.js:1', pre_existing: true, checklist: ['CL-3'] },
+    { id: '2', severity: 'low', location: 'b.js:2' },
+    { id: '3', severity: 'medium', location: 'c.js:3', checklist: ['CL-12', 'CL-1'] },
+    { id: '4', severity: 'medium', location: 'd.js:4' },
+  ];
+  assert.deepStrictEqual(persisted.result.findings, expected, 'AC-5: the markers ride each finding, a mid-text mention is no marker');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(root, `${runtime.EXTERNAL_REVIEWER}.findings.json`), 'utf8')), expected, 'AC-4: the findings JSON checklist-hits reads carries the same markers');
+});
+
+/** A checklist file: a title line, then one row per `[id, severity, source, lastHit]`, in `eol`. */
+function checklistText(rows, eol = '\n') {
+  const lines = ['# Reliability checklist', '', '| ID | Trigger | Check | Severity | Source | Last hit |', '|---|---|---|---|---|---|', ...rows.map(([id, severity, source, lastHit]) => `| ${id} | src/** | Check ${id} | ${severity} | ${source} | ${lastHit} |`), ''];
+  return lines.join(eol);
+}
+
+test('sprint-035 AC-4: checklist-hits stamps the sprint as Last hit on each cited item and nothing else, and lists as candidates the non-critical items unhit for three sprints, counted from Last hit else Source', () => {
+  const SPRINT = '045-current';
+  const rows = [
+    ['CL-1', 'high', '030-a#F-1', '—'],
+    ['CL-2', 'high', '030-a#F-2', '041-b'],
+    ['CL-3', 'high', '030-a#F-3', '042-c'],
+    ['CL-4', 'high', '030-a#F-4', '043-d'],
+    ['CL-5', 'critical', '010-a#F-5', '—'],
+    ['CL-6', 'medium', '042-e#A-1', '—'],
+    ['CL-7', 'medium', '043-e#A-1', '—'],
+  ];
+  const stamped = rows.map((row) => (row[0] === 'CL-1' ? [...row.slice(0, 3), SPRINT] : row));
+  const setup = (eol) => {
+    const sprintDir = path.join(mkTempDir(), SPRINT);
+    const iterationDir = path.join(sprintDir, 'reviews', 'impl', 'wave-1', 'iter-01');
+    fs.mkdirSync(iterationDir, { recursive: true });
+    fs.writeFileSync(path.join(iterationDir, 'quality.findings.json'), JSON.stringify([{ id: '1', severity: 'high', location: 'a.js:1', checklist: ['CL-1', 'CL-9'] }, { id: '2', severity: 'low', location: 'b.js:2' }]), 'utf8');
+    const checklist = path.join(mkTempDir(), 'reliability-checklist.md');
+    fs.writeFileSync(checklist, checklistText(rows, eol), 'utf8');
+    return { sprintDir, checklist };
+  };
+
+  for (const eol of ['\n', '\r\n']) {
+    const { sprintDir, checklist } = setup(eol);
+    const run = () => runtimeCliResult(['checklist-hits', '--checklist', checklist, '--sprint-dir', sprintDir]);
+    const first = run();
+    assert.deepStrictEqual(first.result, { hit: ['CL-1'], candidates: ['CL-2', 'CL-3', 'CL-6'] }, `AC-4: only the cited existing item is a hit; 4 sprints (Last hit), exactly 3 (Last hit), and 3 counted from Source are candidates, 2 sprints and a critical item are not (got ${JSON.stringify(first)})`);
+    assert.strictEqual(fs.readFileSync(checklist, 'utf8'), checklistText(stamped, eol), `AC-4: exactly CL-1's Last hit cell changed, every other byte and the ${JSON.stringify(eol)} line endings kept`);
+    assert.deepStrictEqual(run().result, first.result, 'AC-4: a second run reports the same');
+    assert.strictEqual(fs.readFileSync(checklist, 'utf8'), checklistText(stamped, eol), 'AC-4: the second run leaves the file as the first left it');
+  }
+
+  const missing = path.join(mkTempDir(), 'reliability-checklist.md');
+  const absent = runtimeCliResult(['checklist-hits', '--checklist', missing, '--sprint-dir', setup('\n').sprintDir]);
+  assert.deepStrictEqual(absent.result, { hit: [], candidates: [] }, 'AC-4: an absent checklist reports empty lists');
+  assert.ok(!fs.existsSync(missing), 'AC-4: an absent checklist is never created');
+});
+
+/** The runtime CLI's exit status, stdout and stderr for `args`. */
+function runtimeSpawn(args) {
+  const ran = spawnSync(process.execPath, [RUNTIME_JS, ...args], { encoding: 'utf8' });
+  return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr };
+}
+
+test('sprint-035 AC-9: a flag a command does not read warns once on stderr naming it, a declared flag never warns, and the exit status and the command\'s own failure are unchanged', () => {
+  const guide = path.join(mkTempDir(), 'guide.md');
+  fs.writeFileSync(guide, '## Intro\n\nbody\n', 'utf8');
+  const warning = (name) => `runtime: ignored flag --${name}\n`;
+
+  const plain = runtimeSpawn(['scratch-dir']);
+  assert.deepStrictEqual([plain.status, plain.stderr], [0, ''], 'sanity: the command alone exits 0 and warns of nothing');
+  const extra = runtimeSpawn(['scratch-dir', '--bogus', '1', '--state', 'x']);
+  assert.deepStrictEqual([extra.status, extra.stdout, extra.stderr], [0, plain.stdout, warning('bogus') + warning('state')], 'AC-9: each unread flag warns, a flag of another command included, and the output is untouched');
+
+  const declared = runtimeSpawn(['section', '--file', guide, '--heading', 'Intro']);
+  assert.deepStrictEqual([declared.status, declared.stderr], [0, ''], 'AC-9: a declared flag never warns');
+  const unreadSection = runtimeSpawn(['section', '--file', guide, '--heading', 'Intro', '--typo', '1']);
+  assert.deepStrictEqual([unreadSection.status, unreadSection.stdout, unreadSection.stderr], [0, declared.stdout, warning('typo')], 'AC-9: a command that reads flags keeps its result when another is unread');
+
+  const refused = runtimeSpawn(['section', '--typo', 'x']);
+  const refusedPlain = runtimeSpawn(['section']);
+  assert.ok(refusedPlain.status !== 0 && refused.status === refusedPlain.status, 'AC-9: a failing call exits with the same non-zero status with or without the unread flag');
+  assert.ok(refused.stderr.startsWith(warning('typo')) && refused.stderr.includes(refusedPlain.stderr.trim()), 'AC-9: the warning precedes the command\'s own failure message, which is unchanged');
+});
+
+test('sprint-035 AC-9: every flag canon passes to a `node .asd/runtime.js` command is one that command reads, so the unknown-flag warning never fires on a documented call', () => {
+  const declared = new Map([...canonText('.asd/runtime.js').split('const COMMAND_FLAGS = {')[1].split('\n};')[0].matchAll(/^\s+'?([a-z-]+)'?: \[([^\]]*)\],?$/gm)].map(([, name, list]) => [name, new Set([...list.matchAll(/'([^']+)'/g)].map(([, flag]) => flag))]));
+  assert.ok(declared.size > 20 && declared.has('emit-manifest') && declared.get('scratch-dir').size === 0, 'sanity: the declared flag sets parse out of runtime.js, an empty set included');
+  const checked = [];
+  const stray = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => [...line.matchAll(/node \.asd\/runtime\.js ([a-z-]+)([^`"]*)/g)].flatMap(([, command, rest]) => {
+    if (!declared.has(command)) return [];
+    return [...rest.matchAll(/(?<![\w-])--([a-z][a-z-]*)/g)].flatMap(([, flag]) => {
+      checked.push(`${command} --${flag}`);
+      return declared.get(command).has(flag) ? [] : [`${rel}:${index + 1} ${command} --${flag}`];
+    });
+  })));
+  assert.ok(checked.length > 50, `sanity: the sweep must reach canon's runtime invocations (reached ${checked.length})`);
+  assert.deepStrictEqual(stray, [], 'a documented flag missing from COMMAND_FLAGS warns on every real call - declare it there, or fix the doc');
+});
+
+test('sprint-035 AC-3: impl-test step 10 runs `smoke` once at the green exit, records a Smoke line and routes a failure as a code defect with Failing test none (smoke); the tester runner, the Suite run template and the Defects template carry the same line and token', () => {
+  const step = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), 10);
+  assert.ok(step.includes('`commands.yaml` carries `smoke`') && step.includes('`Smoke: <command> — pass|fail`') && step.includes('`Failing test: none (smoke)`'), 'AC-3: step 10 runs the key when present, records the Smoke line and names the defect token');
+  assert.ok(canonText('.asd/agents/asd-tester.md').includes('`Smoke: <command> — pass|fail`'), 'AC-3: the tester runner records the same Smoke line');
+  const template = canonText('.asd/templates/t_test-plan.md');
+  assert.ok(/^- Smoke: /m.test(template) && template.includes('none (smoke)'), 'AC-3: the Suite run template has the Smoke line and the Defects template the none (smoke) token');
+  assert.ok(/^# smoke: /m.test(canonText('.asd/templates/t_commands.yaml')), 'AC-3: the commands template carries the optional smoke key');
+});
+
+test('sprint-035 AC-14: safety_valve is read live and skipped by impl-test and cleanup, accepted by the pr gate - every restating site names the key, the template ships it enabled at top level and the home states disabled', () => {
+  const sites = ['.asd/rules/sprint-lifecycle.md', '.asd/workflows/asd-phase-impl-test.md', '.asd/agents/asd-tester.md', '.asd/workflows/asd-phase-cleanup.md', '.asd/workflows/asd-phase-pr.md', '.asd/templates/t_config.yaml', '.asd/skills/asd-init/SKILL.md', 'README.md'];
+  assert.deepStrictEqual(sites.filter((rel) => !canonText(rel).includes('safety_valve')), [], 'AC-14: every site that states the valve names the key');
+  assert.ok(/^safety_valve: enabled$/m.test(canonText('.asd/templates/t_config.yaml')), 'AC-14: the config template carries the key at top level, enabled');
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impacted test set');
+  assert.ok(home.includes('`safety_valve: disabled`') && home.includes('absent = `enabled`'), 'AC-14: the home states the disabled value and the absent default');
+  assert.ok(canonText('.asd/workflows/asd-phase-pr.md').includes('`safety_valve: disabled`'), 'AC-14: the pr gate names the disabled case it accepts cleanup\'s record under');
+});
+
+test('sprint-035 AC-5: the issue resolution kind impl-review writes is one of the kinds "User-resolved findings" lists, and the line it appends has that form', () => {
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery');
+  const kinds = /`resolved: <finding id, …> — <([^>]+)>, <YYYY-MM-DD>`/.exec(home);
+  assert.ok(kinds, 'sanity: the home keeps its resolved line shape');
+  assert.ok(kinds[1].split(' | ').includes('issue'), 'AC-5: issue is a listed kind');
+  const step = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), '7b');
+  assert.ok(step.includes('`resolved: <id> — issue #<N>, <YYYY-MM-DD>`') && home.includes('written `issue #<N>`'), 'AC-5: the appended line and the home name the same issue #<N> form');
+});
+
+test('sprint-035 AC-10: the `suite` scope values "Operation timing" lists are the Scope values the Suite run template names, and the tester attr cites that home', () => {
+  const kindsLine = sectionOf('.asd/rules/sprint-lifecycle.md', 'Operation timing').split('\n').find((line) => line.startsWith('Kinds (attrs):')) || '';
+  const listed = /`suite` \(`scope`: ([^)]+)\)/.exec(kindsLine);
+  assert.ok(listed, 'sanity: "Operation timing" keeps its `suite` (`scope`: …) entry');
+  const templateScope = /^- Scope: \{\{([^}]+)\}\}/m.exec(canonText('.asd/templates/t_test-plan.md'));
+  assert.ok(templateScope, 'sanity: the Suite run template keeps its Scope line');
+  const values = (text) => text.split('|').map((value) => value.replace(/[`\\\s]/g, '')).sort();
+  assert.deepStrictEqual(values(listed[1]), values(templateScope[1]), 'AC-10: the scope values of a suite op must equal the Suite run Scope values');
+  const duty = canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- must: bracket every suite run')) || '';
+  assert.ok(duty.includes('scope=<Suite run Scope>') && duty.includes('"Operation timing"'), 'AC-10: the tester duty must take the scope attr from the Suite run Scope and cite its home');
+});
+
+test('sprint-035 AC-7: the tester\'s Evidence routing carries a blocking differential-test row for a behaviour-preserving refactor or migration', () => {
+  const row = canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('| Behaviour-preserving refactor or migration |')) || '';
+  assert.ok(row.includes('previous version as oracle') && row.includes('each mismatch triaged') && row.endsWith('| BLOCKING |'), 'AC-7: the row names the oracle, the per-mismatch triage and the BLOCKING gate');
+});
+
+test('sprint-035 AC-2: the reliability checklist has a template and a home section, appears in both artifact-layout Paths maps and the README folder map, and scope intake and retro name it', () => {
+  assert.ok(fs.existsSync(path.join(REPO_ROOT, '.asd/templates/t_reliability-checklist.md')), 'AC-2: the template exists');
+  assert.ok(canonText('.asd/rules/artifact-layout.md').includes('\n## Reliability checklist\n'), 'AC-2: the home section exists');
+  const layout = canonText('.asd/rules/artifact-layout.md').split('\n').filter((line) => line.includes('reliability-checklist.md') && line.includes('# lazy, "Reliability checklist"'));
+  assert.strictEqual(layout.length, 2, 'AC-2: one Paths line in each of the two maps');
+  assert.ok(canonText('README.md').includes('reliability-checklist.md'), 'AC-2: the README folder map lists it');
+  assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('reliability-checklist.md') && canonText('.asd/workflows/asd-phase-retro.md').includes('node .asd/runtime.js checklist-hits'), 'AC-2, AC-4: scope intake names the file and retro runs checklist-hits');
+});
+
+test('sprint-035 leftover-term check: no canon, README, AGENTS.md, runtime, hook, docs or agent-memory line keeps a sentence this sprint removed - the mandatory-valve wording, the user smoke check, the dev-never-prunes parenthetical, the second-derivation clause and the test-plan non-list clause', () => {
+  const removed = [
+    'mandatory, not heuristic',
+    'MUST apply this test',
+    'The user smoke check',
+    'first, the smoke check (`artifact-layout.md` "Test plan" Manual verification)',
+    'devs never author/modify/prune a test',
+    "the runner's own answer is used, not a second derivation",
+    'Not a task list (`plan.md`) nor a review verdict',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const docs = fs.readdirSync(path.join(REPO_ROOT, 'docs'), { recursive: true }).map((entry) => `docs/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...docs, ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a sentence this sprint removed (git diff main...HEAD), taken exactly - one surviving states the superseded rule as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
 });
 
 // ===========================================================================

@@ -12,7 +12,7 @@ responsibility:
 - Last verified: {{ISO8601_DATE}}
 
 ## API surface used in project
-- {{api or feature}}: {{purpose in project}}; example: {{snippet}}
+- {{api or feature}}: {{purpose in project}}; default target: {{what it acts on when no target is given}}; mutation: {{existing state it changes, or none}}; example: {{snippet}}
 
 ## Version-specific notes
 - {{behaviour or limitation specific to this version}}

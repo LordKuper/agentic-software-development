@@ -9,12 +9,12 @@ responsibility:
 
 ## Canonical source
 - Official docs: https://cli.github.com/manual ; REST behind `gh issue create`: https://docs.github.com/en/rest/issues/issues#create-an-issue
-- Last verified: 2026-11-16 (installed `gh version 2.90.0`, `--help` of each command below, `gh repo view --help` included; `gh issue edit`: https://cli.github.com/manual/gh_issue_edit; `gh pr checks`: https://cli.github.com/manual/gh_pr_checks)
+- Last verified: 2026-11-17 (installed `gh version 2.90.0`, `--help` of each command below, `gh repo view --help` included; `gh issue edit`: https://cli.github.com/manual/gh_issue_edit; `gh pr checks`: https://cli.github.com/manual/gh_pr_checks)
 
 ## API surface used in project
 - `gh auth status`: non-zero exit when no host is authenticated; gate before any issue write.
 - `gh repo view [<repository>] --json nameWithOwner -q .nameWithOwner`: `<repository>` may be a URL. With none, gh's base-repo resolution picks the repo: the `gh repo set-default` choice, else a remote with `upstream` ranked above `origin`, erroring when several remain unresolved; so ASD first resolves `<origin>` = `git remote get-url origin` and passes it; a non-zero exit or empty output is unresolved, never passed on (an empty argument takes the bare-call path). Fails when it names no GitHub repo. `--json`, `-q`/`--jq` are listed by `gh repo view --help`.
-- `gh issue create -R <owner/repo> -t <title> -F <body-file>`: publish one retro-finding issue; prints the issue URL.
+- `gh issue create -R <owner/repo> -t <title> -F <body-file>`: publish one retro-finding issue or one pre-existing review finding (impl-review step 7b); prints the issue URL. Default target: the `-R` repo (`gh issue create --help`: "Select another repository"), never the checkout's resolved base repo. Mutation: creates one issue, nothing else.
 - `gh issue list -R <owner/repo> -s open -S <query> -L <n> --json number,title,body,labels,author,createdAt,url`: sweep open issues; `-L` defaults to 30.
 - `gh issue list -R <owner/repo> -s closed -l <label> -L <n> --json number,title,body,url`: closed issues carrying a label; the comparison set for duplicate triage.
 - `gh issue view <n> -R <owner/repo> --json state`: `state` is `OPEN` or `CLOSED` (`gh issue view --help` lists `state` among the JSON fields); read before a close so an already-closed issue is skipped.

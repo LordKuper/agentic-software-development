@@ -30,3 +30,5 @@
 - [Reuse scope labels](feedback_reuse-scope-labels.md) — a recorded run reused by Scope label: can a named-test or filtered run (one-file suite) write that label?
 - [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare or empty-arg `gh repo view` follows set-default/upstream ranking, not `origin`; `gh label create -f` sans --color recolors
 - [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
+- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
+- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it

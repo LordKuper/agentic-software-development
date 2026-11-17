@@ -2,6 +2,27 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.7.0
+
+Verification hardening: APPROVE latches follow the code that actually merges, a diff-triggered reliability checklist, an optional smoke command, pre-existing findings filed as issues instead of fixed in the sprint, and self-hosted reviews that read their rules from the base branch.
+
+### Added
+- **Reliability checklist**: an optional `.asd/project/reliability-checklist.md` (template `t_reliability-checklist.md`, created lazily, never overwritten) holds items `ID | Trigger | Check | Severity | Source | Last hit`. `emit-manifest --checklist` hands an impl-review reviewer only the items whose path-glob trigger matches its scope; findings cite them as `CL-N`. Retro stamps `Last hit` (`checklist-hits`) and proposes items unhit for three sprints (`critical` excepted) for removal at the next scope's retro intake.
+- **Smoke command**: optional `smoke` in `commands.yaml`, detected by `asd-init`; impl-test runs it once at its green exit through `asd-tester-runner`, a failure becoming a code defect `D-N`; absent, the step is skipped.
+- **Pre-existing findings**: a reviewer marks a defect that predates the sprint diff `pre-existing:`; below `critical`, impl-review confirms its lines are unchanged since the merge-base and files it as a GitHub issue (`gh issue create`) instead of routing it to review-fix.
+- **`safety_valve`** config switch (issue #120): `disabled` turns off the shared-infrastructure safety valve for impl-test's suite gate and cleanup's verification, and lets the pr gate accept cleanup's `tests @sha` record, so the full suite runs once per review cycle. Absent = enabled; `asd-init` asks for it.
+- **Differential tests**: the tester strategy table gains a row for behaviour-preserving refactors and migrations, using the previous version as the oracle.
+- **`node .asd/runtime.js latch-refresh`**: clears an APPROVE latch when a fix round changes a production executable file in that reviewer's reviewed scope, or one no manifest of the wave covers; a round changing only docs, comments or tests keeps every latch.
+
+### Changed
+- **APPROVE latch**: impl-review runs `latch-refresh` before recording each iteration from the second on, so a latch now refers to code that reaches the merge.
+- **Self-hosted review rules from base** (`--base-ref`): when the sprint diff touches `review-policy.md`, `external-review.md`, the checklist template or a reviewer agent definition, reviewer context bundles and rubrics are read from `origin/<base_branch>`.
+- **Unknown runtime flags** (034 A-1): every `.asd/runtime.js` command warns on stderr for a flag it does not recognise; exit codes are unchanged.
+- **Timing suite scope** (034 A-3): a `suite` op's `scope` admits `full`, `impacted` and `named`.
+- **Dev completion checks** (034 P-1, P-2): a dev that edited an always-loaded bundle file runs the per-dispatch load check; a review-fix that narrows a rule re-reads and keeps every `AC-N` case it implements.
+- **Tech references** (034 P-3): a command's entry records its default-target resolution and any mutation of existing state before a Task uses it.
+- The impl-test "smoke check" for manual-verification rows is renamed "manual-verification check".
+
 ## v14.6.0
 
 Scope now offers every open issue of your project's own GitHub repository, in consumer projects too, and a batch of retro-intake fixes to External Review, timing, test reuse and review bookkeeping.

@@ -1,0 +1,72 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), .asd/project/retro-backlog.md (retro row dispositions), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+- YYYY-MM-DD — stall: <agent> <dispatch ids>
+- YYYY-MM-DD — cleanup checkpoint <sha>
+- YYYY-MM-DD — cleanup: removed <paths/symbols>; reverted <ids or none>; verified <build, lint, tests @sha>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`, or `.asd/project/retro-backlog.md` (retro row dispositions). Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+- 2026-11-17 — route Task 1, Task 2, Task 3, Task 4, Task 5, Task 6, Task 7, Task 8, Task 9, Task 10, Task 11: standard, dispatch HEAD fb9fecd7fa0aeb882ff2401ac2b6c7d1060784dc
+- 2026-11-17 — impl wave 1 flagged accepted: Task 4 (SKILL.md Bash grant suffices; latch-refresh before iteration head write; base-ref on External context only; issue repo = release-manifest repo under self_hosting, else origin owner/repo), Task 5 (smoke via asd-tester-runner at step 10; Manual-verification 'smoke check' renamed 'manual-verification check', artifact-layout mirror added to Task 9).
+- 2026-11-17 — impl wave 1 done: Tasks 1–11 COMPLETED; flagged accepted: Task 1 (latch-refresh skips .asd/sprints/**; stricter comment-line test; markers on every reviewer, workflow filters), Task 3 (resolved kind written `issue` token, `issue #<N>` in prose; valve wording no longer 'mandatory'). Views synced, full suite 375/375, D13 4/4.
+- 2026-11-17 — route Task 12: standard, dispatch HEAD eb10b8bc8d106a6d07a40f7d3d34885953e183ba; risk artifact: README mirror via node tests/run.js
+- 2026-11-17 — impl wave 2 done: Task 12 COMPLETED (README mirrors), suite 375/375.
+- 2026-11-17 — impl assessment approved (adaptive): all plan.md checkboxes ticked; AC map — AC-2 T1/2/4/7/8/9, AC-3 T5/8/10, AC-4 T1/7, AC-5 T1/2/3/4, AC-7 T5, AC-8 T12 + sync, AC-9 T1, AC-10 T3, AC-11 orchestrator fb9fecd7, AC-12 T11, AC-13 T8/9 + git-2.56.md, AC-14 T3/5/6/8/10, AC-15 T1/3/4, AC-16 T1/2/4; build and lint clean; round diff within authorised paths; flagged choices all accepted above, none reverses an earlier disposition; no sprint stubs.
+- 2026-11-17 — route asd-tester impl-test#1: standard, dispatch HEAD d39397f5d35e4b9741ebcebc729f54f3a9b6097b
+- 2026-11-17 — impl-test: impacted set green (390/390, full via safety valve), 15/0 tests; smoke absent, skipped
+- 2026-11-17 — external interrupted attempt 1 in wave-1/iter-01 (quota exhausted, provider reset 14:41)
+- 2026-11-17 — impl-review wave-1/iter-01: combined CONCERNS (7: findings 1-7), external availability skip (quota, negative cache to 14:41; unreviewed files carry to iter-02); no pre-existing findings; minor test-only branch does not fire (findings 1-3, 5-7 non-test) → impl review-fix (review_fixes_pending=wave-1/iter-01). Finding 6 tech-reference edits are orchestrator-applied (docs/ outside dev allowlist).
+- 2026-11-17 — route review-fix wave-1/iter-01 (findings 1, 2, 3, 5, 7): standard, dispatch HEAD 5648c991dcb3d034801271dbd458c0a782f86d72; risk change: comment-line classification edge
+- 2026-11-17 — route review-fix tester wave-1/iter-01 (combined-4): standard, dispatch HEAD b5383e29172d605d1eb5aee920a8d5b9581f1358
+- 2026-11-17 — impl fix for wave-1/iter-01: findings resolved (combined-1, -2, -3, -5, -7 dev; combined-6 orchestrator b4ad3ecf; combined-4 tester be5f4bad); flagged accepted: combined-1 mid-comment '* body' alone now counts as code (safe direction). Views synced b5383e29; suite 391/391.
+- 2026-11-17 — route asd-tester impl-test#2: standard, dispatch HEAD 43117558fd19b922a5ebf25738eb6ac716f9cbf9
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), 0/0 tests (3 asserts + 1 sandbox case added to existing tests); smoke absent, skipped
+- 2026-11-17 — impl-review wave-1/iter-02: combined CONCERNS (combined-1 block-body classifier still file-wide, combined-2 exception as control flow), external availability skip (quota) → impl review-fix (review_fixes_pending=wave-1/iter-02). Orchestrator route note for combined-1: simplest safe fix — a `*`-led line is never a comment (drop the block-body exception); a mid-comment body edit then counts as code (re-review, safe direction).
+- 2026-11-17 — route review-fix wave-1/iter-02 (combined-1, combined-2): standard, dispatch HEAD e83c0dcd1668bd83411948aa9ccb0d73c91c3433; risk change: comment-line classification edge
+- 2026-11-17 — impl fix for wave-1/iter-02: findings resolved (combined-1 8d64971b, combined-2 4f96c54e); hash ledgers recomputed. AC-15 test pinning the removed block-body exception fails by design → impl-test entry 3.
+- 2026-11-17 — route asd-tester impl-test#3: standard, dispatch HEAD 6559c576032f574f4d7f81ecf94405028e2a74d5
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), AC-15/AC-16 tests adapted; smoke absent, skipped
+- 2026-11-17 — impl-review wave-1/iter-03: combined CONCERNS (1 high: multi-line block comments now count as code, AC-15 'comments keep latch' not met for /** … */ blocks) with reviewer question (a keep AC-15 via blob-based block detection / b narrow AC-15); external skip (quota). Awaiting user decision [GATE hard: reviewer question].
+- 2026-11-17 — reviewer question wave-1/iter-03 #1 answered by user: (a) keep AC-15, resolve block-comment lines against the file blob → impl review-fix (review_fixes_pending=wave-1/iter-03).
+- 2026-11-17 — route review-fix wave-1/iter-03 (combined-1): standard, dispatch HEAD 41b3f8be5a2ae0d208388b01981fd08c6878f5e4; risk change: comment-line classification edge
+- 2026-11-17 — impl fix for wave-1/iter-03: combined-1 resolved (68c1bcbe, blob-lexed c-family comment lines); hash ledgers recomputed. AC-15 test pins old signature, fails by design → impl-test entry 4.
+- 2026-11-17 — route asd-tester impl-test#4: standard, dispatch HEAD c757abd377ed4292642f97e17404d7733fb28f39
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), AC-15 test adapted to blob-lexed rule; smoke absent, skipped
+- 2026-11-17 — impl-review wave-1/iter-04: combined CONCERNS (combined-1 high: lexer reads code as comment after a regex '/*' or a multi-line '/" string), external CONCERNS (external-1 high: comment-boundary edits re-comment unchanged code; external-2 high: blank/'#' lines inside strings ignored) — first full External run (quota reset), covering the whole sprint diff → impl review-fix (review_fixes_pending=wave-1/iter-04). Orchestrator route decision: one root cause (per-line classification of a whole-file property); fix by executable-projection equality — strip comments from the base and head blobs with one family-configured lexer and compare; a change is comment-only iff the projections are equal; the lexer stops stripping (rest counts as code) at an unterminated non-backtick string at line end or a block comment opened after code on its line; blank lines are dropped only outside strings.
+- 2026-11-17 — route review-fix wave-1/iter-04 (combined-1, external-1, external-2): standard, dispatch HEAD fd8476ee2d3ac7a172270b8429d33d398427e926; risk change: comment-only equivalence
+- 2026-11-17 — impl fix for wave-1/iter-04: combined-1, external-1, external-2 resolved (260aa5cd, executable-projection equality); hash ledgers recomputed. AC-15 test pins old signature, fails by design → impl-test entry 5.
+- 2026-11-17 — route asd-tester impl-test#5: standard, dispatch HEAD 51dffb2e0ec7ed479bb22d5467f0e19ffd152bed
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), AC-15 test re-authored on projection equality + 5 reviewer repros; smoke absent, skipped
+- 2026-11-17 — impl-review wave-1/iter-05 (floor critical): combined APPROVE; external APPROVE (Codex CONCERNS 4 high, dropped below floor: block-comment token join, regex/nested-template literals, SQL/Lua double quotes, shell heredoc bodies — all on the stale-latch side of the AC-15 lexer ceiling). Latched combined, external.
+- 2026-11-17 — impl-review DoD met: terminal full suite reused (green 391/391 at HEAD 7a75ccff413357d5fa711f9b8dbbba84b6f31f1e; no code, test or stub path changed since). Green handoff [GATE adaptive]: evidence = both reviewers APPROVE, full suite green → design-promote.

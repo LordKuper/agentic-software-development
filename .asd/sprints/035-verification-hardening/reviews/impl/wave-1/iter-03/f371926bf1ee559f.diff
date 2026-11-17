@@ -1,0 +1,220 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 61bf6181..0335d4a9 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "9ea0100bfec84ab6eaed902ba0eb18fb06e1eefef30153e98f3708009705a004",
++    ".asd/runtime.js": "50a33230bb60458e08f5ae6ea64599f15d7296fe1e3f7719d99523376dc5787b",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index d67339a0..4506730d 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -1360,19 +1360,16 @@ function recordVerdicts(flags) {
+ }
+ 
+ const COMMENT_FAMILIES = [
+-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, isComment: (text) => text.startsWith('//') || (text.startsWith('/*') && !/\*\/\s*\S/.test(text)), isBlockBody: (text) => /^\*(?:[\s/]|$)/.test(text) && !/\*\/\s*\S/.test(text) },
+-  { extensions: /\.(css|scss|less)$/i, isComment: (text) => text.startsWith('//') || /^\/\*(?:(?!\*\/).)*\*\/$/.test(text) },
++  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl|css|scss|less)$/i, isComment: (text) => text.startsWith('//') || /^\/\*(?:(?!\*\/).)*\*\/$/.test(text) },
+   { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, isComment: (text) => /^#(?!!)/.test(text) },
+   { extensions: /\.(sql|lua|hs|elm)$/i, isComment: (text) => text.startsWith('--') },
+ ];
+ 
+-/** True when every changed line of `file` is blank or a whole-line comment of its extension family; an unknown extension, a line that may carry code after a block comment closes, a `*`-led line outside a change holding a block-comment opener or closer, and an empty change are never comment-only, so a doubtful change keeps counting as code. */
++/** True when every changed line of `file` is blank or a whole-line comment of its extension family; an unknown extension, a `*`-led line, a line that may carry code around a block comment, and an empty change are never comment-only, so a doubtful change keeps counting as code. */
+ function isCommentOnlyChange(file, lines) {
+   const family = COMMENT_FAMILIES.find((candidate) => candidate.extensions.test(file));
+   if (family === undefined || lines.length === 0) return false;
+-  const texts = lines.map((line) => line.trim());
+-  const hasBlockEdge = family.isBlockBody !== undefined && texts.some((text) => text.startsWith('/*') || /\*\/$/.test(text));
+-  return texts.every((text) => text === '' || family.isComment(text) || (hasBlockEdge && family.isBlockBody(text)));
++  return lines.map((line) => line.trim()).every((text) => text === '' || family.isComment(text));
+ }
+ 
+ /** Production executable files changed between `sha` and HEAD, a file whose every changed line is blank or a comment left out; sprint artefacts never count. */
+@@ -1939,15 +1936,7 @@ function contextCommand(flags) {
+   const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
+   const allRefs = contextRefs(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'), flags.role, flags.phase);
+   const read = Object.fromEntries([...new Set(allRefs.map(refFile))].map((file) => [file, readText(file)]));
+-  const sectionAbsent = (ref) => {
+-    if (ref === refFile(ref)) return false;
+-    try {
+-      markdownSection(read[refFile(ref)], ref.slice(ref.indexOf('#') + 1));
+-      return false;
+-    } catch (error) {
+-      return true;
+-    }
+-  };
++  const sectionAbsent = (ref) => ref !== refFile(ref) && !markdownHeadings(read[refFile(ref)].replace(/\r\n/g, '\n').split('\n')).some((entry) => entry.text === ref.slice(ref.indexOf('#') + 1));
+   const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
+   new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
+   const refs = allRefs.filter((ref) => !omitted.includes(ref));
+diff --git a/.asd/sprints/035-verification-hardening/test-plan.entry-02.md b/.asd/sprints/035-verification-hardening/test-plan.entry-02.md
+new file mode 100644
+index 00000000..f0e72fd2
+--- /dev/null
++++ b/.asd/sprints/035-verification-hardening/test-plan.entry-02.md
+@@ -0,0 +1,28 @@
++# Test plan segment — sprint 035-verification-hardening, entry 2
++
++Rotated from `test-plan.md` at entry 3's strategy pass; never edited.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `isCommentOnlyChange` `*`-led lines (AC-15, review-fix combined-1) | a css rule or a continued expression opening with `*` read as a comment body, so a code change keeps a stale latch (unsafe direction) | unit: the exported function | add | extends the entry-1 family-edge test with the css `* { … }` rule, a `*`-led code line with no block edge, and body lines beside a closing edge; the CLI path is already covered by the entry-1 latch scenarios |
++| `context --base-ref` omitting a ref whose granted section is absent at the base ref (AC-16, review-fix combined-2) | a file present at the ref but lacking a section the role is granted failing the whole bundle, or the section silently kept from the working tree | component: sandbox repo whose committed `review-policy.md` lacks one granted heading | add | extends the entry-1 sandbox with one more commit; asserts exit 0, the stderr note naming the section, that section's marker gone and a sibling section kept |
++| smoke-fail routing: base `asd-tester` appends the `D-N`, the runner never does (AC-3, review-fix combined-5) | step 10 and the runner variant contradicting each other on who triages | content contract | none | prose with no literal beyond the `none (smoke)` token and the `Smoke:` line the entry-1 AC-3 test pins; a pin on the routing clause would restate prose |
++| `suite` op scope attr cites its home (AC-10, review-fix combined-4) | attr values or the tester duty drifting from the Suite run Scope values | content contract | keep | the `sprint-035 AC-10` test added in the review-fix already pins both lists and the citation; it is in the delta, not re-authored |
++| tech-reference `gh` create, `git` merge-base and rev-parse notes; `asd-phase-impl-review.md` step 7b title-strip citation; `release-manifest.json` hash refresh (AC-5, AC-13) | prose and generated ledger with no behaviour beyond what the runtime-subcommand, canon-hash and D13 checks already cover | existing checks | none | the full suite's manifest-hash, README-mirror and load-ceiling checks cover them; a literal pin would only restate prose |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | no existing test in the delta is redundant or implementation-coupled | yes |
++
++## Added tests
++
++Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (extended: css `*` rule, `*`-led code line, body beside a closing edge) | fail-first on the pre-fix tree (`git archive f7dbf397~1`, new `tests/run.js` copied in): `node tests/run.js --filter "AC-15: a changed file counts as code"` → exit 1, that test (1 matched), `AC-15: a css universal-selector rule is code, not a comment body`; green on HEAD, exit 0; runs: 1 |
++| tests/run.js: sprint-035 AC-16: --base-ref reads each reviewer rubric … (extended: a granted section absent at the ref) | fail-first on the pre-fix tree (`git archive 1723e052~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-16"` → exit 1, that test (1 matched), `AC-16: a section absent at the ref omits that ref instead of failing the bundle`; green on HEAD, exit 0; runs: 1 |
+diff --git a/.asd/sprints/035-verification-hardening/test-plan.md b/.asd/sprints/035-verification-hardening/test-plan.md
+index 1b82032e..7577eb23 100644
+--- a/.asd/sprints/035-verification-hardening/test-plan.md
++++ b/.asd/sprints/035-verification-hardening/test-plan.md
+@@ -7,7 +7,7 @@ responsibility:
+ 
+ # Test plan — sprint 035-verification-hardening
+ 
+-Entry 1's decision, removal and added-test rows rotated to `test-plan.entry-01.md`.
++Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`.
+ 
+ ## Entry log
+ 
+@@ -15,16 +15,14 @@ Entry 1's decision, removal and added-test rows rotated to `test-plan.entry-01.m
+ |---|---|---|
+ | 1 | 4278709f | full change surface |
+ | 2 | 7a05ae53 | delta since entry 1 |
++| 3 | 113e3066 | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `isCommentOnlyChange` `*`-led lines (AC-15, review-fix combined-1) | a css rule or a continued expression opening with `*` read as a comment body, so a code change keeps a stale latch (unsafe direction) | unit: the exported function | add | extends the entry-1 family-edge test with the css `* { … }` rule, a `*`-led code line with no block edge, and body lines beside a closing edge; the CLI path is already covered by the entry-1 latch scenarios |
+-| `context --base-ref` omitting a ref whose granted section is absent at the base ref (AC-16, review-fix combined-2) | a file present at the ref but lacking a section the role is granted failing the whole bundle, or the section silently kept from the working tree | component: sandbox repo whose committed `review-policy.md` lacks one granted heading | add | extends the entry-1 sandbox with one more commit; asserts exit 0, the stderr note naming the section, that section's marker gone and a sibling section kept |
+-| smoke-fail routing: base `asd-tester` appends the `D-N`, the runner never does (AC-3, review-fix combined-5) | step 10 and the runner variant contradicting each other on who triages | content contract | none | prose with no literal beyond the `none (smoke)` token and the `Smoke:` line the entry-1 AC-3 test pins; a pin on the routing clause would restate prose |
+-| `suite` op scope attr cites its home (AC-10, review-fix combined-4) | attr values or the tester duty drifting from the Suite run Scope values | content contract | keep | the `sprint-035 AC-10` test added in the review-fix already pins both lists and the citation; it is in the delta, not re-authored |
+-| tech-reference `gh` create, `git` merge-base and rev-parse notes; `asd-phase-impl-review.md` step 7b title-strip citation; `release-manifest.json` hash refresh (AC-5, AC-13) | prose and generated ledger with no behaviour beyond what the runtime-subcommand, canon-hash and D13 checks already cover | existing checks | none | the full suite's manifest-hash, README-mirror and load-ceiling checks cover them; a literal pin would only restate prose |
++| `isCommentOnlyChange` decided rule: `*`-led lines never comments, block-edge gate removed, only a self-closed one-line `/* … */` with no trailing code is a block comment, css/scss/less merged into the c-family (AC-15, review-fix combined-1) | the entry-2 test still asserted the superseded block-body rule (test defect); a multi-line block comment or `* x` continuation read as a comment keeps a stale latch (unsafe direction) | unit: the exported function | adapt | the block-comment asserts now state the decided rule: an unclosed `/* open` line and `* text` body lines are code, a self-closed `/* … */` is a comment, trailing code after it is code, plus the reviewer's pair `['/* note */', '  * height;']` on `.java`; AC-15's guard (a doubtful change keeps counting as code) is unchanged |
++| `context --base-ref` `sectionAbsent` through `markdownHeadings`, no try/catch (AC-16, review-fix combined-2) | a duplicated granted heading at the ref read as "absent" and silently omitted instead of failing the bundle, which the old catch-all did | component: sandbox repo, committed `review-policy.md` with the granted heading twice | add | the absent-section assert from entry 2 stays green through the rewrite but cannot tell absent from duplicated; one more commit in the same sandbox asserts non-zero exit, the `2 matches` error and no omission note for the section |
+ 
+ ## Removed tests
+ 
+@@ -38,16 +36,16 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (extended: css `*` rule, `*`-led code line, body beside a closing edge) | fail-first on the pre-fix tree (`git archive f7dbf397~1`, new `tests/run.js` copied in): `node tests/run.js --filter "AC-15: a changed file counts as code"` → exit 1, that test (1 matched), `AC-15: a css universal-selector rule is code, not a comment body`; green on HEAD, exit 0; runs: 1 |
+-| tests/run.js: sprint-035 AC-16: --base-ref reads each reviewer rubric … (extended: a granted section absent at the ref) | fail-first on the pre-fix tree (`git archive 1723e052~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-16"` → exit 1, that test (1 matched), `AC-16: a section absent at the ref omits that ref instead of failing the bundle`; green on HEAD, exit 0; runs: 1 |
++| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (adapted: unclosed `/*` line, self-closed `/* … */`, trailing code, java pair, `*` body beside a closing edge) | fail-first on the pre-fix tree (`git archive 8d64971b~1`, new `tests/run.js` copied in): `node tests/run.js --filter "AC-15: a changed file counts as code"` → exit 1, that test (1 matched), `AC-15: an unclosed block-comment opening line is code`; per-assert mutations on a HEAD copy, each `--filter "AC-15: a changed file counts as code"` → exit 1, 1 matched: `/*`-start accepted as comment → `AC-15: an unclosed block-comment opening line is code`; `*`-start accepted → `AC-15: a self-closed comment beside a \`*\`-led code line is code`; `$` anchor dropped from the block-comment regex → `AC-15: a one-line block comment with trailing code is code`; self-closed clause dropped → `AC-15: a self-closed one-line block comment is a comment`; reword control (unclosed-line message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 6 |
++| tests/run.js: sprint-035 AC-16: --base-ref reads each reviewer rubric … (extended: a granted heading duplicated at the ref) | fail-first on the pre-fix tree (`git archive 4f96c54e~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-16"` → exit 1, that test (1 matched), `AC-16: a granted heading present twice at the ref fails the bundle, it is not read as absent` (pre-fix: status 0, heading omitted); green on HEAD, exit 0; runs: 1 |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+-- Scope: full — safety valve (framework-wide files changed): every test file ran with no filter, after the pre-authoring step 3 run (391/391, exit 0)
++- Scope: full — safety valve (framework-wide files changed): every test file ran with no filter
+ - Result: pass — 391/391 passed, 0 failed, 0 skipped
+-- Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (66 items current)
+-- HEAD: 77d35bb5b27bb5271cd24910f77c2b755f1efd96
++- Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (exit 0)
++- HEAD: 812f2279762027a67e13a305365b3d3d0b9ebd8b
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 5e3535b0..45187bc5 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -30,3 +30,4 @@
+ - [Reuse scope labels](feedback_reuse-scope-labels.md) — a recorded run reused by Scope label: can a named-test or filtered run (one-file suite) write that label?
+ - [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare or empty-arg `gh repo view` follows set-default/upstream ranking, not `origin`; `gh label create -f` sans --color recolors
+ - [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
++- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_file-wide-gate-line-classifier.md b/.claude/agent-memory/asd-reviewer-combined/feedback_file-wide-gate-line-classifier.md
+new file mode 100644
+index 00000000..3b882672
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_file-wide-gate-line-classifier.md
+@@ -0,0 +1,12 @@
++---
++name: file-wide-gate-line-classifier
++description: A per-line classifier gated by a condition computed over the whole file's change can let an unrelated hunk switch the gate on; trace the exact regex before choosing the counterexample
++metadata:
++  type: feedback
++---
++
++When a review-fix narrows a per-line heuristic with a condition computed across every changed line of a file (e.g. "some line opens or closes a block comment" licensing `*`-led lines as comment bodies), check whether the gating line and the misread line can sit in unrelated hunks or sides. The caller often flattens hunks before the classifier sees them.
++
++**Why:** a fix like this closes only the reported variant (no gate line at all). The unsafe case survives whenever any other line in the file trips the gate, and a self-closed one-line comment counts too.
++
++**How to apply:** read the exact predicate regexes before picking the counterexample. For example, `^\*(?:[\s/]|$)` rejects `*p` and `*gen()`, but leading-operator continuations such as `  * height;` still pass. Suggest a gate scoped to the contiguous run on the same hunk side, plus one assert pairing an unrelated gate line with the misread line. Related: [[conjunctive-guard-tests]], [[fix-overcorrection-vs-ac]].
+diff --git a/tests/run.js b/tests/run.js
+index a426d0ba..782f6efd 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -10345,7 +10345,7 @@ test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose ma
+   assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
+ });
+ 
+-test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a whole-line comment of its extension family - a mixed hunk, an unknown extension, a shebang, a line closing a block comment before code and a `*`-led code line stay code', () => {
++test('sprint-035 AC-15: a changed file counts as code unless every changed line is blank or a whole-line comment of its extension family - a mixed hunk, an unknown extension, a shebang, an unclosed block-comment line, a block-comment body and a `*`-led code line stay code, a self-closed one-line block comment is a comment', () => {
+   const [quality] = runtime.INTERNAL_REVIEWERS;
+   const latched = { [quality]: 1 };
+   const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
+@@ -10356,14 +10356,17 @@ test('sprint-035 AC-15: a changed file counts as code unless every changed line
+   assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
+ 
+   const isComment = (file, lines) => runtime.isCommentOnlyChange(file, lines);
+-  assert.strictEqual(isComment('a.js', ['/* block', ' * body', ' */']), true, 'AC-15: block comment lines are comments');
++  assert.strictEqual(isComment('a.js', ['/* block']), false, 'AC-15: an unclosed block-comment opening line is code');
++  assert.strictEqual(isComment('a.js', ['/* note */']), true, 'AC-15: a self-closed one-line block comment is a comment');
++  assert.strictEqual(isComment('a.java', ['/* note */', '  * height;']), false, 'AC-15: a self-closed comment beside a `*`-led code line is code');
++  assert.strictEqual(isComment('a.js', ['/* note */ run();']), false, 'AC-15: a one-line block comment with trailing code is code');
+   assert.strictEqual(isComment('a.js', ['*/ run();']), false, 'AC-15: a line that closes a block comment and carries code is code');
+   assert.strictEqual(isComment('a.sh', ['#!/bin/sh']), false, 'AC-15: a shebang is code, not a comment');
+   assert.strictEqual(isComment('a.sql', ['-- note']), true, 'AC-15: a dash-family comment is a comment');
+   assert.strictEqual(isComment('a.css', ['* { margin: 0 }']), false, 'AC-15: a css universal-selector rule is code, not a comment body');
+   assert.strictEqual(isComment('a.css', ['/* note */']), true, 'AC-15: a one-line css block comment is a comment');
+-  assert.strictEqual(isComment('a.js', ['* b = 2;']), false, 'AC-15: a `*`-led code line with no block-comment edge in the change is code');
+-  assert.strictEqual(isComment('a.js', [' * body', ' */']), true, 'AC-15: body lines beside a closing edge are comments');
++  assert.strictEqual(isComment('a.js', ['* b = 2;']), false, 'AC-15: a lone `*`-led code line is code');
++  assert.strictEqual(isComment('a.js', [' * body', ' */']), false, 'AC-15: body lines beside a closing edge are code, a `*`-led line is never a comment');
+   assert.strictEqual(isComment('a.js', []), false, 'AC-15: an empty change is never comment-only');
+   assert.strictEqual(isComment('a.js', ['// x', 'x();']), false, 'AC-15: one code line makes the file code');
+ });
+@@ -10456,6 +10459,12 @@ test('sprint-035 AC-16: --base-ref reads each reviewer rubric and the bundle\'s
+   assert.strictEqual(missingSection.status, 0, `AC-16: a section absent at the ref omits that ref instead of failing the bundle (got ${missingSection.stderr})`);
+   assert.ok(missingSection.stderr.includes(`runtime: ${GRANTED} absent at HEAD, omitted`), `AC-16: the omission is noted on stderr, naming the section (got ${missingSection.stderr})`);
+   assert.ok(!missingSection.text.includes(`<!-- ${GRANTED} -->`) && missingSection.text.includes('<!-- .asd/rules/review-policy.md#Severity levels -->'), 'AC-16: only the absent section is omitted, the file\'s other granted sections stay');
++
++  put(policyRel, readRepoFile(policyRel).replace(/^## Nitpick drop list.*$/m, (heading) => `${heading}\n\n${heading}`));
++  git('add', '--', policyRel);
++  git('commit', '-q', '-m', 'policy with a duplicated granted heading');
++  const duplicateSection = bundle(['--base-ref', 'HEAD']);
++  assert.ok(duplicateSection.status !== 0 && /2 matches/.test(duplicateSection.stderr) && !duplicateSection.stderr.includes(`runtime: ${GRANTED} absent`), `AC-16: a granted heading present twice at the ref fails the bundle, it is not read as absent (got ${JSON.stringify(duplicateSection)})`);
+ });
+ 
+ test('sprint-035 AC-5, AC-2: persist-review gives each finding pre_existing when its Description opens with `pre-existing:` and checklist as the distinct CL-N ids it cites, and no marker otherwise', () => {

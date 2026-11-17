@@ -129,6 +129,8 @@ const CHECK_FAIL_BUCKETS = ['fail', 'cancel'];
 
 /** The `providers.md` section holding the role grant table `context` reads. */
 const CONTEXT_SECTION = 'Role-scoped context';
+/** Bundle files a reviewer reads from the base branch rather than the working tree. */
+const BASE_REF_FILES = ['.asd/rules/review-policy.md', '.asd/rules/external-review.md', '.asd/templates/t_reliability-checklist.md'];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -495,7 +497,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
   return granted;
 }
 
-/** Emits one reviewer's stamped coverage manifest over its whole file list; `scopeFiles` (default `files`) is the diff scope the docs predicate judges, so appended test-plan paths never void it; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
+/** Emits one reviewer's stamped coverage manifest over its whole file list; `scopeFiles` (default `files`) is the diff scope the docs predicate judges, so appended test-plan paths never void it; `checklist` is the `{id, check, severity}` items whose ids join the rules; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
 function emitCoverageManifest(input) {
   if (!input || typeof input !== 'object') fail('emit input required');
   if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
@@ -504,8 +506,9 @@ function emitCoverageManifest(input) {
   const composed = input.rubric !== null && typeof input.rubric === 'object' ? input.rubric : { [input.reviewer]: input.rubric };
   const rubrics = Object.values(composed).map(rubricIds);
   const rubric = { rules: rubrics.flatMap((part) => part.rules), sections: rubrics.flatMap((part) => part.sections) };
-  const rules = rubric.rules.concat(Object.keys(customRules));
-  if (new Set(rules).size !== rules.length) fail('rubric and custom-rule ids must be distinct');
+  const checklist = input.checklist === undefined ? [] : input.checklist;
+  const rules = rubric.rules.concat(Object.keys(customRules), checklist.map((item) => item.id));
+  if (new Set(rules).size !== rules.length) fail('rubric, custom-rule and checklist ids must be distinct');
   const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
   const granted = standingPredicates(input, Object.fromEntries(Object.keys(composed).map((name, i) => [name, rubrics[i].rules])), rules, customRules, templates);
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
@@ -515,6 +518,7 @@ function emitCoverageManifest(input) {
     phase: input.phase,
     files,
     rules,
+    ...(checklist.length > 0 ? { checklist } : {}),
     sections: rubric.sections,
     n_a: { files: Object.fromEntries(files.filter((file) => renamed.has(file)).map((file) => [file, [NA_PREDICATES.pureRename]])), rules: naFor(rules), sections: naFor(rubric.sections) },
   });
@@ -548,7 +552,13 @@ function tableCells(line) {
   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
-/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose header must have `FINDINGS_COLUMNS.length` columns led by `#`, so an extra column is never read as another. Headings follow the docs language, so the check is the column count and the `#` id column, not the heading text (a reordered translated header is not detectable). An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
+/** The routing markers a finding's Description carries: `pre_existing` when it opens with `pre-existing:`, `checklist` as the distinct `CL-N` ids it cites; a marker it does not carry is absent. */
+function findingMarkers(description) {
+  const cited = [...new Set(description.match(/\bCL-\d+\b/g) || [])];
+  return { ...(description.startsWith('pre-existing:') ? { pre_existing: true } : {}), ...(cited.length > 0 ? { checklist: cited } : {}) };
+}
+
+/** A review's findings as `{id, severity, location}` plus the `findingMarkers` of their Description, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose header must have `FINDINGS_COLUMNS.length` columns led by `#`, so an extra column is never read as another. Headings follow the docs language, so the check is the column count and the `#` id column, not the heading text (a reordered translated header is not detectable). An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
 function reviewFindings(text) {
   const lines = text.split(/\r?\n/).map((line) => line.trim());
   const start = lines.findIndex((line) => line.startsWith('|'));
@@ -559,11 +569,11 @@ function reviewFindings(text) {
   if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('findings table separator malformed');
   const seen = new Set();
   return rows.filter((cells) => cells[0] !== '—').map((cells) => {
-    const [id, severity, location] = cells;
+    const [id, severity, location, description] = cells;
     if (cells.length !== header.length || id === '' || seen.has(id)) fail(`findings row malformed or id repeated: ${cells.join(' | ')}`);
     if (!SEVERITIES.includes(severity)) fail(`finding ${id} severity must be one of ${SEVERITIES.join(', ')}: ${severity}`);
     seen.add(id);
-    return { id, severity, location };
+    return { id, severity, location, ...findingMarkers(description) };
   });
 }
 
@@ -734,6 +744,85 @@ function retroCandidates(sprintsDir, backlogPath, selfHosting) {
   const fresh = (latest === null ? [] : rowsOf(latest).filter((candidate) => !disposed.has(candidate.row) && isOpen(candidate))).map((candidate) => (isOwn(candidate) ? candidate : { ...candidate, upstream: true }));
   const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) || fail(`retro backlog row not in its retrospective: ${entry.row}`));
   return fresh.concat(deferred.filter((candidate) => isOpen(candidate) && isOwn(candidate)));
+}
+
+const CHECKLIST_COLUMNS = 6;
+const CHECKLIST_LAST_CELL = /(\|)([ \t]*)[^|]*?([ \t]*)(\|?)([ \t\r]*)$/;
+
+/** A checklist's item rows as `{index, id, trigger, check, severity, source, lastHit}`, `index` the row's line; a row is recognised by its `CL-N` id cell and column count, never by heading text, and a malformed row or repeated id fails. */
+function checklistRows(lines) {
+  const seen = new Set();
+  return lines.flatMap((line, index) => {
+    const cells = line.trim().startsWith('|') ? tableCells(line) : [];
+    if (!/^CL-\d+$/.test(cells[0])) return [];
+    if (cells.length !== CHECKLIST_COLUMNS || seen.has(cells[0])) fail(`checklist row malformed or id repeated: ${line.trim()}`);
+    seen.add(cells[0]);
+    const [id, trigger, check, severity, source, lastHit] = cells;
+    return [{ index, id, trigger, check, severity, source, lastHit }];
+  });
+}
+
+/** Regex of one path glob, anchored on the whole path: `*` stays inside a segment, `**` crosses segments, `**` followed by `/` also matches no directory. */
+function globRegex(glob) {
+  const parts = glob.split(/(\*\*\/|\*\*|\*)/).map((part) => (part === '**/' ? '(?:.*/)?' : part === '**' ? '.*' : part === '*' ? '[^/]*' : part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')));
+  return new RegExp(`^${parts.join('')}$`);
+}
+
+/** True when any file matches any glob of a comma-separated checklist trigger. */
+function triggerMatches(trigger, files) {
+  const patterns = trigger.split(',').map((glob) => glob.trim().replace(/^`|`$/g, '')).filter(Boolean).map((glob) => globRegex(glob.replace(/\\/g, '/')));
+  return files.some((file) => patterns.some((pattern) => pattern.test(file.replace(/\\/g, '/'))));
+}
+
+/** The sprint number leading a `<NNN-slug>`, or null for any other text. */
+function sprintOrdinal(text) {
+  const match = /^(\d+)-/.exec(text);
+  return match === null ? null : Number(match[1]);
+}
+
+/** Every `*.findings.json` under a directory, at any depth. */
+function findingsFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? findingsFiles(path.join(dir, entry.name)) : entry.name.endsWith('.findings.json') ? [path.join(dir, entry.name)] : []));
+}
+
+/** Stamps the sprint on each checklist item a findings JSON under `<sprint>/reviews/` cites as `Last hit`, leaving every other byte and the file's line endings alone, and lists the items cited plus the removal candidates: items untouched for three or more sprints, counted from `Last hit`, else the sprint in `Source`, `critical` items never. An absent checklist reports empty lists and writes nothing. */
+function checklistHits(flags) {
+  if (typeof flags.checklist !== 'string' || typeof flags['sprint-dir'] !== 'string') fail('--checklist <path> and --sprint-dir <sprint dir> required');
+  if (!fs.existsSync(flags.checklist)) return { hit: [], candidates: [] };
+  const sprint = path.basename(path.resolve(flags['sprint-dir']));
+  const current = sprintOrdinal(sprint);
+  if (current === null) fail(`--sprint-dir must end in <NNN-slug>: ${sprint}`);
+  const cited = new Set(findingsFiles(path.join(flags['sprint-dir'], 'reviews')).flatMap((file) => {
+    const findings = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!Array.isArray(findings)) fail(`${file} is not a findings array`);
+    return findings.flatMap((finding) => finding.checklist || []);
+  }));
+  const lines = fs.readFileSync(flags.checklist, 'utf8').split('\n');
+  const rows = checklistRows(lines);
+  const hit = rows.filter((row) => cited.has(row.id));
+  const stale = hit.filter((row) => row.lastHit !== sprint);
+  stale.forEach((row) => {
+    lines[row.index] = lines[row.index].replace(CHECKLIST_LAST_CELL, (_, open, before, after, close, tail) => `${open}${before}${sprint}${after}${close}${tail}`);
+  });
+  if (stale.length > 0) fs.writeFileSync(flags.checklist, lines.join('\n'), 'utf8');
+  const lastHitOf = (row) => (cited.has(row.id) ? current : sprintOrdinal(row.lastHit) ?? sprintOrdinal(row.source));
+  const candidates = rows.filter((row) => row.severity !== 'critical' && lastHitOf(row) !== null && current - lastHitOf(row) >= 3);
+  return { hit: hit.map((row) => row.id), candidates: candidates.map((row) => row.id) };
+}
+
+/** A file's text at a git ref, or null when the ref holds no such path. */
+function gitShow(ref, file) {
+  const result = spawnSync('git', ['show', `${ref}:${file}`], { encoding: 'utf8', maxBuffer: Infinity, windowsHide: true });
+  return result.status === 0 ? result.stdout : null;
+}
+
+/** The commit `--base-ref` names, null when the flag is absent; an unresolvable ref fails. */
+function verifiedBaseRef(flags) {
+  if (flags['base-ref'] === undefined) return null;
+  const ref = gitRef(flags['base-ref'], '--base-ref');
+  if (spawnSync('git', ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`], { windowsHide: true }).status !== 0) fail(`--base-ref ${ref} names no commit`);
+  return ref;
 }
 
 function readFileList(file) {
@@ -1099,8 +1188,16 @@ function emitInternalManifest(flags, files, ranges, snapshot, renameMap) {
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
   const reviewed = reviewerFiles(flags.phase, flags.reviewer, files, testPlan);
-  const rubricOf = (reviewer) => fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${reviewer}.md`), 'utf8');
+  const baseRef = verifiedBaseRef(flags);
+  const rubricOf = (reviewer) => {
+    if (baseRef === null) return fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${reviewer}.md`), 'utf8');
+    const file = `.asd/agents/asd-reviewer-${reviewer}.md`;
+    const text = gitShow(baseRef, file);
+    return text === null ? fail(`${file} not found at ${baseRef}`) : text;
+  };
+  const checklist = typeof flags.checklist === 'string' && fs.existsSync(flags.checklist) ? checklistRows(fs.readFileSync(flags.checklist, 'utf8').split('\n')).filter((row) => triggerMatches(row.trigger, reviewed)) : [];
   const manifest = emitCoverageManifest({
+    checklist: checklist.map(({ id, check, severity }) => ({ id, check, severity })),
     reviewer: flags.reviewer,
     phase: flags.phase,
     rubric: flags.reviewer === COMBINED_REVIEWER ? Object.fromEntries(COMBINED_RUBRICS.concat(COMBINED_REVIEWER).map((reviewer) => [reviewer, rubricOf(reviewer)])) : rubricOf(flags.reviewer),
@@ -1225,6 +1322,18 @@ function inlineJson(value) {
   return JSON.stringify(value);
 }
 
+/** Checks a sprint state's `reviews` block is in the layout this file renders, then returns the writer persisting the caller-mutated `reviews` over that block alone. */
+function reviewsWriter(file, text, reviews) {
+  const span = /\r?\n  "reviews": (\{[\s\S]*?\r?\n  \})/.exec(text);
+  if (!span || stable(JSON.parse(span[1])) !== stable(reviews)) fail(`${file} reviews block is not in the expected layout`);
+  return () => {
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    const rendered = ['{', ...Object.keys(reviews).map((name, index, names) => `    ${JSON.stringify(name)}: ${inlineJson(reviews[name])}${index < names.length - 1 ? ',' : ''}`), '  }'].join(eol);
+    const start = span.index + span[0].length - span[1].length;
+    fs.writeFileSync(file, text.slice(0, start) + rendered + text.slice(start + span[1].length), 'utf8');
+  };
+}
+
 /** Merges one iteration's reviewer verdicts into the design node or the current impl wave node of a sprint `state.json` and keeps `latched` in step: a bare `APPROVE` latches the iteration unless the key is already latched, any other value clears the key's latch. Only the `reviews` block is rewritten; bad input or an unexpected layout writes nothing. */
 function recordVerdicts(flags) {
   if (typeof flags.state !== 'string' || typeof flags.verdict !== 'string') fail('--state <path> and --verdict <key=value[;key=value…]> required');
@@ -1236,8 +1345,7 @@ function recordVerdicts(flags) {
   const { reviews } = JSON.parse(text);
   const node = flags.phase === 'design' ? reviews && reviews.design : reviews && reviews.impl && reviews.impl.waves && reviews.impl.waves[reviews.impl.wave - 1];
   if (!node || typeof node !== 'object') fail(`${flags.state} has no ${flags.phase} review node${flags.phase === 'impl' ? ' with waves (a legacy flat reviews.impl needs the wave-aware entry write first)' : ''}`);
-  const span = /\r?\n  "reviews": (\{[\s\S]*?\r?\n  \})/.exec(text);
-  if (!span || stable(JSON.parse(span[1])) !== stable(reviews)) fail(`${flags.state} reviews block is not in the expected layout`);
+  const writeReviews = reviewsWriter(flags.state, text, reviews);
   const key = `iter-${String(iteration).padStart(2, '0')}`;
   node.verdicts = { ...node.verdicts };
   node.verdicts[key] = { ...node.verdicts[key] };
@@ -1247,11 +1355,129 @@ function recordVerdicts(flags) {
     if (value !== 'APPROVE') delete node.latched[reviewer];
     else if (!(reviewer in node.latched)) node.latched[reviewer] = iteration;
   });
-  const eol = text.includes('\r\n') ? '\r\n' : '\n';
-  const rendered = ['{', ...Object.keys(reviews).map((name, index, names) => `    ${JSON.stringify(name)}: ${inlineJson(reviews[name])}${index < names.length - 1 ? ',' : ''}`), '  }'].join(eol);
-  const start = span.index + span[0].length - span[1].length;
-  fs.writeFileSync(flags.state, text.slice(0, start) + rendered + text.slice(start + span[1].length), 'utf8');
+  writeReviews();
   return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
+}
+
+const COMMENT_LEXERS = [
+  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, line: '//', hasBlock: true, quotes: '\'"`' },
+  { extensions: /\.css$/i, line: '', hasBlock: true, quotes: '\'"' },
+  { extensions: /\.(scss|less)$/i, line: '//', hasBlock: true, quotes: '\'"' },
+  { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, line: '#', hasBlock: false, quotes: '\'"' },
+  { extensions: /\.(sql|lua|hs|elm)$/i, line: '--', hasBlock: false, quotes: "'" },
+];
+
+/** Whether the `marker` line comment opens at `index`: a `#` not followed by `!` (shebang) and after whitespace (so `$#` stays code), a `//` not after `:` (so `http://` stays code). */
+function startsLineComment(blob, index, marker) {
+  if (marker === '' || !blob.startsWith(marker, index)) return false;
+  const before = blob[index - 1];
+  if (marker === '#') return blob[index + 1] !== '!' && (before === undefined || /\s/.test(before));
+  return !(marker === '//' && before === ':');
+}
+
+/** `blob` with its comments, trailing whitespace outside strings and lines left empty outside a string removed, so two blobs differing only in comments project equal. It stops stripping where it cannot follow: at a line end inside a `'`/`"` string, or inside a block comment opened after code on its line, the rest of the blob comes back verbatim (from the opener for a block). ponytail: regex literals and nested template literals are read naively, so a quote or `/*` inside a regex may start a string or block; the stop rule and plain equality keep such a misread on the code side, never on a comment. Upgrade path: a real tokenizer per language. */
+function projectExecutable(blob, lexer) {
+  const lines = [];
+  let current = '';
+  let state = 'code';
+  let quote = '';
+  let opener = null;
+  const stopAt = (keep, from) => lines.map((line) => `${line}\n`).join('') + current.slice(0, keep) + blob.slice(from);
+  for (let index = 0; index <= blob.length; index++) {
+    const char = blob[index];
+    const next = blob[index + 1];
+    if (char === '\n' || char === undefined) {
+      if (state === 'string' && quote !== '`') return stopAt(current.length, index);
+      if (state === 'block' && opener !== null) return stopAt(opener.keep, opener.index);
+      if (state === 'string') lines.push(current);
+      else if (current.trim() !== '') lines.push(current.trimEnd());
+      current = '';
+      if (state === 'line') state = 'code';
+    } else if (state === 'block') {
+      if (char === '*' && next === '/') {
+        index++;
+        state = 'code';
+      }
+    } else if (state === 'string') {
+      current += char;
+      if (char === '\\' && next !== undefined && next !== '\n') {
+        current += next;
+        index++;
+      } else if (char === quote) state = 'code';
+    } else if (state === 'code') {
+      if (lexer.hasBlock && char === '/' && next === '*') {
+        opener = current.trim() === '' ? null : { index, keep: current.length };
+        index++;
+        state = 'block';
+      } else if (startsLineComment(blob, index, lexer.line)) state = 'line';
+      else {
+        current += char;
+        if (lexer.quotes.includes(char)) {
+          state = 'string';
+          quote = char;
+        } else if (char === '\\' && next !== undefined && next !== '\n') {
+          current += next;
+          index++;
+        }
+      }
+    }
+  }
+  return lines.join('\n');
+}
+
+/** True when `file` changed only in comments and blank lines: its base and head blobs, read by `readBlob('base' | 'head')` (null when the file is absent on that side), differ yet project to the same executable text. An unknown extension, an added or deleted file and a change that leaves the text identical (a mode change) are never comment-only, so a doubtful change keeps counting as code. */
+function isCommentOnlyChange(file, readBlob) {
+  const lexer = COMMENT_LEXERS.find((candidate) => candidate.extensions.test(file));
+  if (lexer === undefined) return false;
+  const base = readBlob('base');
+  const head = readBlob('head');
+  return base !== null && head !== null && base !== head && projectExecutable(base, lexer) === projectExecutable(head, lexer);
+}
+
+/** Production executable files changed between `sha` and HEAD, a file changed only in comments and blank lines left out; sprint artefacts never count. */
+function changedProductionFiles(sha) {
+  const tokens = runGit(['diff', '--name-status', '--no-renames', '-z', sha, 'HEAD']).split('\0');
+  const changes = [];
+  for (let index = 0; index + 1 < tokens.length; index += 2) changes.push({ status: tokens[index], file: tokens[index + 1] });
+  return changes.filter(({ file }) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter(({ status, file }) => {
+    const readBlob = (side) => ((side === 'base' ? status === 'A' : status === 'D') ? null : runGit(['show', `${side === 'head' ? 'HEAD' : sha}:${file}`]));
+    return !isCommentOnlyChange(file, readBlob);
+  }).map(({ file }) => file);
+}
+
+/** Each reviewer's files across every iteration manifest of a wave's review directory, as reviewer to path set; External Review reads its scope file. */
+function waveReviewScopes(waveDir) {
+  const iterations = fs.existsSync(waveDir) ? fs.readdirSync(waveDir).filter((name) => /^iter-\d+$/.test(name)) : [];
+  const scopes = new Map(INTERNAL_REVIEWERS.concat(EXTERNAL_REVIEWER).map((reviewer) => [reviewer, new Set()]));
+  iterations.forEach((iteration) => scopes.forEach((files, reviewer) => {
+    const file = path.join(waveDir, iteration, reviewer === EXTERNAL_REVIEWER ? `${reviewer}.scope.json` : `${reviewer}.manifest.json`);
+    if (fs.existsSync(file)) JSON.parse(fs.readFileSync(file, 'utf8')).files.forEach((entry) => files.add(entry));
+  }));
+  return scopes;
+}
+
+/** Clears the current impl wave's APPROVE latches the code changed since the wave's last `iteration_heads` sha invalidates: a changed production file clears each latched reviewer whose manifests listed it, every latched reviewer when no manifest of the wave did. Writes `state.json` only when a latch clears; a legacy flat `reviews.impl` is wave 1. */
+function latchRefresh(flags) {
+  if (typeof flags.state !== 'string' || typeof flags['sprint-dir'] !== 'string') fail('--state <path> and --sprint-dir <sprint dir> required');
+  const text = fs.readFileSync(flags.state, 'utf8');
+  const { reviews } = JSON.parse(text);
+  const impl = reviews && reviews.impl;
+  const node = impl && (impl.waves ? impl.waves[impl.wave - 1] : impl);
+  if (!node || typeof node !== 'object') fail(`${flags.state} has no impl review node`);
+  const heads = Object.entries(node.iteration_heads || {}).filter(([key, sha]) => /^iter-\d+$/.test(key) && typeof sha === 'string' && sha !== '').sort(([a], [b]) => Number(a.slice(5)) - Number(b.slice(5)));
+  const latched = Object.keys(node.latched || {});
+  const unchanged = { cleared: [], files: [] };
+  if (latched.length === 0 || heads.length === 0) return unchanged;
+  const files = changedProductionFiles(gitRef(heads[heads.length - 1][1], 'iteration_heads sha'));
+  if (files.length === 0) return unchanged;
+  const scopes = waveReviewScopes(impl.waves ? path.join(flags['sprint-dir'], 'reviews', 'impl', `wave-${impl.wave}`) : path.join(flags['sprint-dir'], 'reviews', 'impl'));
+  const isListed = (file) => [...scopes.values()].some((listed) => listed.has(file));
+  const cleared = latched.filter((reviewer) => files.some((file) => !isListed(file) || (scopes.has(reviewer) && scopes.get(reviewer).has(file))));
+  if (cleared.length === 0) return { cleared, files };
+  const writeReviews = reviewsWriter(flags.state, text, reviews);
+  cleared.forEach((reviewer) => delete node.latched[reviewer]);
+  writeReviews();
+  return { cleared, files };
 }
 
 /** What a liveness decision reads off a Claude subagent transcript (JSONL): when the agent started, when its newest still-unanswered tool call began (null when none is open), and whether its last message is a final assistant answer. An unparseable line, such as a half-written tail, is skipped. */
@@ -1524,6 +1750,7 @@ function timingLookups(ledger) {
 function timingCommand(command, args) {
   try {
     const flags = parseFlagArgs(args, ['create']);
+    warnIgnoredFlags(command, flags);
     if (typeof flags.ledger !== 'string') fail('--ledger <path> required');
     const exists = fs.existsSync(flags.ledger);
     if (!exists && !(command === 'timing' && flags.create === true)) return 0;
@@ -1761,13 +1988,19 @@ function sectionCommand(flags) {
   return markdownSection(fs.readFileSync(flags.file, 'utf8'), flags.heading);
 }
 
-/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. */
+/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. With `--base-ref`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
 function contextCommand(flags) {
   if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
   const root = path.join(__dirname, '..');
-  const refs = contextRefs(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'), flags.role, flags.phase);
-  const files = Object.fromEntries([...new Set(refs.map(refFile))].map((file) => [file, fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null]));
-  const bundle = contextBundle(refs, files);
+  const baseRef = verifiedBaseRef(flags);
+  const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
+  const allRefs = contextRefs(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'), flags.role, flags.phase);
+  const read = Object.fromEntries([...new Set(allRefs.map(refFile))].map((file) => [file, readText(file)]));
+  const sectionAbsent = (ref) => ref !== refFile(ref) && !markdownHeadings(read[refFile(ref)].replace(/\r\n/g, '\n').split('\n')).some((entry) => entry.text === ref.slice(ref.indexOf('#') + 1));
+  const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
+  new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
+  const refs = allRefs.filter((ref) => !omitted.includes(ref));
+  const bundle = contextBundle(refs, read);
   fs.writeFileSync(flags.out, bundle, 'utf8');
   return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
 }
@@ -1937,6 +2170,41 @@ function designTokensCommand(flags) {
   return { tokens: leaves.length };
 }
 
+/** The flags each command reads; `commit-check` and `memory-check` reject their own extras instead. */
+const COMMAND_FLAGS = {
+  'manifest-digest': ['manifest'],
+  'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref'],
+  'validate-ledger': ['manifest', 'ledger', 'findings'],
+  'persist-review': ['in', 'out-dir', 'phase', 'reviewer', 'late', 'manifest', 'floor'],
+  'external-preflight': ['input'],
+  'external-record-failure': ['input'],
+  'route-task': ['input'],
+  'defect-stalemate': ['plan'],
+  'impl-test-close': ['test-plan', 'entry', 'decisions', 'line'],
+  'design-tokens': ['design', 'html'],
+  'draft-snapshot': ['files', 'out', 'previous'],
+  'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
+  'wave-files': ['waves', 'wave', 'head', 'files', 'out'],
+  'retro-candidates': ['sprints', 'backlog', 'self-hosting'],
+  'scratch-dir': [],
+  'rotate-decisions': ['sprint', 'to'],
+  'record-verdicts': ['state', 'phase', 'iteration', 'verdict'],
+  'latch-refresh': ['state', 'sprint-dir'],
+  'checklist-hits': ['checklist', 'sprint-dir'],
+  section: ['file', 'heading'],
+  context: ['role', 'phase', 'out', 'base-ref'],
+  'agent-liveness': ['agents', 'interval', 'budget-min'],
+  'timing-summary': ['ledger', 'archive'],
+  'checks-wait': ['pr'],
+  timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
+  'timing-recover': ['ledger'],
+};
+
+/** Warns on stderr for each parsed flag the command does not read; the command still runs. */
+function warnIgnoredFlags(command, flags) {
+  Object.keys(flags).filter((name) => !COMMAND_FLAGS[command].includes(name)).forEach((name) => process.stderr.write(`runtime: ignored flag --${name}\n`));
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -1961,6 +2229,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
+  if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -2041,6 +2310,14 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(recordVerdicts(flags)) + '\n');
     return 0;
   }
+  if (command === 'latch-refresh') {
+    process.stdout.write(JSON.stringify(latchRefresh(flags)) + '\n');
+    return 0;
+  }
+  if (command === 'checklist-hits') {
+    process.stdout.write(JSON.stringify(checklistHits(flags)) + '\n');
+    return 0;
+  }
   if (command === 'section' || command === 'context') {
     try {
       process.stdout.write(command === 'section' ? sectionCommand(flags) : JSON.stringify(contextCommand(flags)) + '\n');
@@ -2061,11 +2338,11 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isCommentOnlyChange, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };

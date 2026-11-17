@@ -22,6 +22,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── custom-design-rules.md
 │   │   ├── custom-coding-rules.md
 │   │   ├── retro-backlog.md                 # lazy, "Retro backlog"
+│   │   ├── reliability-checklist.md         # lazy, "Reliability checklist"
 │   │   └── stubs.md
 │   ├── tmp/                                 # git-ignored helper files, "Scratch directory"
 │   └── sprints/
@@ -84,6 +85,7 @@ A sprint folder holds **only** the artifacts named above, plus the per-reviewer 
 `docs/` becomes flat:
 
 ```
+.asd/project/reliability-checklist.md      # lazy, "Reliability checklist"
 docs/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
@@ -181,7 +183,7 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions; never a secret.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used (per entry: default-target resolution and any state mutation, verified against help or source before a Task uses it), version specifics, deprecations, project conventions; never a secret.
 
 **Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and the main orchestrator writes it. No implementation without verified reference.
 
@@ -204,9 +206,9 @@ Manual step = operational action a human must perform for the plan to complete (
 
 An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
 
-SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test; also the handoff channel for code defects to `impl` test-fix mode (`Defects`). Not a task list (`plan.md`) nor a review verdict (`reviews/impl/wave-<K>/iter-NN/quality.md`).
+SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test; also the handoff channel for code defects to `impl` test-fix mode (`Defects`).
 
-**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges it and reports any result as an ordinary finding.
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user's manual-verification check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges it and reports any result as an ordinary finding.
 
 ## Friction log
 
@@ -223,6 +225,10 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 ## Retro backlog
 
 `.asd/project/retro-backlog.md` per `t_retro-backlog.md`: the cross-sprint disposition of each retro row, one line per row, updated in place. Owner: main orchestrator. Created lazily at the first retro-intake write — `asd-init` seeds none, no migration creates it, `/asd-update` never touches it. Semantics: `asd-phase-scope.md` step 2a. Issue dispositions (an `asd-retro` or project issue) live on GitHub, never here.
+
+## Reliability checklist
+
+`.asd/project/reliability-checklist.md` per `t_reliability-checklist.md`: the cross-sprint guardrails reviewers check, one table row per item. Owner: main orchestrator. Created lazily at the first included row — `asd-init` seeds none, `/asd-update` never overwrites it. Written by scope intake (`asd-phase-scope.md` step 2a: add, remove) and retro `checklist-hits` (`Last hit`, `asd-phase-retro.md`).
 
 ## Single Source of Truth (iron rule)
 
@@ -256,7 +262,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 - kebab-case English filenames
 - Sprint slug derived from scope, max 30 chars
 - Sprint number zero-padded to 3 digits
-- ADR numbering is sprint-local (`ADR-1`, `ADR-2`, …) inside `<sprint>/design/adr.html` — unique only within the sprint, may repeat across sprints; ADRs are never promoted as a standalone persistent document, so no persistent ADR filename convention exists
+- ADR numbering is sprint-local (`ADR-1`, `ADR-2`, …) inside `<sprint>/design/adr.html` — unique only within the sprint, may repeat across sprints; never promoted standalone
 
 ## Sprint archival
 
@@ -270,7 +276,7 @@ Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the n
 
 Every user or adaptive orchestrator decision appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint. Owner: main orchestrator. Append-only, never edited or removed. Entry format and durability rule are normative in `t_decisions-log.md`.
 
-**Rotation**: before delegating a phase skill whose phase differs from `state.json.phase`, `asd-sprint` runs `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>`, which renames the live `decisions-log.md` to `decisions-log.NNN.md` (next ordinal, zero-padded to 3) when it holds an entry, unless both phases are in {`impl`, `impl-test`, `impl-review`}, and recreates the live file from `t_decisions-log.md`; `asd-sprint` commits both when it reports `rotated`. So the cycle rotates once on entry (plan→impl, a rollback re-entry included) and once on exit (impl-review → its successor). A resume or re-run of the phase in `state.json.phase` never rotates, nor does a transition inside that cycle, so a within-cycle reader — the interrupted-attempt count (`review-policy.md` "Interrupted dispatch"), the failed-dispatch routing line (`sprint-lifecycle.md` "State recovery"), an impl-test stalemate answer — reads the live file alone.
+**Rotation**: before delegating a phase skill whose phase differs from `state.json.phase`, `asd-sprint` runs `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>`, which renames the live `decisions-log.md` to `decisions-log.NNN.md` (next ordinal, zero-padded to 3) when it holds an entry, unless both phases are in {`impl`, `impl-test`, `impl-review`}, and recreates the live file from `t_decisions-log.md`; `asd-sprint` commits both when it reports `rotated`. A resume or re-run of the phase in `state.json.phase` never rotates, nor does a transition inside that cycle, so a within-cycle reader — the interrupted-attempt count (`review-policy.md` "Interrupted dispatch"), the failed-dispatch routing line (`sprint-lifecycle.md` "State recovery"), an impl-test stalemate answer — reads the live file alone.
 
 **Readers of both rotated files**: a current-fact reader reads the live file; a cross-span reader reads every segment in ordinal order, then the live file. No segment present = a legacy single file, read as is.
 

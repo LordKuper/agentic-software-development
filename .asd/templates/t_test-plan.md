@@ -61,6 +61,7 @@ analysed, not any tree produced later
 - Scope: {{impacted \| full \| named}} — `full` when every test file ran with no test-name filter, `named` for a named test or name-filtered run (never reused), else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set" **Scope.**)
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
+- Smoke: {{`smoke` from commands.yaml}} — {{pass \| fail}}; line omitted when the key is absent
 - HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
 
 ## Defects
@@ -69,7 +70,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
-| D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim \| AC-N and the deviation, when no test fails}} | {{runner-reported test name \| none (AC-N)}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
+| D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim \| AC-N and the deviation, when no test fails}} | {{runner-reported test name \| none (AC-N) \| none (smoke)}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
 
 ## Manual verification (optional)
 

@@ -1,0 +1,254 @@
+{
+  "sprint_id": "035-verification-hardening",
+  "branch": "sprint/035-verification-hardening",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-17 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: all seven strands, runtime.js for latch/trigger/base-branch context; last_hit = finding, critical never pruned",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "034#A-1 A-3 P-1 P-2 P-3 and issue #120 included (AC-9..AC-14)",
+      "evidence": "decisions-log.md 2026-11-17 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-14 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-11-17 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "audit contradictions: AC-1 retired -> AC-15, AC-6 retired -> AC-16",
+      "evidence": "decisions-log.md 2026-11-17 audit contradictions resolved",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-16; both contradictions answered by user; load headroom risk recorded",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "all active AC traced; waves disjoint; load budget per Task; tech reference extended",
+      "evidence": "decisions-log.md 2026-11-17 plan gate",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all Tasks ticked, build/lint clean, flagged accepted, no stubs",
+      "evidence": "decisions-log.md 2026-11-17 impl assessment approved",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "reviewer question",
+      "decision_actor": "user",
+      "reason": "user answer: a: keep AC-15",
+      "evidence": "decisions-log.md 2026-11-17 reviewer question wave-1/iter-03",
+      "artifact_revision": "combined.md@wave-1/iter-03"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-only hunk classification",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:change-surface exception wording",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:valve-off reach",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:issue filing external action",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:pr gate reuse of cleanup verification",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:first retro project write",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 11": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 12": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:README mirror",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-01": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-line classification edge",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-02": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-line classification edge",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-03": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-line classification edge",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-04": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:comment-only equivalence",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 5,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+            },
+            "iter-04": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "cd124372d8c7e6a2ea61b9d4b15837a976c4eb35",
+            "iter-02": "f06ce024f3e11afc9beb18a572ba4a4c8d64d9cc",
+            "iter-03": "bf0d3e9d84b759ba862554aa445f71d9292c3cfe",
+            "iter-04": "fd8476ee2d3ac7a172270b8429d33d398427e926",
+            "iter-05": "17932b9352e035e19c4e0ffc6fcd8cc2797d947b"
+          },
+          "latched": {
+            "combined": 5,
+            "external": 5
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-11-17T07:53:20.000Z",
+  "updated_at": "2026-11-17T13:25:44.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 122,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/122",
+    "state": "open"
+  },
+  "archived_at": null
+}
