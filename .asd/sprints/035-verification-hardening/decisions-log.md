@@ -37,3 +37,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-11-17 — PR #122 opened [GATE adaptive: PR publication]: evidence = plan tasks done, reviews green (wave 1/1 iter-05), full suite 391/391 at e22fa5b1, retrospective written; authority = user request 'Все 1–7' with same-run merge.
