@@ -39,6 +39,7 @@ Developer: implements production code — backend and UI — that satisfies the 
 - must: when `payload.inputs.ux` resolves to the self_hosting no-baseline set (`sprint-lifecycle.md` "Input sources" `ux`), implement against it and record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit message rather than emitting `QUESTION`; the token-usage exception is `design-system.md` §6's `self_hosting` paragraph.
 - must: run build and lint after each task and before marking it done; `COMPLETED` only with both clean; never advance with a failure unreported.
 - must: one logical change per commit, message saying WHY; commit per task, Conventional Commits plus the `ASD-Task` trailer (`git-strategy.md` "Commits").
+- must: before COMPLETED, check each command or subcommand the diff newly invokes against the tech reference (`artifact-layout.md` "Tech reference docs").
 - must: stubs per `git-strategy.md` "TODO stubs"; manual steps per `asd-phase-impl.md` "Rules".
 - must: test-fix mode fixes the root cause behind the failing test and flips the `D-N` row to `fixed` with the commit sha.
 - must: review-fix that narrows or rewrites a rule re-reads every `AC-N` the rule implements and keeps each case it names.

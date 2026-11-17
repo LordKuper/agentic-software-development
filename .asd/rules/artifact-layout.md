@@ -183,15 +183,15 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used (per entry: default-target resolution and any state mutation, verified against help or source before a Task uses it), version specifics, deprecations, project conventions; never a secret.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used (per entry: default-target resolution and any state mutation, verified against help or source before a Task uses it), version specifics, deprecations, project conventions; never a secret.
 
-**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and the main orchestrator writes it. No implementation without verified reference.
+**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before using a tech and covers every command or subcommand the diff newly invokes. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` (command: `<command>`); the orchestrator writes it, never the dev.
 
 ## Manual steps
 
-`<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); main orchestrator (validates necessity).
+`<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); orchestrator (validates necessity).
 
-Manual step = operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `quality.md`).
+Manual step = operational action a human must perform for the plan to complete (provision a secret or cloud resource, hand-run a migration, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `quality.md`).
 
 - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
 - `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
