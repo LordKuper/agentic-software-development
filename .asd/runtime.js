@@ -1936,15 +1936,7 @@ function contextCommand(flags) {
   const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
   const allRefs = contextRefs(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'), flags.role, flags.phase);
   const read = Object.fromEntries([...new Set(allRefs.map(refFile))].map((file) => [file, readText(file)]));
-  const sectionAbsent = (ref) => {
-    if (ref === refFile(ref)) return false;
-    try {
-      markdownSection(read[refFile(ref)], ref.slice(ref.indexOf('#') + 1));
-      return false;
-    } catch (error) {
-      return true;
-    }
-  };
+  const sectionAbsent = (ref) => ref !== refFile(ref) && !markdownHeadings(read[refFile(ref)].replace(/\r\n/g, '\n').split('\n')).some((entry) => entry.text === ref.slice(ref.indexOf('#') + 1));
   const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
   new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
   const refs = allRefs.filter((ref) => !omitted.includes(ref));
