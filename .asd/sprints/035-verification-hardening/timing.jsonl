@@ -63,3 +63,13 @@
 {"op":"close","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-17T08:52:09.784Z","end":"2026-11-17T09:00:25.599Z","outcome":"done","attrs":{"wave":"1","iteration":"1"}}
 {"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-17T08:51:48.393Z","end":"2026-11-17T09:00:25.663Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-17T09:00:25.663Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-11-17T09:00:35.714Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-11-17T09:00:35.714Z","end":"2026-11-17T09:05:07.054Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"asd-tester impl#1","kind":"dispatch","parent":"impl#2","start":"2026-11-17T09:05:17.383Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"suite impl#1","kind":"suite","parent":"asd-tester impl#1","start":"2026-11-17T09:06:11.691Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#1","kind":"suite","parent":"asd-tester impl#1","start":"2026-11-17T09:06:11.691Z","end":"2026-11-17T09:06:11.933Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#2","kind":"suite","parent":"asd-tester impl#1","start":"2026-11-17T09:06:12.006Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl#2","kind":"suite","parent":"asd-tester impl#1","start":"2026-11-17T09:06:12.006Z","end":"2026-11-17T09:07:22.728Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"asd-tester impl#1","kind":"dispatch","parent":"impl#2","start":"2026-11-17T09:05:17.383Z","end":"2026-11-17T09:07:52.025Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-17T09:00:25.663Z","end":"2026-11-17T09:07:54.291Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-17T09:07:54.291Z","attrs":{}}

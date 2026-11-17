@@ -47,3 +47,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — impl-test: impacted set green (390/390, full via safety valve), 15/0 tests; smoke absent, skipped
 - 2026-11-17 — external interrupted attempt 1 in wave-1/iter-01 (quota exhausted, provider reset 14:41)
 - 2026-11-17 — impl-review wave-1/iter-01: combined CONCERNS (7: findings 1-7), external availability skip (quota, negative cache to 14:41; unreviewed files carry to iter-02); no pre-existing findings; minor test-only branch does not fire (findings 1-3, 5-7 non-test) → impl review-fix (review_fixes_pending=wave-1/iter-01). Finding 6 tech-reference edits are orchestrator-applied (docs/ outside dev allowlist).
+- 2026-11-17 — route review-fix wave-1/iter-01 (findings 1, 2, 3, 5, 7): standard, dispatch HEAD 5648c991dcb3d034801271dbd458c0a782f86d72; risk change: comment-line classification edge
+- 2026-11-17 — route review-fix tester wave-1/iter-01 (combined-4): standard, dispatch HEAD b5383e29172d605d1eb5aee920a8d5b9581f1358
+- 2026-11-17 — impl fix for wave-1/iter-01: findings resolved (combined-1, -2, -3, -5, -7 dev; combined-6 orchestrator b4ad3ecf; combined-4 tester be5f4bad); flagged accepted: combined-1 mid-comment '* body' alone now counts as code (safe direction). Views synced b5383e29; suite 391/391.
