@@ -37,6 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-17 — tech reference: git-2.55.md → git-2.56.md (installed 2.56.0.windows.4); added `git show <ref>:<path>`, `git diff --name-status`, `git diff -U0` with default target and mutation.
-- 2026-11-17 — stubs: none open (audit), no stub disposition.
-- 2026-11-17 — plan gate (adaptive, write-then-review-accept): `<sprint>/plan.md` accepted — evidence: every active AC (AC-2..AC-5, AC-7..AC-16) traced to a Task or orchestrator line; wave table covers Tasks 1–12 once, no overlapping paths in wave 1; restating sites, external APIs and load budget listed in Overview; no hard-gate choice left open.
