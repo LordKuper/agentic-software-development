@@ -599,14 +599,8 @@ function applyFloor(body, floor) {
   return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, approve };
 }
 
-/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
-function persistReview(input) {
-  const { phase, reviewer, text, outDir } = input;
-  if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
-  const keys = reviewerKeys(phase);
-  if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
-  if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
-  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
+/** The checks a reviewer's returned `text` passes before it is persisted, as `{body, verdict, findings}`: the verdict token for `phase` and `reviewer`, the findings table, and for an internal reviewer its coverage ledger against the manifest at `manifestPath`. Throws on the first failure. */
+function checkReview(phase, reviewer, text, manifestPath) {
   const start = /^[ \t]*\[REVIEW-/m.exec(text);
   if (start === null) fail('returned text carries no verdict token: an interrupted dispatch, not a verdict');
   const body = text.slice(start.index).trimStart();
@@ -618,9 +612,21 @@ function persistReview(input) {
   if (!verdict.startsWith('APPROVE') && findings.length === 0) fail(`${verdict} verdict lists no finding`);
   if (verdict === 'APPROVE' && findings.length > 0) fail('APPROVE verdict lists findings');
   if (INTERNAL_REVIEWERS.includes(reviewer)) {
-    const manifest = JSON.parse(fs.readFileSync(input.manifest || path.join(outDir, `${reviewer}.manifest.json`), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     validateCoverageLedger(manifest, ledgerFromText(body), findings.map((finding) => finding.id));
   }
+  return { body, verdict, findings };
+}
+
+/** Validates one reviewer's returned text (`checkReview`) and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's manifest defaults to `<outDir>/<reviewer>.manifest.json`. `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
+function persistReview(input) {
+  const { phase, reviewer, text, outDir } = input;
+  if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
+  const keys = reviewerKeys(phase);
+  if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
+  if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
+  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
+  const { body, verdict, findings } = checkReview(phase, reviewer, text, input.manifest || path.join(outDir, `${reviewer}.manifest.json`));
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
   if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
@@ -1373,90 +1379,10 @@ function recordVerdicts(flags) {
   return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
 }
 
-const COMMENT_LEXERS = [
-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, line: '//', hasBlock: true, quotes: '\'"`' },
-  { extensions: /\.css$/i, line: '', hasBlock: true, quotes: '\'"' },
-  { extensions: /\.(scss|less)$/i, line: '//', hasBlock: true, quotes: '\'"' },
-  { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, line: '#', hasBlock: false, quotes: '\'"' },
-  { extensions: /\.(sql|lua|hs|elm)$/i, line: '--', hasBlock: false, quotes: "'" },
-];
-
-/** Whether the `marker` line comment opens at `index`: a `#` not followed by `!` (shebang) and after whitespace (so `$#` stays code), a `//` not after `:` (so `http://` stays code). */
-function startsLineComment(blob, index, marker) {
-  if (marker === '' || !blob.startsWith(marker, index)) return false;
-  const before = blob[index - 1];
-  if (marker === '#') return blob[index + 1] !== '!' && (before === undefined || /\s/.test(before));
-  return !(marker === '//' && before === ':');
-}
-
-/** `blob` with its comments, trailing whitespace outside strings and lines left empty outside a string removed, so two blobs differing only in comments project equal. It stops stripping where it cannot follow: at a line end inside a `'`/`"` string, or inside a block comment opened after code on its line, the rest of the blob comes back verbatim (from the opener for a block). ponytail: regex literals and nested template literals are read naively, so a quote or `/*` inside a regex may start a string or block; the stop rule and plain equality keep such a misread on the code side, never on a comment. Upgrade path: a real tokenizer per language. */
-function projectExecutable(blob, lexer) {
-  const lines = [];
-  let current = '';
-  let state = 'code';
-  let quote = '';
-  let opener = null;
-  const stopAt = (keep, from) => lines.map((line) => `${line}\n`).join('') + current.slice(0, keep) + blob.slice(from);
-  for (let index = 0; index <= blob.length; index++) {
-    const char = blob[index];
-    const next = blob[index + 1];
-    if (char === '\n' || char === undefined) {
-      if (state === 'string' && quote !== '`') return stopAt(current.length, index);
-      if (state === 'block' && opener !== null) return stopAt(opener.keep, opener.index);
-      if (state === 'string') lines.push(current);
-      else if (current.trim() !== '') lines.push(current.trimEnd());
-      current = '';
-      if (state === 'line') state = 'code';
-    } else if (state === 'block') {
-      if (char === '*' && next === '/') {
-        index++;
-        state = 'code';
-      }
-    } else if (state === 'string') {
-      current += char;
-      if (char === '\\' && next !== undefined && next !== '\n') {
-        current += next;
-        index++;
-      } else if (char === quote) state = 'code';
-    } else if (state === 'code') {
-      if (lexer.hasBlock && char === '/' && next === '*') {
-        opener = current.trim() === '' ? null : { index, keep: current.length };
-        index++;
-        state = 'block';
-      } else if (startsLineComment(blob, index, lexer.line)) state = 'line';
-      else {
-        current += char;
-        if (lexer.quotes.includes(char)) {
-          state = 'string';
-          quote = char;
-        } else if (char === '\\' && next !== undefined && next !== '\n') {
-          current += next;
-          index++;
-        }
-      }
-    }
-  }
-  return lines.join('\n');
-}
-
-/** True when `file` changed only in comments and blank lines: its base and head blobs, read by `readBlob('base' | 'head')` (null when the file is absent on that side), differ yet project to the same executable text. An unknown extension, an added or deleted file and a change that leaves the text identical (a mode change) are never comment-only, so a doubtful change keeps counting as code. */
-function isCommentOnlyChange(file, readBlob) {
-  const lexer = COMMENT_LEXERS.find((candidate) => candidate.extensions.test(file));
-  if (lexer === undefined) return false;
-  const base = readBlob('base');
-  const head = readBlob('head');
-  return base !== null && head !== null && base !== head && projectExecutable(base, lexer) === projectExecutable(head, lexer);
-}
-
-/** Production executable files changed between `sha` and HEAD, a file changed only in comments and blank lines left out; sprint artefacts never count. */
+/** Production executable files changed between `sha` and HEAD; sprint artefacts never count. */
 function changedProductionFiles(sha) {
-  const tokens = runGit(['diff', '--name-status', '--no-renames', '-z', sha, 'HEAD']).split('\0');
-  const changes = [];
-  for (let index = 0; index + 1 < tokens.length; index += 2) changes.push({ status: tokens[index], file: tokens[index + 1] });
-  return changes.filter(({ file }) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter(({ status, file }) => {
-    const readBlob = (side) => ((side === 'base' ? status === 'A' : status === 'D') ? null : runGit(['show', `${side === 'head' ? 'HEAD' : sha}:${file}`]));
-    return !isCommentOnlyChange(file, readBlob);
-  }).map(({ file }) => file);
+  const files = runGit(['diff', '--name-only', '--no-renames', '-z', sha, 'HEAD']).split('\0');
+  return files.filter((file) => file !== '' && isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/'));
 }
 
 /** Each reviewer's files across every iteration manifest of a wave's review directory, as reviewer to path set; External Review reads its scope file. */
@@ -1535,7 +1461,30 @@ function transcriptSnapshot(file) {
   return { size: stat.size, mtimeMs: stat.mtimeMs, text: fs.readFileSync(file, 'utf8') };
 }
 
-/** Checks each `--agents` Claude subagent's transcript, under `$CLAUDE_CONFIG_DIR/projects` when that is set and `~/.claude/projects` otherwise, every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
+/** Whether a reviewer's `{return, manifest}` entry names a return file that exists and passes `checkReview`; its phase and reviewer come from the file's own verdict token. A missing or invalid file is false. */
+function isReviewReturned(entry) {
+  try {
+    const text = fs.readFileSync(entry.return, 'utf8');
+    const [, phase, reviewer] = /^[ \t]*\[REVIEW-([a-z]+)-([a-z-]+)\]/m.exec(text) || [];
+    if (!REVIEW_NODES.includes(phase) || !reviewerKeys(phase).includes(reviewer)) return false;
+    checkReview(phase, reviewer, text, entry.manifest);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/** The `--returns` file's agent id to `{return, manifest}` map, `{}` while the file is missing or unparseable. */
+function readReturns(file) {
+  try {
+    const returns = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return returns !== null && typeof returns === 'object' ? returns : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/** Checks each `--agents` Claude subagent's transcript, under `$CLAUDE_CONFIG_DIR/projects` when that is set and `~/.claude/projects` otherwise, every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. An agent whose `--returns` entry names a return file passing `checkReview` is done, whatever its transcript shows. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
 async function agentLivenessCommand(flags) {
   if (typeof flags.agents !== 'string') fail('--agents <id,...> required');
   const ids = [...new Set(flags.agents.split(','))];
@@ -1546,7 +1495,12 @@ async function agentLivenessCommand(flags) {
   const projectsDir = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
   const watched = new Map(ids.map((id) => [id, { file: null, previous: undefined }]));
   for (;;) {
+    const returns = flags.returns === undefined ? {} : readReturns(flags.returns);
     for (const [id, agent] of watched) {
+      if (returns[id] && isReviewReturned(returns[id])) {
+        watched.delete(id);
+        continue;
+      }
       agent.file = agent.file || findTranscript(projectsDir, id);
       const current = transcriptSnapshot(agent.file);
       const verdict = agentLiveness(agent.previous, current, Date.now(), budgetMs);
@@ -1691,7 +1645,14 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   return filled;
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+/** The first `<base>#<n>` (n from 2) not in `held`, `base` being `id` without its trailing `#<n>`. */
+function nextFreeId(held, id) {
+  let ordinal = 2;
+  while (held.has(`${phaseName(id)}#${ordinal}`)) ordinal += 1;
+  return `${phaseName(id)}#${ordinal}`;
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id the ledger already holds, open or closed, is skipped and warns with the next free id; so is an open of a phase whose bare name is already open. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
 function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
@@ -1700,12 +1661,18 @@ function timingAppend(text, flags, now, lookups = {}) {
   const written = [];
   for (const id of request.close) written.push(...timingCloses(entries.concat(written), open, id, request.outcome, now, warnings));
   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
+  const held = new Set(entries.map((entry) => entry.id));
   for (const name of request.open) {
     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
-    if (open.has(id) || (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name))) {
-      warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
+    if (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name)) {
+      warnings.push(`open of ${name} skipped: already open`);
       continue;
     }
+    if (held.has(id)) {
+      warnings.push(`open of ${id} skipped: id already in the ledger, next free id ${nextFreeId(held, id)}`);
+      continue;
+    }
+    held.add(id);
     const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
     const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs };
     open.set(id, entry);
@@ -1735,13 +1702,13 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
-      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[id];
+      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
       const agent = routed && routed.execution === 'agent' && routed.tier !== undefined ? (routed.tier === 'standard' ? 'asd-dev' : `asd-dev-${routed.tier}`) : undefined;
       return routed && { agent, tier: routed.tier, model: routed.resolved_model };
     },
@@ -2207,7 +2174,7 @@ const COMMAND_FLAGS = {
   'checklist-hits': ['checklist', 'sprint-dir'],
   section: ['file', 'heading'],
   context: ['role', 'phase', 'out', 'base-ref'],
-  'agent-liveness': ['agents', 'interval', 'budget-min'],
+  'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
   'checks-wait': ['pr'],
   timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
@@ -2225,6 +2192,7 @@ function parseFlagArgs(argv, booleanFlags) {
   for (let i = 0; i < argv.length; i += 1) {
     if (!argv[i].startsWith('--')) fail('flags require values');
     const name = argv[i].slice(2);
+    if (Object.hasOwn(out, name)) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
     if (bools.includes(name)) { out[name] = true; continue; }
     if (argv[i + 1] === undefined) fail('flags require values');
     out[name] = argv[i + 1];
@@ -2359,4 +2327,4 @@ if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isCommentOnlyChange, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
