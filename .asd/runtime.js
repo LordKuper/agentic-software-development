@@ -1360,15 +1360,19 @@ function recordVerdicts(flags) {
 }
 
 const COMMENT_FAMILIES = [
-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|css|scss|less|gradle|groovy|glsl)$/i, isComment: (text) => text.startsWith('//') || (/^(?:\/\*|\*(?:[\s/]|$))/.test(text) && !/\*\/\s*\S/.test(text)) },
+  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, isComment: (text) => text.startsWith('//') || (text.startsWith('/*') && !/\*\/\s*\S/.test(text)), isBlockBody: (text) => /^\*(?:[\s/]|$)/.test(text) && !/\*\/\s*\S/.test(text) },
+  { extensions: /\.(css|scss|less)$/i, isComment: (text) => text.startsWith('//') || /^\/\*(?:(?!\*\/).)*\*\/$/.test(text) },
   { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, isComment: (text) => /^#(?!!)/.test(text) },
   { extensions: /\.(sql|lua|hs|elm)$/i, isComment: (text) => text.startsWith('--') },
 ];
 
-/** True when every changed line of `file` is blank or a whole-line comment of its extension family; an unknown extension, a line that may carry code after a block comment closes, and an empty change are never comment-only, so a doubtful change keeps counting as code. */
+/** True when every changed line of `file` is blank or a whole-line comment of its extension family; an unknown extension, a line that may carry code after a block comment closes, a `*`-led line outside a change holding a block-comment opener or closer, and an empty change are never comment-only, so a doubtful change keeps counting as code. */
 function isCommentOnlyChange(file, lines) {
   const family = COMMENT_FAMILIES.find((candidate) => candidate.extensions.test(file));
-  return family !== undefined && lines.length > 0 && lines.every((line) => line.trim() === '' || family.isComment(line.trim()));
+  if (family === undefined || lines.length === 0) return false;
+  const texts = lines.map((line) => line.trim());
+  const hasBlockEdge = family.isBlockBody !== undefined && texts.some((text) => text.startsWith('/*') || /\*\/$/.test(text));
+  return texts.every((text) => text === '' || family.isComment(text) || (hasBlockEdge && family.isBlockBody(text)));
 }
 
 /** Production executable files changed between `sha` and HEAD, a file whose every changed line is blank or a comment left out; sprint artefacts never count. */
