@@ -7,7 +7,7 @@ responsibility:
 
 # Test plan — sprint 035-verification-hardening
 
-Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`.
+Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`.
 
 ## Entry log
 
@@ -16,13 +16,13 @@ Entry 1's rows rotated to `test-plan.entry-01.md`, entry 2's to `test-plan.entry
 | 1 | 4278709f | full change surface |
 | 2 | 7a05ae53 | delta since entry 1 |
 | 3 | 113e3066 | delta since entry 2 (review-fix 8d64971b, 4f96c54e) |
+| 4 |  | delta since entry 3 (review-fix 68c1bcbe) |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `isCommentOnlyChange` decided rule: `*`-led lines never comments, block-edge gate removed, only a self-closed one-line `/* … */` with no trailing code is a block comment, css/scss/less merged into the c-family (AC-15, review-fix combined-1) | the entry-2 test still asserted the superseded block-body rule (test defect); a multi-line block comment or `* x` continuation read as a comment keeps a stale latch (unsafe direction) | unit: the exported function | adapt | the block-comment asserts now state the decided rule: an unclosed `/* open` line and `* text` body lines are code, a self-closed `/* … */` is a comment, trailing code after it is code, plus the reviewer's pair `['/* note */', '  * height;']` on `.java`; AC-15's guard (a doubtful change keeps counting as code) is unchanged |
-| `context --base-ref` `sectionAbsent` through `markdownHeadings`, no try/catch (AC-16, review-fix combined-2) | a duplicated granted heading at the ref read as "absent" and silently omitted instead of failing the bundle, which the old catch-all did | component: sandbox repo, committed `review-policy.md` with the granted heading twice | add | the absent-section assert from entry 2 stays green through the rewrite but cannot tell absent from duplicated; one more commit in the same sandbox asserts non-zero exit, the `2 matches` error and no omission note for the section |
+| `isCommentOnlyChange(file, changed, readBlob)` and `patchChangedLines`: c-family lines classified by lexing the blob of their side, `{side, number, text}` entries, hash/dash families keep the line-text rule, an absent blob reads as code (AC-15, review-fix combined-1, user answer: keep AC-15) | the entry-3 test called the old `(file, lines)` signature and pinned block-comment lines as code (test defect against the decided rule); a real JSDoc edit clearing the latch, or a `*`-led code line, code after `*/` or `//` in a string read as a comment (stale latch, the unsafe direction) | unit: the exported function with a blob reader, plus one `latch-refresh` sandbox round per side and per case (`patchChangedLines` is unexported, covered through the CLI) | adapt + add | the old asserts move to the entry shape; added: multi-line opener/body/closer, a lone body line, `*` continuation with no block, css `* { … }`, css `//`, code after `*/` (lines before it stay comment), `//` in a string and in a multi-line template literal, `-` side judged in the base blob, an absent blob, plus the CLI rounds: JSDoc body edit, opener/closer edit and body-line deletion keep the latch, a `* c` continuation and a code edit beside the comment clear it |
 
 ## Removed tests
 
@@ -36,8 +36,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (adapted: unclosed `/*` line, self-closed `/* … */`, trailing code, java pair, `*` body beside a closing edge) | fail-first on the pre-fix tree (`git archive 8d64971b~1`, new `tests/run.js` copied in): `node tests/run.js --filter "AC-15: a changed file counts as code"` → exit 1, that test (1 matched), `AC-15: an unclosed block-comment opening line is code`; per-assert mutations on a HEAD copy, each `--filter "AC-15: a changed file counts as code"` → exit 1, 1 matched: `/*`-start accepted as comment → `AC-15: an unclosed block-comment opening line is code`; `*`-start accepted → `AC-15: a self-closed comment beside a \`*\`-led code line is code`; `$` anchor dropped from the block-comment regex → `AC-15: a one-line block comment with trailing code is code`; self-closed clause dropped → `AC-15: a self-closed one-line block comment is a comment`; reword control (unclosed-line message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 6 |
-| tests/run.js: sprint-035 AC-16: --base-ref reads each reviewer rubric … (extended: a granted heading duplicated at the ref) | fail-first on the pre-fix tree (`git archive 4f96c54e~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-16"` → exit 1, that test (1 matched), `AC-16: a granted heading present twice at the ref fails the bundle, it is not read as absent` (pre-fix: status 0, heading omitted); green on HEAD, exit 0; runs: 1 |
+| tests/run.js: sprint-035 AC-15: a changed file counts as code unless … (re-authored on the blob-backed signature, plus the `src/doc.js` fixture in `LATCH_BASE_FILES`) | fail-first on the pre-fix tree (`git archive 68c1bcbe~1`, new `tests/run.js` copied in): `node tests/run.js --filter "sprint-035 AC-15: a changed file"` → exit 1, that test (1 matched), `AC-15: editing the body of a multi-line block comment leaves the latch` (pre-fix: latch cleared); per-assert mutations on a HEAD copy of `.asd/runtime.js`, same filter → exit 1, 1 matched: `commentOnlyLines` always reads the `+` blob → `AC-15: removing a code line while adding a comment is code`; string state never entered → `AC-15: `//` inside a multi-line template literal is code`; css `hasLineComments` forced true → `AC-15: css has no line comments`; comment-only gate ignoring code (`hasComment` alone) → `AC-15: a one-line block comment with trailing code is code`; reword control (css-rule message reworded) → exit 0, 1 matched; green on HEAD, exit 0; runs: 4 |
 
 ## Suite run
 
@@ -45,7 +44,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 - Scope: full — safety valve (framework-wide files changed): every test file ran with no filter
 - Result: pass — 391/391 passed, 0 failed, 0 skipped
 - Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (exit 0)
-- HEAD: 812f2279762027a67e13a305365b3d3d0b9ebd8b
+- HEAD: 982c54f335f823130c222e0709064e846444e02f
 
 ## Defects
 
