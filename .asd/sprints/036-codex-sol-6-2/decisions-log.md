@@ -37,8 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-## 2026-11-18 — `.asd/sprints/036-codex-sol-6-2/plan.md` accepted
-
-- **Decision**: Plan accepted by the user (`accept`): Tasks 1-7 in waves 1 (Task 1), 2 (Tasks 2-6), 3 (Task 7); fixed shapes: commit message file + `commit-check --message-file`, never-reused timing ids with `#<n>` repeats, `agent-liveness --returns <json>`, optional `## Decision coverage` table.
-- **Rationale**: Task 1 changes the commit contract, so it runs alone first; runtime.js work sits in one Task (wave 3) to keep wave paths disjoint. No open stubs touch the scope (audit, `stubs.md` empty). Baseline build `sync.js --check` green at 0f936d2b.
-- **Affected docs**: `plan.md`
