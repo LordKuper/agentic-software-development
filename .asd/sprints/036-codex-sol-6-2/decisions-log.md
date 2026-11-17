@@ -37,8 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-## 2026-11-18 — audit accepted [GATE adaptive: audit]
-
-- **Decision**: `audit.md` accepted adaptively; every AC-1..AC-14 is deliverable as stated, no contradiction left for the user.
-- **Rationale**: Scope authority covers every touched area; the trailer gap (`git-strategy.md:18`/`asd-phase-impl.md:32` vs the `:44` form) is a planned change under AC-12, and the user-wait id reuse AC-7 exposes is a plan-level numbering rule within AC-7, recorded as a risk.
-- **Affected docs**: `audit.md`
