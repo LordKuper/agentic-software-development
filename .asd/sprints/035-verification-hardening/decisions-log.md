@@ -50,3 +50,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — route review-fix wave-1/iter-01 (findings 1, 2, 3, 5, 7): standard, dispatch HEAD 5648c991dcb3d034801271dbd458c0a782f86d72; risk change: comment-line classification edge
 - 2026-11-17 — route review-fix tester wave-1/iter-01 (combined-4): standard, dispatch HEAD b5383e29172d605d1eb5aee920a8d5b9581f1358
 - 2026-11-17 — impl fix for wave-1/iter-01: findings resolved (combined-1, -2, -3, -5, -7 dev; combined-6 orchestrator b4ad3ecf; combined-4 tester be5f4bad); flagged accepted: combined-1 mid-comment '* body' alone now counts as code (safe direction). Views synced b5383e29; suite 391/391.
+- 2026-11-17 — route asd-tester impl-test#2: standard, dispatch HEAD 43117558fd19b922a5ebf25738eb6ac716f9cbf9
+- 2026-11-17 — impl-test: impacted set green (391/391, full via safety valve), 0/0 tests (3 asserts + 1 sandbox case added to existing tests); smoke absent, skipped

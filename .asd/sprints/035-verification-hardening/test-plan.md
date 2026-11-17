@@ -14,7 +14,7 @@ Entry 1's decision, removal and added-test rows rotated to `test-plan.entry-01.m
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 4278709f | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | 7a05ae53 | delta since entry 1 |
 
 ## Risk → check decisions
 
