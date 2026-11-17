@@ -62,6 +62,13 @@
       "reason": "all active AC traced; waves disjoint; load budget per Task; tech reference extended",
       "evidence": "decisions-log.md 2026-11-17 plan gate",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all Tasks ticked, build/lint clean, flagged accepted, no stubs",
+      "evidence": "decisions-log.md 2026-11-17 impl assessment approved",
+      "artifact_revision": "plan.md@impl"
     }
   ],
   "task_routing": {
@@ -141,6 +148,13 @@
       "reason": "normal",
       "raise_effort": false,
       "resolved_model": "sonnet"
+    },
+    "Task 12": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:README mirror",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -163,7 +177,7 @@
     }
   },
   "created_at": "2026-11-17T07:53:20.000Z",
-  "updated_at": "2026-11-17T08:30:21.000Z",
+  "updated_at": "2026-11-17T08:41:46.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

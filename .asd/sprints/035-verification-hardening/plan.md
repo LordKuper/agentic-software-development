@@ -127,7 +127,7 @@ Material risk: none
 
 ### Task 12: README mirrors
 Material risk: artifact: mirror edits verified by `node tests/run.js`
-- [ ] AC-8: Configuration (`safety_valve`, `commands.yaml` `smoke`), Folder structure (`reliability-checklist.md`, `t_reliability-checklist.md`, `runtime.js` new commands), "APPROVE latch" paragraph (fix-round clear)
+- [x] AC-8: Configuration (`safety_valve`, `commands.yaml` `smoke`), Folder structure (`reliability-checklist.md`, `t_reliability-checklist.md`, `runtime.js` new commands), "APPROVE latch" paragraph (fix-round clear)
 
 AC-11 → orchestrator, at impl wave 1 open before any dispatch: add to `.asd/project/custom-coding-rules.md` "Framework repo specifics" — before COMPLETED, a dev that edited a file of a baselined role's always-loaded bundle runs `node tests/run.js --filter "(D13)"` and keeps every role under its ceiling; commit it.
 Sync and version → orchestrator: `sync.js --apply` per wave (`release-manifest.json` hash ledgers included); `asd_version` bump and `CHANGELOG.md` at pr.
