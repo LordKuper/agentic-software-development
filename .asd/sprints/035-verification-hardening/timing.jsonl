@@ -1,0 +1,12 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-17T07:50:43.778Z","attrs":{}}
+{"op":"open","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:50:43.843Z","attrs":{"gate":"workflow choice"}}
+{"op":"close","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:50:43.843Z","end":"2026-11-17T07:53:14.026Z","outcome":"done","attrs":{"gate":"workflow choice"}}
+{"op":"open","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:53:53.421Z","attrs":{"gate":"requirements interview"}}
+{"op":"close","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:53:53.421Z","end":"2026-11-17T07:57:53.505Z","outcome":"done","attrs":{"gate":"requirements interview"}}
+{"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:59:02.795Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-17T07:59:02.795Z","end":"2026-11-17T08:02:34.570Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"wait retro intake dispositions","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:04:06.448Z","attrs":{"gate":"retro intake dispositions"}}
+{"op":"close","id":"wait retro intake dispositions","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:04:06.448Z","end":"2026-11-17T08:12:48.403Z","outcome":"done","attrs":{"gate":"retro intake dispositions"}}
+{"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:12:48.489Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-17T08:12:48.489Z","end":"2026-11-17T08:13:44.684Z","outcome":"done","attrs":{"gate":"scope"}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-17T07:50:43.778Z","end":"2026-11-17T08:13:44.811Z","outcome":"done","attrs":{}}
