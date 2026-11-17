@@ -48,29 +48,29 @@ Material risk: change: commit contract every agent commits under
 
 ### Task 2: Codex sol 6.2 mapping and README rows
 Material risk: artifact: model-ID literal swap verified by tests/run.js providers/README mirror test and git grep
-- [ ] `.asd/release-manifest.json` `model_families.codex.sol` → `gpt-6.2-sol` (AC-1)
-- [ ] `.asd/rules/providers.md` "Model family resolution" table `sol` row (AC-1)
-- [ ] `README.md:38`: `sol` → `gpt-6.2-sol` and "Codex CLI 0.167.0 or later" (older clients get HTTP 400 `model_not_found`) (AC-3)
-- [ ] `README.md` plan row (:191): plan runs the build once and maps user decisions (AC-11, AC-13); pr row (:197): PR body lists External Review availability skips (AC-6)
+- [x] `.asd/release-manifest.json` `model_families.codex.sol` → `gpt-6.2-sol` (AC-1)
+- [x] `.asd/rules/providers.md` "Model family resolution" table `sol` row (AC-1)
+- [x] `README.md:38`: `sol` → `gpt-6.2-sol` and "Codex CLI 0.167.0 or later" (older clients get HTTP 400 `model_not_found`) (AC-3)
+- [x] `README.md` plan row (:191): plan runs the build once and maps user decisions (AC-11, AC-13); pr row (:197): PR body lists External Review availability skips (AC-6)
 
 ### Task 3: PR body lists External Review skips
 Material risk: change: PR body section shape
-- [ ] `.asd/workflows/asd-phase-pr.md` open mode step 2: for each impl-review wave whose highest iteration's `external.md` verdict is `APPROVE (skipped: …)`, list the wave and that file's `Unreviewed files` (AC-6)
-- [ ] `.asd/templates/t_pr-description.md`: optional section for those waves, omitted when none (AC-6)
+- [x] `.asd/workflows/asd-phase-pr.md` open mode step 2: for each impl-review wave whose highest iteration's `external.md` verdict is `APPROVE (skipped: …)`, list the wave and that file's `Unreviewed files` (AC-6)
+- [x] `.asd/templates/t_pr-description.md`: optional section for those waves, omitted when none (AC-6)
 
 ### Task 4: Dev checks tech reference per new command
 Material risk: change: refuse-to-implement rule scope
-- [ ] `.asd/rules/artifact-layout.md` "Tech reference docs" refuse-to-implement rule: extend from per tech to every command or subcommand a diff newly invokes, `FAILED — tech-reference missing for <command>` (AC-8)
-- [ ] `.asd/agents/asd-dev.md` Rules: before COMPLETED, check each command or subcommand the diff newly invokes against the tech reference per that rule (AC-8)
+- [x] `.asd/rules/artifact-layout.md` "Tech reference docs" refuse-to-implement rule: extend from per tech to every command or subcommand a diff newly invokes, `FAILED — tech-reference missing for <command>` (AC-8)
+- [x] `.asd/agents/asd-dev.md` Rules: before COMPLETED, check each command or subcommand the diff newly invokes against the tech reference per that rule (AC-8)
 
 ### Task 5: Scope checks disabled documents against the scope
 Material risk: change: scope gate content
-- [ ] `.asd/workflows/asd-phase-scope.md` steps 3a/4: before the scope gate, check every `documents.*` freezing `false` against the requirements the drafted scope states; a needed one is shown at the gate with the choice of a `sprint.md` `Settings change:` line enabling it (step 2b) or a narrowed scope (AC-10)
+- [x] `.asd/workflows/asd-phase-scope.md` steps 3a/4: before the scope gate, check every `documents.*` freezing `false` against the requirements the drafted scope states; a needed one is shown at the gate with the choice of a `sprint.md` `Settings change:` line enabling it (step 2b) or a narrowed scope (AC-10)
 
 ### Task 6: Plan runs the build and maps user decisions
 Material risk: change: plan acceptance preconditions
-- [ ] `.asd/workflows/asd-phase-plan.md`: Inputs add the sprint's decisions log (every segment) and an accepted ux-spec; step 4 runs the `commands.yaml` `build` once and stops with `FAILED` naming the failing command and its first error lines; step 4 fills `## Decision coverage` per the Overview decision before the step 5 gate (AC-11, AC-13)
-- [ ] `.asd/templates/t_plan.md`: optional `## Decision coverage` table (AC-13)
+- [x] `.asd/workflows/asd-phase-plan.md`: Inputs add the sprint's decisions log (every segment) and an accepted ux-spec; step 4 runs the `commands.yaml` `build` once and stops with `FAILED` naming the failing command and its first error lines; step 4 fills `## Decision coverage` per the Overview decision before the step 5 gate (AC-11, AC-13)
+- [x] `.asd/templates/t_plan.md`: optional `## Decision coverage` table (AC-13)
 
 ### Task 7: Timing id reuse, latch clear without lexer, liveness return files
 Material risk: change: op id convention across recovery and re-dispatch

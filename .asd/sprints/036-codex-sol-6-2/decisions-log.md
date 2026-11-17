@@ -43,3 +43,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route Task 4: standard, dispatch HEAD 55c00255
 - 2026-11-18 — route Task 5: standard, dispatch HEAD 55c00255
 - 2026-11-18 — route Task 6: standard, dispatch HEAD 55c00255
+- 2026-11-18 — route Task 7: standard, dispatch HEAD 5d6d71a4
