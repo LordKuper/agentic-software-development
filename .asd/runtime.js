@@ -887,16 +887,30 @@ function memoryCheck(flags, paths = []) {
   return memoryViolations(diff, names).filter(isNamed);
 }
 
-/** The pre-commit report for a commit of `paths` (all staged when none): the header's length and the memory-check hits among those paths; `ok` only when the header fits and there is no hit. */
-function commitCheck(flags, paths) {
-  const unknown = Object.keys(flags).filter((name) => name !== 'subject');
-  if (unknown.length > 0 || typeof flags.subject !== 'string' || flags.subject === '') fail('commit-check takes --subject "<header>" [-- <paths...>]');
-  const headerLength = Array.from(flags.subject).length;
-  const memory = memoryCheck({}, paths);
-  return { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+/** The `ASD-Task:` lines of a commit message lying outside its last paragraph (the text after the last blank line), trailing blank lines ignored. */
+function misplacedTrailers(message) {
+  const lines = message.replace(/\r\n?/g, '\n').replace(/\s+$/, '').split('\n');
+  let lastParagraph = lines.length;
+  while (lastParagraph > 0 && lines[lastParagraph - 1].trim() !== '') lastParagraph -= 1;
+  return lines.slice(0, lastParagraph).filter((line) => /^ASD-Task:/.test(line));
 }
 
-/** Runs `commit-check`: `--subject` flag, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
+/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph. `ok` only when the header fits and there is no hit and no misplaced trailer. */
+function commitCheck(flags, paths) {
+  const unknown = Object.keys(flags).filter((name) => name !== 'subject' && name !== 'message-file');
+  const given = ['subject', 'message-file'].filter((name) => name in flags);
+  if (unknown.length > 0 || given.length !== 1 || flags[given[0]] === '') fail('commit-check takes --subject "<header>" or --message-file <path>, exactly one [-- <paths...>]');
+  const message = given[0] === 'subject' ? null : fs.readFileSync(flags['message-file'], 'utf8');
+  const header = message === null ? flags.subject : message.split(/\r?\n/)[0];
+  const headerLength = Array.from(header).length;
+  const memory = memoryCheck({}, paths);
+  const report = { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  if (message === null) return report;
+  const misplaced = misplacedTrailers(message);
+  return { ...report, ok: report.ok && misplaced.length === 0, misplaced };
+}
+
+/** Runs `commit-check`: one of `--subject`/`--message-file`, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
 function commitCheckCommand(args) {
   const split = args.indexOf('--');
   const report = commitCheck(parseFlagArgs(split === -1 ? args : args.slice(0, split)), split === -1 ? [] : args.slice(split + 1));
