@@ -44,10 +44,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full — review-fix combined-4: the named check `node tests/run.js --filter "sprint-035 AC-10"` passed (1/1), then every test file ran with no filter
+- Scope: full — safety valve (framework-wide files changed): every test file ran with no filter, after the pre-authoring step 3 run (391/391, exit 0)
 - Result: pass — 391/391 passed, 0 failed, 0 skipped
-- Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check`
-- HEAD: b5383e29172d605d1eb5aee920a8d5b9581f1358
+- Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` (66 items current)
+- HEAD: 77d35bb5b27bb5271cd24910f77c2b755f1efd96
 
 ## Defects
 
