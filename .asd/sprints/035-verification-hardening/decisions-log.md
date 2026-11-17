@@ -43,3 +43,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-17 — route Task 12: standard, dispatch HEAD eb10b8bc8d106a6d07a40f7d3d34885953e183ba; risk artifact: README mirror via node tests/run.js
 - 2026-11-17 — impl wave 2 done: Task 12 COMPLETED (README mirrors), suite 375/375.
 - 2026-11-17 — impl assessment approved (adaptive): all plan.md checkboxes ticked; AC map — AC-2 T1/2/4/7/8/9, AC-3 T5/8/10, AC-4 T1/7, AC-5 T1/2/3/4, AC-7 T5, AC-8 T12 + sync, AC-9 T1, AC-10 T3, AC-11 orchestrator fb9fecd7, AC-12 T11, AC-13 T8/9 + git-2.56.md, AC-14 T3/5/6/8/10, AC-15 T1/3/4, AC-16 T1/2/4; build and lint clean; round diff within authorised paths; flagged choices all accepted above, none reverses an earlier disposition; no sprint stubs.
+- 2026-11-17 — route asd-tester impl-test#1: standard, dispatch HEAD d39397f5d35e4b9741ebcebc729f54f3a9b6097b
+- 2026-11-17 — impl-test: impacted set green (390/390, full via safety valve), 15/0 tests; smoke absent, skipped
