@@ -1,7 +1,7 @@
 {
   "sprint_id": "036-codex-sol-6-2",
   "branch": "sprint/036-codex-sol-6-2",
-  "phase": "plan",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -57,7 +57,14 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:model-ID literal swap verified by tests/run.js providers/README mirror test and git grep", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "risk:PR body section shape", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:refuse-to-implement rule scope", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:scope gate content", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 6": { "execution": "agent", "tier": "standard", "reason": "risk:plan acceptance preconditions", "raise_effort": false, "resolved_model": "sonnet" }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": {

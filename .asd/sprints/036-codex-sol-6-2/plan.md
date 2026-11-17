@@ -41,10 +41,10 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Commit message file and trailer check
 Material risk: change: commit contract every agent commits under
-- [ ] `.asd/runtime.js` `commitCheck`: accept exactly one of `--subject` / `--message-file`; with the file, header = first line, and fail when an `ASD-Task:` line lies outside the last paragraph; JSON result and exit codes unchanged (AC-12)
-- [ ] `.asd/rules/git-strategy.md` "Commits" trailer bullet and "Commit before review" one-command form: the message-file form above for a dispatched agent's commit, `--subject` kept for trailer-less commits; the trailer paragraph rule stated once there (AC-12)
-- [ ] `.asd/workflows/asd-phase-impl.md` step 5 fix-mode wording that a commit "carries its `ASD-Task` trailer": cite the form, no restatement (AC-12)
-- [ ] `README.md` runtime command list: `commit-check` form (AC-12)
+- [x] `.asd/runtime.js` `commitCheck`: accept exactly one of `--subject` / `--message-file`; with the file, header = first line, and fail when an `ASD-Task:` line lies outside the last paragraph; JSON result and exit codes unchanged (AC-12)
+- [x] `.asd/rules/git-strategy.md` "Commits" trailer bullet and "Commit before review" one-command form: the message-file form above for a dispatched agent's commit, `--subject` kept for trailer-less commits; the trailer paragraph rule stated once there (AC-12)
+- [x] `.asd/workflows/asd-phase-impl.md` step 5 fix-mode wording that a commit "carries its `ASD-Task` trailer": cite the form, no restatement (AC-12)
+- [x] `README.md` runtime command list: `commit-check` form (AC-12)
 
 ### Task 2: Codex sol 6.2 mapping and README rows
 Material risk: artifact: model-ID literal swap verified by tests/run.js providers/README mirror test and git grep
