@@ -1,7 +1,7 @@
 {
   "sprint_id": "035-verification-hardening",
   "branch": "sprint/035-verification-hardening",
-  "phase": "cleanup",
+  "phase": "retro",
   "workflow": "lite",
   "documents": {
     "audit": true,
