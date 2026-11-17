@@ -10365,7 +10365,7 @@ test('sprint-035 AC-15: a changed file counts as code unless every changed line 
   assert.strictEqual(isComment('a.sql', ['-- note']), true, 'AC-15: a dash-family comment is a comment');
   assert.strictEqual(isComment('a.css', ['* { margin: 0 }']), false, 'AC-15: a css universal-selector rule is code, not a comment body');
   assert.strictEqual(isComment('a.css', ['/* note */']), true, 'AC-15: a one-line css block comment is a comment');
-  assert.strictEqual(isComment('a.js', ['* b = 2;']), false, 'AC-15: a `*`-led code line with no block-comment edge in the change is code');
+  assert.strictEqual(isComment('a.js', ['* b = 2;']), false, 'AC-15: a lone `*`-led code line is code');
   assert.strictEqual(isComment('a.js', [' * body', ' */']), false, 'AC-15: body lines beside a closing edge are code, a `*`-led line is never a comment');
   assert.strictEqual(isComment('a.js', []), false, 'AC-15: an empty change is never comment-only');
   assert.strictEqual(isComment('a.js', ['// x', 'x();']), false, 'AC-15: one code line makes the file code');
