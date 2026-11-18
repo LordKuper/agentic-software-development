@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: DoD met (430/430 reused at 46da53fe and re-run green after the bump; wave-1/iter-09 combined and External APPROVE; retrospective present). `asd_version` 14.7.0 → 14.8.0 (feat → MINOR), CHANGELOG v14.8.0. PR #128 opened, adaptive publication.
 - **Rationale**: Scope authority recorded at the scope gate and both scope amendments; the user's standing rule merges the sprint PR in the same run.
 - **Affected docs**: CHANGELOG.md, .asd/release-manifest.json
+
+## 2026-11-18 — sprint closure
+
+- **Decision**: Sprint closed: PR #128 merged as 4ee1b61179f1c59bf99f96d09653b382f63fa9eb; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 037 start; release v14.8.0 tagged and published, included issues #123-#127 closed, so no release retry.
+- **Affected docs**: `state.json`
