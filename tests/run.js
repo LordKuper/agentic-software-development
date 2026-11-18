@@ -10820,6 +10820,18 @@ test('sprint-036 AC-15 (D-1): a json-merge re-render that only adds the owned at
   assert.strictEqual(fs.readFileSync(settingsPath, 'utf8'), `${JSON.stringify({ ...before, attribution: { commit: '', pr: '' } }, null, 2)}\n`, 'AC-15: adding the attribution key must not re-indent the hooks.SessionStart array it did not change');
 });
 
+test('sprint-036 AC-15 (D-1): a json-merge re-render of an owned array in a four-space file nests its elements and its closing bracket by the indent of the line the array opens on, and keeps a foreign element byte-identical', () => {
+  const target = path.join(mkTempDir(), 'settings.json');
+  const foreign = '{ "type": "command", "command": "my-own-script.sh" }';
+  fs.writeFileSync(target, ['{', '    "hooks": {', '        "SessionStart": [', `            ${foreign},`, '            {"_asd": true, "type": "command", "command": "stale"}', '        ]', '    }', '}', ''].join('\n'), 'utf8');
+
+  const rendered = sync.renderJsonMerge(target, HOOK_PATH, demoAsdEntries());
+
+  const pad = ' '.repeat(10);
+  const expectedArray = ['[', `${pad}${foreign},`, `${pad}{`, `${pad}  "_asd": true,`, `${pad}  "type": "command",`, `${pad}  "command": "node .asd/hooks/session-start.js --provider claude"`, `${pad}}`, '        ]'].join('\n');
+  assert.strictEqual(rendered, ['{', '    "hooks": {', `        "SessionStart": ${expectedArray}`, '    }', '}', ''].join('\n'), 'AC-15: the rebuilt array indents by the depth of its own opening line, not by a fixed width');
+});
+
 test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, appends nothing and warns with the next free #<n>, a repeat op takes that id, the task_routing lookup strips the #<n>, and a flag given twice warns on stderr with the last value winning', () => {
   const dir = mkTempDir();
   const ledger = path.join(dir, 'timing.jsonl');
