@@ -90,6 +90,13 @@
       "reason": "user answer: \"Override, ещё раунд\" after advisor consult (override once, fix the refusal-repair class in all four places); iter-07 external 1-2 critical",
       "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-07; reviews/impl/wave-1/iter-07/external.md",
       "artifact_revision": "impl-review wave-1/iter-07"
+    },
+    {
+      "gate": "review-cap override",
+      "decision_actor": "user",
+      "reason": "user answer at iter-07: \"Override, ещё раунд\" with its stated condition \"Если iter-08 снова сузится — принять\"; iter-08 narrowed to one finding (external 1, Entry log/Suite run refusals) → cap-accept",
+      "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-08; reviews/impl/wave-1/iter-08/external.md",
+      "artifact_revision": "impl-review wave-1/iter-08"
     }
   ],
   "task_routing": {
@@ -252,7 +259,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 7,
+          "iteration": 8,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -281,6 +288,10 @@
             "iter-07": {
               "combined": "APPROVE",
               "external": "CONCERNS"
+            },
+            "iter-08": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
             }
           },
           "iteration_heads": {
@@ -290,7 +301,8 @@
             "iter-04": "834a02bfb3ed90eef9c1dbe2d6d5e11f57a1e898",
             "iter-05": "d4617a0cc678933b812fa3f271a192249576a885",
             "iter-06": "2b84acf7a497e3f8be470447a05e06c84e831c43",
-            "iter-07": "99785e45a688150da2e28bfc15bfd1baeaf848dc"
+            "iter-07": "99785e45a688150da2e28bfc15bfd1baeaf848dc",
+            "iter-08": "43bc0236a622fadef0d0bc699122dc42c0c8ab20"
           },
           "latched": {
             "combined": 6

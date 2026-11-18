@@ -1,0 +1,94 @@
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index bce738e4..4ab69c83 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -44,7 +44,7 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
+ - must: specify manual verification only when no automation can verify (visual UI, third-party live integration, ux feel), as the `test-plan.md` `Manual verification` table (AC-N, steps, expected observation) — its single home, consumed and never re-authored by reviewers.
+ - must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included; report each memory hit, never editing it (`review-policy.md` "Memory-fix dispatch").
+ - must: a test removed as redundant names, in its `Removed tests` reason, the surviving test and the branch it exercises.
+-- must: every `Added tests` row carries its `Gap proof` (`code-style.md` §17 "Admission"); an `impl-test-close` refusal is repaired in `test-plan.md` (`asd-phase-impl-test.md` "Rules").
++- must: every `Added tests` row carries its `Gap proof` (`code-style.md` §17 "Admission"); an `impl-test-close` refusal is repaired in the file it names, `test-plan.md` or a rotated segment (`asd-phase-impl-test.md` "Rules").
+ - must: register every skipped test in `stubs.md` with its reason — never skip silently.
+ - never: production code or architecture; fix a code defect yourself (Failure triage).
+ - never: sleep-based waits — use deterministic synchronisation; assert implementation details — assert observable behaviour; add a test whose only value is a coverage number.
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index b29300de..0c44727b 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -49,7 +49,7 @@
+     "agents/asd-advisor.md": "sha256:2447bd8208344642fbb8a3d9aecb6954ea2cb62625542bcfcc6b0eda7158303a",
+     "agents/asd-reviewer-efficiency.md": "sha256:8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776",
+     "agents/asd-dev.md": "sha256:75e4ce3b4d4eaf71b5b0a905d3bff4334927e644fade78955e9c5dc917692569",
+-    "agents/asd-tester.md": "sha256:761cf0c264234e6c1f7b9d25906286ff6d941f7bc921628ce40a4c7e81c3705e",
++    "agents/asd-tester.md": "sha256:887b71dda11be9e2365d363ff6760a49db1259ccb6a78bc7b8a87611a69698b9",
+     "skills/asd-phase-retro/SKILL.md": "sha256:e8e8b03349b6b05b6170fb2d81cf092237e0b9f4f067a739b80d2f57491d2bfc",
+     "agents/asd-reviewer-combined.md": "sha256:446ecb7d5cf6974b1e4543159dfd697ddbb78a540ac62842c70664ec5757c65c",
+     "agents/asd-reviewer-quality.md": "sha256:db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd",
+@@ -59,7 +59,7 @@
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "19669dbda0b93e4aae5be5b146036e1e544df2e3b877ed69e710e5396efa16cb",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "3fe0ee2cc0d7f0f7ac8ee44774768f2628d2e8c48ea14c5a71b70bb0ca5ee3a7",
++    ".asd/rules/artifact-layout.md": "c38ff8b5e55ab7dc69b5846182a0c5337ab9d1d4ae766e90b0adbfb41facdd3d",
+     ".asd/rules/checkpoints.md": "bf399860b8b59e92b3b02e71188d2ee633527a46eba0ec1cbdc4c245b86c14dd",
+     ".asd/rules/code-style.md": "97d5ba305edace4cca78d13f7bed70d01fa76eb6a1d3d31e36fc00298359d246",
+     ".asd/rules/core.md": "1d59078ad0eeb85596ed30b2ba55d7020267c57abc6a6f5f359e54e6c01a2607",
+@@ -128,7 +128,7 @@
+     ".asd/workflows/asd-phase-design-review.md": "6019b2b59b6792386046399dc3223f9225dada3d2f2cec7fe2fa2ff61f50e64e",
+     ".asd/workflows/asd-phase-design.md": "f7cbb2a79463cb59b8c8c6ce82039a3b14808004f74ce59b22e4df4530f26b9d",
+     ".asd/workflows/asd-phase-impl-review.md": "04caaffa4d6e2a204d2cfb269bf367c60c90e702ff4c387665cf59ab672cb3ce",
+-    ".asd/workflows/asd-phase-impl-test.md": "2994ccd0bf4f219d5f56bb2299b9a48686b865933396c0a805ed5417733d0253",
++    ".asd/workflows/asd-phase-impl-test.md": "88cb2979c276c33561bdced4525dfaff4870dc27c2e7c034c83e27c208feaf55",
+     ".asd/workflows/asd-phase-impl.md": "2cb551c19a12fc1803fe3a6d0ba278e641260a873a5bd78cf891363ed21aea3b",
+     ".asd/workflows/asd-phase-plan.md": "ff0fe8b91f7b25574d8b777061483e795e738dd019fb087ddea72d25c66afdf4",
+     ".asd/workflows/asd-phase-pr.md": "e95054ed20f3f74b0d159dcf804d9e425144d9b03996c59c55a64f11631afbbb",
+@@ -136,7 +136,7 @@
+     ".asd/agents/asd-advisor.md": "2447bd8208344642fbb8a3d9aecb6954ea2cb62625542bcfcc6b0eda7158303a",
+     ".asd/agents/asd-reviewer-efficiency.md": "8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776",
+     ".asd/agents/asd-dev.md": "75e4ce3b4d4eaf71b5b0a905d3bff4334927e644fade78955e9c5dc917692569",
+-    ".asd/agents/asd-tester.md": "761cf0c264234e6c1f7b9d25906286ff6d941f7bc921628ce40a4c7e81c3705e",
++    ".asd/agents/asd-tester.md": "887b71dda11be9e2365d363ff6760a49db1259ccb6a78bc7b8a87611a69698b9",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index a8b8a3fd..91cf7ce0 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -204,7 +204,7 @@ Manual step = operational action a human must perform for the plan to complete (
+ 
+ `<sprint>/test-plan.md` per `t_test-plan.md`, which holds the shape of `Added tests` (`Gap proof`), `Suite run` (`Line delta`, `Allowance`, `Slowest tests`) and the optional `## Suite revision` ledger. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects carried over, resolved entries kept). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows, plus `Suite run` for a check a finding requires. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
+ 
+-**Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows, a struck `Removed tests` row (`~~<file:name>~~`, `asd-phase-impl-test.md` step 9a) excepted, of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file bar the struck rows, which stay live so step 5 and 9a keep filtering against them. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited, save a refused `Added tests` row `impl-test-close` names (`asd-phase-impl-test.md` "Rules"): a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
++**Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows, a struck `Removed tests` row (`~~<file:name>~~`, `asd-phase-impl-test.md` step 9a) excepted, of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file bar the struck rows, which stay live so step 5 and 9a keep filtering against them. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited, save the smallest edit clearing an `impl-test-close` refusal against it (`asd-phase-impl-test.md` "Rules"): a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+ 
+ An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
+ 
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index f51b1023..60d07e28 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -41,7 +41,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+      - a **current answer** is a decisions-log stalemate answer naming this `digest` and appended after the log's last routing line naming it; an earlier answer is spent — it covers only the next routing of that set, and the same set repeating after it escalates again
+      - `stalemate: true` and no current answer → emit `FAILED: stalemate <digest>` instead of routing and, after an escalation consult, request a hard user decision (`checkpoints.md`): continue test-fix with guidance, accept as debt, or abort; append the answer with the digest to decisions-log, then apply it
+      - `stalemate: true` and a current answer → apply it without re-asking: continue → route below, its guidance riding the test-fix payload; accept as debt → set those rows `accepted-debt`, register each failing test in `.asd/project/stubs.md` with an `(accepted-debt)` Reason, re-dispatch step 7 to skip exactly those tests, then step 8 again; abort → ABORT
+-     - otherwise, or on continue, **route**: write `state.json.test_defects_pending = true` inline and close the entry with `node .asd/runtime.js impl-test-close --test-plan <sprint>/test-plan.md --entry <N> --decisions <sprint>/decisions-log.md --line "impl-test: defects <D-N list> → impl test-fix (digest <digest>)"`, which fills this entry's `Entry log` `HEAD analysed` with the current HEAD and appends the decisions-log line (mechanical, no gate); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
++     - otherwise, or on continue, **route**: write `state.json.test_defects_pending = true` inline and close the entry with `node .asd/runtime.js impl-test-close --test-plan <sprint>/test-plan.md --entry <N> --decisions <sprint>/decisions-log.md --line "impl-test: defects <D-N list> → impl test-fix (digest <digest>)"`, which fills this entry's `Entry log` `HEAD analysed` with the current HEAD and appends the decisions-log line (mechanical, no gate); a refusal is repaired per `Rules`; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
+    - **memory defect** (the failure traces to text in `.claude/agent-memory/<owner>/`) → step 7a, then step 8 again
+    - several kinds present → fix the test and memory defects first, re-run, then route the remaining code defects back
+    - no iteration cap: loop until the impacted set passes; an unfixable state surfaces as a dev/tester `FAILED`, never a silent exit
+@@ -57,12 +57,12 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+ - must: `Defects` rows persist across entries — a resolved row stays `fixed` for the record; a reappearing defect gets a new `D-N` row, never a reopened one.
+ - must: record a reason for each in-scope removal — a redundant one reads `redundant: survivor <file:name>, branch <what it exercises>`, naming the surviving test; a removal outside the sprint's overall change surface passes step 6, save a step 9a removal the accepted scope item covers; an uncovered step 9a one is a proposed `Removed tests` row, its area staying `pending`, which 9a gates with step 6's gate before the next dispatch deletes it.
+ - must: suite gate — a run (or a reuse, step 8) on every entry, scoped to the impacted set (`sprint-lifecycle.md` "Impacted test set", subject to its safety valve at this gate only, never the whole repo otherwise — the full suite runs only once, at the end of `impl-review`); verdict from the runner's exit code plus report, never an agent's claim. Bounded risk: a defect a fix introduces outside the impacted set's reach is not caught here — impl-review's terminal full suite is the backstop.
+-- must: an `impl-test-close` refusal — an `Added tests` row with no `Gap proof` or one holding a `{{…}}` placeholder, in the live plan or in the `test-plan.entry-NN.md` segment this entry's re-entry rotated (NN the prior entry; review-fix rows rotated unchecked are caught; any `Added tests` refusal naming it is repaired in it, the one permitted segment edit), or at the green exit no non-empty `- Allowance:` line in `Suite run` while `node .asd/runtime.js test-delta --base <git.base_branch>` reports `allowance_required` — goes to a fresh base `asd-tester`, which repairs `test-plan.md` (an `Allowance` names the risks the added test lines cover, drawn from `Risk → check decisions`), then the close runs again.
++- must: an `impl-test-close` refusal at step 9 or step 10 — an `Added tests` refusal (a row with no `Gap proof` or a `{{…}}` placeholder, a missing heading, a table-structure error) in the live plan or in the `test-plan.entry-NN.md` segment this entry's re-entry rotated (NN the prior entry; review-fix rows rotated unchecked are caught), or at the green exit no non-empty `- Allowance:` line in `Suite run` while `node .asd/runtime.js test-delta --base <git.base_branch>` reports `allowance_required` — goes to a fresh base `asd-tester`, which makes the smallest edit clearing it in the file the refusal names (the one permitted segment edit; an `Allowance` names the risks the added test lines cover, drawn from `Risk → check decisions`), then the close runs again.
+ - must: triage a failure as a test defect (fix it, re-run), a memory defect (report it, step 7a) or a code defect (a `D-N` row, never a production-code fix) — an AC deviation found with no failing test included.
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-7; 8-9 only when it changed a test; step 9 on a runner red; step 9a, one per dispatch; a step 10 close refusal", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 8 suite gate when step 7 changed no test; step 10 `smoke` run", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory hit (Claude only), step 7a", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "ADVICE_NEEDED relay; escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
++[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-7; 8-9 only when it changed a test; step 9 on a runner red; step 9a, one per dispatch; a step 9 or step 10 close refusal", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-tester-runner", "when": "step 8 suite gate when step 7 changed no test; step 10 `smoke` run", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory hit (Claude only), step 7a", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-advisor", "when": "ADVICE_NEEDED relay; escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
+ ```
+ 
+ ## Signals
