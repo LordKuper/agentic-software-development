@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -34,6 +34,27 @@
       "reason": "user answer: accept, everything in one sprint (AC-1..AC-20, no split)",
       "evidence": "decisions-log.md 2026-11-18 scope gate",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "user request: agnix mandatory for this repo in every sprint, errors and warnings fixed; AC-21 added, AC-10 retired by it",
+      "evidence": "decisions-log.md 2026-11-18 scope amendment AC-21; Task assigned at plan",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "user answers: CDX-SUB-002 - remove codex.sandbox_mode and correct providers.md/README; CC-SK-007 - exclude the rule in .agnix.toml with a reason (quality waiver)",
+      "evidence": "audit.md Contradictions; decisions-log.md 2026-11-18 agnix findings",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: every Contradictions entry settled by a user answer; every AC-N checked deliverable; no check failed to run",
+      "evidence": "audit.md Contradictions, Existing implementation found, Gaps; three asd-scout scans; agnix 0.61.0 run",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
