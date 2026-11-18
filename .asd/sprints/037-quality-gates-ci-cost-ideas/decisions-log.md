@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route Task 4: standard, dispatch HEAD b91b60ad
 - 2026-11-18 — route Task 5: standard, dispatch HEAD b91b60ad
 - 2026-11-18 — route Task 6: standard, dispatch HEAD b91b60ad
+
+## 2026-11-18 — D13 load ceiling superseded by AC-1
+
+- **Decision**: The D13 test (`tests/run.js` sprint-026 AC-16, ratio 0.70 of four baselines) is replaced at impl-test by AC-1's `context-check` ceiling test, its ceilings seeded after this sprint's changes; until then its failure is expected and not a fix target.
+- **Rationale**: AC-1, accepted by the user, seeds this repo's ceilings from post-sprint sizes plus headroom — the bound D13 holds, recorded in one place; keeping both would double the same check.
+- **Affected docs**: plan.md (impl-test note), friction-log.md F-2

@@ -27,3 +27,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: Sprint 036's retro had zero systemic proposals and wrote the section as a "None." paragraph with no `<table>`; `retro-candidates` exits 2 with `retrospective systemic-proposals table has no tbody`. Neither the retro workflow nor `t_retrospective.html` states the zero-row shape.
 - **Impact**: Retro intake is blocked for sprint 036's seven action rows until the user decides at the scope gate; the archived retrospective is immutable, so it cannot be repaired in place.
 - **Refs**: —
+
+## F-2 — audit missed an existing context-load ceiling
+
+- **Phase**: impl
+- **Surface**: workflow — `asd-phase-audit.md` scan of `tests/run.js`
+- **What happened**: `tests/run.js:8462-8481` (sprint 026 AC-16, D13) already bounds the per-dispatch load of four role/phase pairs at 0.70 of a recorded baseline. Audit reported no bundle bound (research G2, audit "Gaps"); a Task 3 dev found it when the test failed mid-wave (`orchestrator/impl` 0.7074).
+- **Impact**: AC-1's in-repo half duplicates an existing check; the plan carries no Task to supersede it.
+- **Refs**: research.md G2, audit.md

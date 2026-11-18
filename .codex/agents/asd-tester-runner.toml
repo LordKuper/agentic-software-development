@@ -1,9 +1,8 @@
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:5e761cc6e221c73034cafbd93d092eba7aea6cb02a5fc997994e5d6a21ea1c57 content_digest=sha256:07338b1360b40212e77924fba93c44d1b3ff6caa141860acbacbee33cbea0106 asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:4da86595a4a8cd5ec014e8fb1ea1c37c4d997985df8f5af8b092b4a5d0f365b6 content_digest=sha256:51a798d65ca98d418594fa769fea705a5d805e54411f23a5068991ea7a0de2a6 asd_version=14.8.0 schema=1
 name = "asd-tester-runner"
 description = "All testing: strategy, pruning, authoring, impacted runs, defect triage, test-plan.md; dispatched in impl-test, impl-review full suite, review-fix for findings in test files, in-place test fixes, Test-only Tasks. Not: production code, code-defect fixes → asd-dev; test review → asd-reviewer-quality. Task class: runner."
 model = "gpt-6-luna"
 model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
 web_search = "live"
 developer_instructions = """
 # Role

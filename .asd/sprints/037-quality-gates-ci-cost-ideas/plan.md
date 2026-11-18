@@ -57,10 +57,10 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Runtime — context ceilings, bundle bytes, retro zero rows, suite baseline
 Material risk: change: bundle-path derivation from a dispatch id and role×phase enumeration have edges no named test establishes
-- [ ] `.asd/runtime.js`: `context-check` and `context-check --seed` per Overview "Context ceilings", sharing `contextCommand`'s bundle builder; add both to the command table (AC-1)
-- [ ] `fillDispatchAttrs`: `context_bytes` per Overview "Bundle bytes"; `timingSummary`: `context_bytes` block (AC-2)
-- [ ] `retroRows`: a section holding no `<table>` returns zero rows, a required table included; a `<table>` without `<tbody>` still exits 2 (AC-11)
-- [ ] `timingSummary` / `timingBaseline`: `suite_full` per Overview "Suite baseline" (AC-18)
+- [x] `.asd/runtime.js`: `context-check` and `context-check --seed` per Overview "Context ceilings", sharing `contextCommand`'s bundle builder; add both to the command table (AC-1)
+- [x] `fillDispatchAttrs`: `context_bytes` per Overview "Bundle bytes"; `timingSummary`: `context_bytes` block (AC-2)
+- [x] `retroRows`: a section holding no `<table>` returns zero rows, a required table included; a `<table>` without `<tbody>` still exits 2 (AC-11)
+- [x] `timingSummary` / `timingBaseline`: `suite_full` per Overview "Suite baseline" (AC-18)
 
 ### Task 2: Runtime — test delta, stub dates, close checks
 Material risk: change: numstat edge cases (renames, binary files) and the allowance refusal order in `impl-test-close`
@@ -71,34 +71,34 @@ Material risk: change: numstat edge cases (renames, binary files) and the allowa
 
 ### Task 3: code-style.md — check and test rules
 Material risk: change: wording of the admission, suppression and regression-duty rules
-- [ ] `.asd/rules/code-style.md`: no disabling, skipping or downgrading a check and no inline suppression to make a change pass; the exception is one path and one rule with a reason, returned as `QUESTION` under the quality-waiver hard gate (AC-4)
-- [ ] §17: a sprint adding or changing a deterministic check records one seeded-violation run exiting non-zero, in the existing proof-record shape, the violation restored (AC-9)
-- [ ] §17: test admission — gap proof before a test is added, decision `none` citing the existing test that already fails, a new case extends the owner test, a new test function only for an unowned contract (AC-13)
-- [ ] §17 regression-test bullet (`:120`) and content-contract bullet (`:126`): the duty covers a behaviour defect reproducible by running code; a prose, rule or document fix adds a test only when it changes a machine-parsed token (AC-15)
-- [ ] §17: a test guarding a one-time change is named `temporary(<NNN>): …` and removed by a later sprint's prune pass (AC-19)
+- [x] `.asd/rules/code-style.md`: no disabling, skipping or downgrading a check and no inline suppression to make a change pass; the exception is one path and one rule with a reason, returned as `QUESTION` under the quality-waiver hard gate (AC-4)
+- [x] §17: a sprint adding or changing a deterministic check records one seeded-violation run exiting non-zero, in the existing proof-record shape, the violation restored (AC-9)
+- [x] §17: test admission — gap proof before a test is added, decision `none` citing the existing test that already fails, a new case extends the owner test, a new test function only for an unowned contract (AC-13)
+- [x] §17 regression-test bullet (`:120`) and content-contract bullet (`:126`): the duty covers a behaviour defect reproducible by running code; a prose, rule or document fix adds a test only when it changes a machine-parsed token (AC-15)
+- [x] §17: a test guarding a one-time change is named `temporary(<NNN>): …` and removed by a later sprint's prune pass (AC-19)
 
 ### Task 4: Codex sandbox key removal
 Material risk: change: wording of the Codex read-only guarantee in providers.md
-- [ ] `.asd/sync.js:328,335`: drop the `sandbox_mode` validation and rendering; a present key is ignored (AC-21)
-- [ ] `.asd/agents/*.md` (eight files): remove `sandbox_mode` from the `codex` frontmatter line only (AC-21)
-- [ ] `.asd/rules/providers.md:41,42,48,84`: a Codex subagent inherits the parent session's sandbox; read-only of advisor, scout and External Review on Codex is policy-bound, External Review's wrapped CLI keeps `--sandbox read-only`; the internal reviewers' Codex carve-out sentence reduces to that one statement (AC-21)
-- [ ] `.asd/agents/asd-external-review.md:105`: align with the above where it cites the agent's own sandbox (AC-21)
+- [x] `.asd/sync.js:328,335`: drop the `sandbox_mode` validation and rendering; a present key is ignored (AC-21)
+- [x] `.asd/agents/*.md` (eight files): remove `sandbox_mode` from the `codex` frontmatter line only (AC-21)
+- [x] `.asd/rules/providers.md:41,42,48,84`: a Codex subagent inherits the parent session's sandbox; read-only of advisor, scout and External Review on Codex is policy-bound, External Review's wrapped CLI keeps `--sandbox read-only`; the internal reviewers' Codex carve-out sentence reduces to that one statement (AC-21)
+- [x] `.asd/agents/asd-external-review.md:105`: align with the above where it cites the agent's own sandbox (AC-21)
 
 ### Task 5: sprint-lifecycle.md and checkpoints.md
 Material risk: change: wording of the gate and intake rules
-- [ ] `.asd/rules/sprint-lifecycle.md` "Operation timing": a dispatch op carries `context_bytes`, filled by the runtime (AC-2)
-- [ ] phase table `impl` row and every sentence stating the completion gate as build + lint: `checks` added (AC-1, AC-6, AC-21)
-- [ ] "Friction log": a terminal full-suite failure on a test outside the last green impacted run is a friction entry naming the test and the selection rule (AC-7)
-- [ ] "PR phase": an included PR is closed with a comment in merge mode, beside included issues (AC-12)
-- [ ] `.asd/rules/checkpoints.md` "Gate policy" hard list: open-PR disposition; an accepted-debt renewal falls under the existing quality-waiver gate (AC-5, AC-12)
+- [x] `.asd/rules/sprint-lifecycle.md` "Operation timing": a dispatch op carries `context_bytes`, filled by the runtime (AC-2)
+- [x] phase table `impl` row and every sentence stating the completion gate as build + lint: `checks` added (AC-1, AC-6, AC-21)
+- [x] "Friction log": a terminal full-suite failure on a test outside the last green impacted run is a friction entry naming the test and the selection rule (AC-7)
+- [x] "PR phase": an included PR is closed with a comment in merge mode, beside included issues (AC-12)
+- [x] `.asd/rules/checkpoints.md` "Gate policy" hard list: open-PR disposition; an accepted-debt renewal falls under the existing quality-waiver gate (AC-5, AC-12)
 
 ### Task 6: git-strategy.md and artifact-layout.md
 Material risk: change: wording of the stub date and test-plan shape rules
-- [ ] `.asd/rules/git-strategy.md` stubs section (`:30-36`): the `(accepted-debt) review YYYY-MM-DD:` form, shown at the scope gate once due (AC-5)
-- [ ] "Merging a PR": the scope-gate merge of an open PR uses the same form (AC-12)
-- [ ] `.asd/rules/artifact-layout.md` path map: `.asd/project/context-ceilings.json`, consumer-owned (AC-1)
-- [ ] "Test plan": `Gap proof`, `Line delta`, `Allowance`, `Slowest tests`, `## Suite revision` — only where the section restates the template (AC-3, AC-13, AC-16, AC-17)
-- [ ] "Leftover-term check" (`:111`): a test pinning the removed term is temporary (`code-style.md` §17) (AC-19)
+- [x] `.asd/rules/git-strategy.md` stubs section (`:30-36`): the `(accepted-debt) review YYYY-MM-DD:` form, shown at the scope gate once due (AC-5)
+- [x] "Merging a PR": the scope-gate merge of an open PR uses the same form (AC-12)
+- [x] `.asd/rules/artifact-layout.md` path map: `.asd/project/context-ceilings.json`, consumer-owned (AC-1)
+- [x] "Test plan": `Gap proof`, `Line delta`, `Allowance`, `Slowest tests`, `## Suite revision` — only where the section restates the template (AC-3, AC-13, AC-16, AC-17)
+- [x] "Leftover-term check" (`:111`): a test pinning the removed term is temporary (`code-style.md` §17) (AC-19)
 
 ### Task 7: Scope, retro and pr workflows
 Material risk: change: wording of the open-PR gate and the retro Home order

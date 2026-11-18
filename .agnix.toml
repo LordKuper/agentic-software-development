@@ -1,0 +1,8 @@
+# agnix config for this repo only (self_hosting); never shipped to a consumer.
+# Run: commands.yaml checks.agnix. Reference: docs/architecture/tech-reference/agnix-0.61.md.
+
+[rules]
+# CC-SK-007 (unrestricted Bash in skill allowed-tools): ASD phase skills run the consumer's
+# commands.yaml commands, which canon cannot enumerate as scoped Bash patterns.
+# Accepted in sprint 037 under the quality-waiver gate.
+disabled_rules = ["CC-SK-007"]

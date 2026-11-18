@@ -1,9 +1,8 @@
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:904bac3ff97f83ea4c476f208379f26c0d4c8ae12ec1cadf00b97e068913eacc content_digest=sha256:043670ba0d31da3f1a8b68fb8686c014ac3fd0c08f3e4a3f943e0f03c9f2b3ab asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:19669dbda0b93e4aae5be5b146036e1e544df2e3b877ed69e710e5396efa16cb content_digest=sha256:d9ac1b230b6119d7883c1432a889b4ebdfde3601cbc1f7011b1ada7b632728ca asd_version=14.8.0 schema=1
 name = "asd-external-review"
 description = "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator."
 model = "gpt-6.2-sol"
 model_reasoning_effort = "medium"
-sandbox_mode = "read-only"
 web_search = "disabled"
 developer_instructions = """
 # Role
