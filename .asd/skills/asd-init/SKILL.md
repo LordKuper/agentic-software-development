@@ -62,9 +62,18 @@ Fresh and re-init only.
      the search-derived impacted set is the safe fallback
    - smoke command (`smoke`): a package.json script, Makefile target or `scripts/` file named `smoke`
      (or `smoke:*`/`smoke-test`) → that script's invocation. None → omit the key; never guess one
+   - test layout (`test_paths`): the test directories and filename patterns found by repo search
+     (`tests/`, `__tests__/`, `*.test.*`, `*_test.go`, `test_*.py`, …) → comma-separated globs.
+     None found → omit; the runtime's default list applies
+   - duration-reporting test form (`test_durations`), keyed on the detected runner like
+     `test_affected`: pytest → `pytest --durations=10`, jest → `jest --verbose`, go →
+     `go test -v`, node's built-in runner → its test command as is. No match, or unsure of the flag
+     → omit; never guess
+   - gate classes with no command (`## Reference` "Gate-class gaps"): lint or format, type check —
+     name each class in which detection found no script, config or tool
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, tools, review limits, git settings, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues` (consumer only), audit mode, `documents.design_system`, diagram_tool, detected build/test/lint/run commands and any affected-test selector or smoke command
+    - OS, tools, review limits, git settings, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues` (consumer only), audit mode, `documents.design_system`, diagram_tool, detected build/test/lint/run commands and any affected-test selector, smoke command, `test_paths`, `test_durations`, plus the gate-class gaps note
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools → must resolve here: Node (if `documents.design_system: enabled`) → install or `documents.design_system: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; the wrapped external-review CLI (if external_review) → install, override path (`system.tools.codex_command`/`claude_command`) or `review.external_review: disabled`. Do NOT silently proceed with missing required tools.
@@ -72,7 +81,7 @@ Fresh and re-init only.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, `cleanup`, `safety_valve`, `upstream_issues` (omitted under self-hosting), audit mode, `documents.design_system`, diagram_tool and other fields.
 10. Request free-form user input: custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
-12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.design_system: enabled`); `test_affected` and `smoke` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
+12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.design_system: enabled`); `test_affected`, `smoke`, `test_paths` and `test_durations` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition. Seed the context ceilings and add the check: `node .asd/runtime.js context-check --seed` (writes `.asd/project/context-ceilings.json`), then `checks.context: "node .asd/runtime.js context-check"`
 13. If decomp enabled: write an empty registry `docs/architecture/subsystems.md` from `t_subsystems.md` (no rows, no diagram) when absent — the main orchestrator fills it (`artifact-layout.md` "Subsystem registry"). Only if `diagram_tool` is not `none`:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
     - **mermaid mode**: seed nothing more — the diagram lives in `subsystems.md`; no `c4/`, no `c4-build`
@@ -91,10 +100,11 @@ Fresh and re-init only.
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
 2a. List every field present in `t_config.yaml` but absent from the current config, each with its absent default (the template comment's, e.g. `self_hosting` → `disabled`; `safety_valve` → `enabled`; `upstream_issues` → `enabled`, skipped when `self_hosting` is enabled; `git.ai_attribution` → `enabled`), so a newly shipped field is editable
+2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
-6. Apply diff; write config. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
+6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ### Sprint-mediated
@@ -122,7 +132,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 ## Outputs
 
 ```json
-[".asd/project/config.yaml", "AGENTS.md, CLAUDE.md managed blocks (step 0a)", ".asd/project/custom-common-rules.md, custom-design-rules.md, custom-coding-rules.md, stubs.md", ".asd/project/commands.yaml", "docs/architecture/subsystems.md, empty (decomp only)", "docs/architecture/c4/ likec4 seed (decomp + likec4 only)", ".gitignore likec4 build-output entry (step 14)"]
+[".asd/project/config.yaml", "AGENTS.md, CLAUDE.md managed blocks (step 0a)", ".asd/project/custom-common-rules.md, custom-design-rules.md, custom-coding-rules.md, stubs.md", ".asd/project/commands.yaml, .asd/project/context-ceilings.json (step 12)", "docs/architecture/subsystems.md, empty (decomp only)", "docs/architecture/c4/ likec4 seed (decomp + likec4 only)", ".gitignore likec4 build-output entry (step 14)"]
 ```
 
 ## Reference
@@ -145,6 +155,10 @@ Algorithm (per file, both files every run):
 Rules:
 - Never touch content outside the block markers.
 - Record the applied block's digest in `.asd/sync-state.json` after every write (this is what lets step 1 detect a later hand-edit).
+
+### Gate-class gaps
+
+Per deterministic gate class detection found no command for (lint or format; type check), tell the user in `language.chat`: the class is absent, and a sprint whose scope adopts the gates does it, per dev-quality-gates `docs/adopt.md` (https://github.com/mokevnin/dev-quality-gates/blob/main/docs/adopt.md). Init installs nothing and writes no command for the class.
 
 ### OS-specific commands written to .asd/project/commands.yaml
 
