@@ -1,9 +1,8 @@
-# ASD generated. Edit .asd/agents/demo-agent.md. source_digest=sha256:2b4ab6273b26818263b14a6960d9913e55e7b8ee716d2143cc911078004404e3 content_digest=sha256:958656b6be73bece17869b28dc2f258b125d5e3b31a0671b1826af8bab1864ac asd_version={{FIXTURE_ASD_VERSION}} schema=1
+# ASD generated. Edit .asd/agents/demo-agent.md. source_digest=sha256:2b4ab6273b26818263b14a6960d9913e55e7b8ee716d2143cc911078004404e3 content_digest=sha256:12d35413962883b71bb5a3a4a770de793aa27938a888efa93ff33f23052446dc asd_version={{FIXTURE_ASD_VERSION}} schema=1
 name = "asd-demo"
 description = "Demo agent used only by tests/run.js fixtures for sync.js transforms."
 model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
 developer_instructions = """
 # Role
 

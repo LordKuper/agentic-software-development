@@ -134,7 +134,7 @@ test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context'
   const meta = {
     name: 'runtime-fixture',
     description: 'fixture',
-    codex: { model: 'sol', model_reasoning_effort: 'high', sandbox_mode: 'workspace-write' },
+    codex: { model: 'sol', model_reasoning_effort: 'high' },
   };
   const cases = [
     ['missing Codex block', { ...meta, codex: null }, manifest, 'missing or malformed Codex configuration'],
@@ -142,7 +142,6 @@ test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context'
     ['legacy unsuffixed model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-5.6' } } }, 'unsupported ChatGPT-runtime model mapping'],
     ['mismatched family model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-6-luna' } } }, 'unsupported ChatGPT-runtime model mapping'],
     ['invalid effort', { ...meta, codex: { ...meta.codex, model_reasoning_effort: 'fast' } }, manifest, 'invalid model reasoning effort'],
-    ['invalid sandbox', { ...meta, codex: { ...meta.codex, sandbox_mode: 'unsafe' } }, manifest, 'invalid sandbox mode'],
     ['invalid web_search', { ...meta, codex: { ...meta.codex, web_search: 'on' } }, manifest, 'invalid web_search mode'],
   ];
   for (const [label, invalidMeta, invalidManifest, reason] of cases) {
@@ -178,7 +177,6 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
     const output = sync.transformAgentCodexToml(meta, body, manifest);
     assert.match(output, codexModelRe, `${meta.name}: supported model`);
     assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
-    assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
   }
 
   const codexItems = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-codex');
@@ -1036,13 +1034,13 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
 
 // ===========================================================================
 // 9a. Read-only agent contract (AC-6): every reviewer + asd-advisor must
-// never carry a write tool and must declare sandbox_mode read-only on Codex.
+// never carry a write tool on Claude; the internal reviewers' return-file write is bounded by policy.
 // The read-only set is derived from .asd/agents/ filenames and compared to the
 // reviewers the workflow definitions dispatch, so a new reviewer is covered
 // the day it joins a roster.
 // ===========================================================================
 
-test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool on Claude, and the Codex sandbox is workspace-write for the internal reviewers only with a policy line bounding it to the return file and own memory, read-only for External Review and the advisor (sprint-021 D6, sprint-023 AC-7: the frontmatter is the one home of the tier)', () => {
+test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool on Claude, and the internal reviewers carry a policy line bounding their writes to the return file and own memory (sprint-021 D6)', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
   const readOnlyNames = files
@@ -1066,12 +1064,10 @@ test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit to
     if (name !== 'asd-external-review') {
       assert.ok(!claudeTools.includes('Bash'), `${name}: claude.tools must not include "Bash"`);
     }
-    const claimed = name.startsWith('asd-reviewer-') ? 'workspace-write' : 'read-only';
-    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, claimed, `${name}: codex.sandbox_mode must be "${claimed}" - sprint-021 D6 widens the Codex sandbox for the internal reviewers alone (they write their return file), External Review and asd-advisor stay read-only`);
-    if (claimed === 'read-only') continue;
+    if (!name.startsWith('asd-reviewer-')) continue;
     const tools = jsonOf(`.asd/agents/${name}.md`, 'Tools');
     const bound = (tools.write || []).some((item) => /return file/.test(item)) && (tools.write || []).some((item) => /own memory/.test(item)) && (tools.deny || []).length > 0;
-    assert.ok(bound, `${name}: Codex cannot scope workspace-write to a path, so the Tools write list naming the return file and the agent's own memory, with a deny for any other write, is the only bound on its writes (plan.md Risks, D6)`);
+    assert.ok(bound, `${name}: a Codex subagent inherits the parent grant and cannot scope it to a path, so the Tools write list naming the return file and the agent's own memory, with a deny for any other write, is the only bound on its writes (plan.md Risks, D6)`);
   }
 });
 
@@ -3687,7 +3683,6 @@ test('AC-15/sprint-019 AC-14: review-policy.md is sole SSoT for the reviewer wri
     assert.ok(meta.claude.memory === 'project' && !(meta.claude.disallowedTools || []).includes('Write'), `sprint-019 AC-14: ${name}: providers.md says \`memory: project\` serves every reviewer Write because no reviewer's disallowedTools names it - the frontmatter must keep both halves true, or the prose states a grant the host no longer serves`);
   }
 
-  assert.ok(providers.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`sandbox_mode: "workspace-write"`') && sentence.includes('`review-policy.md` "Coverage ledger"') && /\bpolicy\b/.test(sentence.replace(/`[^`]*`/g, '')) && /read-only/.test(sentence.replace(/`[^`]*`/g, ''))), 'sprint-021 D6: providers.md owns the artifact-level grant fact, so it must state the Codex reviewers\' workspace-write trade-off in one sentence - the config value, the return file it exists for (pointed at "Coverage ledger"), the host read-only guarantee given up, and policy as the only bound (plan.md Risks)');
   assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
   assert.ok(!providers.includes('MEMORY-FIX'), 'providers.md owns tool grants only; the memory-fix return contract lives in review-policy.md "Autofix vs escalation" and a second copy here is the duplication the citation exists to prevent');
   assert.ok(!policy.includes('Sole statement of this claim'), 'the unscoped sole-statement claim was false the moment it was written (iter-03 DOC-1b): both review workflows and a rule doc also state that the reviewer itself performs no write, so an owning-side claim that every other site merely links contradicted them and invited a cut at whichever site was read next. Scope limit: this guards the literal from coming back, never the truth of a reworded ownership claim - over this corpus no derivable proxy separates a true declaration from a false one (test-plan.md, entry 5). The two assertions above are what keep it from going vacuous: they require the scoped statement to still be here');
@@ -6090,7 +6085,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   assert.ok(reviewFix && reviewFix.includes('`answer:`') && reviewFix.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4: impl review-fix must collect the answer lines with the findings, citing the carrier - otherwise the answer sits in decisions-log and the fixer never reads it');
   const routesToQuestion = /\b(?:returns?|via|as) `QUESTION`/;
   const questionRoutes = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => routesToQuestion.test(line)).map((line) => ({ file, line })));
-  assert.deepStrictEqual(questionRoutes.filter(({ line }) => !/\bagent\b/.test(line)).map(({ file }) => file), ['agent-protocol.md', 'design-principles.md'], 'TST-2-1: a QUESTION route whose line names no agent is creator-scoped and exempt; the exempt set is compared exactly, so a generic route cannot drop out of the sweep by rewording its subject');
+  assert.deepStrictEqual(questionRoutes.filter(({ line }) => !/\bagent\b/.test(line)).map(({ file }) => file), ['agent-protocol.md', 'code-style.md', 'design-principles.md'], 'TST-2-1: a QUESTION route whose line names no agent is creator-scoped and exempt; the exempt set is compared exactly, so a generic route cannot drop out of the sweep by rewording its subject');
   assert.ok(questionRoutes.some(({ file, line }) => file === 'agent-protocol.md' && !/\bagent\b/.test(line) && /\bconsulting creator\b/.test(line)), 'TST-2-1: the one agent-protocol.md route outside the sweep must name a consulting creator - a creator is never a reviewer, so it needs no carrier carve-out');
   const genericReturns = questionRoutes.filter(({ line }) => /\bagent\b/.test(line)).map(({ file, line }) => `${file}: ${line}`);
   assert.ok(genericReturns.length >= 4, 'sanity: the rule-doc lines routing any agent to QUESTION must be found');
@@ -6354,7 +6349,7 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
 
   const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
-  assert.ok(accept.includes('is not accepted while a row or issue put to the user lacks a choice'), 'sprint-027 AC-1/sprint-029 AC-5: scope step 4 blocks the gate while a row or issue put to the user has no choice - unstated, an undecided row is silently disposed');
+  assert.ok(accept.includes('is not accepted while a row, issue, PR or stub put to the user lacks a choice'), 'sprint-027 AC-1/sprint-029 AC-5: scope step 4 blocks the gate while a row or issue put to the user has no choice - unstated, an undecided row is silently disposed');
   assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith('| retro intake dispositions (') && row.includes('one explicit include/reject/defer per retro row, `asd-retro` issue or project issue put to the user')), 'sprint-027 AC-1/sprint-029 AC-5/sprint-034 AC-2: the gate inventory states the per-row-or-issue explicit choice, project issues included');
   assert.ok(canonText('.asd/templates/t_retro-backlog.md').includes('the user\'s explicit choice per row, never a default'), 'sprint-027 AC-1/AC-2: the backlog template states that deferred, included and rejected are explicit choices');
   const backlog = /--backlog (\S+)/.exec(command[1]);
@@ -7664,10 +7659,10 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
 
 test('sprint-023 AC-6, sprint-024 AC-7: code-style.md §17 bounds the fail-first proof of a content-contract test per entry - a mutation per added assert plus one reword control - and has the run count recorded as runs: <n> in the Added tests cell, which t_test-plan.md gives a count for', () => {
   const added = sectionOf('.asd/templates/t_test-plan.md', 'Added tests');
-  const column = (/^\| Test \| ([^|]+) \|$/m.exec(added) || [])[1];
+  const column = (/^\| Test \| Gap proof \| ([^|]+) \|$/m.exec(added) || [])[1];
   assert.ok(column, 't_test-plan.md "Added tests" must keep its two-column table with the proof column header');
   const proof = added.split('\n').find((line) => line.startsWith('| {{file:name}}')) || '';
-  const forms = proof.split('\\|').slice(1);
+  const forms = proof.split(' | ').pop().split('\\|').slice(1);
   assert.ok(forms.length > 0 && forms.every((form) => form.includes('runs: <n>')), `the ${column.trim()} cell must give every form of proof a "runs: <n>" count - a proof without it cannot be checked against the bound`);
   const bullet = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
   assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && bullet.includes('runs: <n>'), `code-style.md §17's content-contract bullet must bound the proof (a mutation per added assert, a reword control per entry) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
@@ -8031,7 +8026,7 @@ function specMismatch(actual, spec) {
   return missing ? `required "${missing[0]}" is missing` : null;
 }
 
-const FORM_DOMAIN_SECTIONS = ['Review rubric', 'Section coverage ledger', 'Gate Verdict Format', 'Severity mapping', 'Invocation', 'Test selection rubric', 'Failure triage', 'Manual steps', 'Evidence routing', 'Diagram modes', 'Token decisions', 'Tech reference'];
+const FORM_DOMAIN_SECTIONS = ['Review rubric', 'Section coverage ledger', 'Gate Verdict Format', 'Severity mapping', 'Invocation', 'Test selection rubric', 'Suite revision', 'Failure triage', 'Manual steps', 'Evidence routing', 'Diagram modes', 'Token decisions', 'Tech reference'];
 const FORM_CATEGORIES = {
   agents: {
     files: () => fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).map((file) => `.asd/agents/${file}`),
@@ -8439,45 +8434,19 @@ test('sprint-027 leftover-term check: no canon, README, AGENTS.md, template, run
   assert.ok(scopeOwner.includes('inline orchestrator') && scopeOwner.includes('`asd-advisor`') && !scopeOwner.includes('asd-ba') && !scopeOwner.includes('dispatches none'), 'scope runs its research inline and dispatches only the advisor for an escalation consult, so its Owner line names the orchestrator and the advisor - never a BA dispatch, never "dispatches none" (plan, retro and pr keep theirs)');
 });
 
-const CAP_STANDALONE_SKILLS_BYTES = 61051;
+const CAP_STANDALONE_SKILLS_BYTES = 62351;
 
 /** Committed (LF) bytes of the canon files `rels` summed. */
 function lfBytes(rels) {
   return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
 }
 
-test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes', () => {
+test('sprint-026 AC-15: the standalone skills total at most their baseline of 62,351 bytes (61,051 on main plus the asd-init adoption text of sprint 037)', () => {
   const skills = FORM_CATEGORIES.skills.files();
   const workflows = FORM_CATEGORIES.workflows.files();
   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
   assert.ok(workflows.length >= 11, 'the phase workflows');
   assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
-});
-
-/**
- * D13 baselines: bytes at main (9ab56b04) of the role's body after frontmatter plus core.md and every file main's prose "Role-scoped context" row granted it,
- * custom-*-rules.md excluded; orchestrator: its row files plus asd-phase-impl.md. Frozen because main moves at merge; recompute with
- * `git show 9ab56b04:<path> | wc -c` per file (frontmatter stripped for agents), each file once.
- */
-const LOAD_BASELINES = { 'asd-dev/impl': 191758, 'asd-tester/impl-test': 157968, 'asd-reviewer-combined/impl-review': 181454, 'orchestrator/impl': 205926 };
-const LOAD_MAX_RATIO = 0.70;
-
-/** D13 load at HEAD: the role's body after frontmatter (the orchestrator: the phase workflow it executes whole) plus its context bundle without the custom rule files. */
-function headLoad(role, phase) {
-  const own = role === 'orchestrator'
-    ? lfBytes([`.asd/workflows/asd-phase-${phase}.md`])
-    : Buffer.byteLength(sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, `.asd/agents/${role}.md`))).body);
-  const refs = runtime.contextRefs(readRepoFile('.asd/rules/providers.md'), role, phase).filter((ref) => !ref.startsWith('.asd/project/custom-'));
-  const files = Object.fromEntries(refs.map((ref) => ref.split('#')[0]).map((file) => [file, readRepoFile(file)]));
-  return own + Buffer.byteLength(runtime.contextBundle(refs, files));
-}
-
-test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test), combined reviewer (impl-review) and the orchestrator (impl) is at most 0.70 of its main baseline', () => {
-  for (const [pair, baseline] of Object.entries(LOAD_BASELINES)) {
-    const [role, phase] = pair.split('/');
-    const load = headLoad(role, phase);
-    assert.ok(load <= LOAD_MAX_RATIO * baseline, `${pair}: ${load} B is ${(load / baseline).toFixed(4)} of ${baseline} B, ceiling ${LOAD_MAX_RATIO}`);
-  }
 });
 
 // ===========================================================================
@@ -9449,7 +9418,6 @@ test('sprint-033 AC-1/AC-2/AC-3/AC-8: the runner variant renders haiku/medium on
   assert.deepStrictEqual(tierOf(metaOf('asd-scout')), { claude: ['haiku', 'medium'], codex: ['luna', 'medium'] }, 'AC-5, AC-8');
   const scout = metaOf('asd-scout');
   assert.deepStrictEqual(scout.claude.tools, ['Read', 'Glob', 'Grep'], 'AC-5: the scout reads only');
-  assert.strictEqual(scout.codex.sandbox_mode, 'read-only', 'AC-5: the Codex scout runs in the read-only sandbox');
   const wrapper = metaOf('asd-external-review');
   assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model], ['sol', 'sonnet'], 'AC-2: the wrapped CLI keeps its own model, only the wrapper agent moved to haiku');
 });
@@ -10148,7 +10116,7 @@ test('sprint-034 AC-1/AC-2/AC-5/AC-6/AC-7 (issue #110): scope step 2a triages th
   assert.ok(accept.includes('`language.docs`') && accept.includes('`language-policy.md` "Matrix"'), 'AC-3: a consumer project\'s issue comment is written in language.docs by the Matrix rows');
 
   const { inputs, writes } = { inputs: jsonOf('.asd/workflows/asd-phase-scope.md', 'Inputs'), writes: jsonOf('.asd/workflows/asd-phase-scope.md', 'Exit').writes };
-  assert.ok(inputs.some((input) => input.includes('open issues of the project\'s own GitHub repository')), 'AC-1: the scope Inputs name the project repository\'s open issues');
+  assert.ok(inputs.some((input) => input.includes('open issues and open PRs of the project\'s own GitHub repository')), 'AC-1: the scope Inputs name the project repository\'s open issues');
   assert.ok(writes.some((write) => write.includes('project-repo issue labels and dispositions')), 'AC-3: the scope Exit lists the project-repo issue writes');
   assert.ok(sync.parseCanonicalFrontmatter(canonText('.asd/skills/asd-phase-scope/SKILL.md')).meta.description.includes('in every project'), 'AC-1: the scope skill description, its trigger text, names the every-project triage');
   const reference = canonText('docs/architecture/tech-reference/gh-2.90.md');
@@ -10169,7 +10137,7 @@ test('sprint-034 AC-4 (issue #110): pr merge mode closes a consumer project\'s i
   assert.deepStrictEqual(calls.filter((call) => !reference.includes(`gh ${call}`)), [], 'AC-4/AC-15: every gh call the consumer close names must be in the gh tech reference');
   assert.ok(jsonOf('.asd/workflows/asd-phase-pr.md', 'Exit').writes.some((write) => write.includes('consumer included-issue closes')), 'AC-4: the pr Exit lists the consumer included-issue closes');
   const inventory = headingBody('.asd/rules/checkpoints.md', 'Gate inventory');
-  assert.ok(inventory.includes('a consumer\'s included-issue closes (pr merge)') && inventory.includes('take no gate in either mode'), 'AC-4: the gate inventory lists the consumer close among the ungated writes');
+  assert.ok(inventory.includes('a consumer\'s included-issue and included-PR closes (pr merge)') && inventory.includes('take no gate in either mode'), 'AC-4: the gate inventory lists the consumer close among the ungated writes');
   assert.ok(inventory.includes('Step 2a\'s triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate'), 'AC-6: the gate inventory separates the one triage authorisation from its gates');
 });
 
@@ -11514,6 +11482,105 @@ test('sprint-036 leftover-term check: no canon, README, AGENTS.md, runtime, hook
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/sync.js', '.asd/release-manifest.json', 'tests/fixtures/expected/agents/demo-agent.codex.toml', ...docs, ...views, ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each entry is a sentence or name this sprint removed (git diff main...HEAD), taken exactly - one surviving states the superseded rule as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
+});
+
+// ===========================================================================
+// sprint 037: context ceilings, bundle bytes, test-line delta, gap proof,
+// dated accepted debt and the full-suite baseline.
+// ===========================================================================
+
+const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
+const BUNDLE_KEY = /@/;
+
+test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 1 naming the one bundle whose ceiling a seeded edit lowered below its size, and --seed --bundles writes a ceiling for the same role-phase keys the committed file holds, which a clean check then passes', () => {
+  const committed = JSON.parse(readRepoFile(CONTEXT_CEILINGS_FILE));
+  const clean = runtimeSpawn(['context-check']);
+  assert.deepStrictEqual([clean.status, JSON.parse(clean.stdout)], [0, { over: [] }], 'every committed ceiling holds its bundle');
+
+  const [lowered] = Object.keys(committed).filter((key) => BUNDLE_KEY.test(key));
+  const loweredFile = path.join(mkTempDir(), 'ceilings.json');
+  fs.writeFileSync(loweredFile, JSON.stringify({ ...committed, [lowered]: 1 }), 'utf8');
+  const violated = runtimeSpawn(['context-check', '--ceilings', loweredFile]);
+  assert.strictEqual(violated.status, 1, 'a bundle over its ceiling fails the check');
+  assert.deepStrictEqual(JSON.parse(violated.stdout).over.map((entry) => entry.key), [lowered], 'only the lowered key is reported');
+
+  const seededFile = path.join(mkTempDir(), 'seeded.json');
+  assert.strictEqual(runtimeSpawn(['context-check', '--seed', '--bundles', '--ceilings', seededFile]).status, 0, '--seed writes the file');
+  const seeded = JSON.parse(fs.readFileSync(seededFile, 'utf8'));
+  assert.deepStrictEqual(Object.keys(seeded), Object.keys(committed), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
+  assert.strictEqual(runtimeSpawn(['context-check', '--ceilings', seededFile]).status, 0, 'a seeded file passes the check it was seeded for');
+});
+
+test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle lookup unless the caller gave one, timing-summary totals bundle bytes per agent and names unsized dispatches, and suite_full holds the sprint\'s longest full suite, a baseline median only from three archived full suites, and over only past 1.5 times it', () => {
+  const lookups = { contextBytes: (id) => (id === 'sized' ? 1000 : undefined) };
+  const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend('', { open: id, kind: 'dispatch', attrs }, minuteAt(0), lookups).text)[0].attrs;
+  const base = 'agent=asd-dev;tier=standard;model=m';
+  assert.strictEqual(Number(attrsOf('sized', base).context_bytes), 1000, 'the bundle size fills a dispatch open');
+  assert.strictEqual(Number(attrsOf('sized', `${base};context_bytes=5`).context_bytes), 5, 'a size the caller gave wins');
+  assert.ok(!('context_bytes' in attrsOf('unsized', base)), 'no bundle file leaves the attr absent');
+
+  const dispatch = (id, agent, bytes) => opLines(id, 'dispatch', 'impl#1', 1, 2, bytes === undefined ? { agent } : { agent, context_bytes: bytes });
+  const bundles = opLines('impl#1', 'phase', null, 0, 30) + dispatch('d1', 'asd-dev', 100) + dispatch('d2', 'asd-dev', 200) + dispatch('d3', 'asd-tester', 50) + dispatch('d4', 'asd-dev');
+  assert.deepStrictEqual(runtime.timingSummary(bundles, []).timing.context_bytes, { total: 350, by_agent: { 'asd-dev': { count: 2, bytes: 300 }, 'asd-tester': { count: 1, bytes: 50 } }, dispatches_without: ['d4'] });
+
+  const suite = (minutes, scope = 'full') => opLines('suite impl-review#1', 'suite', null, 0, minutes, { scope });
+  const archived = (...minutes) => minutes.map((value) => suite(value));
+  const suiteFull = (sprint, older) => runtime.timingSummary(sprint, older).timing.suite_full;
+  const sprintLedger = (minutes) => opLines('impl#1', 'phase', null, 0, 40) + suite(minutes) + opLines('suite impl-test#1', 'suite', null, 0, 35, { scope: 'impacted' });
+  assert.deepStrictEqual(suiteFull(sprintLedger(10), archived(2, 4, 6)), { sprint_seconds: 600, baseline_median: 240, over: true }, 'ten minutes against a four-minute median is past 1.5 times it; the longer impacted run is not counted');
+  assert.deepStrictEqual(suiteFull(sprintLedger(5), archived(2, 4, 6)), { sprint_seconds: 300, baseline_median: 240, over: false });
+  assert.deepStrictEqual(suiteFull(sprintLedger(10), archived(2, 4)), { sprint_seconds: 600, baseline_median: null, over: false }, 'two archived samples give no baseline');
+  assert.deepStrictEqual(suiteFull(opLines('impl#1', 'phase', null, 0, 5), archived(2, 4, 6)), { sprint_seconds: null, baseline_median: 240, over: false }, 'a sprint with no full suite is never over');
+});
+
+test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths rule and requires an allowance past 200 net test lines above the other net, and impl-test-close refuses an Added tests row with no Gap proof and, at the green exit, an unallowanced required delta, recording Line delta otherwise', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  const numbered = (count) => `${Array.from({ length: count }, (unused, index) => `line ${index}`).join('\n')}\n`;
+  git('commit', '-q', '--allow-empty', '-m', 'base');
+  git('branch', 'base-ref');
+  writeFile(repo, 'tests/big_test.js', numbered(250));
+  writeFile(repo, 'src/a.js', numbered(5));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'change');
+  const work = mkTempDir();
+  const commands = path.join(work, 'commands.yaml');
+  fs.writeFileSync(commands, 'test_paths: "tests/**"\n', 'utf8');
+  const delta = (base) => runtimeCliResult(['test-delta', '--base', base, '--commands', commands], { cwd: repo, env });
+  assert.deepStrictEqual(delta('base-ref'), { status: 0, result: { test: { added: 250, removed: 0, net: 250 }, other: { added: 5, removed: 0, net: 5 }, allowance_required: true } });
+  assert.strictEqual(delta('HEAD').result.allowance_required, false, 'an empty diff needs no allowance');
+
+  const planFile = path.join(work, 'test-plan.md');
+  const logFile = path.join(work, 'decisions-log.md');
+  const gapRow = (gap) => ['| Test | Gap proof | Regression proof |', '|---|---|---|', `| a.js:t | ${gap} | n/a |`];
+  const plan = (added, suiteRun = ['- Command: node tests/run.js']) => ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', '| 1 |  | full change surface |', '', '## Added tests', '', ...added, '', '## Suite run', '', ...suiteRun, ''].join('\n');
+  const close = (text, ...extra) => {
+    fs.writeFileSync(planFile, text, 'utf8');
+    fs.writeFileSync(logFile, '', 'utf8');
+    return runtimeCliResult(['impl-test-close', '--test-plan', planFile, '--entry', '1', '--decisions', logFile, '--line', 'impl-test: closed', ...extra], { cwd: repo, env });
+  };
+  const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
+
+  refused(close(plan(gapRow(''))), /empty Gap proof cell/, 'a row with an empty Gap proof is refused');
+  refused(close(plan(['| Test | Regression proof |', '|---|---|', '| a.js:t | n/a |'])), /no Gap proof column/, 'a table with rows and no Gap proof column is refused');
+  assert.strictEqual(close(plan(gapRow('search x in tests: no test of the unit'))).status, 0, 'a filled Gap proof closes');
+  assert.strictEqual(close(plan(['| Test | Gap proof | Regression proof |', '|---|---|---|'])).status, 0, 'a table with no row needs no proof');
+
+  const green = (text, base) => close(text, '--green', '--base', base, '--commands', commands);
+  refused(green(plan(gapRow('seeded x: node tests/run.js -> exit 0')), 'base-ref'), /needs a non-empty "- Allowance:" line/, 'a required allowance missing refuses the green exit');
+  assert.ok(!fs.readFileSync(planFile, 'utf8').includes('Line delta'), 'the refused close recorded no delta');
+  assert.strictEqual(green(plan(gapRow('seeded x: node tests/run.js -> exit 0'), ['- Allowance: covers the AC-3 risk']), 'base-ref').status, 0, 'an allowance line lets the green exit through');
+  assert.ok(fs.readFileSync(planFile, 'utf8').includes('- Line delta: tests +250/−0 (net 250); other +5/−0 (net 5)'), 'the delta is recorded in Suite run');
+  assert.strictEqual(green(plan(gapRow('seeded x: node tests/run.js -> exit 0')), 'HEAD').status, 0, 'no allowance is needed when none is required');
+  refused(close(plan(gapRow('seeded x')), '--green'), /--green requires --base/, '--green without --base is refused');
+  refused(close(plan(gapRow('seeded x')), '--base', 'base-ref'), /apply with --green only/, '--base without --green is refused');
+});
+
+test('sprint-037 AC-5: stubs-due lists an accepted-debt row with no review date, an impossible calendar date or a date before today, and no row dated today or later, no plain stub and no row of another reason', () => {
+  const stubs = path.join(mkTempDir(), 'stubs.md');
+  const row = (file, reason) => `| 037-x | ${file} | ${reason} | asd-dev |`;
+  fs.writeFileSync(stubs, ['| Sprint | File:Line | Reason | Owner |', '|---|---|---|---|', row('past.js:1', '(accepted-debt) review 2026-11-17: gone'), row('absent.js:1', '(accepted-debt) no date'), row('fake.js:1', '(accepted-debt) review 2026-02-30: impossible'), row('today.js:1', '(accepted-debt) review 2026-11-18: held'), row('future.js:1', '(accepted-debt) review 2027-01-01: held'), row('plain.js:1', 'unfinished'), ''].join('\n'), 'utf8');
+  assert.deepStrictEqual(runtimeCliResult(['stubs-due', '--stubs', stubs, '--today', '2026-11-18']), { status: 0, result: { due: [{ file: 'past.js:1', state: 'expired', date: '2026-11-17' }, { file: 'absent.js:1', state: 'missing', date: null }, { file: 'fake.js:1', state: 'invalid', date: '2026-02-30' }] } });
+  assert.notStrictEqual(runtimeCliResult(['stubs-due', '--stubs', stubs, '--today', 'later']).status, 0, 'a malformed --today is refused');
 });
 
 // ===========================================================================
