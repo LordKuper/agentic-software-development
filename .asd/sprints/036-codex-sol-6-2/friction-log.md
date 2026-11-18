@@ -21,6 +21,10 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 | F-1 | impl | `agent-liveness` reports STALL for dev agents that already returned COMPLETED | — |
 | F-2 | impl-review | combined manifest emitted without `--self-hosting`, so Framework mode was marked n/a | reviews/impl/wave-1/iter-01/combined |
 | F-3 | impl | review-fix dev committed with `change: <risk>` subjects; `commit-check` does not validate the Conventional Commits type | 76b90101, 5c3af791, d9fba3c2, a44f5e38 |
+| F-4 | impl-review | External Review re-raised a fixed critical in a new form every iteration (in-place vs atomic write; link guard widened per round), so the review ran nine iterations | reviews/impl/wave-1/iter-03..iter-09 external |
+| F-5 | impl-review | no resolution kind for an External finding that is invalid as out-of-surface; dropping it needed a user gate | reviews/impl/wave-1/iter-07/external |
+| F-6 | impl | a review-fix edit to non-render canon (`.asd/sync.js`) left `release-manifest.json` `upstream_hashes` stale; the suite went red until the orchestrator ran `sync.js --apply` on an unrelated current view | ff7b49e0, 2e0e50d3 |
+| F-7 | impl | `timing --attrs` takes `;`-separated pairs; `,` and repeated `--attrs` silently record a wrong or partial attrs object | timing.jsonl dispatch ops wave-1/iter-01, iter-05, impl-test entry 7 |
 
 ## F-1 — `agent-liveness` reports STALL for dev agents that already returned COMPLETED
 
@@ -45,3 +49,35 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: The review-fix dispatch labelled each finding group with its Material risk declaration (`change: workflow gate`). The dev used those labels as commit subjects (`change: security`, …). `commit-check` passed all four: it checks header length, trailer placement and AI trailers, never the `<type>(<scope>):` shape that `git-strategy.md` "Commits" requires.
 - **Impact**: The orchestrator rewrote the four unpushed subjects non-interactively (`git-strategy.md` "Commits" squash/reword of local commits). Pushed, they would have reached the PR with an invalid type, and the release bump that infers SemVer from commit types would have missed them.
 - **Refs**: 76b90101, 5c3af791, d9fba3c2, a44f5e38
+
+## F-4 — External Review re-raised a fixed critical in a new form every iteration
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-external-review` (wrapped Codex); rule — `external-review.md` "Stalemate detection"
+- **What happened**: The settings write oscillated across iterations. iter-03 rated the temp-file replace critical because it loses the Windows ACL. iter-04 and iter-05 then rated the in-place write critical because it truncates. After the non-truncating fix, the linked-ledger guard was widened one call site per round: `recordOwnedKeys` (iter-05), the ordering in that function (iter-06), `loadSyncState` for `sync --check`/`--apply` (iter-07, out of surface), then the release-manifest read (iter-08). Stalemate detection never fired, because each round's location and message differed.
+- **Impact**: Nine impl-review iterations instead of about four. Five extra review-fix rounds each ran dev, tester, impl-test and two reviewers. Two advisor consults and one user gate were needed to break the loop.
+- **Refs**: reviews/impl/wave-1/iter-03..iter-09 external; decisions-log.004.md route notes iter-03..iter-08
+
+## F-5 — no resolution kind for an out-of-surface External finding
+
+- **Phase**: impl-review
+- **Surface**: rule — `review-policy.md` "Change surface" (line 53) vs `sprint-lifecycle.md` "State recovery" "User-resolved findings"
+- **What happened**: iter-07's only kept critical sat in code the sprint never changed (`loadSyncState`, `runCheck`), which makes it invalid under review-policy.md:53. External findings never carry `pre-existing:`, and the resolution kinds are override, stop, cap-accept, test-fix, memory-fix and issue. None of them lets the orchestrator drop an invalid finding, so the bare CONCERNS stays blocking.
+- **Impact**: An advisor consult plus a hard user gate for a finding the policy already declares invalid. The user then chose to fix it, which widened the scope.
+- **Refs**: reviews/impl/wave-1/iter-07/external.md; decisions-log.004.md "scope expansion wave-1/iter-07"
+
+## F-6 — review-fix edit to non-render canon left the hash ledger stale
+
+- **Phase**: impl
+- **Surface**: phase — `.asd/workflows/asd-phase-impl.md` review-fix chain (orchestrator sync step); provider tool — `.asd/sync.js` `recomputeAndWriteHashLedgers`
+- **What happened**: The dev's `.asd/sync.js` fix (ff7b49e0) changed a file tracked by `release-manifest.json` `upstream_hashes`. No generated view went stale, so the orchestrator's "sync once per fix round over stale views" had no target. The tester's full run went red on the hash-ledger test. The only way to recompute was `sync.js --apply` over an unrelated, already-current view path.
+- **Impact**: One red suite and a manual ledger commit. The same happened twice more (26c3f66e → 69e01d42, 64b9f1e3 → 17705f04).
+- **Refs**: ff7b49e0, 2e0e50d3, 69e01d42, 17705f04
+
+## F-7 — `timing --attrs` separator is undiscoverable
+
+- **Phase**: impl
+- **Surface**: provider tool — `.asd/runtime.js` `timingAttrs`
+- **What happened**: `--attrs` splits on `;`. `agent=x,tier=y,model=z` recorded one attr `agent` with the value `x,tier=y,model=z`. Repeated `--attrs` flags kept only the last pair. Space-separated pairs failed with "flags require values". Only the "unresolved" warning hinted at the problem.
+- **Impact**: Several dispatch ops carry malformed attrs, which skews the per-agent timing aggregates retro reads.
+- **Refs**: timing.jsonl ops "dev review-fix wave-1/iter-01", "dev/tester review-fix wave-1/iter-05", "tester impl-test entry 7"
