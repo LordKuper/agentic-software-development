@@ -584,14 +584,19 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
   const loweredFile = path.join(mkTempDir(), 'ceilings.json');
   fs.writeFileSync(loweredFile, JSON.stringify({ ...committed, [lowered]: 1 }), 'utf8');
   const seededFile = path.join(mkTempDir(), 'seeded.json');
-  const [clean, violated, seeding] = await Promise.all([
+  const [unbounded] = Object.keys(committed).filter((key) => !BUNDLE_KEY.test(key));
+  const droppedFile = path.join(mkTempDir(), 'dropped.json');
+  fs.writeFileSync(droppedFile, JSON.stringify(Object.fromEntries(Object.entries(committed).filter(([key]) => key !== unbounded))), 'utf8');
+  const [clean, violated, seeding, missingKey] = await Promise.all([
     runtimeSpawnAsync(['context-check']),
     runtimeSpawnAsync(['context-check', '--ceilings', loweredFile]),
     runtimeSpawnAsync(['context-check', '--seed', '--bundles', '--ceilings', seededFile]),
+    runtimeSpawnAsync(['context-check', '--ceilings', droppedFile]),
   ]);
   assert.deepStrictEqual([clean.status, JSON.parse(clean.stdout)], [0, { over: [] }], 'every committed ceiling holds its bundle');
   assert.strictEqual(violated.status, 1, 'a bundle over its ceiling fails the check');
   assert.deepStrictEqual(JSON.parse(violated.stdout).over.map((entry) => entry.key), [lowered], 'only the lowered key is reported');
+  assert.deepStrictEqual([missingKey.status, JSON.parse(missingKey.stdout).over.map(({ key, ceiling }) => [key, ceiling])], [1, [[unbounded, null]]], 'a present project rules file with no ceiling key fails the check with a null ceiling');
   assert.strictEqual(seeding.status, 0, '--seed writes the file');
   const seeded = JSON.parse(fs.readFileSync(seededFile, 'utf8'));
   assert.deepStrictEqual(Object.keys(seeded), Object.keys(committed), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
@@ -636,4 +641,9 @@ test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle
   assert.deepStrictEqual(suiteFull(sprintLedger(5), archived(2, 4, 6)), { sprint_seconds: 300, baseline_median: 240, over: false });
   assert.deepStrictEqual(suiteFull(sprintLedger(10), archived(2, 4)), { sprint_seconds: 600, baseline_median: null, over: false }, 'two archived samples give no baseline');
   assert.deepStrictEqual(suiteFull(opLines('impl#1', 'phase', null, 0, 5), archived(2, 4, 6)), { sprint_seconds: null, baseline_median: 240, over: false }, 'a sprint with no full suite is never over');
+  const suiteMs = (ms) => {
+    const open = { id: 'suite impl-review#1', kind: 'suite', parent: null, start: new Date(TIMING_EPOCH_MS).toISOString(), attrs: { scope: 'full' } };
+    return [{ op: 'open', ...open }, { op: 'close', ...open, end: new Date(TIMING_EPOCH_MS + ms).toISOString(), outcome: 'done' }].map((line) => `${JSON.stringify(line)}\n`).join('');
+  };
+  assert.deepStrictEqual(suiteFull(opLines('impl#1', 'phase', null, 0, 40) + suiteMs(2500), [1600, 1600, 1600].map(suiteMs)), { sprint_seconds: 3, baseline_median: 2, over: true }, 'over compares milliseconds: 2.5 s past 1.5 times 1.6 s although the rounded 3 s is not past 1.5 times the rounded 2 s');
 });

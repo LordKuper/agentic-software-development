@@ -594,6 +594,13 @@ test('sprint-032 AC-4/AC-5: checks-wait prints {"checks":...} and exits 0 on pas
   assert.deepStrictEqual([passed.status, passed.stdout.trim()], [0, '{"checks":"pass"}']);
   assert.deepStrictEqual(pass.calls(), [['gh', 'pr', 'checks', CHECKS_PR, '--json', 'bucket']]);
 
+  const scoped = ghStub([{ status: 0, stdout: '[{"bucket":"pass"}]', stderr: '' }]);
+  assert.strictEqual(scoped.run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR, '--repo', 'owner/repo']).status, 0);
+  assert.deepStrictEqual(scoped.calls(), [['gh', 'pr', 'checks', CHECKS_PR, '-R', 'owner/repo', '--json', 'bucket']], '--repo is forwarded as -R');
+  const badRepo = ghStub([]);
+  const badRepoRun = badRepo.run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR, '--repo', 'not a repo']);
+  assert.ok(badRepoRun.status === 2 && badRepoRun.stderr.includes('--repo') && badRepo.calls().length === 0, `a malformed --repo exits 2 before any gh call (got ${badRepoRun.status}: ${badRepoRun.stderr})`);
+
   const noChecks = ghStub([{ status: 1, stdout: '', stderr: "no checks reported on the 'sprint/032' branch\n" }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
   assert.deepStrictEqual([noChecks.status, noChecks.stdout.trim()], [0, '{"checks":"none"}'], 'AC-4: a PR with no checks after the grace merges, so none exits 0');
   const stuck = ghStub([{ status: 8, stdout: '[{"bucket":"pending"}]', stderr: '' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
@@ -662,12 +669,14 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
   const entryRow = (entry, analysed, scope) => `| ${entry} | ${analysed} | ${scope} |`;
   const plan = ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', entryRow(1, 'abc12345', 'full change surface'), entryRow(2, '', 'delta since entry 1'), '', '## Added tests', '', '| Test | Gap proof |', '|---|---|', '', '## Defects', ''].join('\n');
   let runs = 0;
-  const close = async (log, overrides = {}, planText = plan) => {
+  const segmentOf = (gapProof) => `## Added tests\n\n| Test | Gap proof |\n|---|---|\n| t.js:t | ${gapProof} |\n`;
+  const close = async (log, { segment, ...overrides } = {}, planText = plan) => {
     runs += 1;
     const planFile = path.join(work, `test-plan-${runs}.md`);
     const logFile = path.join(work, `decisions-log-${runs}.md`);
     fs.writeFileSync(planFile, planText, 'utf8');
     fs.writeFileSync(logFile, log, 'utf8');
+    if (segment !== undefined) fs.writeFileSync(`${planFile.replace(/\.md$/, '')}.entry-01.md`, segment, 'utf8');
     const flags = { 'test-plan': planFile, entry: '2', decisions: logFile, line: 'impl-test: impacted set green', ...overrides };
     const outcome = await runtimeCliResultAsync(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
     return { ...outcome, files: () => [fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')] };
@@ -677,15 +686,18 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
     ['a non-integer entry', { entry: 'two' }, /--entry <positive integer> required/],
     ['an empty line', { line: '  ' }, /--line must be one non-empty line/],
     ['a multi-line line', { line: 'a\nb' }, /--line must be one non-empty line/],
+    ['a rotated entry-01 segment with an empty Gap proof', { segment: segmentOf('') }, /test-plan-\d+\.entry-01\.md Added tests row has an empty Gap proof cell/],
   ];
 
-  const [filled, noNewline, refused, ambiguous, absent] = await Promise.all([
+  const [filled, noNewline, refused, ambiguous, absent, segmentProven] = await Promise.all([
     close('- 2026-01-01 — earlier line\n'),
     close('- 2026-01-01 — no trailing newline', { entry: '1' }),
     Promise.all(refusals.map(([, overrides]) => close('- 2026-01-01 — kept\n', overrides))),
     close('', {}, `${plan}\n${entryRow(2, '', 'again')}\n`),
     runtimeCliResultAsync(['impl-test-close', '--test-plan', path.join(work, 'test-plan-1.md')], { cwd: repo, env }),
+    close('', { segment: segmentOf('seeded x: node tests/run.js -> exit 0') }),
   ]);
+  assert.strictEqual(segmentProven.status, 0, 'a rotated segment whose Gap proof is filled closes');
   const [filledPlan, filledLog] = filled.files();
   assert.deepStrictEqual([filled.status, filled.result], [0, { entry: 2, head }], 'the command reports the entry and the HEAD it recorded');
   assert.strictEqual(filledPlan, plan.replace(entryRow(2, '', 'delta since entry 1'), entryRow(2, head, 'delta since entry 1')), 'only the named entry\'s HEAD analysed cell changes');
@@ -1115,7 +1127,7 @@ test('sprint-036 AC-16 (external 4): attribution-check whose read of one setting
   assert.deepStrictEqual([outcome.status, /^runtime: \.claude\/settings\.json could not be read \(.+\), left untouched\n$/.test(outcome.stderr), fixLine, /^codex: /.test(hintLine), rest], [0, true, 'attribution: .claude/settings.local.json: includeCoAuthoredBy set to false', true, []], 'AC-16: the unreadable first file is a warning, the second file is cleaned and the Codex hint still prints');
 });
 
-test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths rule and requires an allowance past 200 net test lines above the other net, and impl-test-close refuses an Added tests row with no Gap proof and, at the green exit, an unallowanced required delta, recording Line delta otherwise', async () => {
+test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths rule and requires an allowance past 200 net test lines above the other net, and impl-test-close refuses a plan with no Added tests section, an Added tests row with an empty or placeholder Gap proof and, at the green exit, an unallowanced required delta, recording Line delta otherwise', async () => {
   const sandbox = sandboxGitRepo();
   const { repo, env } = sandbox;
   const numbered = (count) => `${Array.from({ length: count }, (unused, index) => `line ${index}`).join('\n')}\n`;
@@ -1139,7 +1151,7 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   };
   const green = (text, ref) => close(text, '--green', '--base', ref, '--commands', commands);
   const proven = gapRow('seeded x: node tests/run.js -> exit 0');
-  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen] = await Promise.all([
+  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder] = await Promise.all([
     delta(base),
     delta('HEAD'),
     close(plan(gapRow(''))),
@@ -1151,6 +1163,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
     green(plan(proven), 'HEAD'),
     close(plan(gapRow('seeded x')), '--green'),
     close(plan(gapRow('seeded x')), '--base', base),
+    close(plan(gapRow('seeded x')).replace('## Added tests', '## Other')),
+    close(plan(gapRow('{{seeded defect}}'))),
   ]);
   const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
 
@@ -1158,6 +1172,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   assert.strictEqual(empty.result.allowance_required, false, 'an empty diff needs no allowance');
   refused(emptyGap, /empty Gap proof cell/, 'a row with an empty Gap proof is refused');
   refused(noGapColumn, /no Gap proof column/, 'a table with rows and no Gap proof column is refused');
+  refused(noSection, /has no ## Added tests section/, 'a plan with no Added tests section is refused');
+  refused(placeholder, /unresolved {{…}} Gap proof placeholder/, 'a template placeholder left as the Gap proof is refused');
   assert.strictEqual(filled.status, 0, 'a filled Gap proof closes');
   assert.strictEqual(noRow.status, 0, 'a table with no row needs no proof');
   refused(noAllowance, /needs a non-empty "- Allowance:" line/, 'a required allowance missing refuses the green exit');
