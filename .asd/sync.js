@@ -1530,8 +1530,8 @@ function orphanStatus(orphan) {
 // 'orphan-modified' once hand-edited); an unmarked one is informational only
 // ('orphan-unmarked') - a consumer's own file, not this tool's to flag.
 function runCheck(repoRoot) {
-  const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);
+  const manifest = loadReleaseManifest(repoRoot);
   const plan = buildSyncPlan(repoRoot);
   const report = [];
   for (const item of plan) {
@@ -1566,8 +1566,8 @@ function runCheck(repoRoot) {
 // with zero writes performed - even if it's the last file in a multi-file
 // request and earlier ones would otherwise have rendered fine.
 function runApply(repoRoot, requestedFiles, options) {
-  const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);
+  const manifest = loadReleaseManifest(repoRoot);
   const plan = buildSyncPlan(repoRoot);
   const planByRel = new Map();
   for (const item of plan) {
@@ -1704,7 +1704,7 @@ if (require.main === module) {
   try {
     process.exitCode = main(process.argv);
   } catch (error) {
-    process.stderr.write(`sync: ${error.message}\n`);
+    process.stderr.write(`sync: ${String(error.message).replace(/[\r\n]+/g, ' ')}\n`);
     process.exitCode = 1;
   }
 }
