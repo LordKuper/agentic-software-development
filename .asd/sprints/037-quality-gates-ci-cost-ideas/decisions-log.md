@@ -90,3 +90,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route wave-1/iter-01 R1, R2, R3: standard, dispatch HEAD c0248783; risk workflow gate (change), public contract (change)
 - 2026-11-18 — route wave-1/iter-01 tester (combined F4, F6, external 11): standard, dispatch HEAD 0e38c05d
 - 2026-11-18 — impl fix for wave-1/iter-01: findings resolved (flagged accepted: external 5 keeps only Line delta/Allowance; sprint PR merge stays on gh default repo; close validates the rotated segment)
+- 2026-11-18 — route impl-test#4: standard, dispatch HEAD f86c9bf2
+- 2026-11-18 — impl-test: impacted set green (282/282, 12 areas), 0/0 tests (5 extended)
