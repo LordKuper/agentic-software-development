@@ -80,3 +80,6 @@
 {"op":"open","id":"impl-test-2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-18T11:13:28.360Z","attrs":{"context_bytes":81365}}
 {"op":"close","id":"impl-test-2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-18T11:13:28.360Z","end":"2026-11-18T11:15:52.319Z","outcome":"done","attrs":{"context_bytes":81365}}
 {"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-18T11:13:06.954Z","end":"2026-11-18T11:15:52.931Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:05.970Z","attrs":{}}
+{"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:05.970Z","end":"2026-11-18T11:16:18.073Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:18.175Z","attrs":{}}

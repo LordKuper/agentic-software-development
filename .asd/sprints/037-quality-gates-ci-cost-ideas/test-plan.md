@@ -62,7 +62,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
 | D-1 | 1 | AGENTS.md | AC-20: canon still describes the suite as one file — AGENTS.md "Build and lint" (`tests/run.js` is a real … test runner), "Phase chain" (`tests/run.js` §16), "Conventions" (`tests/run.js` among Node code); sprint-lifecycle.md "Cleanup phase" step 3 (impacted set is the full `node tests/run.js`) | none (AC-20) | fixed | 0c10f603 |
-| D-2 | 2 | `.asd/release-manifest.json` `upstream_hashes` | the D-1 fix edited `.asd/rules/sprint-lifecycle.md` and `.asd/workflows/asd-phase-retro.md`; their recorded hashes no longer match the files (recompute after editing) | `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)` | pending |  |
+| D-2 | 2 | `.asd/release-manifest.json` `upstream_hashes` | the D-1 fix edited `.asd/rules/sprint-lifecycle.md` and `.asd/workflows/asd-phase-retro.md`; their recorded hashes no longer match the files (recompute after editing) | `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)` | fixed | 33ae3490 |
 
 ## Suite revision (optional)
 
