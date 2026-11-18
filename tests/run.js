@@ -54,15 +54,17 @@ async function runAll() {
   const timings = [];
   for (const t of selected) {
     const started = performance.now();
-    let failure = null;
+    let threw = false;
+    let failure;
     try {
       await t.fn();
     } catch (err) {
+      threw = true;
       failure = err;
     }
     const elapsedMs = Math.round(performance.now() - started);
     timings.push({ name: t.name, elapsedMs });
-    if (failure === null) {
+    if (!threw) {
       console.log(`ok - ${t.name} (${elapsedMs} ms)`);
       continue;
     }

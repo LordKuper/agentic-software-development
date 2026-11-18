@@ -2,7 +2,7 @@
 
 // the test runner itself
 
-const { assert, path, execFileSync, REPO_ROOT, test, headingBody } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, REPO_ROOT, test, headingBody, mkTempDir } = require('./lib.js');
 
 test('sprint-027 AC-9 (D9): the runner\'s --filter runs only tests whose name contains the fixed substring, prints the matched count, exits non-zero on zero or empty matches, and code-style.md section 17 names the flag - and an area argument loads only the file of that area and refuses an unknown one', () => {
   const fragment = 'sprint-026 AC-14 (D11): markdownSection returns';
@@ -29,4 +29,13 @@ test('sprint-027 AC-9 (D9): the runner\'s --filter runs only tests whose name co
   const unknown = run('no-such-area');
   assert.ok(unknown.status === 1 && unknown.stderr.includes('unknown area no-such-area'), `AC-20: an unknown area exits non-zero and names itself, never reading as an empty green run. Got: ${JSON.stringify(unknown)}`);
   assert.ok(headingBody('.asd/rules/code-style.md', '17. Tests').includes('`--filter <substring>`'), 'AC-9: code-style.md section 17 names the runner flag every mutation and control run uses');
+});
+
+test('sprint-037 external 11: the runner fails a test that throws or rejects with null and passes one that returns, so a null reason never reads as success', () => {
+  const dir = mkTempDir();
+  fs.copyFileSync(path.join(REPO_ROOT, 'tests', 'run.js'), path.join(dir, 'run.js'));
+  fs.writeFileSync(path.join(dir, 'lib.js'), "const tests = [];\nmodule.exports = { tests, test: (name, fn) => tests.push({ name, fn }) };\n");
+  fs.writeFileSync(path.join(dir, 'sample.test.js'), "const { test } = require('./lib.js');\ntest('throws null', () => { throw null; });\ntest('rejects null', () => Promise.reject(null));\ntest('returns', () => undefined);\n");
+  const outcome = spawnSync(process.execPath, [path.join(dir, 'run.js')], { encoding: 'utf8' });
+  assert.ok(outcome.status === 1 && outcome.stderr.includes('FAIL - throws null') && outcome.stderr.includes('FAIL - rejects null') && outcome.stdout.includes('ok - returns') && outcome.stdout.includes('1/3 passed'), `a null throw is a failure. Got: ${JSON.stringify(outcome)}`);
 });
