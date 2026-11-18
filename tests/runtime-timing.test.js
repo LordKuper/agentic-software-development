@@ -402,10 +402,8 @@ test('sprint-034 AC-9 (033#A-4): a dispatch open fills its missing tier and mode
   assert.deepStrictEqual(lookupLog, [], 'AC-9: no lookup runs for another kind');
 });
 
-test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the state.json beside the ledger and from the agent canon by the host rule (CLAUDECODE=1 reads the Claude model, any other shell the Codex one), and a close of a never-opened id appends nothing, warns and exits 0', () => {
-  const { spawnSync } = require('node:child_process');
+test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the state.json beside the ledger and from the agent canon by the host rule (CLAUDECODE=1 reads the Claude model, any other shell the Codex one), and a close of a never-opened id appends nothing, warns and exits 0', async () => {
   const dir = mkTempDir();
-  const ledger = path.join(dir, 'timing.jsonl');
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: { 'Task 1': { tier: 'standard', resolved_model: 'routed-model' } } }));
   const devMeta = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-dev.md'))).meta;
   assert.notStrictEqual(devMeta.claude.model, devMeta.codex.model, 'sanity: the host rule is observable only when the two hosts name different models');
@@ -414,33 +412,43 @@ test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the s
     delete env.CLAUDECODE;
     return claudeCode ? { ...env, CLAUDECODE: '1' } : env;
   };
-  const timing = (args, env = hostEnv(false)) => {
-    const outcome = spawnSync(process.execPath, [RUNTIME_JS, 'timing', '--ledger', ledger, ...args], { encoding: 'utf8', env });
+  const timing = async (ledger, args, env = hostEnv(false)) => {
+    const outcome = await runtimeSpawnAsync(['timing', '--ledger', ledger, ...args], { env });
     assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
     return outcome;
   };
-  const lastAttrs = () => ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs;
+  const lastAttrs = (ledger) => ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs;
+  // Each case owns its ledger (state.json is shared beside them), so the cases run side by side.
+  const dispatch = async (name, args, env) => {
+    const ledger = path.join(dir, `${name}.jsonl`);
+    await timing(ledger, ['--create', '--open', 'impl', '--kind', 'phase']);
+    const outcome = await timing(ledger, ['--open', name, '--kind', 'dispatch', ...args], env);
+    return { ledger, outcome };
+  };
 
-  timing(['--create', '--open', 'impl', '--kind', 'phase']);
-  timing(['--open', 'Task 1', '--kind', 'dispatch']);
-  assert.deepStrictEqual(lastAttrs(), { tier: 'standard', model: 'routed-model' }, 'AC-9: a routed id is filled from task_routing of the state.json beside the ledger');
-  timing(['--open', 'dev-claude', '--kind', 'dispatch', '--attrs', 'agent=asd-dev-mechanical'], hostEnv(true));
-  assert.deepStrictEqual(lastAttrs(), { agent: 'asd-dev-mechanical', tier: 'mechanical', model: devMeta.variants.mechanical.claude.model }, 'AC-9: under CLAUDECODE=1 the variant suffix names the tier and the variant\'s Claude model is recorded');
-  timing(['--open', 'dev-codex', '--kind', 'dispatch', '--attrs', 'agent=asd-dev-mechanical']);
-  assert.deepStrictEqual(lastAttrs(), { agent: 'asd-dev-mechanical', tier: 'mechanical', model: devMeta.variants.mechanical.codex.model }, 'AC-9: in any other shell the variant\'s Codex model is recorded');
-  timing(['--open', 'dev-base', '--kind', 'dispatch', '--attrs', 'agent=asd-dev'], hostEnv(true));
-  assert.deepStrictEqual(lastAttrs(), { agent: 'asd-dev', tier: 'standard', model: devMeta.claude.model }, 'AC-9: a base agent is tier standard with its own host model');
+  const [routed, claude, codex, base, ghost] = await Promise.all([
+    dispatch('Task 1', []),
+    dispatch('dev-claude', ['--attrs', 'agent=asd-dev-mechanical'], hostEnv(true)),
+    dispatch('dev-codex', ['--attrs', 'agent=asd-dev-mechanical']),
+    dispatch('dev-base', ['--attrs', 'agent=asd-dev'], hostEnv(true)),
+    (async () => {
+      const ledger = path.join(dir, 'ghost.jsonl');
+      await timing(ledger, ['--create', '--open', 'impl', '--kind', 'phase']);
+      const before = fs.readFileSync(ledger, 'utf8');
+      return { before, ledger, outcome: await timing(ledger, ['--close', 'never-opened']) };
+    })(),
+  ]);
+  assert.deepStrictEqual(lastAttrs(routed.ledger), { tier: 'standard', model: 'routed-model' }, 'AC-9: a routed id is filled from task_routing of the state.json beside the ledger');
+  assert.deepStrictEqual(lastAttrs(claude.ledger), { agent: 'asd-dev-mechanical', tier: 'mechanical', model: devMeta.variants.mechanical.claude.model }, 'AC-9: under CLAUDECODE=1 the variant suffix names the tier and the variant\'s Claude model is recorded');
+  assert.deepStrictEqual(lastAttrs(codex.ledger), { agent: 'asd-dev-mechanical', tier: 'mechanical', model: devMeta.variants.mechanical.codex.model }, 'AC-9: in any other shell the variant\'s Codex model is recorded');
+  assert.deepStrictEqual(lastAttrs(base.ledger), { agent: 'asd-dev', tier: 'standard', model: devMeta.claude.model }, 'AC-9: a base agent is tier standard with its own host model');
 
-  const before = fs.readFileSync(ledger, 'utf8');
-  const ghost = timing(['--close', 'never-opened']);
-  assert.strictEqual(fs.readFileSync(ledger, 'utf8'), before, 'AC-13: the ledger is untouched by a close of an id never opened');
-  assert.ok(ghost.stderr.includes('never-opened matches no open op'), `AC-13: the close warns on stderr, got ${JSON.stringify(ghost.stderr)}`);
+  assert.strictEqual(fs.readFileSync(ghost.ledger, 'utf8'), ghost.before, 'AC-13: the ledger is untouched by a close of an id never opened');
+  assert.ok(ghost.outcome.stderr.includes('never-opened matches no open op'), `AC-13: the close warns on stderr, got ${JSON.stringify(ghost.outcome.stderr)}`);
 });
 
-test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev for tier standard and asd-dev-<tier> otherwise, an execution-command id gets no agent and warns naming it, and a given agent attr is never overwritten', () => {
-  const { spawnSync } = require('node:child_process');
+test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev for tier standard and asd-dev-<tier> otherwise, an execution-command id gets no agent and warns naming it, and a given agent attr is never overwritten', async () => {
   const dir = mkTempDir();
-  const ledger = path.join(dir, 'timing.jsonl');
   const route = (execution, tier) => ({ execution, tier, resolved_model: `${tier}-model` });
   const routing = {
     'Task standard': route('agent', 'standard'),
@@ -450,27 +458,31 @@ test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev 
     'Task given': route('agent', 'escalated'),
   };
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: routing }));
-  const timing = (args) => {
-    const outcome = spawnSync(process.execPath, [RUNTIME_JS, 'timing', '--ledger', ledger, ...args], { encoding: 'utf8' });
-    assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
-    return outcome;
+  // Each id owns its ledger (state.json is shared beside them), so the opens run side by side.
+  const openDispatch = async (id, ...attrs) => {
+    const ledger = path.join(dir, `${id}.jsonl`);
+    const timing = async (args) => {
+      const outcome = await runtimeSpawnAsync(['timing', '--ledger', ledger, ...args]);
+      assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
+      return outcome;
+    };
+    await timing(['--create', '--open', 'impl', '--kind', 'phase']);
+    const outcome = await timing(['--open', id, '--kind', 'dispatch', ...attrs]);
+    return { outcome, attrs: ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs };
   };
-  const openDispatch = (id, ...attrs) => timing(['--open', id, '--kind', 'dispatch', ...attrs]);
-  const lastAttrs = () => ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs;
 
-  timing(['--create', '--open', 'impl', '--kind', 'phase']);
-  for (const [id, agent] of [['Task standard', 'asd-dev'], ['Task escalated', 'asd-dev-escalated'], ['Task mechanical', 'asd-dev-mechanical']]) {
-    const outcome = openDispatch(id);
-    assert.deepStrictEqual(lastAttrs(), { agent, tier: routing[id].tier, model: routing[id].resolved_model }, `AC-9: ${id} is recorded with its agent, tier and model from task_routing`);
+  const [standard, escalated, mechanical, command, given] = await Promise.all([
+    openDispatch('Task standard'), openDispatch('Task escalated'), openDispatch('Task mechanical'), openDispatch('Task command'), openDispatch('Task given', '--attrs', 'agent=my-agent'),
+  ]);
+  for (const [id, agent, { outcome, attrs }] of [['Task standard', 'asd-dev', standard], ['Task escalated', 'asd-dev-escalated', escalated], ['Task mechanical', 'asd-dev-mechanical', mechanical]]) {
+    assert.deepStrictEqual(attrs, { agent, tier: routing[id].tier, model: routing[id].resolved_model }, `AC-9: ${id} is recorded with its agent, tier and model from task_routing`);
     assert.ok(!outcome.stderr.includes('unresolved'), `AC-9: ${id} resolves every attr, got ${JSON.stringify(outcome.stderr)}`);
   }
 
-  const command = openDispatch('Task command');
-  assert.deepStrictEqual(lastAttrs(), { tier: 'mechanical', model: 'mechanical-model' }, 'AC-9: an execution-command id names no agent');
-  assert.ok(command.stderr.includes('Task command: agent unresolved'), `AC-9: the unresolved agent is named in the warning, got ${JSON.stringify(command.stderr)}`);
+  assert.deepStrictEqual(command.attrs, { tier: 'mechanical', model: 'mechanical-model' }, 'AC-9: an execution-command id names no agent');
+  assert.ok(command.outcome.stderr.includes('Task command: agent unresolved'), `AC-9: the unresolved agent is named in the warning, got ${JSON.stringify(command.outcome.stderr)}`);
 
-  openDispatch('Task given', '--attrs', 'agent=my-agent');
-  assert.strictEqual(lastAttrs().agent, 'my-agent', 'AC-9: an agent attr the caller gave is never overwritten by the routed one');
+  assert.strictEqual(given.attrs.agent, 'my-agent', 'AC-9: an agent attr the caller gave is never overwritten by the routed one');
 });
 
 test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, appends nothing and warns with the next free #<n>, a repeat op takes that id, the task_routing lookup strips the #<n>, and a flag given twice warns on stderr with the last value winning', () => {
