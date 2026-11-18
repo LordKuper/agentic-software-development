@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:e6ec9ff94c0058f90f570d7b1881ff70cce1c0c597a4d177263610543c82c7bc content_digest=sha256:3b2008cfd3b86856b71450426d9eb0531e43c9479c942f213983e2e5f40bcbf1 asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:c59ef2e5e08697318c6df7bc4a8fe24408846f7dfcac73c538ef797f01849861 content_digest=sha256:b9d6acaf17060564e7eb3e5df5ed628e023a3181f3fdb308b0d4a65dcbe01b4a asd_version=14.7.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -48,7 +48,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
 
 ### Attribution check
-Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change, so skip the check and tell the user to commit or revert it. Else `node .asd/runtime.js attribution-check`, relaying its fix and Codex-hint lines (a stderr warning never blocks); if that `git status` now lists a file, commit it as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
+Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change. Then `node .asd/runtime.js attribution-check [-- <listed files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint; relay its fix, hint and warning lines (a warning never blocks). Commit each file a fix line names as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
