@@ -43,3 +43,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: After the D-1 test-fix (canon edits to `sprint-lifecycle.md` and `asd-phase-retro.md`), `sync.js --check` reported every view current, so the orchestrator skipped `--apply`. Only `--apply` recomputes `release-manifest.json` `upstream_hashes`; `--check` does not report a stale ledger. Impl-test entry 2 went red on `release-manifest.json: every upstream_hashes entry matches the actual file`.
 - **Impact**: One extra impl-test → impl test-fix round (D-2).
 - **Refs**: test-plan.md D-2
+
+## F-4 — commit-check before staging skipped the memory check
+
+- **Phase**: impl-review
+- **Surface**: rule — `git-strategy.md` "Commit before review" message-file form against `.asd/runtime.js` `commit-check`
+- **What happened**: The orchestrator ran `commit-check` on reviewer memory before `git add`; its memory check reads only `git diff --cached`, so it scanned nothing and passed. An `asd-external-review` memory edit carrying `wave-1 iter-02` was committed; combined iter-03 F2 caught it.
+- **Impact**: One memory-fix dispatch in impl-review.
+- **Refs**: reviews/impl/wave-1/iter-03 combined F2

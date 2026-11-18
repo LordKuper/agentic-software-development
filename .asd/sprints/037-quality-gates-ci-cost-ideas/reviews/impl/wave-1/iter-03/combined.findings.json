@@ -1,0 +1,1 @@
+[{"id":"F1","severity":"high","location":".asd/workflows/asd-phase-impl-test.md:48"},{"id":"F2","severity":"high","location":".claude/agent-memory/asd-external-review/reference_codex-invocation.md:17"},{"id":"F3","severity":"high","location":".claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md:8","pre_existing":true}]
