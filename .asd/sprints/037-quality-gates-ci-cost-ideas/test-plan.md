@@ -25,6 +25,10 @@ Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
 | `git diff b6f345ae...HEAD` outside `.asd/sprints/**` is `.asd/release-manifest.json` alone: two `upstream_hashes` values (`.asd/rules/sprint-lifecycle.md`, `.asd/workflows/asd-phase-retro.md`) recomputed by `sync.js --apply` for D-2 | a recorded hash drifts from its file again, or a changed value is not a hash of the file | content contract (existing owner) | none | `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)` already owns it and is the test that went red on D-2; it is green on this tree. A second test would repeat the same comparison (§17). No test added |
+| Review-fix `wave-1/iter-01` combined F4: two `//` comments inside test bodies of `tests/runtime-timing.test.js` | a body comment against code-style §7 | none (static rule) | none | the two WHY lines moved into header comments above their tests; no behaviour changed |
+| combined F6: the dispatch id to bundle file name mapping in `contextBundleBytes` (`.asd/runtime.js`) | a `/`, space or `#<n>` id maps to the wrong file name and `context_bytes` stays unfilled | extend the sprint-037 AC-2/AC-18 test with a `timing --open` case over scratch bundle files | extend existing | the AC-2/AC-18 test owns the `context_bytes` fill contract; the case reaches the real mapping through the CLI for `combined wave-1/iter-01` and `Task 2#2`, files cleaned in `finally` |
+| external 11: `tests/run.js` logs a test that throws or rejects `null` as passing | a null throw reads as green, hiding a failing test | new runner-area test over a copied runner | new test | no test of the runner's pass/fail verdict on a falsy throw existed |
+| behaviour-change fallout of combined F5: `checkGapProof` fails closed on a plan without `## Added tests` | the sprint-033 AC-27 fixture plan has no such section | fixture fix, an empty `## Added tests` table | test defect, fixed | not a code defect; the other new behaviours are left to the impl-test re-entry |
 
 ## Removed tests
 
@@ -37,6 +41,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Gap proof | Regression proof |
 |---|---|---|
+| tests/runner.test.js: sprint-037 external 11 | seeded `tests/run.js` defect (`if (!threw)` back to `if (failure == null)`): `node tests/run.js runner` → exit 1, `sprint-027 AC-9 (D9)` still ok, only the new test fails | mutation the same defect: `node tests/run.js runner --filter "sprint-037 external 11"` → exit 1, `sprint-037 external 11: the runner fails a test that throws or rejects with null…` (1/2 matched), restored; runs: 1 |
 
 ## Suite run
 
@@ -49,12 +54,12 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-tools sync-cli sync-render update hooks`
-- Scope: impacted — entry 2's eight areas (its gate never went green) plus `hooks`, the one further area whose test reads `.asd/release-manifest.json`
-- Result: pass — exit 0, 205 passed, 0 failed, 0 skipped (205 tests); the `upstream_hashes` ledger test that failed on D-2 is green
+- Command: `node tests/run.js runtime-timing runtime-tools runner`
+- Scope: impacted — the three areas the review-fix `wave-1/iter-01` findings touch (combined F4, F6, F5 fallout; external 11); the F6 and external 11 mutation runs are `--filter` runs recorded under Added tests
+- Result: pass — exit 0, 57 passed, 0 failed, 0 skipped (57 tests); `git diff --cached --check` exit 0
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`, every item current)
 - Slowest tests: 2426 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 2019 ms sprint-014 AC-2 ASD-Task trailer reconstruction; 1216 ms sprint-019 AC-8 one-command commit form; 803 ms sprint-023 AC-4 memory-check
-- HEAD: b12d7ce1
+- HEAD: b17ba3f5
 - Line delta: tests +8650/−11521 (net -2871); other +660/−146 (net 514)
 
 ## Defects
