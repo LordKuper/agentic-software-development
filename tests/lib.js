@@ -137,6 +137,46 @@ function sandboxGitRepo() {
   return sandboxGitRepoFrom('empty');
 }
 
+/** The `git fast-import` command stream and the marks file for `states` (see `importCommits`). */
+function fastImportRequest(sandbox, states, parent) {
+  const branch = /^ref: (\S+)/.exec(fs.readFileSync(path.join(sandbox.repo, '.git', 'HEAD'), 'utf8'))[1];
+  const marksFile = path.join(mkTempDir(), 'marks');
+  const stream = [];
+  const data = (bytes) => stream.push(Buffer.from(`data ${bytes.length}\n`), bytes, Buffer.from('\n'));
+  states.forEach((state, index) => {
+    stream.push(Buffer.from(`commit ${branch}\nmark :${index + 1}\ncommitter asd-test <asd-test@example.invalid> ${index + 1} +0000\n`));
+    data(Buffer.from(`state ${index + 1}`));
+    if (index === 0 && parent) stream.push(Buffer.from(`from ${parent}\n`));
+    for (const [file, entry] of Object.entries(state)) {
+      if (entry === null) {
+        stream.push(Buffer.from(`D ${file}\n`));
+        continue;
+      }
+      const { content, mode = '100644' } = typeof entry === 'string' || Buffer.isBuffer(entry) ? { content: entry } : entry;
+      stream.push(Buffer.from(`M ${mode} inline ${file}\n`));
+      data(Buffer.from(content));
+    }
+  });
+  const readIds = () => fs.readFileSync(marksFile, 'utf8').trim().split('\n').map((line) => line.split(' ')[1]);
+  return { args: ['fast-import', '--quiet', `--export-marks=${marksFile}`], input: Buffer.concat(stream), readIds };
+}
+
+/** Commits each state of `states` to the sandbox's current branch, on top of `parent` when given, through one `git fast-import` and returns the commit ids, oldest first. A state maps a path to its content (string or Buffer), to `{content, mode}` or to null (deleted); it touches no index and no worktree, which a diff between commits never reads, so a fixture with many files pays one spawn where `git add` and `git commit` pay several each. */
+async function importCommits(sandbox, states, { parent } = {}) {
+  const { args, input, readIds } = fastImportRequest(sandbox, states, parent);
+  const pending = execFileAsync('git', args, { cwd: sandbox.repo, env: sandbox.env });
+  pending.child.stdin.end(input);
+  await pending;
+  return readIds();
+}
+
+/** `importCommits` without waiting: for a template build `sandboxGitRepoFrom` must finish before it copies the repo. */
+function importCommitsSync(sandbox, states, { parent } = {}) {
+  const { args, input, readIds } = fastImportRequest(sandbox, states, parent);
+  execFileSync('git', args, { cwd: sandbox.repo, env: sandbox.env, input });
+  return readIds();
+}
+
 /** Every sprint workflow definition, loaded and shape-checked by the runtime's own loader - the chain, routing and roster source since sprint 020. */
 function readWorkflowDefinitions() {
   const names = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length)).sort();
@@ -389,6 +429,13 @@ function runtimeSpawnAsync(args, options = {}) {
   });
 }
 
+/** `runtimeCliResult` without blocking: independent CLI runs overlap under `Promise.all`; the same `{status, result}` or `{status, stderr}` shape. */
+async function runtimeCliResultAsync(args, options) {
+  const ran = await runtimeSpawnAsync(args, options);
+  if (ran.status !== 0) return { status: ran.status, stderr: ran.stderr.trim() };
+  return { status: 0, result: JSON.parse(ran.stdout) };
+}
+
 /** A mini repo whose `.claude/settings.json` sync applied, then `extra` top-level keys added to it and `git.ai_attribution` set to disabled: sync's record of the file exists and its owned attribution value is missing. */
 function disabledAttributionRepo(extra = {}) {
   const settingsRel = '.claude/settings.json';
@@ -471,6 +518,8 @@ module.exports = {
   runtimeCliResult,
   sandboxGitRepo,
   sandboxGitRepoFrom,
+  importCommits,
+  importCommitsSync,
   readWorkflowDefinitions,
   workflowReviewerAgents,
   arrowChain,
@@ -505,6 +554,7 @@ module.exports = {
   execFileAsync,
   runtimeSpawn,
   runtimeSpawnAsync,
+  runtimeCliResultAsync,
   disabledAttributionRepo,
   OFF_VALUE,
   linkedLedgerRepo,
