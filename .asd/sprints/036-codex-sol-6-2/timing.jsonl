@@ -230,3 +230,4 @@
 {"op":"close","id":"impl-review#9","kind":"phase","parent":null,"start":"2026-11-18T06:28:44.667Z","end":"2026-11-18T06:33:17.025Z","outcome":"done","attrs":{}}
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T06:33:17.025Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T06:33:17.025Z","end":"2026-11-18T06:33:49.112Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-18T06:33:52.622Z","attrs":{}}
