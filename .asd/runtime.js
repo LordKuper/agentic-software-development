@@ -971,7 +971,7 @@ function isInsideDirectory(root, target) {
   return relation !== '' && relation.split(path.sep)[0] !== '..' && !path.isAbsolute(relation);
 }
 
-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object or resolves, through a symlink or junction, outside the repo, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying, and the result is renamed over the real file from a temp file beside it. A file needing no fix, or absent, is not rewritten. */
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object, resolves, through a symlink or junction, outside the repo, or cannot be rewritten, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying, and the result is renamed over the real file, keeping its mode, from a temp file beside it that a failed write never leaves. A file needing no fix, or absent, is not rewritten. */
 function cleanSettingsFile(repoRoot, relative) {
   const file = path.join(repoRoot, relative);
   if (!fs.existsSync(file)) return { lines: [], warning: null };
@@ -994,8 +994,14 @@ function cleanSettingsFile(repoRoot, relative) {
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
   const spliced = changed.reduce((text, key) => sync.spliceTopLevelKey(text, key, settings[key]), raw).replace(/\r?\n/g, eol);
   const partial = `${real}.${process.pid}.tmp`;
-  fs.writeFileSync(partial, spliced, 'utf8');
-  fs.renameSync(partial, real);
+  try {
+    fs.writeFileSync(partial, spliced, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+    fs.chmodSync(partial, fs.statSync(real).mode & 0o777);
+    fs.renameSync(partial, real);
+  } catch (error) {
+    fs.rmSync(partial, { force: true });
+    return { lines: [], warning: `runtime: ${relative} could not be rewritten (${error.message}), left untouched` };
+  }
   return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
 }
 
