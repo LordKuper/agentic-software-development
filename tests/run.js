@@ -6398,18 +6398,21 @@ test('sprint-019 AC-4: the live retro backlog parses, each row resolves to its a
   assert.deepStrictEqual(backlog.filter((entry) => (entry.disposition === 'deferred') !== live.includes(entry.row)).map((entry) => `${entry.row} (${entry.disposition})`), [], 'AC-1/AC-3: live intake offers every deferred row again and never one the backlog records as included, rejected or closed');
 });
 
-test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit before review" gives a dispatched agent, run as written, commits exactly its own paths - a never-tracked file and both sides of a rename included - never checks or sweeps a sibling\'s staged file, and after a failed check its reset leaves none of its paths staged', () => {
+test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit before review" gives a dispatched agent, run as written with its message file (sprint-036 AC-12), commits exactly its own paths - a never-tracked file and both sides of a rename included - never checks or sweeps a sibling\'s staged file, and after a failed check its reset leaves none of its paths staged', () => {
   const section = sectionOf('.asd/rules/git-strategy.md', 'Commit before review');
   const compound = /`(git add -- <paths> && [^`]+)`/.exec(section);
-  const reset = /if it fails, `(git [^`]+)`/.exec(section);
+  const reset = /if the command fails, `(git [^`]+)`/.exec(section);
   assert.ok(compound && reset, 'git-strategy.md must state the compound command and the reset it runs on failure as literal commands');
   const { repo, git } = sandboxGitRepo();
   const put = (rel, text) => fs.writeFileSync(path.join(repo, rel), text, 'utf8');
   const RUNTIME = path.join(REPO_ROOT, '.asd', 'runtime.js');
-  const argsOf = (command, paths, header) => command.split(/\s+/).filter((token) => token !== '[-m' && token !== '"<body>"]').slice(1).flatMap((token) => (token === '<paths>' ? paths : [token === '"<header>"' ? header : token === '.asd/runtime.js' ? RUNTIME : token]));
-  const commitAs = (paths, header = 'chore(test): agent work') => {
+  const messageFile = path.join(mkTempDir(), 'agent.commit-msg');
+  const argsOf = (command, paths) => command.split(/\s+/).slice(1).flatMap((token) => (token === '<paths>' ? paths : [token === '<file>' ? messageFile : token === '.asd/runtime.js' ? RUNTIME : token]));
+  const AGENT_MESSAGE = 'chore(test): agent work\n\nWhy the change.\n\nASD-Task: Task 1\nCo-Authored-By: Pair <pair@example.invalid>\n';
+  const commitAs = (paths, message = AGENT_MESSAGE) => {
+    fs.writeFileSync(messageFile, message, 'utf8');
     for (const part of compound[1].split(' && ')) {
-      const args = argsOf(part, paths, header);
+      const args = argsOf(part, paths);
       try {
         if (part.startsWith('node ')) execFileSync(process.execPath, args, { cwd: repo, env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(repo) }, stdio: 'pipe' });
         else git(...args);
@@ -6434,6 +6437,7 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
   assert.strictEqual(commitAs(['tracked.txt', 'fresh.txt', 'old.txt', 'new.txt']), 'committed', 'the check is path-scoped, so a sibling\'s staged whitespace error must not fail this agent\'s commit');
   assert.deepStrictEqual(git('show', '--no-renames', '--name-status', '--format=', 'HEAD').trim().split('\n').sort(), ['A\tfresh.txt', 'A\tnew.txt', 'D\told.txt', 'M\ttracked.txt'], 'the commit carries exactly the agent\'s paths - the never-tracked file and both sides of the rename in, the sibling\'s staged file out');
   assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: the sibling\'s staged file stays staged for its own commit, and none of the agent\'s paths is left staged');
+  assert.strictEqual(git('log', '-1', '--format=%B').trim(), AGENT_MESSAGE.trim(), 'sprint-036 AC-12: the commit carries the message file whole - body and the final trailer paragraph with its ASD-Task and Co-Authored-By lines');
 
   const head = git('rev-parse', 'HEAD').trim();
   put('bad.txt', 'trailing space \n');
@@ -6442,11 +6446,15 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
   assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: after the reset the failed path is unstaged - left staged, the next sibling commit would sweep it under the wrong ASD-Task trailer (018 F-1)');
 
   put('long.txt', 'fine\n');
-  const longHeader = `chore(test): ${'x'.repeat(40)}`;
-  assert.strictEqual(commitAs(['long.txt'], longHeader), 'failed at: node .asd/runtime.js commit-check --subject "<header>" -- <paths>', 'sprint-033 AC-12: a header over 50 characters stops the commit at commit-check');
+  const checkStep = 'node .asd/runtime.js commit-check --message-file <file> -- <paths>';
+  const longHeader = `chore(test): ${'x'.repeat(40)}\n\nASD-Task: Task 1\n`;
+  assert.strictEqual(commitAs(['long.txt'], longHeader), `failed at: ${checkStep}`, 'sprint-033 AC-12: a header over 50 characters stops the commit at commit-check');
   assert.strictEqual(git('rev-parse', 'HEAD').trim(), head, 'nothing is committed after a failed header check');
   assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'the reset after a failed commit-check leaves none of the agent\'s paths staged');
-  assert.strictEqual(commitAs(['long.txt']), 'committed', 'the same path commits once its header fits');
+  assert.strictEqual(commitAs(['long.txt'], 'chore(test): misplaced\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n'), `failed at: ${checkStep}`, 'sprint-036 AC-12: an ASD-Task line outside the last paragraph stops the commit at commit-check');
+  assert.deepStrictEqual([git('rev-parse', 'HEAD').trim(), git('diff', '--cached', '--name-only').trim()], [head, 'sibling.txt'], 'sprint-036 AC-12: a misplaced trailer commits nothing and the reset leaves the path unstaged');
+  assert.strictEqual(commitAs(['long.txt']), 'committed', 'the same path commits once its header fits and its trailer sits in the last paragraph');
+  assert.ok(section.includes('`--subject "<header>"`'), 'sprint-036 AC-12: a trailer-less commit keeps the --subject form beside the message file');
 });
 
 test('sprint-019 AC-9/AC-10, sprint-023 AC-1: the dispatch payload header providers.md defines is admitted by both exhaustive reviewer payload lists and cited by both review workflows, and every agent handed a turn budget declares a maxTurns that leaves a report turn and the turn plan\'s earlier ledger turn', () => {
@@ -10346,60 +10354,6 @@ test('sprint-035 AC-15: latch-refresh clears the latch of each reviewer whose ma
   assert.deepStrictEqual([noLatch.outcome.result.cleared, noLatch.text === noLatch.before], [[], true], 'AC-15: a wave with no latch writes nothing');
 });
 
-test('sprint-035 AC-15: a changed file counts as code unless its executable projection is unchanged - only comments and blank lines outside strings differ, so a multi-line block-comment edit keeps the latch while a mixed hunk, an unknown extension, an added or deleted file, a shebang, a `*`-led code line, a comment-boundary shift, a regex or multi-line string holding comment markers and a blank line inside a string stay code', () => {
-  const [quality] = runtime.INTERNAL_REVIEWERS;
-  const latched = { [quality]: 1 };
-  const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched }).outcome.result.cleared;
-
-  assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\n\n'), [], 'AC-15: an added comment line and a blank line leave the latch');
-  assert.deepStrictEqual(clearsFor('src/c.py', 'c = 1\n# note\n'), [], 'AC-15: a hash-family comment leaves the latch');
-  assert.deepStrictEqual(clearsFor('src/a.js', 'const a = 1;\n// note\nconst z = 2;\n'), [quality], 'AC-15: a hunk mixing a comment and a code line is code');
-  assert.deepStrictEqual(clearsFor('notes.xyz', 'one\n// only a comment\n'), [quality], 'AC-15: an unknown extension counts as changed, whatever its lines look like');
-
-  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds two numbers.\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the body of a multi-line block comment leaves the latch');
-  assert.deepStrictEqual(clearsFor('src/doc.js', '/*\n * Adds.\n  */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: editing the opener and the closer of a block comment leaves the latch');
-  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n */\nfunction add() {}\nconst total = a\n  * b;\n'), [], 'AC-15: deleting a block-comment body line, a base-side line, leaves the latch');
-  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() {}\nconst total = a\n  * c;\n'), [quality], 'AC-15: a `*`-led continuation of an expression outside a block comment is code');
-  assert.deepStrictEqual(clearsFor('src/doc.js', '/**\n * Adds.\n */\nfunction add() { return 1; }\nconst total = a\n  * b;\n'), [quality], 'AC-15: a code edit beside a block comment is code');
-
-  const commentOnly = (file, base, head) => runtime.isCommentOnlyChange(file, (side) => (side === 'base' ? base : head));
-  const JSDOC = '/**\n * Adds.\n */\nfunction add() {}\n';
-  const REGEX_SLASH_STAR = 'x = s.replace(/\\/*$/, \'\');\n';
-  const REGEX_THEN_BLOCK = 'x = s.replace(/\\/*$/, \'\'); y = 2; /* c */\n';
-  const BOUNDARY_BASE = '/*a*/ x(); /*b*/\n';
-  const COMMENT_ONLY = [
-    ['a.js', JSDOC, '/**\n * Adds two.\n */\nfunction add() {}\n', 'a block-comment body edit'],
-    ['a.js', JSDOC, '/*\n * Adds.\n  */\nfunction add() {}\n', 'a block-comment opener and closer edit'],
-    ['a.js', 'f();\n', 'f();\n// n\n', 'an added whole-line `//` comment'],
-    ['a.js', 'f();\n', 'f(); // n\n', 'an added trailing `//` comment'],
-    ['a.js', 'f();\ng();\n', 'f();\n\ng();\n', 'a blank line outside a string'],
-    ['a.css', 'a { b: c }\n', '/* n */\na { b: c }\n', 'a css block comment'],
-    ['a.sh', 'echo 1\n', 'echo 1\n# n\n', 'an added `#` comment'],
-    ['a.sql', 'select 1;\n', 'select 1; -- n\n', 'an added `--` comment'],
-  ];
-  const CODE = [
-    ['a.js', `${REGEX_SLASH_STAR}run();\n`, `${REGEX_SLASH_STAR}run2();\n`, 'a code edit after a regex holding `\\/*` (reviewer combined-1 repro)'],
-    ['a.js', REGEX_THEN_BLOCK, REGEX_THEN_BLOCK.replace('y = 2', 'y = 3'), 'a code edit between a regex holding `\\/*` and a later block comment'],
-    ['a.js', 'x = /[/*]/;\nrun();\n', 'x = /[/*]/;\nrun2();\n', 'a code edit after a regex whose `/*` opens an unclosed block'],
-    ['a.kt', 'val s = """\n// x\n"""\nrun()\n', 'val s = """\n// y\n"""\nrun()\n', 'an edit of a `//` line inside a Kotlin multi-line string'],
-    ['a.kt', 'val s = """\n/* x\n"""\nrun()\n', 'val s = """\n/* x\n"""\nrun2()\n', 'a code edit after a Kotlin multi-line string holding an unclosed `/*`'],
-    ['a.js', BOUNDARY_BASE, '/*a x(); b*/\n', 'a comment-boundary shift that comments out unchanged code'],
-    ['a.js', 'const t = `a\nb`;\n', 'const t = `a\n\nb`;\n', 'a blank line added inside a template literal'],
-    ['a.py', 'd = """\n# a\n"""\n', 'd = """\n# b\n"""\n', 'a `#` line changed inside a Python triple-quoted string'],
-    ['a.sh', '#!/bin/sh\n', '#!/bin/bash\n', 'a shebang edit'],
-    ['a.scss', 'a { b: url(http://x/a.png) }\n', 'a { b: url(http://x/b.png) }\n', 'an edit after `http://` in code'],
-    ['a.css', 'a { b: c }\n', 'a { b: c }\n// x\n', 'a `//` line in css, which has no line comments'],
-    ['src/doc.js', LATCH_BASE_FILES['src/doc.js'], LATCH_BASE_FILES['src/doc.js'].replace('* b;', '* c;'), 'a `*`-led expression continuation outside a block comment'],
-    ['a.js', 'f();\n', 'f();\n// n\ng();\n', 'a comment added beside a code line'],
-    ['notes.xyz', 'one\n', 'one\n// only a comment\n', 'an unknown extension'],
-    ['a.js', null, '// n\n', 'an added file'],
-    ['a.js', 'f();\n', null, 'a deleted file'],
-    ['a.js', 'f();\n', 'f();\n', 'text identical on both sides'],
-  ];
-  const misjudged = [...COMMENT_ONLY.map((row) => [...row, true]), ...CODE.map((row) => [...row, false])].filter(([file, base, head, , expected]) => commentOnly(file, base, head) !== expected).map(([, , , what, expected]) => `${what} judged ${expected ? 'code' : 'comment-only'}`);
-  assert.deepStrictEqual(misjudged, [], 'AC-15: every change in the comment-only table is comment-only and every change in the code table counts as code');
-});
-
 test('sprint-035 AC-2: a trigger glob keeps * inside a path segment, lets ** cross segments and match no directory, takes a comma list and backtick-wrapped globs, and anchors on the whole path', () => {
   const matches = runtime.triggerMatches;
   assert.ok(matches('src/*.js', ['src/a.js']) && !matches('src/*.js', ['src/x/a.js']), 'AC-2: * never crosses a segment');
@@ -10674,6 +10628,345 @@ test('sprint-035 leftover-term check: no canon, README, AGENTS.md, runtime, hook
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...docs, ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a sentence this sprint removed (git diff main...HEAD), taken exactly - one surviving states the superseded rule as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
+});
+
+// ===========================================================================
+// Sprint 036: commit message file (AC-12), AI attribution (AC-15, AC-16), timing id reuse
+// (AC-7), liveness return files (AC-14), latch clear without the comment lexer (AC-9), and
+// the canon pins of the Codex sol 6.2 bump and the retro-intake workflow edits.
+// ===========================================================================
+
+/** A sandbox git repo whose `.asd/project/config.yaml` holds a `git:` group with an `ai_attribution` line of `value`, none when `value` is null. */
+function attributionRepo(value) {
+  const sandbox = sandboxGitRepo();
+  writeFile(sandbox.repo, '.asd/project/config.yaml', `git:\n  base_branch: main\n${value === null ? '' : `  ai_attribution: ${value}\n`}`);
+  return sandbox;
+}
+
+/** Runs `node .asd/runtime.js <args>` and returns `{status, stdout, stderr}`; a non-zero exit is data, never a throw. */
+function runtimeCliRun(args, options = {}) {
+  const { status, stdout, stderr } = spawnSync(process.execPath, [RUNTIME_JS, ...args], { encoding: 'utf8', ...options });
+  return { status, stdout, stderr };
+}
+
+/** Runs `commit-check --message-file` over `message` written to a fresh file, in the sandbox repo; returns the exit status, the parsed JSON report (null without stdout) and stderr. */
+function commitCheckMessage(sandbox, message) {
+  const file = path.join(mkTempDir(), 'check.commit-msg');
+  fs.writeFileSync(file, message, 'utf8');
+  const { status, stdout, stderr } = runtimeCliRun(['commit-check', '--message-file', file], { cwd: sandbox.repo, env: sandbox.env });
+  return { status, report: stdout === '' ? null : JSON.parse(stdout), stderr };
+}
+
+test('sprint-036 AC-12: commit-check --message-file reads the header from the first line, fails an ASD-Task line outside the last paragraph and names it, ignores trailing blank lines and CRLF, and takes exactly one of --subject and --message-file', () => {
+  const sandbox = attributionRepo(null);
+  const HEADER = 'feat(x): add y';
+  const TRAILERS = 'ASD-Task: Task 1\nASD-Task: D-2\nCo-Authored-By: Pair <pair@example.invalid>';
+  const report = (ok, misplaced, length = HEADER.length) => ({ ok, header: { length, max: 50 }, memory: [], misplaced });
+  const outcome = (message) => {
+    const { status, report: checked } = commitCheckMessage(sandbox, message);
+    return [status, checked];
+  };
+
+  assert.deepStrictEqual(outcome(`${HEADER}\n\nWhy.\n\n${TRAILERS}\n`), [0, report(true, [])], 'AC-12: every ASD-Task line in the final paragraph, beside a Co-Authored-By line, passes');
+  assert.deepStrictEqual(outcome(`${HEADER}\n`), [0, report(true, [])], 'AC-12: a message with no trailer has none misplaced');
+  assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line followed by a body paragraph fails the check and is named');
+  assert.deepStrictEqual(outcome(`${HEADER}\nASD-Task: Task 1\n\nBody.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line glued under the header is outside the last paragraph');
+  assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\n\n`), [0, report(true, [])], 'AC-12: trailing blank lines do not move the last paragraph');
+  assert.deepStrictEqual(outcome(`${HEADER}\r\n\r\nASD-Task: Task 1\r\n`), [0, report(true, [])], 'AC-12: a CRLF message measures its header without the carriage return and finds its last paragraph');
+  const longHeader = `feat(x): ${'y'.repeat(50)}`;
+  assert.deepStrictEqual(outcome(`${longHeader}\n\nASD-Task: Task 1\n`), [1, report(false, [], longHeader.length)], 'AC-12: the header limit applies to the message file\'s first line');
+
+  const file = path.join(mkTempDir(), 'both.commit-msg');
+  fs.writeFileSync(file, `${HEADER}\n`, 'utf8');
+  const refusals = [
+    ['both flags', ['commit-check', '--subject', HEADER, '--message-file', file]],
+    ['an empty message-file path', ['commit-check', '--message-file', '']],
+    ['neither flag', ['commit-check']],
+  ].map(([label, args]) => [label, runtimeCliRun(args, { cwd: sandbox.repo, env: sandbox.env })]);
+  assert.deepStrictEqual(refusals.map(([label, run]) => [label, run.status, run.stdout, /commit-check takes --subject/.test(run.stderr)]), refusals.map(([label]) => [label, 2, '', true]), 'AC-12: exactly one of --subject and --message-file, never both, neither or an empty path, and nothing is reported');
+});
+
+test('sprint-036 AC-16: under git.ai_attribution disabled commit-check fails a Claude or Codex Co-authored-by trailer in any key case and lists it, passes a human co-author, and reports no ai_attribution under enabled or an absent key', () => {
+  const CLAUDE = 'Co-authored-by: Claude <noreply@anthropic.com>';
+  const CODEX = 'CO-AUTHORED-BY: Codex <noreply@openai.com>';
+  const HUMAN = 'Co-Authored-By: Pair <pair@example.invalid>';
+  const message = (...trailers) => `feat(x): add y\n\nASD-Task: Task 1\n${trailers.join('\n')}\n`;
+  const disabled = attributionRepo('disabled');
+
+  const flagged = commitCheckMessage(disabled, message(CLAUDE, CODEX, HUMAN));
+  assert.deepStrictEqual([flagged.status, flagged.report.ok, flagged.report.ai_attribution, flagged.report.misplaced], [1, false, [CLAUDE, CODEX], []], 'AC-16: each Claude or Codex trailer is listed whatever its key case, a human co-author beside them is not, and the commit fails');
+  const human = commitCheckMessage(disabled, message(HUMAN));
+  assert.deepStrictEqual([human.status, human.report.ok, human.report.ai_attribution], [0, true, []], 'AC-16: a human Co-Authored-By passes under disabled');
+  for (const value of ['enabled', null]) {
+    const enabled = commitCheckMessage(attributionRepo(value), message(CLAUDE, CODEX));
+    assert.deepStrictEqual([enabled.status, enabled.report.ok, 'ai_attribution' in enabled.report], [0, true, false], `AC-16: ai_attribution ${value === null ? 'absent' : value} rejects nothing and adds no report field`);
+  }
+});
+
+test('sprint-036 AC-15: readAiAttribution reads disabled only from exactly one ai_attribution: disabled line of the git group, comments and CRLF included, and every other shape reads enabled', () => {
+  const cases = [
+    ['an absent config file', null, 'enabled'],
+    ['no git group', 'language:\n  chat: en\n', 'enabled'],
+    ['the value disabled', 'git:\n  ai_attribution: disabled\n', 'disabled'],
+    ['a trailing comment on the line', 'git:\n  ai_attribution: disabled # why\n', 'disabled'],
+    ['a trailing comment on the group line', 'git: # c\n  ai_attribution: disabled\n', 'disabled'],
+    ['CRLF line endings', 'git:\r\n  base_branch: main\r\n  ai_attribution: disabled\r\n', 'disabled'],
+    ['a blank line and a comment before the key', 'git:\n  base_branch: main\n\n  # note\n  ai_attribution: disabled\n', 'disabled'],
+    ['the value enabled', 'git:\n  ai_attribution: enabled\n', 'enabled'],
+    ['a key of another group before git', 'project:\n  ai_attribution: disabled\ngit:\n  base_branch: main\n', 'enabled'],
+    ['a key of a group after git', 'git:\n  base_branch: main\nlanguage:\n  ai_attribution: disabled\n', 'enabled'],
+    ['a top-level key', 'ai_attribution: disabled\n', 'enabled'],
+    ['a commented key', 'git:\n  # ai_attribution: disabled\n', 'enabled'],
+    ['a duplicate line', 'git:\n  ai_attribution: disabled\n  ai_attribution: disabled\n', 'enabled'],
+    ['conflicting duplicate lines', 'git:\n  ai_attribution: disabled\n  ai_attribution: enabled\n', 'enabled'],
+    ['another letter case of the value', 'git:\n  ai_attribution: Disabled\n', 'enabled'],
+    ['a quoted value', 'git:\n  ai_attribution: "disabled"\n', 'enabled'],
+  ];
+  const read = (config) => {
+    const root = mkTempDir();
+    if (config !== null) writeFile(root, '.asd/project/config.yaml', config);
+    return sync.readAiAttribution(root);
+  };
+  assert.deepStrictEqual(cases.map(([label, config]) => [label, read(config)]), cases.map(([label, , expected]) => [label, expected]), 'AC-15: a missing, malformed or ambiguous config never turns attribution off');
+});
+
+test('sprint-036 AC-16: attribution-check is silent under enabled or an absent key; under disabled it resets each re-enabling entry of .claude/settings.json and settings.local.json keeping every other key and the indentation, reports one line per fix, leaves a malformed or non-object file untouched with a stderr warning, and prints the Codex hint only when .codex/ exists', () => {
+  const REENABLING = { attribution: { commit: 'Co-authored-by: Claude <noreply@anthropic.com>', pr: 'Generated with Claude Code' }, includeCoAuthoredBy: true, permissions: { allow: ['Bash(git *)'] }, model: 'opus' };
+  const textOf = (settings) => `${JSON.stringify(settings, null, 4)}\n`;
+  const run = (sandbox) => runtimeCliRun(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
+  const readFrom = (sandbox, rel) => fs.readFileSync(path.join(sandbox.repo, rel), 'utf8');
+
+  for (const value of ['enabled', null]) {
+    const quiet = attributionRepo(value);
+    writeFile(quiet.repo, '.claude/settings.json', textOf(REENABLING));
+    writeFile(quiet.repo, '.codex/config.toml', '');
+    const outcome = run(quiet);
+    assert.deepStrictEqual([outcome.status, outcome.stdout, outcome.stderr, readFrom(quiet, '.claude/settings.json')], [0, '', '', textOf(REENABLING)], `AC-16: ai_attribution ${value === null ? 'absent' : value} prints nothing, warns of nothing and rewrites nothing, a Codex view and a re-enabling entry notwithstanding`);
+  }
+
+  const sandbox = attributionRepo('disabled');
+  writeFile(sandbox.repo, '.claude/settings.json', textOf(REENABLING));
+  writeFile(sandbox.repo, '.claude/settings.local.json', textOf({ includeCoAuthoredBy: true, env: { KEEP: '1' } }));
+  const first = run(sandbox);
+  assert.deepStrictEqual([first.status, first.stdout.trimEnd().split('\n'), first.stderr], [0, [
+    'attribution: .claude/settings.json: attribution.commit reset to ""',
+    'attribution: .claude/settings.json: attribution.pr reset to ""',
+    'attribution: .claude/settings.json: includeCoAuthoredBy set to false',
+    'attribution: .claude/settings.local.json: includeCoAuthoredBy set to false',
+  ], ''], 'AC-16: one line per fix, project settings first and local settings second, and no Codex hint without a .codex/ directory');
+  assert.strictEqual(readFrom(sandbox, '.claude/settings.json'), textOf({ ...REENABLING, attribution: { commit: '', pr: '' }, includeCoAuthoredBy: false }), 'AC-16: only the re-enabling values change - reset, not deleted - and every other key, its order and the 4-space indentation stay');
+  assert.strictEqual(readFrom(sandbox, '.claude/settings.local.json'), textOf({ includeCoAuthoredBy: false, env: { KEEP: '1' } }), 'AC-16: the local settings file is cleaned the same way');
+  assert.strictEqual(run(sandbox).stdout, '', 'AC-16: a second run finds nothing to fix and prints nothing');
+
+  const broken = attributionRepo('disabled');
+  writeFile(broken.repo, '.claude/settings.json', textOf(REENABLING));
+  writeFile(broken.repo, '.claude/settings.local.json', '{ not json');
+  const malformed = run(broken);
+  assert.deepStrictEqual([malformed.status, /settings\.local\.json is not valid JSON, left untouched/.test(malformed.stderr), /attribution\.commit reset/.test(malformed.stdout), readFrom(broken, '.claude/settings.local.json')], [0, true, true, '{ not json'], 'AC-16: a malformed file is left untouched with a warning and the other file is still fixed');
+  writeFile(broken.repo, '.claude/settings.local.json', '[]');
+  const nonObject = run(broken);
+  assert.deepStrictEqual([nonObject.status, /settings\.local\.json is not a JSON object, left untouched/.test(nonObject.stderr), readFrom(broken, '.claude/settings.local.json')], [0, true, '[]'], 'AC-16: a JSON document that is no object is left untouched with a warning');
+
+  const codex = attributionRepo('disabled');
+  writeFile(codex.repo, '.codex/config.toml', '');
+  const hint = run(codex);
+  assert.ok(hint.status === 0 && /^codex: .*workspace setting/.test(hint.stdout) && hint.stdout.trimEnd().split('\n').length === 1, `AC-16: a Codex view alone gets exactly the one-line workspace-setting hint (got ${JSON.stringify(hint)})`);
+});
+
+test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "pr": ""} in .claude/settings.json only under git.ai_attribution disabled - stale until applied, then current - leaves the file byte-identical under enabled or an absent key, and replaces a re-enabling value without touching its neighbours', () => {
+  const settingsRel = '.claude/settings.json';
+  const root = makeMiniRepo();
+  const settingsPath = path.join(root, '.claude', 'settings.json');
+  const configure = (value) => writeFile(root, '.asd/project/config.yaml', `git:\n  ai_attribution: ${value}\n`);
+  const statusOf = () => sync.runCheck(root).find((item) => item.target === settingsRel).status;
+  const read = () => fs.readFileSync(settingsPath, 'utf8');
+
+  sync.runApply(root, [settingsRel]);
+  const baseline = read();
+  assert.strictEqual('attribution' in JSON.parse(baseline), false, 'AC-15: an absent key adds no attribution');
+  configure('enabled');
+  sync.runApply(root, [settingsRel]);
+  assert.deepStrictEqual([statusOf(), read()], ['current', baseline], 'AC-15: enabled leaves .claude/settings.json byte-identical');
+
+  configure('disabled');
+  assert.strictEqual(statusOf(), 'stale', 'AC-15: the carried key is part of what current means');
+  sync.runApply(root, [settingsRel]);
+  const carried = JSON.parse(read());
+  assert.deepStrictEqual([carried.attribution, carried.hooks, statusOf()], [{ commit: '', pr: '' }, JSON.parse(baseline).hooks, 'current'], 'AC-15: disabled adds the attribution key, the owned hooks stay and the file reads current');
+  const applied = read();
+  sync.runApply(root, [settingsRel]);
+  assert.strictEqual(read(), applied, 'AC-15: a second apply writes nothing');
+  configure('enabled');
+  sync.runApply(root, [settingsRel]);
+  assert.deepStrictEqual([read(), statusOf()], [applied, 'current'], 'AC-15: flipping back to enabled adds nothing and never removes the carried key');
+
+  const target = path.join(mkTempDir(), 'settings.json');
+  const raw = ['{', '    "permissions": {"allow": ["Bash(git *)"]},', '    "attribution": {"commit": "x", "pr": "y"},', '    "model":   "opus"', '}', ''].join('\n');
+  fs.writeFileSync(target, raw, 'utf8');
+  const rendered = sync.renderJsonMerge(target, ['hooks', 'SessionStart'], demoAsdEntries(), { attribution: { commit: '', pr: '' } });
+  assert.deepStrictEqual([JSON.parse(rendered).attribution, rendered.includes('    "permissions": {"allow": ["Bash(git *)"]},\n'), rendered.includes('    "model":   "opus"')], [{ commit: '', pr: '' }, true, true], 'AC-15: a re-enabling attribution value is replaced in place and its neighbours keep their exact bytes');
+});
+
+test('sprint-036 AC-15 (D-1): a json-merge re-render that only adds the owned attribution key keeps the owned hooks array as it was indented - the file reads as JSON.stringify with two spaces writes it', () => {
+  const settingsRel = '.claude/settings.json';
+  const root = makeMiniRepo();
+  const settingsPath = path.join(root, '.claude', 'settings.json');
+
+  sync.runApply(root, [settingsRel]);
+  const before = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
+  sync.runApply(root, [settingsRel]);
+
+  assert.strictEqual(fs.readFileSync(settingsPath, 'utf8'), `${JSON.stringify({ ...before, attribution: { commit: '', pr: '' } }, null, 2)}\n`, 'AC-15: adding the attribution key must not re-indent the hooks.SessionStart array it did not change');
+});
+
+test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, appends nothing and warns with the next free #<n>, a repeat op takes that id, the task_routing lookup strips the #<n>, and a flag given twice warns on stderr with the last value winning', () => {
+  const dir = mkTempDir();
+  const ledger = path.join(dir, 'timing.jsonl');
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: { 'Task 1': { tier: 'standard', resolved_model: 'routed-model' } } }));
+  const timing = (args) => {
+    const outcome = runtimeCliRun(['timing', '--ledger', ledger, ...args]);
+    assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
+    return outcome;
+  };
+  const ledgerText = () => fs.readFileSync(ledger, 'utf8');
+
+  timing(['--create', '--open', 'impl', '--kind', 'phase']);
+  timing(['--open', 'Task 1', '--kind', 'dispatch']);
+  let before = ledgerText();
+  const whileOpen = timing(['--open', 'Task 1', '--kind', 'dispatch']);
+  assert.deepStrictEqual([ledgerText(), /next free id Task 1#2/.test(whileOpen.stderr)], [before, true], 'AC-7: an open of an id still open appends nothing and names the next free id');
+  timing(['--close', 'Task 1']);
+  before = ledgerText();
+  const afterClose = timing(['--open', 'Task 1', '--kind', 'dispatch']);
+  assert.deepStrictEqual([ledgerText(), /next free id Task 1#2/.test(afterClose.stderr)], [before, true], 'AC-7: an open of a closed id appends nothing either - a closed id is never reopened');
+
+  timing(['--open', 'Task 1#2', '--kind', 'dispatch']);
+  const repeat = ledgerLines(ledgerText()).pop();
+  assert.deepStrictEqual([repeat.id, repeat.attrs], ['Task 1#2', { tier: 'standard', model: 'routed-model' }], 'AC-7: the repeat op opens under the suggested id and its attrs fill from the Task 1 routing entry, the #<n> stripped for the lookup');
+  before = ledgerText();
+  const third = timing(['--open', 'Task 1#2', '--kind', 'dispatch']);
+  assert.deepStrictEqual([ledgerText(), /next free id Task 1#3/.test(third.stderr)], [before, true], 'AC-7: with #2 held too the next free id is #3');
+
+  const twice = timing(['--open', 'Task 2', '--kind', 'dispatch', '--attrs', 'agent=asd-dev', '--attrs', 'agent=asd-tester']);
+  assert.deepStrictEqual([/flag --attrs given more than once, the last value wins/.test(twice.stderr), ledgerLines(ledgerText()).pop().attrs.agent], [true, 'asd-tester'], 'AC-7: a repeated flag warns and the last value still wins');
+  const once = timing(['--open', 'Task 3', '--kind', 'dispatch', '--attrs', 'agent=asd-dev']);
+  assert.ok(!/more than once/.test(once.stderr), 'AC-7: a flag given once warns of nothing');
+});
+
+test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return file passes the persist-review checks as done, without a transcript and silently, and leaves an agent whose return file is missing, interrupted or checked against a missing manifest, or whose returns file is unparseable, to the transcript verdict', () => {
+  const root = mkTempDir();
+  const scope = path.join(root, 'scope.txt');
+  fs.writeFileSync(scope, 'src/a.md\n', 'utf8');
+  runtimeCli(['emit-manifest', '--reviewer', 'quality', '--phase', 'impl-review', '--files', scope, '--out', root], { stdio: 'pipe' });
+  const manifestPath = path.join(root, 'quality.manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const ledger = {
+    manifest_digest: manifest.digest,
+    findings: [],
+    files: manifest.files.map((i) => ({ i, s: vocabulary.files[0] })),
+    rules: manifest.rules.map((i) => (manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
+    sections: manifest.sections.map((i) => ({ i, s: vocabulary.sections[0] })),
+  };
+  const valid = path.join(root, 'valid.md');
+  fs.writeFileSync(valid, `[REVIEW-impl-quality]: APPROVE\n\n# Review - quality\n\n## Findings\n\n| # | Severity | Location | Description | Suggested fix |\n|---|---|---|---|---|\n\n## Coverage\n\n\`\`\`json\n${JSON.stringify(ledger)}\n\`\`\`\n`, 'utf8');
+  const interrupted = path.join(root, 'interrupted.md');
+  fs.writeFileSync(interrupted, 'I ran out of turns before the ledger.\n', 'utf8');
+  const returns = path.join(root, 'returns.json');
+  fs.writeFileSync(returns, JSON.stringify({
+    a1: { return: valid, manifest: manifestPath },
+    b2: { return: interrupted, manifest: manifestPath },
+    c3: { return: path.join(root, 'absent.md'), manifest: manifestPath },
+    d4: { return: valid, manifest: path.join(root, 'absent.manifest.json') },
+  }), 'utf8');
+
+  const configDir = mkTempDir();
+  const subagents = path.join(configDir, 'projects', 'project', 'session', 'subagents');
+  fs.mkdirSync(subagents, { recursive: true });
+  const idle = `${JSON.stringify({ type: 'user', timestamp: '2026-09-29T12:00:00.000Z', message: { role: 'user', content: [{ type: 'text', text: 'task' }] } })}\n`;
+  ['b2', 'c3', 'd4'].forEach((id) => fs.writeFileSync(path.join(subagents, `agent-${id}.jsonl`), idle, 'utf8'));
+  const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
+  const watch = (agents, returnsFile) => runtimeCliRun(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
+
+  const withReturns = watch('a1,b2,c3,d4', returns);
+  assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - while an interrupted, missing or manifest-less return changes nothing');
+
+  const unparseable = path.join(root, 'unparseable.json');
+  fs.writeFileSync(unparseable, '{ not json', 'utf8');
+  const ignored = watch('b2', unparseable);
+  assert.deepStrictEqual([ignored.status, ignored.stdout], [0, 'STALL b2 no-progress\n'], 'AC-14: an unparseable returns file changes nothing');
+});
+
+test('sprint-036 AC-9: latch-refresh counts a comment-only, blank-only or doc-block change to a production file like any code change, clearing the latch of each reviewer whose manifest listed it', () => {
+  const [quality] = runtime.INTERNAL_REVIEWERS;
+  const clearsFor = (rel, text) => latchScenario({ change: { [rel]: text }, manifests: { [quality]: [rel] }, latched: { [quality]: 1 } }).outcome.result.cleared;
+  const changes = [
+    ['an added comment line and a blank line', 'src/a.js', 'const a = 1;\n// note\n\n'],
+    ['an added blank line only', 'src/a.js', 'const a = 1;\n\n'],
+    ['an edited doc-block body', 'src/doc.js', LATCH_BASE_FILES['src/doc.js'].replace('Adds.', 'Adds two numbers.')],
+    ['a hash-family comment', 'src/c.py', 'c = 1\n# note\n'],
+    ['an unknown extension', 'notes.xyz', 'one\n// only a comment\n'],
+  ];
+  assert.deepStrictEqual(changes.map(([what, rel, text]) => [what, clearsFor(rel, text)]), changes.map(([what]) => [what, [quality]]), 'AC-9: no change to a production executable file keeps the latch, a comment or blank line included');
+});
+
+test('sprint-036 AC-1/AC-3: the sol family maps to gpt-6.2-sol with luna unchanged, and the README paragraph naming the concrete Codex ids states the 0.167.0 minimum and the model_not_found refusal an older client gets', () => {
+  const { codex } = loadManifest().model_families;
+  assert.deepStrictEqual([codex.sol, codex.luna], ['gpt-6.2-sol', 'gpt-6-luna'], 'AC-1: only the sol family moved');
+  const paragraph = canonText('README.md').split('\n').find((line) => line.includes('Codex CLI 0.167.0 or later')) || '';
+  assert.ok(paragraph.includes('gpt-6.2-sol') && paragraph.includes('model_not_found'), 'AC-3: the README paragraph names gpt-6.2-sol, Codex CLI 0.167.0 or later and the model_not_found refusal together');
+});
+
+test('sprint-036 AC-8/AC-10/AC-11/AC-13: the refuse-to-implement rule covers every command a diff newly invokes and asd-dev cites it, scope step 3a checks the disabled documents against the scope and offers a Settings change line, and plan step 4 runs the build once and fills Decision coverage', () => {
+  const rule = sectionOf('.asd/rules/artifact-layout.md', 'Tech reference docs');
+  assert.ok(rule.includes('every command or subcommand the diff newly invokes') && rule.includes('tech-reference missing for <tech>@<version>` (command: `<command>`)'), 'AC-8: the rule names every command or subcommand a diff newly invokes and the FAILED line carries the command');
+  const dev = canonText('.asd/agents/asd-dev.md');
+  assert.ok(dev.includes('command or subcommand the diff newly invokes') && dev.includes('`artifact-layout.md` "Tech reference docs"'), 'AC-8: asd-dev checks each such command against the tech reference, citing the rule\'s home');
+
+  const scope = sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps');
+  assert.ok(stepOf(scope, '3a').includes('`Settings change:`') && stepOf(scope, '4').includes('step 3a'), 'AC-10: step 3a offers a Settings change line for a needed disabled document and step 4 shows what step 3a found at the gate');
+
+  const planStep = stepOf(sectionOf('.asd/workflows/asd-phase-plan.md', 'Steps'), '4');
+  assert.ok(planStep.includes('`commands.yaml` `build`') && planStep.includes('`FAILED`') && planStep.includes('`## Decision coverage`'), 'AC-11/AC-13: plan step 4 runs the build once, stops with FAILED and fills Decision coverage');
+  const template = canonText('.asd/templates/t_plan.md');
+  assert.ok(template.includes('\n## Decision coverage\n') && template.includes('| Decision | Covered by |'), 'AC-13: the plan template carries the Decision coverage table');
+});
+
+test('sprint-036 AC-6/AC-15/AC-16: pr open mode lists External Review availability skips and keeps AI attribution out of the body, the template carries the skip section, the commits rule names the rejection, and asd-sprint, asd-init, the config template and the README carry the attribution setting', () => {
+  const prStep = stepOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), '2');
+  assert.ok(prStep.includes('APPROVE (skipped: …)') && prStep.includes('`Unreviewed files`') && prStep.includes('"External Review skipped"'), 'AC-6: pr open mode step 2 lists each skipped wave with its unreviewed files under the template\'s section');
+  assert.ok(prStep.includes('`git.ai_attribution: disabled`'), 'AC-16: pr open mode step 2 keeps AI attribution out of the body under disabled');
+  assert.ok(canonText('.asd/templates/t_pr-description.md').includes('\n## External Review skipped'), 'AC-6: the PR template carries the External Review skipped section');
+  const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
+  assert.ok(commits.includes('`git.ai_attribution: disabled`') && commits.includes('`commit-check` rejects'), 'AC-16: "Commits" states the commit-check rejection once, under disabled');
+  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('node .asd/runtime.js attribution-check'), 'AC-16: asd-sprint runs the attribution check');
+  assert.ok(canonText('.asd/skills/asd-init/SKILL.md').includes('`git.ai_attribution`'), 'AC-15: asd-init edits the key');
+  assert.ok(/^ {2}ai_attribution: enabled$/m.test(canonText('.asd/templates/t_config.yaml')) && canonText('README.md').includes('ai_attribution: enabled'), 'AC-15: the config template ships the key enabled and the README config schema lists it');
+});
+
+test('sprint-036 AC-7/AC-12/AC-14: providers.md passes --returns for reviewer dispatches and the README runtime list names agent-liveness --returns and the commit-check message-file form', () => {
+  assert.ok(subOf(canonText('.asd/rules/providers.md'), 'Agent liveness per host').includes('--returns <json>'), 'AC-14: the Claude Code wake-up bullet passes --returns for a reviewer dispatch');
+  const readme = canonText('README.md');
+  assert.ok(readme.includes('[--returns <json>]') && readme.includes('commit-check --message-file <file> -- <paths>'), 'AC-12/AC-14: the README runtime command list carries both forms');
+});
+
+test('sprint-036 leftover-term check: no canon, README, AGENTS.md, runtime, hook, docs, generated view, manifest or agent-memory line keeps a sentence or name this sprint removed - the comment-only latch exception and its lexer, the --subject one-command commit form, gpt-6.1-sol', () => {
+  const removed = [
+    'a hunk of only blank or comment lines does not count',
+    'isCommentOnlyChange',
+    'projectExecutable',
+    'COMMENT_LEXERS',
+    'commit-check --subject "<header>" -- <paths> && git commit --only -m "<header>" [-m "<body>"]',
+    'gpt-6.1-sol',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const docs = fs.readdirSync(path.join(REPO_ROOT, 'docs'), { recursive: true }).map((entry) => `docs/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  const views = ['.codex/agents', '.claude/agents'].flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, dir)).map((name) => `${dir}/${name}`)).filter((rel) => fs.statSync(path.join(REPO_ROOT, rel)).isFile());
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/sync.js', '.asd/release-manifest.json', 'tests/fixtures/expected/agents/demo-agent.codex.toml', ...docs, ...views, ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each entry is a sentence or name this sprint removed (git diff main...HEAD), taken exactly - one surviving states the superseded rule as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
 });
 
 // ===========================================================================
