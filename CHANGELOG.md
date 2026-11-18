@@ -2,6 +2,28 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.9.0
+
+Quality gates and CI cost: context-size ceilings, a `checks` gate at impl, gap-proof test admission with a line delta, due accepted-debt stubs and open PRs at scope, and a suite-revision mode.
+
+### Added
+- **Context ceilings** (AC-1, AC-2): `node .asd/runtime.js context-check` fails when a role/phase bundle or a project rules file exceeds its byte ceiling in `.asd/project/context-ceilings.json`; `--seed [--bundles] [--headroom <percent>]` writes the file. `/asd-init` seeds it and adds `checks.context`. Every `dispatch` timing op records its `context_bytes`, and `timing-summary` reports the total and per-agent bytes.
+- **`checks` gate** (AC-21): an optional `checks` map in `commands.yaml`, each entry run at the impl completion gate after build and lint; a non-zero exit fails it. The ASD repo runs `checks.agnix` (agnix 0.61.0, strict) over the generated views every sprint.
+- **Test line delta** (AC-3): `test-delta --base <ref>` counts the sprint's test versus other lines (`test_paths` in `commands.yaml`, filled by `/asd-init` from the detected layout); `impl-test-close --green --base <ref>` records `Line delta` in `Suite run` and refuses a surplus of added test lines with no `Allowance`.
+- **Test admission** (AC-13, AC-14, AC-15, AC-19): a test is added only with a recorded gap proof (`impl-test-close` refuses a row without one); a reviewer finding asking for a test names the failure mode and the tests checked; the regression duty covers behaviour defects code can reproduce; a one-time sweep test is named `temporary(<NNN>)` and the next sprint removes it.
+- **Suite revision** (AC-17, AC-18): a tester mode, run when a sprint's scope asks for it, that dedupes, speeds up and splits a suite area by area with a resumable ledger in `test-plan.md`. Retro proposes one when the full suite exceeds 1.5 times its baseline median or a sprint needed an `Allowance`.
+- **Slowest tests** (AC-16): `test_durations` in `commands.yaml` names the duration-reporting test form; the full-suite run records the ten slowest tests, and `timing-summary` reports `suite_full`.
+- **Due stubs and open PRs at scope** (AC-5, AC-12): an `(accepted-debt)` stub carries a validated review date (`stubs-due`); scope puts each due stub (renew or fix) and every open PR (merge, include, close or defer, none by default) to you; the PR phase closes included PRs.
+- **Gate-class gaps in `/asd-init`** (AC-8): names an absent lint/format or type-check gate class with the dev-quality-gates adoption path; installs nothing.
+
+### Changed
+- **Check bans** (AC-4, AC-9): disabling, skipping or downgrading a check, or adding a suppression to pass a change, is forbidden short of a quality-waiver `QUESTION`; a sprint adding or changing a deterministic check records one seeded-violation run exiting non-zero.
+- **Retro** (AC-6, AC-7): a guardrail a command can decide takes a check as Home; a terminal full-suite failure outside the last impacted run's scope is a friction entry naming the selection miss.
+- **`retro-candidates`** (AC-11) reads a section with no table as zero rows.
+
+### Fixed
+- **Codex `sandbox_mode`**: the per-agent key never took effect, since a Codex subagent inherits the parent sandbox. It is removed from every agent file; a reviewer's or scout's read-only on Codex is policy-bound, and External Review's wrapped CLI keeps `--sandbox read-only`.
+
 ## v14.8.0
 
 Codex `sol` moves to `gpt-6.2-sol`, a new `git.ai_attribution` switch keeps Claude and Codex attribution out of commits and PRs, and a batch of retro-intake fixes to scope, plan, commits, timing and review bookkeeping.
