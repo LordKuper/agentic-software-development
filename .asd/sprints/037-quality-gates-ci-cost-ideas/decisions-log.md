@@ -125,3 +125,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#10: standard, dispatch HEAD d0ff075b
 - 2026-11-18 — impl-test: impacted set green (195/195, 8 areas), 0/0 tests
 - 2026-11-18 — impl-review wave-1/iter-08: combined latched (APPROVE iter-06), external CONCERNS (1, critical: Entry log/Suite run close refusals lack a repair route) → cap-accept per the user's iter-07 answer ("Если iter-08 снова сузится — принять"); external 1 carried to retro. Memory-fix: external-review memory iteration tokens → asd-external-review (uncommitted run edit).
+- 2026-11-18 — route impl-review full suite: runner, dispatch HEAD 9cf39b68
+- 2026-11-18 — impl-review DoD met: wave-1 roster met (combined APPROVE latched iter-06; external cap-accept iter-08), terminal full suite green (311/311, HEAD 9cf39b68, 39.4 s) → design-promote
