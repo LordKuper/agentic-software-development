@@ -128,3 +128,4 @@
 {"op":"close","id":"suite-impl-test-5","kind":"suite","parent":"impl-test-5","start":"2026-11-18T12:02:44.983Z","end":"2026-11-18T12:03:19.966Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-test-5","kind":"dispatch","parent":"impl-test#5","start":"2026-11-18T12:00:54.942Z","end":"2026-11-18T12:04:23.245Z","outcome":"done","attrs":{"context_bytes":81693}}
 {"op":"close","id":"impl-test#5","kind":"phase","parent":null,"start":"2026-11-18T12:00:54.769Z","end":"2026-11-18T12:04:23.526Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-11-18T12:04:23.871Z","attrs":{}}
