@@ -58,3 +58,12 @@
 {"op":"close","id":"suite impl-test#3","kind":"suite","parent":"impl-test entry 1","start":"2026-11-18T10:09:54.077Z","end":"2026-11-18T10:10:58.489Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-test entry 1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T09:56:07.488Z","end":"2026-11-18T10:11:37.501Z","outcome":"done","attrs":{"context_bytes":81319}}
 {"op":"open","id":"suite revision 1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:14:21.800Z","attrs":{"context_bytes":81365}}
+{"op":"open","id":"suite impl-test#4","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:27:59.530Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#4","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:27:59.530Z","end":"2026-11-18T10:29:21.938Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"open","id":"suite impl-test#5","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:39:35.622Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#5","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:39:35.622Z","end":"2026-11-18T10:40:44.566Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"open","id":"suite impl-test#6","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:42:16.169Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#6","kind":"suite","parent":"suite revision 1","start":"2026-11-18T10:42:16.169Z","end":"2026-11-18T10:43:27.237Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"suite revision 1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:14:21.800Z","end":"2026-11-18T10:44:25.275Z","outcome":"done","attrs":{"context_bytes":81365}}
+{"op":"open","id":"suite revision 2","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.503Z","attrs":{"context_bytes":81365}}
+{"op":"open","id":"suite revision 3","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.664Z","attrs":{"context_bytes":81365}}

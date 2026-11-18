@@ -76,3 +76,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: `asd-init` grew 1 300 B carrying AC-3, AC-8 and AC-16, all accepted scope; the AC-4 rule makes a raised cap a quality waiver.
 - **Affected docs**: tests/run.js, test-plan.md
 - 2026-11-18 — route suite revision 1: standard, dispatch HEAD 239450d9
+- 2026-11-18 — route suite revision 2: standard, dispatch HEAD 983ec5e0
+- 2026-11-18 — route suite revision 3: standard, dispatch HEAD 983ec5e0
