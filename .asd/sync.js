@@ -630,14 +630,17 @@ function scanJsonContainerEnd(text, i, closeCh) {
   return j + 1; // closing bracket
 }
 
-// Finds { keyStart, valueStart, valueEnd } for `key` inside the JSON OBJECT
-// whose opening `{` is at text[objStart]. Returns null if not present at
-// this object's own top level (caller falls back to structural insert -
-// nothing to byte-preserve at a location that doesn't exist yet).
+// Finds { keyStrStart, valueStart, valueEnd } for `key` inside the JSON OBJECT
+// whose opening `{` is at text[objStart]. A repeated key resolves to its last
+// occurrence, the one JSON.parse reads, so an edit lands on the effective
+// value. Returns null if not present at this object's own top level (caller
+// falls back to structural insert - nothing to byte-preserve at a location
+// that doesn't exist yet).
 function findObjectKeySpan(text, objStart, key) {
   if (text[objStart] !== '{') return null;
   let j = skipJsonWs(text, objStart + 1);
   if (text[j] === '}') return null; // empty object
+  let found = null;
   for (;;) {
     const keyStrStart = j;
     const keyStrEnd = scanJsonString(text, j);
@@ -646,12 +649,12 @@ function findObjectKeySpan(text, objStart, key) {
     j++; // ':'
     const valueStart = skipJsonWs(text, j);
     const valueEnd = scanJsonValueEnd(text, valueStart);
-    if (keyName === key) return { keyStrStart, valueStart, valueEnd };
+    if (keyName === key) found = { keyStrStart, valueStart, valueEnd };
     j = skipJsonWs(text, valueEnd);
     if (text[j] === ',') { j = skipJsonWs(text, j + 1); continue; }
     break;
   }
-  return null;
+  return found;
 }
 
 // Walks ownedPathArr from the document root, returning the FINAL segment's
@@ -719,15 +722,22 @@ function insertKeyIntoObject(text, objStart, key, valueText) {
   return text.slice(0, closeIdx) + insertion + text.slice(closeIdx);
 }
 
-// Top-level keys a json-merge item owns beside its owned array (an object of
-// key -> value), empty for an item that owns none. Never part of the sync-state
-// digest: that stays the owned array's alone, so adding or dropping a key
-// never reads as a hand edit of the hooks.
-function ownedKeysMatch(parsed, ownedKeys) {
-  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]));
+// The value ASD owns at `.claude/settings.json`'s top-level `attribution`
+// under `git.ai_attribution: disabled`: Claude Code's own attribution off.
+const ATTRIBUTION_OFF = { commit: '', pr: '' };
+
+// Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
+// (key -> value) must hold that value, `releasedKeys` (key -> owned value)
+// must not hold it, a different value there being the user's own. Both empty
+// for an item that owns none. Never part of the sync-state digest: that stays
+// the owned array's alone, so adding or dropping a key never reads as a hand
+// edit of the hooks.
+function ownedKeysMatch(parsed, ownedKeys, releasedKeys) {
+  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
+    && Object.keys(releasedKeys).every((key) => stableStringify(parsed[key]) !== stableStringify(releasedKeys[key]));
 }
 
-function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState, ownedKeys = {}) {
+function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState, ownedKeys = {}, releasedKeys = {}) {
   if (!fs.existsSync(targetPath)) return 'missing';
   if (isSymlink(targetPath)) return 'foreign';
   const text = readNormalized(targetPath);
@@ -747,7 +757,7 @@ function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries,
   }
   if (stateEntry.content_digest !== digestTag(stableStringify(ownedEntries))) return 'modified-foreign';
   const expectedDigest = sha256Hex(stableStringify(renderedOwnedEntries));
-  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys) ? 'current' : 'stale';
+  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, releasedKeys) ? 'current' : 'stale';
 }
 
 // Indents every line after the first by `pad`, so a multi-line
@@ -770,18 +780,30 @@ function indentContinuationLines(text, pad) {
 // membership changes - preserving "the byte layout of a container" while
 // changing which elements it holds isn't a preservation gap, it's logically
 // impossible; every individual foreign VALUE is what's actually preserved.
-function renderJsonMerge(targetPath, ownedPathArr, renderedOwnedEntries, ownedKeys = {}) {
+function renderJsonMerge(targetPath, ownedPathArr, renderedOwnedEntries, ownedKeys = {}, releasedKeys = {}) {
   const withArray = renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries);
-  return Object.keys(ownedKeys).reduce((text, key) => spliceTopLevelKey(text, key, ownedKeys[key]), withArray);
+  const withKeys = Object.keys(ownedKeys).reduce((text, key) => spliceTopLevelKey(text, key, ownedKeys[key]), withArray);
+  return Object.keys(releasedKeys).reduce((text, key) => releaseTopLevelKey(text, key, releasedKeys[key]), withKeys);
+}
+
+// The indent of the root object's first member line, so a spliced member
+// lines up with its siblings and its own nesting reuses that indent as its
+// unit; two spaces when the object is empty or compact.
+function rootMemberPad(body, rootStart) {
+  const first = skipJsonWs(body, rootStart + 1);
+  const gap = body.slice(rootStart + 1, first);
+  return (body[first] === '}' || !gap.includes('\n') ? '' : gap.slice(gap.lastIndexOf('\n') + 1)) || '  ';
 }
 
 // Sets one top-level key of a rendered JSON document: replaces its value span,
-// or appends the key after the last member. A BOM and every other byte stay.
+// or appends the key after the last member at the document's member indent. A
+// BOM and every other byte stay.
 function spliceTopLevelKey(text, key, value) {
   const hasBom = text.charCodeAt(0) === 0xfeff;
   const body = hasBom ? text.slice(1) : text;
   const rootStart = skipJsonWs(body, 0);
-  const valueText = indentContinuationLines(JSON.stringify(value, null, 2), '  ');
+  const pad = rootMemberPad(body, rootStart);
+  const valueText = indentContinuationLines(JSON.stringify(value, null, pad), pad);
   const member = JSON.stringify(key) + ': ' + valueText;
   const span = findObjectKeySpan(body, rootStart, key);
   const closeIdx = scanJsonContainerEnd(body, rootStart, '}') - 1;
@@ -790,11 +812,34 @@ function spliceTopLevelKey(text, key, value) {
   const next = span
     ? body.slice(0, span.valueStart) + valueText + body.slice(span.valueEnd)
     : isEmpty
-      ? body.slice(0, rootStart + 1) + '\n  ' + member + '\n' + body.slice(closeIdx)
-      : body.slice(0, lastMemberEnd) + ',\n  ' + member + body.slice(lastMemberEnd);
+      ? body.slice(0, rootStart + 1) + '\n' + pad + member + '\n' + body.slice(closeIdx)
+      : body.slice(0, lastMemberEnd) + ',\n' + pad + member + body.slice(lastMemberEnd);
   return (hasBom ? '﻿' : '') + next;
 }
 
+// Drops one top-level member, with its separating comma, only while its value
+// deep-equals `ownedValue`; any other value is the user's own and stays. A BOM
+// and every other byte stay.
+function releaseTopLevelKey(text, key, ownedValue) {
+  const hasBom = text.charCodeAt(0) === 0xfeff;
+  const body = hasBom ? text.slice(1) : text;
+  if (stableStringify(JSON.parse(body)[key]) !== stableStringify(ownedValue)) return text;
+  const span = findObjectKeySpan(body, skipJsonWs(body, 0), key);
+  const before = body.slice(0, span.keyStrStart).trimEnd().length;
+  const after = skipJsonWs(body, span.valueEnd);
+  const next = body[after] === ','
+    ? body.slice(0, span.keyStrStart) + body.slice(skipJsonWs(body, after + 1))
+    : body[before - 1] === ','
+      ? body.slice(0, before - 1) + body.slice(span.valueEnd)
+      : body.slice(0, before) + body.slice(after);
+  return (hasBom ? '﻿' : '') + next;
+}
+
+// The owned array of one json-merge target, rendered into its raw text. A
+// present array whose owned elements already equal the rendered ones is left
+// byte-identical, so an attribution-only render never reorders foreign hooks
+// interleaved with owned ones; otherwise it is rebuilt nested by the indent of
+// the line it opens on, so a re-render keeps two-space-per-level layout.
 function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
   const exists = fs.existsSync(targetPath);
   const rawExisting = exists ? fs.readFileSync(targetPath, 'utf8') : '';
@@ -816,14 +861,15 @@ function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
   if (span) {
     const elements = scanArrayElements(scanText, span.valueStart);
     const foreignTexts = [];
+    const ownedExisting = [];
     for (const el of elements) {
       const elText = scanText.slice(el.start, el.end);
       let val;
       try { val = JSON.parse(elText); } catch (_) { val = null; }
-      if (!(val && val._asd === true)) foreignTexts.push(elText);
+      if (val && val._asd === true) ownedExisting.push(val);
+      else foreignTexts.push(elText);
     }
-    // Nest the rebuilt array by the indent of the line it opens on, so a
-    // re-render of an array at depth N keeps JSON.stringify(_, null, 2) layout.
+    if (stableStringify(ownedExisting) === stableStringify(renderedOwnedEntries)) return rawExisting;
     const lineStart = scanText.lastIndexOf('\n', span.valueStart) + 1;
     const pad = /^[ \t]*/.exec(scanText.slice(lineStart, span.valueStart))[0];
     const inner = pad + '  ';
@@ -1177,7 +1223,7 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
-/** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution: disabled` line; a missing or unreadable file, a duplicate or any other value reads as `enabled`. */
+/** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution` key among its direct children, its value `disabled`. A missing or unreadable file, a nested, duplicate (in any quoting) or otherwise-valued key reads as `enabled`, the default that writes and rejects nothing. */
 function readAiAttribution(repoRoot) {
   let lines;
   try {
@@ -1189,8 +1235,11 @@ function readAiAttribution(repoRoot) {
   if (start === -1) return 'enabled';
   const end = lines.findIndex((line, i) => i > start && /^[^\s#]/.test(line));
   const group = lines.slice(start + 1, end === -1 ? lines.length : end);
-  const values = group.map((line) => /^\s+ai_attribution:\s*([A-Za-z]+)\s*(#.*)?$/.exec(line)).filter(Boolean);
-  return values.length === 1 && values[0][1] === 'disabled' ? 'disabled' : 'enabled';
+  const indentOf = (line) => /^\s*/.exec(line)[0];
+  const firstMember = group.find((line) => /^\s+[^\s#]/.test(line));
+  if (firstMember === undefined) return 'enabled';
+  const keys = group.filter((line) => indentOf(line) === indentOf(firstMember) && /^\s+["']?ai_attribution["']?\s*:/.test(line));
+  return keys.length === 1 && /^\s+ai_attribution:\s*disabled\s*(#.*)?$/.test(keys[0]) ? 'disabled' : 'enabled';
 }
 
 // Canonical source of AGENTS.md's managed block. Absent, AGENTS.md is simply
@@ -1339,7 +1388,8 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, '.claude', 'settings.json'),
     ownedPathArr: ['hooks', 'SessionStart'],
     renderEntries: claudeSessionStartOwnedEntries,
-    renderOwnedKeys: () => (readAiAttribution(repoRoot) === 'disabled' ? { attribution: { commit: '', pr: '' } } : {}),
+    renderOwnedKeys: () => (readAiAttribution(repoRoot) === 'disabled' ? { attribution: ATTRIBUTION_OFF } : {}),
+    renderReleasedKeys: () => (readAiAttribution(repoRoot) === 'disabled' ? {} : { attribution: ATTRIBUTION_OFF }),
   });
   plan.push({
     class: 'json-merge',
@@ -1348,6 +1398,7 @@ function buildSyncPlan(repoRoot) {
     ownedPathArr: ['hooks', 'SessionStart'],
     renderEntries: codexSessionStartOwnedEntries,
     renderOwnedKeys: () => ({}),
+    renderReleasedKeys: () => ({}),
   });
   return plan;
 }
@@ -1382,7 +1433,7 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
   }
   if (item.class === 'json-merge') {
     const entries = item.renderEntries();
-    return { status: statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, item.renderOwnedKeys()), entries };
+    return { status: statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, item.renderOwnedKeys(), item.renderReleasedKeys()), entries };
   }
   throw new Error(`unknown sync plan item class "${item.class}"`);
 }
@@ -1468,7 +1519,8 @@ function runApply(repoRoot, requestedFiles, options) {
     } else if (item.class === 'json-merge') {
       const entries = item.renderEntries();
       const ownedKeys = item.renderOwnedKeys();
-      const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, ownedKeys);
+      const releasedKeys = item.renderReleasedKeys();
+      const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, ownedKeys, releasedKeys);
       // Eagerly render (not just status-check) anything this call would
       // actually write - renderJsonMerge throws on invalid pre-existing JSON,
       // and that throw must happen HERE, in the preflight pass, so it aborts
@@ -1476,7 +1528,7 @@ function runApply(repoRoot, requestedFiles, options) {
       // case, which is exactly what a plain statusJsonMerge status check
       // (safe, try/catch) would not catch on its own.
       const willWrite = status === 'missing' || status === 'stale' || (status === 'modified-foreign' && forceSet.has(rel));
-      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys) : null;
+      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys, releasedKeys) : null;
       resolved.push({ rel, item, status, entries, nextRaw });
     }
   }
@@ -1604,6 +1656,8 @@ module.exports = {
   statusManagedBlock,
   applyManagedBlock,
   stableStringify,
+  ATTRIBUTION_OFF,
+  spliceTopLevelKey,
   statusJsonMerge,
   renderJsonMerge,
   writeJsonMergeRendered,

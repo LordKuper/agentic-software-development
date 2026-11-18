@@ -938,19 +938,26 @@ function aiAttribution(startDir) {
   return sync.readAiAttribution(sync.findRepoRoot(startDir));
 }
 
-/** Claude Code project settings files the attribution check cleans; never the user-level file. */
+/** Claude Code project settings files the attribution check cleans, never the user-level file; the first is the sync-managed one, which must also carry the owned `attribution` value. */
 const ATTRIBUTION_SETTINGS_FILES = ['.claude/settings.json', '.claude/settings.local.json'];
+/** The top-level keys the attribution check may change. */
+const ATTRIBUTION_KEYS = ['attribution', 'includeCoAuthoredBy'];
 /** The attribution check's one line for a Codex view, whose attribution has no local key. */
 const CODEX_ATTRIBUTION_HINT = 'codex: attribution is the ChatGPT workspace setting commit_attribution_enabled, switch it off there';
 
-/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on. */
-function disableAttribution(settings) {
+/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on; for the sync-managed file (`ownsAttribution`) `attribution` ends as exactly the value sync renders, an absent key inserted. */
+function disableAttribution(settings, ownsAttribution) {
+  const sync = require('./sync.js');
   const attribution = settings.attribution;
   const hasParts = attribution !== null && typeof attribution === 'object' && !Array.isArray(attribution);
   const fixes = (hasParts ? ['commit', 'pr'] : []).filter((part) => Object.hasOwn(attribution, part) && attribution[part] !== '').map((part) => {
     attribution[part] = '';
     return `attribution.${part} reset to ""`;
   });
+  if (ownsAttribution && sync.stableStringify(settings.attribution) !== sync.stableStringify(sync.ATTRIBUTION_OFF)) {
+    settings.attribution = { ...sync.ATTRIBUTION_OFF };
+    fixes.push('attribution set to {"commit":"","pr":""}');
+  }
   if (settings.includeCoAuthoredBy === true) {
     settings.includeCoAuthoredBy = false;
     fixes.push('includeCoAuthoredBy set to false');
@@ -958,11 +965,19 @@ function disableAttribution(settings) {
   return fixes;
 }
 
-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object, which is then left untouched. A file needing no fix, or absent, is not rewritten. */
+/** Whether the real path `target` lies strictly inside the real path `root`. */
+function isInsideDirectory(root, target) {
+  const relation = path.relative(root, target);
+  return relation !== '' && relation.split(path.sep)[0] !== '..' && !path.isAbsolute(relation);
+}
+
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object or resolves, through a symlink or junction, outside the repo, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying, and the result is renamed over the real file from a temp file beside it. A file needing no fix, or absent, is not rewritten. */
 function cleanSettingsFile(repoRoot, relative) {
   const file = path.join(repoRoot, relative);
   if (!fs.existsSync(file)) return { lines: [], warning: null };
-  const raw = fs.readFileSync(file, 'utf8');
+  const real = fs.realpathSync(file);
+  if (!isInsideDirectory(fs.realpathSync(repoRoot), real)) return { lines: [], warning: `runtime: ${relative} resolves outside the repository (${real}), left untouched` };
+  const raw = fs.readFileSync(real, 'utf8');
   const bom = raw.startsWith('﻿') ? '﻿' : '';
   let settings;
   try {
@@ -971,12 +986,16 @@ function cleanSettingsFile(repoRoot, relative) {
     return { lines: [], warning: `runtime: ${relative} is not valid JSON, left untouched (${error.message})` };
   }
   if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) return { lines: [], warning: `runtime: ${relative} is not a JSON object, left untouched` };
-  const fixes = disableAttribution(settings);
+  const sync = require('./sync.js');
+  const original = JSON.parse(raw.slice(bom.length));
+  const fixes = disableAttribution(settings, relative === ATTRIBUTION_SETTINGS_FILES[0]);
   if (fixes.length === 0) return { lines: [], warning: null };
+  const changed = ATTRIBUTION_KEYS.filter((key) => sync.stableStringify(settings[key]) !== sync.stableStringify(original[key]));
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
-  const indent = /^([ \t]+)"/m.exec(raw);
-  const body = JSON.stringify(settings, null, indent === null ? 2 : indent[1]).replace(/\n/g, eol) + (/\n$/.test(raw) ? eol : '');
-  fs.writeFileSync(file, bom + body, 'utf8');
+  const spliced = changed.reduce((text, key) => sync.spliceTopLevelKey(text, key, settings[key]), raw).replace(/\r?\n/g, eol);
+  const partial = `${real}.${process.pid}.tmp`;
+  fs.writeFileSync(partial, spliced, 'utf8');
+  fs.renameSync(partial, real);
   return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
 }
 
