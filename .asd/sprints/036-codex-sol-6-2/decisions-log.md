@@ -71,3 +71,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test entry 3: standard, dispatch HEAD fb92c2182e673b51e0f6b95106ec24315d1e3c46
 - 2026-11-18 — impl-test: impacted set green (413/413), 8/0 tests
 - 2026-11-18 — impl-review wave-1/iter-02 (floor medium): combined CONCERNS (F1-F4), external CONCERNS (1 critical, 2-3 high; no stalemate); combined F1 = external 2, combined F2 = external 1; no pre-existing, memory or question items; minor test-only branch does not fire; iteration cap not reached (next iter-03, floor high) → impl review-fix (review_fixes_pending=wave-1/iter-02).
+- 2026-11-18 — route review-fix wave-1/iter-02 (A: combined F1, external 2; B: combined F2, external 1; C: combined F3, external 3): standard, dispatch HEAD 04608fb13cf10125e14c4d545e04a0e17e692998; risk A change: public contract, B change: security, C change: workflow gate
