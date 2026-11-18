@@ -1,0 +1,41 @@
+---
+responsibility:
+  owns: sprint scope, goal, top-level acceptance criteria
+  excludes: task breakdown, design decisions, code, audit findings
+  delegates_to: plan.md (tasks), design/ docs (decisions), audit.md (audit)
+---
+
+# Sprint 037-quality-gates-ci-cost-ideas
+
+## Goal
+Adopt in ASD the practices of https://github.com/mokevnin/dev-quality-gates and https://vincent.build/openclaw-ci-cost-reduction/ that `research.md` found missing, read as principles beyond CI: measure and bound the fixed cost of a dispatch and the growth of tests, back rules with checks, keep a check from being weakened to pass, keep unnecessary tests out by a mechanical admission check, and give an existing suite a revision procedure. Scope takes a decision on every open PR. Fix the `retro-candidates` defect found at intake (`friction-log.md` F-1).
+
+Every criterion holds in a consumer project as well as in this repo: its mechanism lives in shipped canon (`runtime.js`, rules, workflows, agents, templates, `/asd-init`), never only in this repo's `tests/run.js` or `.asd/project/`.
+
+## Acceptance
+- AC-1: A runtime command fails when a context bundle exceeds its recorded byte ceiling; raising a ceiling is an edit to the file that records it. This repo runs it from `tests/run.js` over every role and phase pair, ceilings seeded from the sizes measured after this sprint's own changes plus a stated headroom. A consumer project runs it over its own rule files (`.asd/project/custom-*-rules.md`, the reliability checklist) against a ceiling recorded under `.asd/project/`, in every sprint that changes them.
+- AC-2: Every `dispatch` op of the timing ledger carries its context bundle size in bytes, filled by the runtime, and `timing-summary` reports the total and the per-agent bundle bytes.
+- AC-3: At `impl-test`'s green exit the runtime computes the sprint's net test-line delta and net non-test-line delta from the sprint diff and `test-plan.md` records both. Test files are identified by one rule that works in any project layout: a `commands.yaml` key `/asd-init` fills from the detected layout, with a path-pattern default when absent. When net new test lines exceed both 200 and the net non-test lines changed, the exit is green only with an allowance record in `test-plan.md` naming the risks the growth covers.
+- AC-4: `code-style.md` forbids disabling, skipping or downgrading a check (lint rule, type check, test, validator) or adding an inline suppression to make a change pass; an exception is one path and one rule with a reason, returned as `QUESTION` under the existing quality-waiver hard gate. A suppression or weakened check in a reviewed diff without a recorded user decision is a reviewer finding.
+- AC-5: An `(accepted-debt)` entry of `stubs.md` carries a review date the runtime validates as a real calendar date. The scope gate shows every entry whose date has passed or is missing, each taking a decision: renew with a new date, or fix in this sprint.
+- AC-6: The retro Draft step gives a mechanically decidable guardrail a check as its Home — a project check run through `commands.yaml` for a consumer, a `runtime.js` validator or `tests/run.js` assertion for the framework — and a prose home only when no check can decide it.
+- AC-7: When `impl-review`'s terminal full suite fails on a test the last green impacted run did not execute, the orchestrator appends a friction entry naming the test and the selection rule that missed it.
+- AC-8: `/asd-init`, fresh and diff mode, names each deterministic gate class its detection found no command for (lint or format, type check) and states the adoption path: a sprint whose scope adopts the gates per dev-quality-gates `docs/adopt.md`. It installs nothing.
+- AC-9: A sprint that adds or changes a deterministic check (a `commands.yaml` command, lint rule or validator) records one run in which a seeded violation makes the check exit non-zero, in the proof-record shape of `code-style.md` §17, the violation restored afterwards.
+- AC-10: agnix runs once over the generated provider views, `AGENTS.md` and `CLAUDE.md`; `audit.md` lists every error-level finding with its disposition: fixed in canon, or rejected with a reason. No agnix dependency or config file is added to the repo.
+- AC-11: `retro-candidates` reads a retrospective section that holds no table as zero rows, so it returns the seven action rows of sprint 036's retrospective.
+- AC-12: Scope step 2a, in every project, lists every open PR of the project's repository. Each goes to the user at the scope gate with its number, title, author, link, check and merge state, a short summary and a recommendation, and takes one explicit choice, none by default: merge, include (its change becomes an `AC-N`), close, or defer. No PR is merged, closed, labelled or commented without that choice.
+- AC-13: A test is added only with a recorded gap proof: the seeded defect it targets, run against the existing tests of its unit before the new test exists, leaves them green — or the row names the search that found no test for that unit. When an existing test already fails on the seeded defect the decision is `none`, citing that test. A new case for a contract an existing test owns extends that test; a new test function is added only for a contract no test owns. `impl-test-close` rejects an entry whose added-test row lacks the proof.
+- AC-14: A reviewer finding that asks for a test names the failure mode and the existing tests the reviewer checked; one without them is invalid and is not routed to a fix round.
+- AC-15: `code-style.md` §17's regression-test duty covers a behaviour defect reproducible by running the code. A fix to prose, a rule or a document adds a test only when it changes a token a machine parses.
+- AC-16: `test-plan.md` `Suite run` records the slowest tests of a full run whenever the runner reports durations. `/asd-init` fills a `commands.yaml` key with the detected runner's duration-reporting form and omits it for a runner that has none; this repo's `tests/run.js` reports each test's duration and a slowest-tests summary.
+- AC-17: A suite revision is a tester mode run in a sprint whose accepted scope asks for it, in any project. Per area it reads the production code first, names the contracts, keeps one strongest owner per contract, and removes duplicates, implementation mirrors, tests an enforced static check already covers and unused fixtures. It speeds up what remains: repeated setup moves into shared setup built once and reset per test, a spawned process becomes an in-process call where the unit is importable, a test drops to the cheapest level that still catches its defect, a monolithic test file is split by area so impacted selection works, and isolated tests run in parallel where the runner supports it. It proves each surviving owner fails on a seeded defect. `test-plan.md` holds a ledger of areas done and remaining, so an interrupted revision resumes.
+- AC-18: Retro adds a suite-revision systemic proposal when the sprint's full-suite duration exceeds 1.5 times the baseline median of archived ledgers, or when the sprint needed an AC-3 allowance.
+- AC-19: A test that guards a one-time change (a sweep or migration assertion valid only against the sprint that made the change) is named temporary with that sprint's id, and the next sprint's prune pass removes it.
+- AC-20: This repo's test suite is revised under AC-17 once AC-13 to AC-17 are in place: `node tests/run.js` stays the `test` command and loads per-area test files, so an impacted run executes only the areas a change touches; git fixtures are built once per area from a shared template; the ledger covers every area; the full suite is green, and its duration and test-line count are recorded before and after.
+
+## Out of scope (optional)
+- Concurrent heavy commands across parallel dispatches (G7).
+- Reducing the context bundle size itself; follows AC-1 and AC-2's measurements.
+- Adopting agnix as a permanent check; per-language tool recommendations in canon.
+- Retro intake of sprint 036's action rows: blocked by F-1 until AC-11 lands, offered at the next sprint's intake.

@@ -1,0 +1,9 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-18T08:42:30.707Z","attrs":{}}
+{"op":"open","id":"wait refinement","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:46:26.060Z","attrs":{"gate":"refinement interview"}}
+{"op":"close","id":"wait refinement","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:46:26.060Z","end":"2026-11-18T08:50:53.107Z","outcome":"done","attrs":{"gate":"refinement interview"}}
+{"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:52:05.642Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:52:05.642Z","end":"2026-11-18T08:57:20.828Z","outcome":"done","attrs":{"gate":"scope"}}
+{"op":"open","id":"wait scope#2","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:59:57.886Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope#2","kind":"user-wait","parent":"scope#1","start":"2026-11-18T08:59:57.886Z","end":"2026-11-18T09:03:37.464Z","outcome":"done","attrs":{"gate":"scope"}}
+{"op":"open","id":"wait scope#3","kind":"user-wait","parent":"scope#1","start":"2026-11-18T09:04:08.358Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope#3","kind":"user-wait","parent":"scope#1","start":"2026-11-18T09:04:08.358Z","end":"2026-11-18T09:07:12.597Z","outcome":"done","attrs":{"gate":"scope"}}

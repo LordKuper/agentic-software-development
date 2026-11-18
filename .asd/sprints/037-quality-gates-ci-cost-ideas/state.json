@@ -1,0 +1,51 @@
+{
+  "sprint_id": "037-quality-gates-ci-cost-ideas",
+  "branch": "sprint/037-quality-gates-ci-cost-ideas",
+  "phase": "scope",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-18 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "user answer: everything except G7 (approach B without G7, plus G8 and the F-1 fix)",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "intake skipped this sprint: retro-candidates exits 2 on 036 retrospective (F-1); no open issue or PR; no disposition written",
+      "evidence": "decisions-log.md 2026-11-18 scope gate; cost 0 iterations / 0 fix rounds each",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "user answer: accept, everything in one sprint (AC-1..AC-20, no split)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+  },
+  "created_at": "2026-11-18T08:42:04.000Z",
+  "updated_at": "2026-11-18T08:42:04.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
