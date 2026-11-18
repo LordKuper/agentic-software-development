@@ -37,3 +37,4 @@
 - [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
 - [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
 - [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — "marker absent from output" leak test over a JSON.parse error: V8 shows only ±10 chars, a long marker never leaks whole
+- [Seed-time key sets](feedback_seed-time-key-sets.md) — a seed keyed by files present at seed time misses lazily created ones (reliability checklist); check seed call site vs creation site
