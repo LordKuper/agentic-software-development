@@ -77,3 +77,6 @@
 {"op":"close","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-18T11:11:23.371Z","end":"2026-11-18T11:13:06.665Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92511}}
 {"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-18T11:11:22.910Z","end":"2026-11-18T11:13:06.800Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-18T11:13:06.954Z","attrs":{}}
+{"op":"open","id":"impl-test-2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-18T11:13:28.360Z","attrs":{"context_bytes":81365}}
+{"op":"close","id":"impl-test-2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-18T11:13:28.360Z","end":"2026-11-18T11:15:52.319Z","outcome":"done","attrs":{"context_bytes":81365}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-18T11:13:06.954Z","end":"2026-11-18T11:15:52.931Z","outcome":"done","attrs":{}}

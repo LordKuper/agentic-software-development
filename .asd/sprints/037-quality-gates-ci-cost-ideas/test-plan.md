@@ -15,7 +15,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | bbb52783 | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | b6f345ae | delta since entry 1 |
 
 ## Risk → check decisions
 

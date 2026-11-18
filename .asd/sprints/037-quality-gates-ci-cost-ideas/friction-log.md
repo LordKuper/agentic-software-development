@@ -35,3 +35,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: `tests/run.js:8462-8481` (sprint 026 AC-16, D13) already bounds the per-dispatch load of four role/phase pairs at 0.70 of a recorded baseline. Audit reported no bundle bound (research G2, audit "Gaps"); a Task 3 dev found it when the test failed mid-wave (`orchestrator/impl` 0.7074).
 - **Impact**: AC-1's in-repo half duplicates an existing check; the plan carries no Task to supersede it.
 - **Refs**: research.md G2, audit.md
+
+## F-3 — clean `sync.js --check` skipped the hash-ledger recompute
+
+- **Phase**: impl
+- **Surface**: rule — `sprint-lifecycle.md` "Self-hosting" orchestrator sync against `.asd/sync.js` `--check`
+- **What happened**: After the D-1 test-fix (canon edits to `sprint-lifecycle.md` and `asd-phase-retro.md`), `sync.js --check` reported every view current, so the orchestrator skipped `--apply`. Only `--apply` recomputes `release-manifest.json` `upstream_hashes`; `--check` does not report a stale ledger. Impl-test entry 2 went red on `release-manifest.json: every upstream_hashes entry matches the actual file`.
+- **Impact**: One extra impl-test → impl test-fix round (D-2).
+- **Refs**: test-plan.md D-2

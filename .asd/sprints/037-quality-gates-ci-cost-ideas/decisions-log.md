@@ -81,3 +81,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl-test: defects D-1 → impl test-fix (digest 5f15122e)
 - 2026-11-18 — route D-1: standard, dispatch HEAD 5a103f76; risk artifact: mirror wording of the per-area suite
 - 2026-11-18 — impl test-fix: defects D-1 resolved
+- 2026-11-18 — route impl-test#2: standard, dispatch HEAD 911db381
+- 2026-11-18 — impl-test: defects D-2 → impl test-fix (digest e597bf66)
