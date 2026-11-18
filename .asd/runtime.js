@@ -901,7 +901,12 @@ function misplacedTrailers(message) {
   return lines.slice(0, lastParagraph).filter((line) => /^ASD-Task:/.test(line));
 }
 
-/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph. `ok` only when the header fits and there is no hit and no misplaced trailer. */
+/** The `Co-authored-by:` lines of a commit message naming Claude or Codex, the key matched case-insensitively. */
+function aiCoAuthorTrailers(message) {
+  return message.split(/\r?\n/).filter((line) => /^co-authored-by:.*\b(claude|codex)\b/i.test(line));
+}
+
+/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph, and, under `git.ai_attribution: disabled`, `ai_attribution`, its Claude or Codex `Co-authored-by:` lines. `ok` only when the header fits and there is no hit, no misplaced trailer and no AI trailer. */
 function commitCheck(flags, paths) {
   const unknown = Object.keys(flags).filter((name) => name !== 'subject' && name !== 'message-file');
   const given = ['subject', 'message-file'].filter((name) => name in flags);
@@ -913,7 +918,76 @@ function commitCheck(flags, paths) {
   const report = { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
   if (message === null) return report;
   const misplaced = misplacedTrailers(message);
-  return { ...report, ok: report.ok && misplaced.length === 0, misplaced };
+  const withMisplaced = { ...report, ok: report.ok && misplaced.length === 0, misplaced };
+  if (aiAttribution(process.cwd()) !== 'disabled') return withMisplaced;
+  const aiTrailers = aiCoAuthorTrailers(message);
+  return { ...withMisplaced, ok: withMisplaced.ok && aiTrailers.length === 0, ai_attribution: aiTrailers };
+}
+
+/** `git.ai_attribution` of the repo containing `startDir`. */
+function aiAttribution(startDir) {
+  const sync = require('./sync.js');
+  return sync.readAiAttribution(sync.findRepoRoot(startDir));
+}
+
+/** Claude Code project settings files the attribution check cleans; never the user-level file. */
+const ATTRIBUTION_SETTINGS_FILES = ['.claude/settings.json', '.claude/settings.local.json'];
+/** The attribution check's one line for a Codex view, whose attribution has no local key. */
+const CODEX_ATTRIBUTION_HINT = 'codex: attribution is the ChatGPT workspace setting commit_attribution_enabled, switch it off there';
+
+/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on. */
+function disableAttribution(settings) {
+  const attribution = settings.attribution;
+  const hasParts = attribution !== null && typeof attribution === 'object' && !Array.isArray(attribution);
+  const fixes = (hasParts ? ['commit', 'pr'] : []).filter((part) => Object.hasOwn(attribution, part) && attribution[part] !== '').map((part) => {
+    attribution[part] = '';
+    return `attribution.${part} reset to ""`;
+  });
+  if (settings.includeCoAuthoredBy === true) {
+    settings.includeCoAuthoredBy = false;
+    fixes.push('includeCoAuthoredBy set to false');
+  }
+  return fixes;
+}
+
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object, which is then left untouched. A file needing no fix, or absent, is not rewritten. */
+function cleanSettingsFile(repoRoot, relative) {
+  const file = path.join(repoRoot, relative);
+  if (!fs.existsSync(file)) return { lines: [], warning: null };
+  const raw = fs.readFileSync(file, 'utf8');
+  const bom = raw.startsWith('﻿') ? '﻿' : '';
+  let settings;
+  try {
+    settings = JSON.parse(raw.slice(bom.length));
+  } catch (error) {
+    return { lines: [], warning: `runtime: ${relative} is not valid JSON, left untouched (${error.message})` };
+  }
+  if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) return { lines: [], warning: `runtime: ${relative} is not a JSON object, left untouched` };
+  const fixes = disableAttribution(settings);
+  if (fixes.length === 0) return { lines: [], warning: null };
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+  const indent = /^([ \t]+)"/m.exec(raw);
+  const body = JSON.stringify(settings, null, indent === null ? 2 : indent[1]).replace(/\n/g, eol) + (/\n$/.test(raw) ? eol : '');
+  fs.writeFileSync(file, bom + body, 'utf8');
+  return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
+}
+
+/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. */
+function attributionCheck(repoRoot) {
+  const sync = require('./sync.js');
+  if (sync.readAiAttribution(repoRoot) !== 'disabled') return { lines: [], warnings: [] };
+  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map((relative) => cleanSettingsFile(repoRoot, relative)) : [];
+  const hint = fs.existsSync(path.join(repoRoot, '.codex')) ? [CODEX_ATTRIBUTION_HINT] : [];
+  return { lines: cleaned.flatMap((entry) => entry.lines).concat(hint), warnings: cleaned.map((entry) => entry.warning).filter(Boolean) };
+}
+
+/** Runs `attribution-check` from the repo root containing the working directory: one stdout line per fix or hint, warnings on stderr, exit 0. */
+function attributionCheckCommand(args) {
+  if (args.length > 0) fail('attribution-check takes no flags');
+  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()));
+  warnings.forEach((warning) => process.stderr.write(`${warning}\n`));
+  lines.forEach((line) => process.stdout.write(`${line}\n`));
+  return 0;
 }
 
 /** Runs `commit-check`: one of `--subject`/`--message-file`, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
@@ -2151,7 +2225,7 @@ function designTokensCommand(flags) {
   return { tokens: leaves.length };
 }
 
-/** The flags each command reads; `commit-check` and `memory-check` reject their own extras instead. */
+/** The flags each command reads; `commit-check`, `attribution-check` and `memory-check` reject their own extras instead. */
 const COMMAND_FLAGS = {
   'manifest-digest': ['manifest'],
   'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref'],
@@ -2210,6 +2284,7 @@ async function main(argv) {
   const command = argv[2];
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
+  if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
@@ -2320,7 +2395,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

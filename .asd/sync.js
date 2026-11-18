@@ -719,7 +719,15 @@ function insertKeyIntoObject(text, objStart, key, valueText) {
   return text.slice(0, closeIdx) + insertion + text.slice(closeIdx);
 }
 
-function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState) {
+// Top-level keys a json-merge item owns beside its owned array (an object of
+// key -> value), empty for an item that owns none. Never part of the sync-state
+// digest: that stays the owned array's alone, so adding or dropping a key
+// never reads as a hand edit of the hooks.
+function ownedKeysMatch(parsed, ownedKeys) {
+  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]));
+}
+
+function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState, ownedKeys = {}) {
   if (!fs.existsSync(targetPath)) return 'missing';
   if (isSymlink(targetPath)) return 'foreign';
   const text = readNormalized(targetPath);
@@ -739,7 +747,7 @@ function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries,
   }
   if (stateEntry.content_digest !== digestTag(stableStringify(ownedEntries))) return 'modified-foreign';
   const expectedDigest = sha256Hex(stableStringify(renderedOwnedEntries));
-  return currentDigest === expectedDigest ? 'current' : 'stale';
+  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys) ? 'current' : 'stale';
 }
 
 // Indents every line after the first by `pad`, so a multi-line
@@ -762,7 +770,32 @@ function indentContinuationLines(text, pad) {
 // membership changes - preserving "the byte layout of a container" while
 // changing which elements it holds isn't a preservation gap, it's logically
 // impossible; every individual foreign VALUE is what's actually preserved.
-function renderJsonMerge(targetPath, ownedPathArr, renderedOwnedEntries) {
+function renderJsonMerge(targetPath, ownedPathArr, renderedOwnedEntries, ownedKeys = {}) {
+  const withArray = renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries);
+  return Object.keys(ownedKeys).reduce((text, key) => spliceTopLevelKey(text, key, ownedKeys[key]), withArray);
+}
+
+// Sets one top-level key of a rendered JSON document: replaces its value span,
+// or appends the key after the last member. A BOM and every other byte stay.
+function spliceTopLevelKey(text, key, value) {
+  const hasBom = text.charCodeAt(0) === 0xfeff;
+  const body = hasBom ? text.slice(1) : text;
+  const rootStart = skipJsonWs(body, 0);
+  const valueText = indentContinuationLines(JSON.stringify(value, null, 2), '  ');
+  const member = JSON.stringify(key) + ': ' + valueText;
+  const span = findObjectKeySpan(body, rootStart, key);
+  const closeIdx = scanJsonContainerEnd(body, rootStart, '}') - 1;
+  const isEmpty = skipJsonWs(body, rootStart + 1) === closeIdx;
+  const lastMemberEnd = body.slice(0, closeIdx).trimEnd().length;
+  const next = span
+    ? body.slice(0, span.valueStart) + valueText + body.slice(span.valueEnd)
+    : isEmpty
+      ? body.slice(0, rootStart + 1) + '\n  ' + member + '\n' + body.slice(closeIdx)
+      : body.slice(0, lastMemberEnd) + ',\n  ' + member + body.slice(lastMemberEnd);
+  return (hasBom ? '﻿' : '') + next;
+}
+
+function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
   const exists = fs.existsSync(targetPath);
   const rawExisting = exists ? fs.readFileSync(targetPath, 'utf8') : '';
 
@@ -1139,6 +1172,22 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
+/** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution: disabled` line; a missing or unreadable file, a duplicate or any other value reads as `enabled`. */
+function readAiAttribution(repoRoot) {
+  let lines;
+  try {
+    lines = readNormalized(path.join(repoRoot, '.asd', 'project', 'config.yaml')).split('\n');
+  } catch (_) {
+    return 'enabled';
+  }
+  const start = lines.findIndex((line) => /^git:\s*(#.*)?$/.test(line));
+  if (start === -1) return 'enabled';
+  const end = lines.findIndex((line, i) => i > start && /^[^\s#]/.test(line));
+  const group = lines.slice(start + 1, end === -1 ? lines.length : end);
+  const values = group.map((line) => /^\s+ai_attribution:\s*([A-Za-z]+)\s*(#.*)?$/.exec(line)).filter(Boolean);
+  return values.length === 1 && values[0][1] === 'disabled' ? 'disabled' : 'enabled';
+}
+
 // Canonical source of AGENTS.md's managed block. Absent, AGENTS.md is simply
 // left unmanaged - the same partial-plan outcome as a missing canon dir, not a
 // hard failure of the run.
@@ -1285,6 +1334,7 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, '.claude', 'settings.json'),
     ownedPathArr: ['hooks', 'SessionStart'],
     renderEntries: claudeSessionStartOwnedEntries,
+    renderOwnedKeys: () => (readAiAttribution(repoRoot) === 'disabled' ? { attribution: { commit: '', pr: '' } } : {}),
   });
   plan.push({
     class: 'json-merge',
@@ -1292,6 +1342,7 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, '.codex', 'hooks.json'),
     ownedPathArr: ['hooks', 'SessionStart'],
     renderEntries: codexSessionStartOwnedEntries,
+    renderOwnedKeys: () => ({}),
   });
   return plan;
 }
@@ -1326,7 +1377,7 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
   }
   if (item.class === 'json-merge') {
     const entries = item.renderEntries();
-    return { status: statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState), entries };
+    return { status: statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, item.renderOwnedKeys()), entries };
   }
   throw new Error(`unknown sync plan item class "${item.class}"`);
 }
@@ -1411,7 +1462,8 @@ function runApply(repoRoot, requestedFiles, options) {
       resolved.push({ rel, item, status, body });
     } else if (item.class === 'json-merge') {
       const entries = item.renderEntries();
-      const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState);
+      const ownedKeys = item.renderOwnedKeys();
+      const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState, ownedKeys);
       // Eagerly render (not just status-check) anything this call would
       // actually write - renderJsonMerge throws on invalid pre-existing JSON,
       // and that throw must happen HERE, in the preflight pass, so it aborts
@@ -1419,7 +1471,7 @@ function runApply(repoRoot, requestedFiles, options) {
       // case, which is exactly what a plain statusJsonMerge status check
       // (safe, try/catch) would not catch on its own.
       const willWrite = status === 'missing' || status === 'stale' || (status === 'modified-foreign' && forceSet.has(rel));
-      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries) : null;
+      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys) : null;
       resolved.push({ rel, item, status, entries, nextRaw });
     }
   }
@@ -1565,6 +1617,7 @@ module.exports = {
   recomputeAndWriteHashLedgers,
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
+  readAiAttribution,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
