@@ -62,3 +62,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl-test: defects D-1 → impl test-fix (digest 65b1c04be98e50e39d753482a02354ea494c2a27398d6c8e96be59b2d9e208bd)
 - 2026-11-18 — route D-1: standard, dispatch HEAD 5e7fbe08; risk change: json-merge render of a user-co-owned settings file
 - 2026-11-18 — impl test-fix: defects D-1 resolved (2d190ca6; the dev's out-of-scope manifest hash edit was correctly blocked, and the ledger was recomputed by the orchestrator's sync --apply; `.claude/settings.json` was restored from 6dd7a354^ and re-rendered, 7478e40a; full suite 404/404)
+- 2026-11-18 — route impl-test entry 2: standard, dispatch HEAD 527f694b
+- 2026-11-18 — impl-test: impacted set green (405/405), 1/0 tests
