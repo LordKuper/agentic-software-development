@@ -104,3 +104,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl fix for wave-1/iter-06: findings resolved (dev ff7b49e0; tester f844ba86; hash ledger 2e0e50d3, the dev's sync.js edit left `upstream_hashes` stale; full suite 426/426).
 - 2026-11-18 — route impl-test entry 8: standard, dispatch HEAD 2e0e50d3
 - 2026-11-18 — impl-test: impacted set green (426/426), 0/0 tests
+- 2026-11-18 — latch-refresh wave-1/iter-07: combined cleared (.asd/sync.js)
