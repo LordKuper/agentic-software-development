@@ -115,3 +115,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#8: standard, dispatch HEAD 81f658a7
 - 2026-11-18 — impl-test: full suite green (311/311), 0/0 tests (1 extended)
 - 2026-11-18 — impl-review wave-1/iter-06: combined APPROVE (latched), external CONCERNS (1-2, critical) → impl review-fix (review_fixes_pending wave-1/iter-06). Routes, dev chain: external 1 (re-entry rotates first, then writes the carried-forward review-fix removal rows live), 2 (segment repair covers any impl-test-close Added tests refusal, structural included).
+- 2026-11-18 — route wave-1/iter-06 R1: standard, dispatch HEAD 4d720740; risk workflow gate (change)
+- 2026-11-18 — impl fix for wave-1/iter-06: findings resolved
