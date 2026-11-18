@@ -37,11 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-11-18 — AC-21 placed in the plan
-
-- **Decision**: AC-21 (scope amendment) is carried by Task 4 (wave 1: `sandbox_mode` removal), Task 5 (wave 1) and Task 8 (wave 2: `checks` at the impl gate), Task 12 (wave 3: README), and three orchestrator lines (`.agnix.toml`, `commands.yaml` `checks.agnix`, the gate run).
-- **Rationale**: Completes the amendment record of 2026-11-18, which preceded the plan.
-- **Affected docs**: plan.md
-
-- 2026-11-18 — `.asd/sprints/037-quality-gates-ci-cost-ideas/plan.md` accepted (user)
