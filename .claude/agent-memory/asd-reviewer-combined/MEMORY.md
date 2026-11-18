@@ -40,3 +40,5 @@
 - [Seed-time key sets](feedback_seed-time-key-sets.md) — seed keyed by files present at seed time misses lazy ones; on a fail-closed fix, trace who adds the key at the creation site
 - [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — a `{{…}}`-anywhere refusal false-refuses text citing a template placeholder; ask for a start/whole-cell anchor
 - [Impacted scope claims](feedback_impacted-scope-claims.md) — "area reads none of the changed files": check shared-helper imports, direct spawns, and a changed runner (safety valve)
+- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — fix routes a case to "waits for step N" from a later step: does the flow return to N; same case in Escalation JSON?
+- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — grep in-scope agent-memory lines for MEMORY_HISTORY_PATTERNS tokens; a committed hit bypassed memory-check
