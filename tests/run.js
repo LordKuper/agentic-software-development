@@ -10665,6 +10665,7 @@ test('sprint-036 AC-12: commit-check --message-file reads the header from the fi
   assert.deepStrictEqual(outcome(`${HEADER}\n`), [0, report(true, [])], 'AC-12: a message with no trailer has none misplaced');
   assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line followed by a body paragraph fails the check and is named');
   assert.deepStrictEqual(outcome(`${HEADER}\nASD-Task: Task 1\n\nBody.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line glued under the header is outside the last paragraph');
+  assert.deepStrictEqual(outcome(`${HEADER}\nASD-Task: Task 1\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: a message with no blank line is all subject paragraph, so a trailer directly under the header is misplaced');
   assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\n\n`), [0, report(true, [])], 'AC-12: trailing blank lines do not move the last paragraph');
   assert.deepStrictEqual(outcome(`${HEADER}\r\n\r\nASD-Task: Task 1\r\n`), [0, report(true, [])], 'AC-12: a CRLF message measures its header without the carriage return and finds its last paragraph');
   const longHeader = `feat(x): ${'y'.repeat(50)}`;
@@ -10691,6 +10692,13 @@ test('sprint-036 AC-16: under git.ai_attribution disabled commit-check fails a C
   assert.deepStrictEqual([flagged.status, flagged.report.ok, flagged.report.ai_attribution, flagged.report.misplaced], [1, false, [CLAUDE, CODEX], []], 'AC-16: each Claude or Codex trailer is listed whatever its key case, a human co-author beside them is not, and the commit fails');
   const human = commitCheckMessage(disabled, message(HUMAN));
   assert.deepStrictEqual([human.status, human.report.ok, human.report.ai_attribution], [0, true, []], 'AC-16: a human Co-Authored-By passes under disabled');
+  const CODEX_HOST_HUMAN = 'Co-authored-by: Pat <pat@codex.dev>';
+  const NAME_ONLY = 'Co-authored-by: Claude';
+  const BOT_ADDRESSES = ['Co-authored-by: Helper <noreply@anthropic.com>', 'Co-authored-by: Helper <NoReply@OpenAI.com>'];
+  const humanOnCodexHost = commitCheckMessage(disabled, message(CODEX_HOST_HUMAN));
+  assert.deepStrictEqual([humanOnCodexHost.status, humanOnCodexHost.report.ai_attribution], [0, []], 'AC-16: a human whose address merely contains the word codex is not an AI trailer');
+  const identities = commitCheckMessage(disabled, message(NAME_ONLY, ...BOT_ADDRESSES, CODEX_HOST_HUMAN));
+  assert.deepStrictEqual([identities.status, identities.report.ai_attribution], [1, [NAME_ONLY, ...BOT_ADDRESSES]], 'AC-16: the identity is parsed - a name-only Claude and either bot address under any name are rejected, a human beside them is not');
   for (const value of ['enabled', null]) {
     const enabled = commitCheckMessage(attributionRepo(value), message(CLAUDE, CODEX));
     assert.deepStrictEqual([enabled.status, enabled.report.ok, 'ai_attribution' in enabled.report], [0, true, false], `AC-16: ai_attribution ${value === null ? 'absent' : value} rejects nothing and adds no report field`);
@@ -10715,6 +10723,10 @@ test('sprint-036 AC-15: readAiAttribution reads disabled only from exactly one a
     ['conflicting duplicate lines', 'git:\n  ai_attribution: disabled\n  ai_attribution: enabled\n', 'enabled'],
     ['another letter case of the value', 'git:\n  ai_attribution: Disabled\n', 'enabled'],
     ['a quoted value', 'git:\n  ai_attribution: "disabled"\n', 'enabled'],
+    ['the key nested under another git key', 'git:\n  base_branch: main\n  other:\n    ai_attribution: disabled\n', 'enabled'],
+    ['a double-quoted duplicate of the key', 'git:\n  ai_attribution: disabled\n  "ai_attribution": enabled\n', 'enabled'],
+    ['a single-quoted duplicate of the key', 'git:\n  \'ai_attribution\': enabled\n  ai_attribution: disabled\n', 'enabled'],
+    ['an empty git group', 'git:\nlanguage:\n  chat: en\n', 'enabled'],
   ];
   const read = (config) => {
     const root = mkTempDir();
@@ -10765,6 +10777,124 @@ test('sprint-036 AC-16: attribution-check is silent under enabled or an absent k
   writeFile(codex.repo, '.codex/config.toml', '');
   const hint = run(codex);
   assert.ok(hint.status === 0 && /^codex: .*workspace setting/.test(hint.stdout) && hint.stdout.trimEnd().split('\n').length === 1, `AC-16: a Codex view alone gets exactly the one-line workspace-setting hint (got ${JSON.stringify(hint)})`);
+});
+
+/** `settings.local.json` text for the attribution-check byte-preservation cases: a compact one-line object, an object with an inline array and an irregular-spacing member, and the same with CRLF; each paired with the text expected after the one re-enabling value is reset. */
+function byteKeepingCases() {
+  const OFF_OBJECT = '{\n    "commit": "",\n    "pr": ""\n  }';
+  const compact = '{"permissions":{"allow":["Bash(git *)"]},"includeCoAuthoredBy":true,"model":"opus"}';
+  const spaced = '{\n  "permissions": {"allow": ["a",   "b"]},\n  "attribution": {"commit": "x", "pr": "y"},\n  "model":   "opus"\n}\n';
+  return [
+    ['a compact layout', compact, compact.replace('true', 'false')],
+    ['an inline array and irregular spacing', spaced, spaced.replace('{"commit": "x", "pr": "y"}', OFF_OBJECT)],
+    ['CRLF line endings', spaced.replace(/\n/g, '\r\n'), spaced.replace('{"commit": "x", "pr": "y"}', OFF_OBJECT).replace(/\n/g, '\r\n')],
+  ];
+}
+
+test('sprint-036 AC-16: attribution-check splices only the attribution keys it resets into a settings file and keeps every other byte - a compact layout, an inline array, irregular spacing and CRLF included', () => {
+  const run = (sandbox) => runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
+  const observed = byteKeepingCases().map(([label, text]) => {
+    const sandbox = attributionRepo('disabled');
+    writeFile(sandbox.repo, '.claude/settings.local.json', text);
+    const outcome = run(sandbox);
+    return [label, outcome.status, outcome.stderr, fs.readFileSync(path.join(sandbox.repo, '.claude/settings.local.json'), 'utf8')];
+  });
+  assert.deepStrictEqual(observed, byteKeepingCases().map(([label, , expected]) => [label, 0, '', expected]), 'AC-16: the reset changes the value span of each re-enabling key and nothing else, the file keeping its layout and line endings');
+});
+
+test('sprint-036 AC-16: attribution-check leaves a settings file untouched with a stderr warning when .claude or the file links outside the repo, and cleans one reached through a link that stays inside', () => {
+  const REENABLING = `${JSON.stringify({ attribution: { commit: 'x', pr: 'y' }, includeCoAuthoredBy: true }, null, 2)}\n`;
+  const run = (sandbox) => runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
+  const outsideFile = (name) => {
+    const dir = mkTempDir();
+    fs.writeFileSync(path.join(dir, name), REENABLING, 'utf8');
+    return { dir, file: path.join(dir, name) };
+  };
+
+  const control = attributionRepo('disabled');
+  writeFile(control.repo, '.claude/settings.json', REENABLING);
+  assert.deepStrictEqual([run(control).status, JSON.parse(fs.readFileSync(path.join(control.repo, '.claude/settings.json'), 'utf8')).includeCoAuthoredBy], [0, false], 'AC-16: control - the same file in a real .claude directory is cleaned');
+
+  const linkedDir = attributionRepo('disabled');
+  const outside = outsideFile('settings.json');
+  fs.symlinkSync(outside.dir, path.join(linkedDir.repo, '.claude'), 'junction');
+  const refused = run(linkedDir);
+  assert.deepStrictEqual([refused.status, refused.stdout, /\.claude\/settings\.json resolves outside the repository/.test(refused.stderr), fs.readFileSync(outside.file, 'utf8')], [0, '', true, REENABLING], 'AC-16: a .claude directory linked outside the repo is refused with a warning and the file behind it is untouched');
+
+  const linkedInside = attributionRepo('disabled');
+  fs.mkdirSync(path.join(linkedInside.repo, 'claude-real'));
+  fs.writeFileSync(path.join(linkedInside.repo, 'claude-real', 'settings.json'), REENABLING, 'utf8');
+  fs.symlinkSync(path.join(linkedInside.repo, 'claude-real'), path.join(linkedInside.repo, '.claude'), 'junction');
+  const allowed = run(linkedInside);
+  assert.deepStrictEqual([allowed.status, allowed.stderr, JSON.parse(fs.readFileSync(path.join(linkedInside.repo, 'claude-real', 'settings.json'), 'utf8')).includeCoAuthoredBy], [0, '', false], 'AC-16: a link whose target stays inside the repo is cleaned through the link');
+
+  const linkedFile = attributionRepo('disabled');
+  const outsideLocal = outsideFile('local.json');
+  fs.mkdirSync(path.join(linkedFile.repo, '.claude'));
+  try {
+    fs.symlinkSync(outsideLocal.file, path.join(linkedFile.repo, '.claude', 'settings.local.json'), 'file');
+  } catch (_) {
+    console.log('  (skipped the file-link assertion: fs.symlinkSync unsupported in this environment)');
+    return;
+  }
+  const fileRefused = run(linkedFile);
+  assert.deepStrictEqual([fileRefused.status, /settings\.local\.json resolves outside the repository/.test(fileRefused.stderr), fs.readFileSync(outsideLocal.file, 'utf8')], [0, true, REENABLING], 'AC-16: a settings file that is itself a link outside the repo is refused and its target untouched');
+});
+
+test('sprint-036 AC-15/AC-16: under disabled attribution-check inserts the owned attribution value into a .claude/settings.json that lacks the key - never into settings.local.json - and sync reads the file current afterwards', () => {
+  const settingsRel = '.claude/settings.json';
+  const root = makeMiniRepo();
+  sync.runApply(root, [settingsRel]);
+  const localText = `${JSON.stringify({ env: { KEEP: '1' } }, null, 2)}\n`;
+  writeFile(root, '.claude/settings.local.json', localText);
+  writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
+  const statusOf = () => sync.runCheck(root).find((item) => item.target === settingsRel).status;
+  assert.strictEqual(statusOf(), 'stale', 'AC-15: control - the owned attribution value is missing until something writes it');
+
+  const outcome = runtimeSpawn(['attribution-check'], { cwd: root });
+  const settings = JSON.parse(fs.readFileSync(path.join(root, settingsRel), 'utf8'));
+  assert.deepStrictEqual([outcome.status, outcome.stdout, settings.attribution, fs.readFileSync(path.join(root, '.claude/settings.local.json'), 'utf8'), statusOf()], [0, 'attribution: .claude/settings.json: attribution set to {"commit":"","pr":""}\n', { commit: '', pr: '' }, localText, 'current'], 'AC-16: the sync-managed file gains the owned value, the local file is not given a key, and sync --check reads current');
+  assert.strictEqual(runtimeSpawn(['attribution-check'], { cwd: root }).stdout, '', 'AC-16: a second run finds nothing to fix');
+});
+
+test('sprint-036 AC-15: a repeated attribution key is spliced at its last occurrence - the one JSON.parse reads - and apply reaches current', () => {
+  const settingsRel = '.claude/settings.json';
+  const root = makeMiniRepo();
+  const settingsPath = path.join(root, settingsRel);
+  sync.runApply(root, [settingsRel]);
+  const baseline = fs.readFileSync(settingsPath, 'utf8');
+  const FIRST = '"attribution": {"commit": "first"}';
+  fs.writeFileSync(settingsPath, baseline.replace(/^\{\n/, `{\n  ${FIRST},\n`).replace(/\n\}\n$/, ',\n  "attribution": {"commit": "last"}\n}\n'), 'utf8');
+  writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
+  const statusOf = () => sync.runCheck(root).find((item) => item.target === settingsRel).status;
+  assert.strictEqual(statusOf(), 'stale', 'AC-15: the effective (last) value is not the owned one');
+
+  sync.runApply(root, [settingsRel]);
+  const applied = fs.readFileSync(settingsPath, 'utf8');
+  assert.deepStrictEqual([JSON.parse(applied).attribution, applied.includes(FIRST), statusOf()], [{ commit: '', pr: '' }, true, 'current'], 'AC-15: the last occurrence is replaced, the first stays as written, and apply reaches current');
+});
+
+test('sprint-036 AC-15: an attribution-only json-merge re-render leaves the owned hooks array byte-identical - an owned hook followed by a foreign one keeps its order and layout', () => {
+  const target = path.join(mkTempDir(), 'settings.json');
+  const hooks = `"hooks": {"SessionStart": [${JSON.stringify(demoAsdEntries()[0])}, {"type":"command","command":"mine.sh"}]}`;
+  fs.writeFileSync(target, `{\n  ${hooks},\n  "model": "opus"\n}\n`, 'utf8');
+
+  const rendered = sync.renderJsonMerge(target, HOOK_PATH, demoAsdEntries(), { attribution: sync.ATTRIBUTION_OFF });
+
+  assert.deepStrictEqual([rendered.startsWith(`{\n  ${hooks},\n  "model": "opus",\n`), JSON.parse(rendered).attribution], [true, { commit: '', pr: '' }], 'AC-15: the array is not rebuilt (foreign hook first, owned after) when only the attribution key changes');
+});
+
+test('sprint-036 AC-15: spliceTopLevelKey appends a member at the indent of the document\'s first member and nests its value by that unit, falling back to two spaces for a compact or empty object', () => {
+  const VALUE = { x: 1 };
+  assert.deepStrictEqual([
+    sync.spliceTopLevelKey('{\n    "a": 1\n}\n', 'b', VALUE),
+    sync.spliceTopLevelKey('{"a":1}', 'b', VALUE),
+    sync.spliceTopLevelKey('{}', 'b', VALUE),
+  ], [
+    '{\n    "a": 1,\n    "b": {\n        "x": 1\n    }\n}\n',
+    '{"a":1,\n  "b": {\n    "x": 1\n  }}',
+    '{\n  "b": {\n    "x": 1\n  }\n}',
+  ], 'AC-15: a four-space file gets four-space members and nesting; a compact or empty object gets two');
 });
 
 test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "pr": ""} in .claude/settings.json only under git.ai_attribution disabled - stale until applied, then current - leaves the file byte-identical under enabled or an absent key, and replaces a re-enabling value without touching its neighbours', () => {
@@ -10887,24 +11017,36 @@ test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return f
   fs.writeFileSync(valid, `[REVIEW-impl-quality]: APPROVE\n\n# Review - quality\n\n## Findings\n\n| # | Severity | Location | Description | Suggested fix |\n|---|---|---|---|---|\n\n## Coverage\n\n\`\`\`json\n${JSON.stringify(ledger)}\n\`\`\`\n`, 'utf8');
   const interrupted = path.join(root, 'interrupted.md');
   fs.writeFileSync(interrupted, 'I ran out of turns before the ledger.\n', 'utf8');
+  const otherReviewer = path.join(root, 'other-reviewer.md');
+  fs.writeFileSync(otherReviewer, fs.readFileSync(valid, 'utf8').replace('[REVIEW-impl-quality]', '[REVIEW-impl-efficiency]'), 'utf8');
+  const externalManifest = path.join(root, 'external.scope.json');
+  fs.writeFileSync(externalManifest, JSON.stringify({ phase: 'design-review', iteration: 1, files: [], diff: null }), 'utf8');
+  const externalReturn = (phase) => {
+    const file = path.join(root, `external-${phase}.md`);
+    fs.writeFileSync(file, `[REVIEW-${phase}-external]: APPROVE\n\n# Review - external\n\n## Findings\n\n| # | Severity | Location | Description | Suggested fix |\n|---|---|---|---|---|\n`, 'utf8');
+    return file;
+  };
   const returns = path.join(root, 'returns.json');
   fs.writeFileSync(returns, JSON.stringify({
     a1: { return: valid, manifest: manifestPath },
     b2: { return: interrupted, manifest: manifestPath },
     c3: { return: path.join(root, 'absent.md'), manifest: manifestPath },
     d4: { return: valid, manifest: path.join(root, 'absent.manifest.json') },
+    e5: { return: otherReviewer, manifest: manifestPath },
+    g7: { return: externalReturn('design'), manifest: externalManifest },
+    h8: { return: externalReturn('impl'), manifest: externalManifest },
   }), 'utf8');
 
   const configDir = mkTempDir();
   const subagents = path.join(configDir, 'projects', 'project', 'session', 'subagents');
   fs.mkdirSync(subagents, { recursive: true });
   const idle = `${JSON.stringify({ type: 'user', timestamp: '2026-09-29T12:00:00.000Z', message: { role: 'user', content: [{ type: 'text', text: 'task' }] } })}\n`;
-  ['b2', 'c3', 'd4'].forEach((id) => fs.writeFileSync(path.join(subagents, `agent-${id}.jsonl`), idle, 'utf8'));
+  ['b2', 'c3', 'd4', 'e5', 'h8'].forEach((id) => fs.writeFileSync(path.join(subagents, `agent-${id}.jsonl`), idle, 'utf8'));
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
   const watch = (agents, returnsFile) => runtimeSpawn(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
 
-  const withReturns = watch('a1,b2,c3,d4', returns);
-  assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - while an interrupted, missing or manifest-less return changes nothing');
+  const withReturns = watch('a1,b2,c3,d4,e5,g7,h8', returns);
+  assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\nSTALL e5 no-progress\nSTALL h8 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - and so is g7, an External Review return against its scope manifest, while an interrupted, missing or manifest-less return, and a return whose verdict line names another reviewer (e5) or another phase (h8, against a scope manifest, which expects External Review) than its manifest change nothing');
 
   const unparseable = path.join(root, 'unparseable.json');
   fs.writeFileSync(unparseable, '{ not json', 'utf8');
@@ -10941,11 +11083,37 @@ test('sprint-036 AC-8/AC-10/AC-11/AC-13: the refuse-to-implement rule covers eve
 
   const scope = sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps');
   assert.ok(stepOf(scope, '3a').includes('`Settings change:`') && stepOf(scope, '4').includes('step 3a'), 'AC-10: step 3a offers a Settings change line for a needed disabled document and step 4 shows what step 3a found at the gate');
+  assert.ok(/\baudit\b/.test(stepOf(scope, '3a')), 'AC-10: step 3a checks the audit step 3 froze, not only the documents');
 
   const planStep = stepOf(sectionOf('.asd/workflows/asd-phase-plan.md', 'Steps'), '4');
   assert.ok(planStep.includes('`commands.yaml` `build`') && planStep.includes('`FAILED`') && planStep.includes('`## Decision coverage`'), 'AC-11/AC-13: plan step 4 runs the build once, stops with FAILED and fills Decision coverage');
   const template = canonText('.asd/templates/t_plan.md');
   assert.ok(template.includes('\n## Decision coverage\n') && template.includes('| Decision | Covered by |'), 'AC-13: the plan template carries the Decision coverage table');
+});
+
+test('sprint-036 AC-12: every agent granted the commit command writes its dispatch-scoped commit-msg file under its write list, and its deny of writes elsewhere in .asd/ excepts that file', () => {
+  const committers = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((name) => `.asd/agents/${name}`).filter((rel) => (jsonOf(rel, 'Tools').run || []).some((item) => item.startsWith('git add/git commit')));
+  assert.ok(committers.length > 0, 'AC-12: the roster has agents that commit');
+  const gaps = committers.flatMap((rel) => {
+    const tools = jsonOf(rel, 'Tools');
+    return [
+      ...(tools.write.some((item) => item.startsWith('<scratch-dir>/<NNN-slug>-<dispatch id>.commit-msg')) ? [] : [`${rel}: write lacks the dispatch-scoped commit-msg file`]),
+      ...(tools.deny.some((item) => item.startsWith('writes elsewhere in .asd/') && item.endsWith('.commit-msg excepted')) ? [] : [`${rel}: the .asd/ write deny does not except it`]),
+    ];
+  });
+  assert.deepStrictEqual(gaps, [], 'AC-12: the one-command commit form obliges these agents to write the message file, so the grant must allow what the form requires');
+});
+
+test('sprint-036 AC-16: asd-sprint runs its attribution check on the sprint branch only - after scope COMPLETED and at resume, never in Step 0 - skips a user-modified tracked settings file, and commits its edit as chore(sprint): reset AI attribution under a granted git add and git commit', () => {
+  const skill = '.asd/skills/asd-sprint/SKILL.md';
+  const steps = sectionOf(skill, 'Steps');
+  const check = subOf(steps, 'Attribution check');
+  const SUBJECT = 'chore(sprint): reset AI attribution';
+  assert.ok(!subOf(steps, 'Step 0').includes('attribution-check'), 'AC-16: Step 0 runs on the base branch, so it never runs the check');
+  assert.ok(stepOf(subOf(steps, 'Step 2A'), '5').includes('"Attribution check"') && stepOf(subOf(steps, 'Step 2B'), '1').includes('"Attribution check"'), 'AC-16: it runs after scope COMPLETED in the new-sprint flow and when a sprint resumes');
+  assert.ok(check.includes('git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json') && /\bskip\b/.test(check), 'AC-16: a tracked settings file with a user change skips the check');
+  assert.ok(check.includes('node .asd/runtime.js attribution-check') && check.includes(`\`${SUBJECT}\``) && SUBJECT.length <= 50, 'AC-16: it runs the check and commits the edit under a header within the commit limit');
+  assert.ok(jsonOf(skill, 'Preconditions').ops.some((op) => op.includes('git status --porcelain') && op.includes('git add/git commit')), 'AC-16: the skill grants the status read and the commit its step performs');
 });
 
 test('sprint-036 AC-6/AC-15/AC-16: pr open mode lists External Review availability skips and keeps AI attribution out of the body, the template carries the skip section, the commits rule names the rejection, and asd-sprint, asd-init, the config template and the README carry the attribution setting', () => {
