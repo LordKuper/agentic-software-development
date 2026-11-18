@@ -940,12 +940,14 @@ function aiAttribution(startDir) {
 
 /** Claude Code project settings files the attribution check cleans, never the user-level file. */
 const ATTRIBUTION_SETTINGS_FILES = ['.claude/settings.json', '.claude/settings.local.json'];
+/** The one settings file whose `attribution` value sync owns, so the only one the check inserts it into and records. */
+const OWNED_ATTRIBUTION_FILE = ATTRIBUTION_SETTINGS_FILES[0];
 /** The top-level keys the attribution check may change. */
 const ATTRIBUTION_KEYS = ['attribution', 'includeCoAuthoredBy'];
 /** The attribution check's one line for a Codex view, whose attribution has no local key. */
 const CODEX_ATTRIBUTION_HINT = 'codex: attribution is the ChatGPT workspace setting commit_attribution_enabled, switch it off there';
 
-/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on, which is why a missing `attribution` is inserted by sync, never here. */
+/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on. */
 function disableAttribution(settings) {
   const attribution = settings.attribution;
   const hasParts = attribution !== null && typeof attribution === 'object' && !Array.isArray(attribution);
@@ -960,13 +962,43 @@ function disableAttribution(settings) {
   return fixes;
 }
 
-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file is not a JSON object, or it cannot be rewritten, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. ponytail: written in place, so a crash mid-write can truncate a small settings file; temp file plus rename is the upgrade once mode and ACL copying is solved on every OS. */
+/** Sets `settings.attribution` to the value sync owns when it holds anything else - missing, not an object, or other members - returning its one report fragment, none when it already is that value. */
+function ownAttribution(settings) {
+  const sync = require('./sync.js');
+  if (sync.stableStringify(settings.attribution) === sync.stableStringify(sync.ATTRIBUTION_OFF)) return [];
+  const verb = Object.hasOwn(settings, 'attribution') ? 'replaced by' : 'set to';
+  settings.attribution = { ...sync.ATTRIBUTION_OFF };
+  return [`attribution ${verb} ${JSON.stringify(sync.ATTRIBUTION_OFF)}`];
+}
+
+/** Writes `text` over `file` in place and returns null, or the warning of a failed write: the original `bytes` are then written back, and the file is reported untouched only when that restore succeeded. */
+function rewriteInPlace(file, relative, text, bytes) {
+  try {
+    fs.writeFileSync(file, text, 'utf8');
+    return null;
+  } catch (error) {
+    try {
+      fs.writeFileSync(file, bytes);
+    } catch (_) {
+      return `runtime: ${relative} could not be rewritten (${error.message}) and may be damaged; restore it from git`;
+    }
+    return `runtime: ${relative} could not be rewritten (${error.message}), left untouched`;
+  }
+}
+
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it; a record that cannot be saved is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. ponytail: written in place, a failed write restored from the original bytes, so only a process kill mid-write can still truncate a small settings file; temp file plus rename is the upgrade once mode and ACL copying is solved on every OS. */
 function cleanSettingsFile(repoRoot, relative) {
   const sync = require('./sync.js');
   const file = path.join(repoRoot, relative);
   if (!fs.existsSync(file)) return { lines: [], warning: null };
   if (sync.isSymlink(file) || sync.isSymlink(path.dirname(file))) return { lines: [], warning: `runtime: ${relative} or its directory is a symlink or junction, left untouched` };
-  const raw = fs.readFileSync(file, 'utf8');
+  let bytes;
+  try {
+    bytes = fs.readFileSync(file);
+  } catch (error) {
+    return { lines: [], warning: `runtime: ${relative} could not be read (${error.message}), left untouched` };
+  }
+  const raw = bytes.toString('utf8');
   const bom = raw.startsWith('﻿') ? '﻿' : '';
   let settings;
   try {
@@ -976,17 +1008,21 @@ function cleanSettingsFile(repoRoot, relative) {
   }
   if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) return { lines: [], warning: `runtime: ${relative} is not a JSON object, left untouched` };
   const original = JSON.parse(raw.slice(bom.length));
-  const fixes = disableAttribution(settings);
+  const fixes = disableAttribution(settings).concat(relative === OWNED_ATTRIBUTION_FILE ? ownAttribution(settings) : []);
   if (fixes.length === 0) return { lines: [], warning: null };
   const changed = ATTRIBUTION_KEYS.filter((key) => sync.stableStringify(settings[key]) !== sync.stableStringify(original[key]));
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
   const spliced = changed.reduce((text, key) => sync.spliceTopLevelKey(text, key, settings[key]), raw).replace(/\r?\n/g, eol);
+  const failure = rewriteInPlace(file, relative, spliced, bytes);
+  if (failure !== null) return { lines: [], warning: failure };
+  const lines = fixes.map((fix) => `attribution: ${relative}: ${fix}`);
+  if (relative !== OWNED_ATTRIBUTION_FILE || !changed.includes('attribution')) return { lines, warning: null };
   try {
-    fs.writeFileSync(file, spliced, 'utf8');
+    sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
   } catch (error) {
-    return { lines: [], warning: `runtime: ${relative} could not be rewritten (${error.message}), left untouched` };
+    return { lines, warning: `runtime: ${relative} was fixed but its record in .asd/sync-state.json could not be saved (${error.message}), run /asd-sync` };
   }
-  return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
+  return { lines, warning: null };
 }
 
 /** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */

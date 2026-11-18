@@ -734,14 +734,30 @@ function recordedKeys(syncState, relKey, releasedKeys) {
   return Object.fromEntries(Object.entries(releasedKeys).filter(([key]) => recorded.includes(key)));
 }
 
-// The keys of `ownedKeys` (key -> value) a write over `targetPath` leaves
-// recorded as sync's: one sync changes to the owned value in that write, or one
-// `previous` (the entry's prior `owned_keys`) already records, which the write
-// keeps. A pre-existing value already equal to the owned one is the user's own,
-// so it is never recorded and a later release leaves it alone.
-function writtenKeys(targetPath, previous, ownedKeys) {
-  const before = fs.existsSync(targetPath) ? JSON.parse(readNormalized(targetPath)) || {} : {};
+// The keys of `ownedKeys` (key -> value) a write over a file whose parsed
+// content was `before` leaves recorded as sync's: one the write changes to the
+// owned value, or one `previous` (the entry's prior `owned_keys`) already
+// records, which the write keeps. A pre-existing value already equal to the
+// owned one is the user's own, so it is never recorded and a later release
+// leaves it alone.
+function writtenKeys(before, previous, ownedKeys) {
   return Object.keys(ownedKeys).filter((key) => previous.includes(key) || stableStringify(before[key]) !== stableStringify(ownedKeys[key]));
+}
+
+// Records in the sync-state entry of `relKey` the `ownedKeys` a write made
+// outside `--apply` just changed in the file whose parsed content was `before`,
+// so a later release finds them. Touches only `owned_keys` of an existing entry:
+// the digest stays the owned array's alone, which that write leaves as it was.
+// With no entry the file was never applied, so its value reads as the user's.
+function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
+  const syncState = loadSyncState(repoRoot);
+  const entry = syncState.entries[relKey];
+  if (!entry) return;
+  const previous = entry.owned_keys || [];
+  const written = writtenKeys(before, previous, ownedKeys);
+  if (written.length === previous.length && written.every((key) => previous.includes(key))) return;
+  syncState.entries[relKey] = { ...entry, owned_keys: written };
+  saveSyncState(repoRoot, syncState);
 }
 
 // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
@@ -922,14 +938,15 @@ function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
 // Write-only half, taking an ALREADY-RENDERED string - lets runApply's
 // preflight pass call renderJsonMerge() early (so an invalid target throws
 // before any write in the whole --apply batch) and pass 2 just write the
-// result, without a second render/throw opportunity mid-write-pass.
+// result, without a second render/throw opportunity mid-write-pass. The write
+// is raw, not writeNormalized: normalizing would re-launder the foreign bytes
+// the render step just preserved.
 function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntries, syncState, ownedKeys = {}) {
-  // Raw write, deliberately not writeNormalized: normalizing here would
-  // re-launder the foreign bytes the render step just preserved.
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   syncState.entries = syncState.entries || {};
   const previous = (syncState.entries[relKey] && syncState.entries[relKey].owned_keys) || [];
-  const written = writtenKeys(targetPath, previous, ownedKeys);
+  const before = fs.existsSync(targetPath) ? JSON.parse(readNormalized(targetPath)) || {} : {};
+  const written = writtenKeys(before, previous, ownedKeys);
   fs.writeFileSync(targetPath, nextRaw, 'utf8');
   syncState.entries[relKey] = {
     kind: 'json-merge',
@@ -1681,6 +1698,7 @@ module.exports = {
   applyManagedBlock,
   stableStringify,
   ATTRIBUTION_OFF,
+  recordOwnedKeys,
   spliceTopLevelKey,
   statusJsonMerge,
   renderJsonMerge,
