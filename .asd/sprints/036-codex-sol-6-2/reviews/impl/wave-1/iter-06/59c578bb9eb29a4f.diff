@@ -1,0 +1,436 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 27377f6e..62a9e6b5 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,7 +32,7 @@
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+     "skills/asd-init/SKILL.md": "sha256:0c518c468f7691e788e71feaaa8c13a6d468d8f83a2419addce6a3c4320c2614",
+-    "skills/asd-sprint/SKILL.md": "sha256:0cb575da1892f53a072bbf05691f6b2680cd7773253d06603c53047bc5ecbe3a",
++    "skills/asd-sprint/SKILL.md": "sha256:b6235185aa251a716ec0c227305faa5da34c95481a8974eff01d7d4395c4429c",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     "skills/asd-update/SKILL.md": "sha256:14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+@@ -85,12 +85,12 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
+     ".asd/skills/asd-phase-pr/SKILL.md": "f92c938eb06136c8295452e69d56cc0e8340bb2242ecce209ec7f93ffb99fb72",
+     ".asd/skills/asd-phase-scope/SKILL.md": "2d1f9c45dc4a88a6b9001baca727ab47e71a63a038dce71007c8aab847651cb2",
+-    ".asd/skills/asd-sprint/SKILL.md": "0cb575da1892f53a072bbf05691f6b2680cd7773253d06603c53047bc5ecbe3a",
++    ".asd/skills/asd-sprint/SKILL.md": "b6235185aa251a716ec0c227305faa5da34c95481a8974eff01d7d4395c4429c",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "30d233142094aa59d3cb835538258f73270f68450a00aa156d85ee22779f5ecb",
++    ".asd/sync.js": "573955924907bf322c8047a9b8996b7fbd34f6ea17f8f085648f91fca3d989b7",
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "20f80dc70a5426c24508f20322a65c6cd7d1991de819752d0fc9c439a0222376",
++    ".asd/runtime.js": "2bc803ef9513fe820a841e9250b0abfc431c28ab96ac2fa16a925f5a73d34af6",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 5de1183f..3d2be483 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -971,22 +971,43 @@ function ownAttribution(settings) {
+   return [`attribution ${verb} ${JSON.stringify(sync.ATTRIBUTION_OFF)}`];
+ }
+ 
+-/** Writes `text` over `file` in place and returns null, or the warning of a failed write: the original `bytes` are then written back, and the file is reported untouched only when that restore succeeded. */
++/** Writes `content` at offset 0 of `fd` and cuts the file to `length`; a short write throws. */
++function writeFromStart(fd, content, length) {
++  if (fs.writeSync(fd, content, 0, content.length, 0) !== content.length) throw new Error('short write');
++  fs.ftruncateSync(fd, length);
++}
++
++/** Writes `text` over `file` through one descriptor without truncating first, shorter text padded with spaces to the old length until the final cut, and returns null, or the warning of a failed write: the original `bytes` are then written back through the same descriptor, and the file is reported untouched only when that restore succeeded. The descriptor is always closed; a close error after the write changes nothing. ponytail: one in-place write keeps the file's mode, ACL and owner and is never empty; only an OS crash or power loss during that write can still leave it damaged. */
+ function rewriteInPlace(file, relative, text, bytes) {
++  const next = Buffer.from(text, 'utf8');
++  const padded = Buffer.concat([next, Buffer.alloc(Math.max(0, bytes.length - next.length), 0x20)]);
++  let fd = null;
+   try {
+-    fs.writeFileSync(file, text, 'utf8');
++    fd = fs.openSync(file, 'r+');
++    writeFromStart(fd, padded, next.length);
+     return null;
+   } catch (error) {
+     try {
+-      fs.writeFileSync(file, bytes);
++      if (fd !== null) writeFromStart(fd, bytes, bytes.length);
+     } catch (_) {
+       return `runtime: ${relative} could not be rewritten (${error.message}) and may be damaged; restore it from git`;
+     }
+     return `runtime: ${relative} could not be rewritten (${error.message}), left untouched`;
++  } finally {
++    if (fd !== null) closeQuietly(fd);
++  }
++}
++
++/** Closes `fd`, a close error never thrown: the data it carried is already written or restored. */
++function closeQuietly(fd) {
++  try {
++    fs.closeSync(fd);
++  } catch (_) {
++    return;
+   }
+ }
+ 
+-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it; a record that cannot be saved is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. ponytail: written in place, a failed write restored from the original bytes, so only a process kill mid-write can still truncate a small settings file; temp file plus rename is the upgrade once mode and ACL copying is solved on every OS. */
++/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it, the ledger then named by a line of its own; a record that cannot be saved, a symlinked ledger included, is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. */
+ function cleanSettingsFile(repoRoot, relative) {
+   const sync = require('./sync.js');
+   const file = path.join(repoRoot, relative);
+@@ -1018,11 +1039,11 @@ function cleanSettingsFile(repoRoot, relative) {
+   const lines = fixes.map((fix) => `attribution: ${relative}: ${fix}`);
+   if (relative !== OWNED_ATTRIBUTION_FILE || !changed.includes('attribution')) return { lines, warning: null };
+   try {
+-    sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
++    const isSaved = sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
++    return { lines: isSaved ? lines.concat(`attribution: .asd/sync-state.json: recorded the owned attribution of ${relative}`) : lines, warning: null };
+   } catch (error) {
+     return { lines, warning: `runtime: ${relative} was fixed but its record in .asd/sync-state.json could not be saved (${error.message}), run /asd-sync` };
+   }
+-  return { lines, warning: null };
+ }
+ 
+ /** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index f33bd54a..5b156140 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -50,7 +50,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
+ 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
+ 
+ ### Attribution check
+-Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json .asd/sync-state.json`: a listed file is a user change. Run `node .asd/runtime.js attribution-check [-- <listed settings files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint, and inserts the owned `attribution` value into `.claude/settings.json` and records it in `.asd/sync-state.json`; relay its fix, hint and warning lines (a warning never blocks). Commit as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review") only the files that were not listed, are tracked (`git ls-files --error-unmatch -- <file>` succeeds) and that a fix line names, `.asd/sync-state.json` instead when `git status` now shows it changed; an untracked or ignored file, `settings.local.json` typically, is edited but never staged.
++Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json .asd/sync-state.json`: a listed file is a user change. Run `node .asd/runtime.js attribution-check [-- <listed settings files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint, and inserts the owned `attribution` value into `.claude/settings.json` and records it in `.asd/sync-state.json`; relay its fix, hint and warning lines (a warning never blocks). Commit as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review") only the files that were not listed, are tracked (`git ls-files --error-unmatch -- <file>` succeeds) and that a fix line names; an untracked or ignored file, `settings.local.json` typically, is edited but never staged.
+ 
+ ### Step 3: phase chain advancement
+ After any phase skill returns:
+diff --git a/.asd/sprints/036-codex-sol-6-2/test-plan.entry-06.md b/.asd/sprints/036-codex-sol-6-2/test-plan.entry-06.md
+new file mode 100644
+index 00000000..e3775853
+--- /dev/null
++++ b/.asd/sprints/036-codex-sol-6-2/test-plan.entry-06.md
+@@ -0,0 +1,19 @@
++# Test plan — sprint 036-codex-sol-6-2, entry 6 (rotated)
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `attribution-check` inserts, replaces and records the owned value itself; no startup `sync --apply` (f7229065, AC-15/AC-16) | The check writes the release manifest, the sync state without a record, or `settings.local.json`; replaces nothing for a missing-`pr`, non-object or extra-member value; records a file sync never applied; the skill and its `ops` still run sync | component (CLI, `runApply`, `runCheck`) and content-contract pin | none | bd2d284a already pins it: `AC-15/AC-16 (external 1, 2, 5): ...inserts the missing owned attribution value ...`, `(external 5): ...replaces a present attribution value ...`, `(external 5): ...no sync-state record ...`, and the re-pinned `AC-16: asd-sprint runs its attribution check ...`, each with a fail-first run or mutation (`test-plan.entry-05.md`) |
++| `rewriteInPlace` restore after a failed write (f7229065, AC-16) | A write failing after truncating leaves a damaged file reported as untouched | component (CLI, preload stub) | none | bd2d284a already pins it: `AC-16 (external 3): attribution-check whose in-place write ... restores the original bytes ...`, fail-first |
++| per-file read warning (f7229065, AC-16) | A read error drops the other file and the Codex hint | component (CLI) | none | bd2d284a already pins it: `AC-16 (external 4): ...whose read of one settings file fails ...`, fail-first |
++| link refusal on a startup check (f7229065, AC-16) | A startup check writes through a linked `.claude` | component (CLI, junction) | none | bd2d284a already pins it: `AC-16 (external 2): a startup check over a .claude junction ...`, with a mutation |
++| views 0d40d74a | Stale view | static | none | `node .asd/sync.js --check` reports every target `current` |
++
++## Removed tests
++
++No test removed this entry. Entry 5 removed the 0600 mode test (`test-plan.entry-05.md`).
++
++## Added tests
++
++Entry 6 adds no test; every delta risk is pinned by bd2d284a (rows above, regression proofs in `test-plan.entry-05.md`).
+diff --git a/.asd/sprints/036-codex-sol-6-2/test-plan.md b/.asd/sprints/036-codex-sol-6-2/test-plan.md
+index 652338c6..9c05fcac 100644
+--- a/.asd/sprints/036-codex-sol-6-2/test-plan.md
++++ b/.asd/sprints/036-codex-sol-6-2/test-plan.md
+@@ -17,18 +17,19 @@ responsibility:
+ | 4 | 557d6957 | delta since eb329004: review-fix commits 0702af2d (sync releases only the recorded attribution), 92c4bb8c (`cleanSettingsFile` mode and failure path), 8185f58b (tech-reference gate, `attribution-check` per-file skip); views and `owned_keys` seed 44bd775a; tester 5b71f711 |
+ | 5 | 8f9eb1cd | delta since 557d6957: review-fix wave-1/iter-03 commits cc4df9f7 (sync records `owned_keys` for a changed key only), e888835c (in-place settings write, symlink and junction refusal, asd-sprint `sync --apply` first and tracked-only commit); views bf520fc8; tester 7ec4c1ab |
+ | 6 | cdc1a55b | delta since 8f9eb1cd: review-fix wave-1/iter-04 commit f7229065 (the check inserts and records the owned value without sync, restores on a write error, warns per file on a read error); views 0d40d74a; tester bd2d284a |
++| 7 | 6e04da1e | delta since cdc1a55b: review-fix wave-1/iter-05 commit 01497426 (`rewriteInPlace` non-truncating write with descriptor restore; `recordOwnedKeys` link guard, atomic ledger save, boolean return; the check's ledger line; asd-sprint ledger clause removed); views eb63010f; tester e59544ce |
+ 
+ ## Risk → check decisions
+ 
+-Entry 5's rows, with the iter-04 review-fix tester's, are rotated to `test-plan.entry-05.md`.
++Entry 6's rows are rotated to `test-plan.entry-06.md`.
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `attribution-check` inserts, replaces and records the owned value itself; no startup `sync --apply` (f7229065, AC-15/AC-16) | The check writes the release manifest, the sync state without a record, or `settings.local.json`; replaces nothing for a missing-`pr`, non-object or extra-member value; records a file sync never applied; the skill and its `ops` still run sync | component (CLI, `runApply`, `runCheck`) and content-contract pin | none | bd2d284a already pins it: `AC-15/AC-16 (external 1, 2, 5): ...inserts the missing owned attribution value ...`, `(external 5): ...replaces a present attribution value ...`, `(external 5): ...no sync-state record ...`, and the re-pinned `AC-16: asd-sprint runs its attribution check ...`, each with a fail-first run or mutation (`test-plan.entry-05.md`) |
+-| `rewriteInPlace` restore after a failed write (f7229065, AC-16) | A write failing after truncating leaves a damaged file reported as untouched | component (CLI, preload stub) | none | bd2d284a already pins it: `AC-16 (external 3): attribution-check whose in-place write ... restores the original bytes ...`, fail-first |
+-| per-file read warning (f7229065, AC-16) | A read error drops the other file and the Codex hint | component (CLI) | none | bd2d284a already pins it: `AC-16 (external 4): ...whose read of one settings file fails ...`, fail-first |
+-| link refusal on a startup check (f7229065, AC-16) | A startup check writes through a linked `.claude` | component (CLI, junction) | none | bd2d284a already pins it: `AC-16 (external 2): a startup check over a .claude junction ...`, with a mutation |
+-| views 0d40d74a | Stale view | static | none | `node .asd/sync.js --check` reports every target `current` |
++| `rewriteInPlace` writes in place through one descriptor, padded then cut, restored through it on failure (01497426, AC-16, external 1, 3). Supersedes entry 6's truncating-write row | A shorter replacement leaves padding or a longer one is cut; a short or thrown `writeSync` or a failed `ftruncateSync` leaves a damaged file reported untouched; the descriptor leaks | component (CLI, preload stub on `writeSync` and `ftruncateSync`) | none | e59544ce already pins it: `AC-16 (external 1, 3): ...whose in-place write ... fails - a thrown or short writeSync, a failed ftruncateSync - restores ...` and `AC-16 (external 1): ...overwrites a settings file in place so it holds exactly the new bytes ...`, each with a fail-first run or mutation (`Added tests`) |
++| `recordOwnedKeys` refuses a linked ledger or `.asd`, saves atomically, returns whether it saved (01497426, AC-16, external 3) | The check writes through a symlinked `sync-state.json` or a linked `.asd`; a failed save leaves a half-written ledger; an existing file at the temp name is opened over or deleted; a leftover temp file stays | component (CLI over a symlink and a junction; direct call with a stubbed `renameSync`) | none | e59544ce already pins it: `AC-16 (external 3): ...over a symlinked .asd/sync-state.json or a linked .asd directory ...` and `AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...`, fail-first |
++| the check names the ledger in a fix line of its own, only after a real save (01497426, AC-16) | The line prints for a record that was not saved, or the fix line set differs from what the skill commits | component (CLI) | none | e59544ce re-pinned `AC-15/AC-16 (external 1, 2, 5): ...inserts the missing owned attribution value ...` to the two-line output, fail-first; the linked-ledger test pins the absent line |
++| asd-sprint `### Attribution check` drops the git-status guess that committed `.asd/sync-state.json` (01497426, AC-16) | The skill commits a ledger the check did not name | content-contract pin | none | e59544ce re-pinned `AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone), fail-first |
++| views eb63010f | Stale view | static | none | `node .asd/sync.js --check` reports every target `current` |
+ 
+ ## Removed tests
+ 
+@@ -36,15 +37,24 @@ No test removed this entry. Entry 5 removed the 0600 mode test (`test-plan.entry
+ 
+ ## Added tests
+ 
+-Entry 6 adds no test; every delta risk is pinned by bd2d284a (rows above, regression proofs in `test-plan.entry-05.md`).
++The review-fix tester's e59544ce added the tests below; no entry-7 test is added, each risk above being pinned. Proof runs: pre-fix tree = `git archive c8d98404` (the parent of the dev commit 01497426) extracted to `.asd/tmp/prefix-01497426/` with this `tests/run.js` copied in, deleted after; each is `node tests/run.js --filter "<substring>"`, matched 1 of 1, exit 1 unless noted.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js:`sprint-036 AC-16 (external 1, 3): attribution-check whose in-place write of a settings file fails ...` (re-authored for `writeSync` and `ftruncateSync` stubs) | fail-first: pre-fix tree, filter `external 1, 3): attribution-check whose in-place`, exit 1, `AC-16: a write failing after changing the first bytes is restored through the descriptor, the warning states the file untouched and its bytes are the original; the other file is still cleaned` |
++| tests/run.js:`sprint-036 AC-16 (external 1): attribution-check overwrites a settings file in place so it holds exactly the new bytes ...` | pre-fix tree green: `writeFileSync` also yields exact bytes, so this guards the new padding and cut; mutation in a `git archive HEAD` copy replacing `fs.ftruncateSync(fd, length);` with `void length;` in `.asd/runtime.js`: filter `external 1): attribution-check overwrites`, exit 1, `AC-16: each file is exactly the new text - the shorter one cut where the new text ends, with no trailing spaces, the longer one whole`; runs: 1 (the copy deleted, the real tree never mutated) |
++| tests/run.js:`sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory ...` | fail-first: pre-fix tree, filter `symlinked .asd/sync-state.json`, exit 1, `AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link's target keeps its bytes` |
++| tests/run.js:`sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...` | fail-first: pre-fix tree, filter `recordOwnedKeys saves the ledger atomically`, exit 1, `Missing expected exception: AC-16: an existing file at the temp name is never opened over` |
++| tests/run.js:`sprint-036 AC-15/AC-16 (external 1, 2, 5): attribution-check under disabled inserts the missing owned attribution value ...` (expects the ledger line) | fail-first: pre-fix tree, filter `inserts the missing owned attribution value`, exit 1, `AC-16: one fix line names the inserted value, a second names the ledger that saved its record, and nothing is warned` |
++| tests/run.js:`sprint-036 AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone) | fail-first: pre-fix tree, filter `asd-sprint runs its attribution check`, exit 1, `AC-16: the commit set follows the fix lines alone - the check names the sync state in a line of its own, so no git-status guess adds it` |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+ - Scope: full — one file with no native selector, framework-wide shared infrastructure
+-- Result: pass — 422 passed, 0 failed of 422, reused from the iter-04 review-fix tester run (entry 5 recorded 418/418 at 144e3aba); no code, test or stub path changed since 0d40d74a other than that run's own committed `tests/run.js` (bd2d284a), so no re-run
++- Result: pass — 425 passed, 0 failed of 425
+ - Lint / build: pass — build `node .asd/sync.js --check` (every target current), lint `git diff --cached --check`, run before the commit
+-- HEAD: 0d40d74a plus bd2d284a's `tests/run.js`
++- HEAD: ebf924a7
+ 
+ ## Defects
+ 
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 71e5eca9..ace04da2 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -749,15 +749,50 @@ function writtenKeys(before, previous, ownedKeys) {
+ // so a later release finds them. Touches only `owned_keys` of an existing entry:
+ // the digest stays the owned array's alone, which that write leaves as it was.
+ // With no entry the file was never applied, so its value reads as the user's.
++// Returns whether it saved. A ledger or `.asd` directory that is a symlink or
++// junction is refused (thrown), the save going through a sibling temp file
++// renamed over the ledger so a failure never leaves it half-written.
+ function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
+   const syncState = loadSyncState(repoRoot);
+   const entry = syncState.entries[relKey];
+-  if (!entry) return;
++  if (!entry) return false;
+   const previous = entry.owned_keys || [];
+   const written = writtenKeys(before, previous, ownedKeys);
+-  if (written.length === previous.length && written.every((key) => previous.includes(key))) return;
++  if (written.length === previous.length && written.every((key) => previous.includes(key))) return false;
++  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
++  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
+   syncState.entries[relKey] = { ...entry, owned_keys: written };
+-  saveSyncState(repoRoot, syncState);
++  writeAtomically(ledger, normalizeText(JSON.stringify(syncState, null, 2) + '\n'));
++  return true;
++}
++
++// Writes `text` to a sibling temp file this call creates exclusively, then
++// renames it over `filePath`. A temp file this call created is removed on
++// failure; a removal that itself fails leaves the stray file and never throws.
++function writeAtomically(filePath, text) {
++  const partial = `${filePath}.${process.pid}.tmp`;
++  let isCreated = false;
++  try {
++    const fd = fs.openSync(partial, 'wx');
++    isCreated = true;
++    try {
++      fs.writeFileSync(fd, text, 'utf8');
++    } finally {
++      fs.closeSync(fd);
++    }
++    fs.renameSync(partial, filePath);
++  } catch (error) {
++    if (isCreated) removeQuietly(partial);
++    throw error;
++  }
++}
++
++function removeQuietly(filePath) {
++  try {
++    fs.unlinkSync(filePath);
++  } catch (_) {
++    return;
++  }
+ }
+ 
+ // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
+diff --git a/tests/run.js b/tests/run.js
+index dc6422a0..975a2031 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -10802,24 +10802,57 @@ test('sprint-036 AC-16: attribution-check splices only the attribution keys it r
+   assert.deepStrictEqual(observed, byteKeepingCases().map(([label, , expected]) => [label, 0, '', expected]), 'AC-16: the reset changes the value span of each re-enabling key and nothing else, the file keeping its layout and line endings');
+ });
+ 
+-test('sprint-036 AC-16 (external 3): attribution-check whose in-place write of a settings file fails after truncating it restores the original bytes and warns it is left untouched, and warns it may be damaged only when the restore fails too; both exit 0 and still clean the other file', () => {
++test('sprint-036 AC-16 (external 1, 3): attribution-check whose in-place write of a settings file fails - a thrown or short writeSync, a failed ftruncateSync - restores the original bytes through the same descriptor and warns it is left untouched, and warns it may be damaged only when the restore fails too; both exit 0 and still clean the other file', () => {
+   const RE_ENABLING = `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`;
+-  const PARTIAL = '{"includeCo';
++  const SCRAMBLED = '#####';
+   const stubDir = path.join(mkTempDir(), 'stub dir');
+   fs.mkdirSync(stubDir);
+-  const stub = path.join(stubDir, 'writeFileSync.js');
+-  fs.writeFileSync(stub, `const fs = require('fs');\nconst real = fs.writeFileSync;\nlet failures = Number(process.env.STUB_FAILURES);\nfs.writeFileSync = (...args) => { if (String(args[0]).endsWith('settings.local.json') && failures > 0) { failures -= 1; real(args[0], '${PARTIAL}'); throw new Error('EPERM: stubbed writeFileSync failure'); } return real(...args); };\n`, 'utf8');
+-  const run = (failures) => {
++  const stub = path.join(stubDir, 'descriptorWrites.js');
++  const stubSource = [
++    "const fs = require('fs');",
++    'const { openSync, closeSync, writeSync, ftruncateSync } = fs;',
++    'const targets = new Set();',
++    'let failures = Number(process.env.STUB_FAILURES);',
++    'const fails = (fd, mode) => process.env.STUB_MODE === mode && targets.has(fd) && failures > 0 && (failures -= 1, true);',
++    "fs.openSync = (...args) => { const fd = openSync(...args); if (String(args[0]).endsWith('settings.local.json')) targets.add(fd); return fd; };",
++    'fs.closeSync = (fd) => { targets.delete(fd); return closeSync(fd); };',
++    `fs.writeSync = (fd, buffer, ...rest) => { if (fails(fd, 'write')) { writeSync(fd, Buffer.from('${SCRAMBLED}'), 0, ${SCRAMBLED.length}, 0); throw new Error('EIO: stubbed writeSync failure'); } if (fails(fd, 'short')) { writeSync(fd, buffer, ...rest); return buffer.length - 1; } return writeSync(fd, buffer, ...rest); };`,
++    "fs.ftruncateSync = (fd, length) => { if (fails(fd, 'truncate')) throw new Error('EIO: stubbed ftruncateSync failure'); return ftruncateSync(fd, length); };",
++  ].join('\n');
++  fs.writeFileSync(stub, `${stubSource}\n`, 'utf8');
++  const run = (mode, failures) => {
+     const sandbox = attributionRepo('disabled');
+     writeFile(sandbox.repo, '.claude/settings.json', RE_ENABLING);
+     writeFile(sandbox.repo, '.claude/settings.local.json', RE_ENABLING);
+-    const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: { ...sandbox.env, STUB_FAILURES: String(failures), NODE_OPTIONS: `--require "${stub.split(path.sep).join('/')}"` } });
++    const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: { ...sandbox.env, STUB_MODE: mode, STUB_FAILURES: String(failures), NODE_OPTIONS: `--require "${stub.split(path.sep).join('/')}"` } });
+     const claudeDir = path.join(sandbox.repo, '.claude');
+     return [outcome.status, outcome.stderr, fs.readFileSync(path.join(claudeDir, 'settings.local.json'), 'utf8'), JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8')).includeCoAuthoredBy];
+   };
+-
+-  assert.deepStrictEqual(run(1), [0, 'runtime: .claude/settings.local.json could not be rewritten (EPERM: stubbed writeFileSync failure), left untouched\n', RE_ENABLING, false], 'AC-16: the write fails after truncating the file, the original bytes are written back and the warning states it is untouched; the other file is still cleaned');
+-  assert.deepStrictEqual(run(2), [0, 'runtime: .claude/settings.local.json could not be rewritten (EPERM: stubbed writeFileSync failure) and may be damaged; restore it from git\n', PARTIAL, false], 'AC-16: a failed restore is reported as damage with its remedy, never as untouched; the other file is still cleaned');
++  const untouched = (cause) => `runtime: .claude/settings.local.json could not be rewritten (${cause}), left untouched\n`;
++  const damaged = (cause) => `runtime: .claude/settings.local.json could not be rewritten (${cause}) and may be damaged; restore it from git\n`;
++  const REWRITTEN_TAIL = RE_ENABLING.replace('true', 'false').slice(-1);
++
++  assert.deepStrictEqual(run('write', 1), [0, untouched('EIO: stubbed writeSync failure'), RE_ENABLING, false], 'AC-16: a write failing after changing the first bytes is restored through the descriptor, the warning states the file untouched and its bytes are the original; the other file is still cleaned');
++  assert.deepStrictEqual(run('write', 2), [0, damaged('EIO: stubbed writeSync failure'), SCRAMBLED + RE_ENABLING.slice(SCRAMBLED.length), false], 'AC-16: a failed restore is reported as damage with its remedy, never as untouched');
++  assert.deepStrictEqual(run('short', 1), [0, untouched('short write'), RE_ENABLING, false], 'AC-16: a short write count is a failure and the original is restored');
++  assert.deepStrictEqual(run('truncate', 1), [0, untouched('EIO: stubbed ftruncateSync failure'), RE_ENABLING, false], 'AC-16: a failed final cut leaves a longer file, which the restore writes over and cuts back to the original');
++  assert.deepStrictEqual(run('truncate', 2), [0, damaged('EIO: stubbed ftruncateSync failure'), RE_ENABLING + REWRITTEN_TAIL, false], 'AC-16: a restore whose cut also fails is damage - the original bytes plus the uncut tail');
++});
++
++test('sprint-036 AC-16 (external 1): attribution-check overwrites a settings file in place so it holds exactly the new bytes - a shorter replacement leaves no padding, a longer one is complete, multibyte text counted in bytes', () => {
++  const COMMIT = 'Co-authored-by: Клод <noreply@anthropic.com>';
++  const PR = 'Generated with Claude Code';
++  const shorter = `${JSON.stringify({ attribution: { commit: COMMIT, pr: PR }, model: 'opus' }, null, 2)}\n`;
++  const longer = '{"includeCoAuthoredBy":true}';
++  const shorterExpected = `${JSON.stringify({ attribution: { commit: '', pr: '' }, model: 'opus' }, null, 2)}\n`;
++  const sandbox = attributionRepo('disabled');
++  writeFile(sandbox.repo, '.claude/settings.json', shorter);
++  writeFile(sandbox.repo, '.claude/settings.local.json', longer);
++  const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
++  const readBytes = (rel) => fs.readFileSync(path.join(sandbox.repo, rel));
++  assert.strictEqual(outcome.status, 0, 'AC-16: the check exits 0');
++  assert.ok(Buffer.byteLength(shorterExpected) < Buffer.byteLength(shorter) && Buffer.byteLength('{"includeCoAuthoredBy":false}') > Buffer.byteLength(longer), 'sanity: one file shrinks and the other grows');
++  assert.deepStrictEqual([readBytes('.claude/settings.json'), readBytes('.claude/settings.local.json')], [Buffer.from(shorterExpected), Buffer.from('{"includeCoAuthoredBy":false}')], 'AC-16: each file is exactly the new text - the shorter one cut where the new text ends, with no trailing spaces, the longer one whole');
+ });
+ 
+ test('sprint-036 AC-16: attribution-check skips a file named after -- with its stderr warning, still cleans the other file and prints the Codex hint, and exits 2 on a flag other than -- or a path outside the two settings files', () => {
+@@ -10897,6 +10930,7 @@ function disabledAttributionRepo(extra = {}) {
+ }
+ 
+ const OFF_VALUE = { commit: '', pr: '' };
++const LEDGER_LINE = 'attribution: .asd/sync-state.json: recorded the owned attribution of .claude/settings.json\n';
+ 
+ test('sprint-036 AC-15/AC-16 (external 1, 2, 5): attribution-check under disabled inserts the missing owned attribution value into .claude/settings.json with one fix line and records it as sync\'s, keeps the owned-array digest so sync reads current, never writes the release manifest or settings.local.json, and a later enabled apply drops the value with its record', () => {
+   const settingsRel = '.claude/settings.json';
+@@ -10908,7 +10942,7 @@ test('sprint-036 AC-15/AC-16 (external 1, 2, 5): attribution-check under disable
+ 
+   const check = repo.check();
+   const after = repo.entry();
+-  assert.deepStrictEqual([check.status, check.stdout, check.stderr], [0, `attribution: ${settingsRel}: attribution set to {"commit":"","pr":""}\n`, ''], 'AC-16: one fix line names the inserted value and nothing is warned');
++  assert.deepStrictEqual([check.status, check.stdout, check.stderr], [0, `attribution: ${settingsRel}: attribution set to {"commit":"","pr":""}\n${LEDGER_LINE}`, ''], 'AC-16: one fix line names the inserted value, a second names the ledger that saved its record, and nothing is warned');
+   assert.deepStrictEqual([JSON.parse(repo.read(settingsRel)), after.owned_keys, after.kind, after.content_digest], [{ ...JSON.parse(before.settings), attribution: OFF_VALUE }, ['attribution'], before.entry.kind, before.entry.content_digest], 'AC-15: only the attribution value is inserted, recorded as sync\'s, and the entry keeps its kind and owned-array digest');
+   assert.deepStrictEqual([repo.statusOf(), repo.read('.asd/release-manifest.json'), repo.read('.claude/settings.local.json')], ['current', before.manifest, localText], 'AC-15: sync --check reads current afterwards; the release manifest bytes and settings.local.json are untouched');
+   assert.strictEqual(repo.check().stdout, '', 'AC-16: a second check finds the value in place and reports nothing');
+@@ -10928,7 +10962,7 @@ test('sprint-036 AC-15/AC-16 (external 5): attribution-check replaces a present
+     const check = repo.check();
+     return [label, check.status, check.stdout, check.stderr, JSON.parse(repo.read(settingsRel)).attribution, repo.entry().owned_keys, repo.statusOf(), repo.read('.claude/settings.local.json')];
+   });
+-  assert.deepStrictEqual(observed, shapes.map(([label]) => [label, 0, `attribution: ${settingsRel}: attribution replaced by {"commit":"","pr":""}\n`, '', OFF_VALUE, ['attribution'], 'current', localText]), 'AC-16: each non-owned shape is replaced by the owned value with a "replaced by" line, recorded, and the local file with its own incomplete attribution stays as it was');
++  assert.deepStrictEqual(observed, shapes.map(([label]) => [label, 0, `attribution: ${settingsRel}: attribution replaced by {"commit":"","pr":""}\n${LEDGER_LINE}`, '', OFF_VALUE, ['attribution'], 'current', localText]), 'AC-16: each non-owned shape is replaced by the owned value with a "replaced by" line, recorded, and the local file with its own incomplete attribution stays as it was');
+ });
+ 
+ test('sprint-036 AC-15/AC-16 (external 5): attribution-check with no sync-state record of .claude/settings.json inserts the value and writes nothing to the sync state - an absent file stays absent, an empty one keeps its bytes', () => {
+@@ -10946,6 +10980,72 @@ test('sprint-036 AC-15/AC-16 (external 5): attribution-check with no sync-state
+   assert.deepStrictEqual([empty.status, empty.stderr, JSON.parse(fs.readFileSync(path.join(emptyState, settingsRel), 'utf8')).attribution, fs.readFileSync(path.join(emptyState, '.asd', 'sync-state.json'), 'utf8')], [0, '', OFF_VALUE, stateBefore], 'AC-15: a file sync never applied reads as the user\'s, so its sync-state bytes are unchanged');
+ });
+ 
++test('sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory inserts the value, warns its record could not be saved, names no ledger line and leaves the linked ledger byte-identical', () => {
++  const settingsRel = '.claude/settings.json';
++  const warning = `runtime: ${settingsRel} was fixed but its record in .asd/sync-state.json could not be saved (.asd/sync-state.json or .asd is a symlink or junction), run /asd-sync\n`;
++  const FIX_LINE = `attribution: ${settingsRel}: attribution set to {"commit":"","pr":""}\n`;
++  const linkedLedger = () => {
++    const repo = disabledAttributionRepo();
++    const behind = path.join(mkTempDir(), 'sync-state.json');
++    const ledger = path.join(repo.root, '.asd', 'sync-state.json');
++    fs.copyFileSync(ledger, behind);
++    fs.unlinkSync(ledger);
++    try {
++      fs.symlinkSync(behind, ledger, 'file');
++    } catch (_) {
++      return null;
++    }
++    return { repo, behind };
++  };
++  const linkedDir = () => {
++    const repo = disabledAttributionRepo();
++    const real = path.join(repo.root, 'asd-real');
++    fs.renameSync(path.join(repo.root, '.asd'), real);
++    fs.symlinkSync(real, path.join(repo.root, '.asd'), 'junction');
++    return { repo, behind: path.join(real, 'sync-state.json') };
++  };
++  const cases = [['a linked .asd directory', linkedDir()]];
++  const fileLink = linkedLedger();
++  if (fileLink === null) console.log('  (skipped the ledger-file link assertions: fs.symlinkSync unsupported in this environment)');
++  else cases.push(['a symlinked ledger', fileLink]);
++  const outcomes = cases.map(([label, { repo, behind }]) => {
++    const ledgerBefore = fs.readFileSync(behind, 'utf8');
++    const check = repo.check();
++    return [label, check.status, check.stdout, check.stderr, fs.readFileSync(behind, 'utf8') === ledgerBefore, JSON.parse(repo.read(settingsRel)).attribution];
++  });
++  assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, FIX_LINE, warning, true, OFF_VALUE]), 'AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link\'s target keeps its bytes');
++});
++
++test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
++  const settingsRel = '.claude/settings.json';
++  const repo = disabledAttributionRepo();
++  const asdDir = path.join(repo.root, '.asd');
++  const ledgerPath = path.join(asdDir, 'sync-state.json');
++  const before = JSON.parse(repo.read(settingsRel));
++  const record = () => sync.recordOwnedKeys(repo.root, settingsRel, before, { attribution: OFF_VALUE });
++  const tempNames = () => fs.readdirSync(asdDir).filter((name) => name.endsWith('.tmp'));
++  const original = repo.read('.asd/sync-state.json');
++
++  const FOREIGN = 'not the ledger';
++  const foreign = path.join(asdDir, `sync-state.json.${process.pid}.tmp`);
++  fs.writeFileSync(foreign, FOREIGN, 'utf8');
++  assert.throws(record, /EEXIST/, 'AC-16: an existing file at the temp name is never opened over');
++  assert.deepStrictEqual([fs.readFileSync(foreign, 'utf8'), repo.read('.asd/sync-state.json')], [FOREIGN, original], 'AC-16: the foreign file is kept and the ledger unchanged');
++  fs.unlinkSync(foreign);
++
++  const realRename = fs.renameSync;
++  fs.renameSync = () => { throw new Error('EPERM: stubbed renameSync failure'); };
++  try {
++    assert.throws(record, /stubbed renameSync failure/, 'AC-16: a failing rename surfaces its error');
++  } finally {
++    fs.renameSync = realRename;
++  }
++  assert.deepStrictEqual([repo.read('.asd/sync-state.json'), tempNames()], [original, []], 'AC-16: the original ledger is intact and the temp file this call created is gone');
++
++  assert.strictEqual(record(), true, 'AC-16: a save returns true');
++  assert.deepStrictEqual([JSON.parse(fs.readFileSync(ledgerPath, 'utf8')).entries[settingsRel].owned_keys, tempNames()], [['attribution'], []], 'AC-16: the record is in the ledger and no temp file remains');
++});
++
+ test('sprint-036 AC-16 (external 4): attribution-check whose read of one settings file fails warns that file could not be read and is left untouched, exits 0, and still cleans the other file and prints the Codex hint', () => {
+   const sandbox = attributionRepo('disabled');
+   fs.mkdirSync(path.join(sandbox.repo, '.claude', 'settings.json'), { recursive: true });
+@@ -11307,7 +11407,7 @@ test('sprint-036 AC-16: asd-sprint runs its attribution check on the sprint bran
+   assert.ok(!check.includes(SYNC_SCRIPT), 'AC-16: the check runs without a sync step, which recomputed the release ledger and wrote before the link refusal');
+   assert.ok(check.includes(CHECK),'AC-16: the check always runs and takes the user-modified settings files after --, so each is skipped and the rest, with the Codex hint, still handled');
+   assert.ok(check.includes('git ls-files --error-unmatch -- <file>') && check.includes('a fix line names') && check.includes(`\`${SUBJECT}\``) && SUBJECT.length <= 50, 'AC-16: it commits only a tracked file that a fix line names, under a header within the commit limit');
+-  assert.ok(check.includes(`\`${SYNC_STATE}\` instead when \`git status\` now shows it changed`), 'AC-16: the sync state, which the check records into, is committed when status shows it changed');
++  assert.ok(!check.includes('now shows it changed'), 'AC-16: the commit set follows the fix lines alone - the check names the sync state in a line of its own, so no git-status guess adds it');
+   const ops = jsonOf(skill, 'Preconditions').ops.join('\n');
+   assert.ok(!ops.includes(SYNC_SCRIPT) && ops.includes('node .asd/runtime.js attribution-check') && ops.includes(SYNC_STATE), 'AC-16: the skill grants no sync run, and names the check and the sync-state record it writes');
+   assert.ok(ops.includes('git ls-files') && ops.includes('git add/git commit') && ops.includes('git status --porcelain'), 'AC-16: the skill grants the status read, the tracked-file lookup and the commit its step performs');

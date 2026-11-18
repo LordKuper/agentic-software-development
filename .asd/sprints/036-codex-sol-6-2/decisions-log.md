@@ -97,3 +97,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl fix for wave-1/iter-05: findings resolved (dev 01497426; views eb63010f; tester e59544ce, full suite 425/425). Flagged choice accepted: `closeQuietly` and the temp-file removal swallow a close or unlink error by design (cleanup never throws), each through an explicit return.
 - 2026-11-18 — route impl-test entry 7: standard, dispatch HEAD ebf924a707b019cc7536b164a3e483a0494c8044
 - 2026-11-18 — impl-test: impacted set green (425/425), 0/0 tests
+- 2026-11-18 — latch-refresh wave-1/iter-06: combined cleared (.asd/runtime.js, .asd/sync.js)
