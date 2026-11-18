@@ -29,11 +29,13 @@ Before creating: fast-forward local `git.base_branch` to `origin/<base_branch>` 
 
 ## TODO stubs
 
-In-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt)` for known debt that should not block PR), owner agent.
+In-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt) review YYYY-MM-DD: <why>` for known debt that should not block PR; the date is a real calendar date), owner agent.
 
 On resolution: row **deleted** from stubs.md (no status column; deletion = resolution); a cleanup removal of a TODO marker deletes its row in the same commit. On migration: deleted, new row created under the receiving sprint.
 
 `pr` phase blocks if any stub has `Sprint = <current-NNN-slug>` and Reason does NOT start with `(accepted-debt)`. Devs must resolve, migrate, or mark accepted-debt before PR.
+
+An accepted-debt entry whose review date has passed, is missing or is not a valid date is due (`node .asd/runtime.js stubs-due`). The scope gate shows it for renew with a new date or fix as an `AC-N` (`asd-phase-scope.md` step 2a).
 
 ## Commit before review
 
@@ -71,6 +73,8 @@ Triggered only after DoD met and the active `checkpoints.md` policy permits publ
 Sole statement of who merges. A sprint has exactly one PR; its closure never opens another. The main orchestrator merges the sprint PR itself, in the run that opened it: no user gate, no further `/asd-sprint`. It runs `node .asd/runtime.js checks-wait --pr <n>` — a long-running command: host background, or a host timeout above its 30 min limit — then `gh pr merge <n> --squash` on `pass` or `none`. `checks-wait` allows 60 s for checks to register (`none` if none did) and 30 min for them to finish; a required check holds the merge at the host whatever the grace.
 
 The merge completes the sprint; no user gate follows it. It writes nothing on `git.base_branch`, so the sprint stays at its active path there, merged-unclosed, until the next sprint's scope archives it mechanically: terminal write and archive move as that branch's first commit (`sprint-lifecycle.md` "PR phase", "Closure write"). The self-hosting release follows the merge ("Versioning & Changelog (self-hosting only)").
+
+A scope-gate `merge` of an open PR (`asd-phase-scope.md` step 2a) uses the same `checks-wait` and `gh pr merge <n> --squash` form, run at the gate; a blocked merge is reported the same way and leaves the PR open.
 
 Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged as already approved (that flow opened it only after the user approved closing the sprint), and its closure write is skipped.
 

@@ -23,6 +23,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── custom-coding-rules.md
 │   │   ├── retro-backlog.md                 # lazy, "Retro backlog"
 │   │   ├── reliability-checklist.md         # lazy, "Reliability checklist"
+│   │   ├── context-ceilings.json            # consumer-owned, written by `runtime.js context-check --seed`
 │   │   └── stubs.md
 │   ├── tmp/                                 # git-ignored helper files, "Scratch directory"
 │   └── sprints/
@@ -86,6 +87,7 @@ A sprint folder holds **only** the artifacts named above, plus the per-reviewer 
 
 ```
 .asd/project/reliability-checklist.md      # lazy, "Reliability checklist"
+.asd/project/context-ceilings.json         # consumer-owned, written by `runtime.js context-check --seed`
 docs/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
@@ -108,7 +110,7 @@ A release retiring an agent deletes its directory in its migration (`.asd/migrat
 
 **In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
 
-**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too. The check pins the exact sentences and terms the sprint removed, taken from its own diff's removed lines, never a free-phrasing regex. A hit in agent memory is fixed inside that entry (`review-policy.md` "Memory-fix dispatch").
+**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too. The check pins the exact sentences and terms the sprint removed, taken from its own diff's removed lines, never a free-phrasing regex. A hit in agent memory is fixed inside that entry (`review-policy.md` "Memory-fix dispatch"). A test pinning the removed terms is a temporary test (`code-style.md` §17); a later sprint's prune pass removes it.
 
 ## Scratch directory
 
@@ -200,7 +202,7 @@ Manual step = operational action a human must perform for the plan to complete (
 
 ## Test plan
 
-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects carried over, resolved entries kept). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows, plus `Suite run` for a check a finding requires. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
+`<sprint>/test-plan.md` per `t_test-plan.md`, which holds the shape of `Added tests` (`Gap proof`), `Suite run` (`Line delta`, `Allowance`, `Slowest tests`) and the optional `## Suite revision` ledger. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects carried over, resolved entries kept). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows, plus `Suite run` for a check a finding requires. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
 
 **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
 
