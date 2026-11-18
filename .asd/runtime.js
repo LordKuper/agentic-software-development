@@ -1562,13 +1562,14 @@ function transcriptSnapshot(file) {
   return { size: stat.size, mtimeMs: stat.mtimeMs, text: fs.readFileSync(file, 'utf8') };
 }
 
-/** Whether a reviewer's `{return, manifest}` entry names a return file that exists and passes `checkReview`; its phase and reviewer come from the file's own verdict token. A missing or invalid file is false. */
+/** Whether a reviewer's `{return, manifest}` entry names a return file that exists and passes `checkReview` for the phase and reviewer the dispatch's own manifest names, so a verdict line of another reviewer or phase is no return; a manifest without a `reviewer` (an External Review scope file) means External Review. A missing or invalid file is false. */
 function isReviewReturned(entry) {
   try {
-    const text = fs.readFileSync(entry.return, 'utf8');
-    const [, phase, reviewer] = /^[ \t]*\[REVIEW-([a-z]+)-([a-z-]+)\]/m.exec(text) || [];
+    const manifest = JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
+    const phase = manifest.phase.replace(/-review$/, '');
+    const reviewer = manifest.reviewer === undefined ? EXTERNAL_REVIEWER : manifest.reviewer;
     if (!REVIEW_NODES.includes(phase) || !reviewerKeys(phase).includes(reviewer)) return false;
-    checkReview(phase, reviewer, text, entry.manifest);
+    checkReview(phase, reviewer, fs.readFileSync(entry.return, 'utf8'), entry.manifest);
     return true;
   } catch (_) {
     return false;
