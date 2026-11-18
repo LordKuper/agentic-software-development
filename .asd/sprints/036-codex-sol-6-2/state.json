@@ -1,7 +1,7 @@
 {
   "sprint_id": "036-codex-sol-6-2",
   "branch": "sprint/036-codex-sol-6-2",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -87,7 +87,9 @@
     "review-fix wave-1/iter-01 D": { "execution": "agent", "tier": "standard", "reason": "risk:reviewer return validation", "raise_effort": false, "resolved_model": "sonnet" },
     "review-fix wave-1/iter-02 A": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
     "review-fix wave-1/iter-02 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
-    "review-fix wave-1/iter-02 C": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" }
+    "review-fix wave-1/iter-02 C": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-03 A": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-03 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
