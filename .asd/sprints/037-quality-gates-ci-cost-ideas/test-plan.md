@@ -17,18 +17,25 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 1 | bbb52783 | full change surface |
 | 2 | b6f345ae | delta since entry 1 |
 | 3 | dc162aad | delta since entry 2 |
+| 4 |  | delta since entry 3 (review-fix `wave-1/iter-01`) |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`; the review-fix `wave-1/iter-01` tester rows below are carried forward.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `git diff b6f345ae...HEAD` outside `.asd/sprints/**` is `.asd/release-manifest.json` alone: two `upstream_hashes` values (`.asd/rules/sprint-lifecycle.md`, `.asd/workflows/asd-phase-retro.md`) recomputed by `sync.js --apply` for D-2 | a recorded hash drifts from its file again, or a changed value is not a hash of the file | content contract (existing owner) | none | `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)` already owns it and is the test that went red on D-2; it is green on this tree. A second test would repeat the same comparison (§17). No test added |
 | Review-fix `wave-1/iter-01` combined F4: two `//` comments inside test bodies of `tests/runtime-timing.test.js` | a body comment against code-style §7 | none (static rule) | none | the two WHY lines moved into header comments above their tests; no behaviour changed |
 | combined F6: the dispatch id to bundle file name mapping in `contextBundleBytes` (`.asd/runtime.js`) | a `/`, space or `#<n>` id maps to the wrong file name and `context_bytes` stays unfilled | extend the sprint-037 AC-2/AC-18 test with a `timing --open` case over scratch bundle files | extend existing | the AC-2/AC-18 test owns the `context_bytes` fill contract; the case reaches the real mapping through the CLI for `combined wave-1/iter-01` and `Task 2#2`, files cleaned in `finally` |
 | external 11: `tests/run.js` logs a test that throws or rejects `null` as passing | a null throw reads as green, hiding a failing test | new runner-area test over a copied runner | new test | no test of the runner's pass/fail verdict on a falsy throw existed |
 | behaviour-change fallout of combined F5: `checkGapProof` fails closed on a plan without `## Added tests` | the sprint-033 AC-27 fixture plan has no such section | fixture fix, an empty `## Added tests` table | test defect, fixed | not a code defect; the other new behaviours are left to the impl-test re-entry |
+| `git diff dc162aad...HEAD` outside `.asd/sprints/**`: `context-check` reports a present `custom-*-rules.md` or `reliability-checklist.md` with no ceiling key as `ceiling: null` (combined F3 / external 4) | a project rules file created after the seed escapes every ceiling and the check stays green | extend `sprint-037 AC-1` (`runtime-timing`) with a ceilings file missing one project key | extend existing | the AC-1 test owns the context-check exit contract; the new case expects exit 1 and `[[<key>, null]]`. Fail-first mutation (`return { over: over.concat(unbounded) };` → `return { over };`, restored): `node tests/run.js runtime-timing --filter "sprint-037 AC-1"` → exit 1, `FAIL - sprint-037 AC-1: context-check exits 0 over the committed ceilings…` (1/21 matched, 0/1 passed) |
+| `checkGapProof` fails closed on a plan with no `## Added tests` section and rejects a `{{…}}` Gap proof (combined F5 / external 9) | a plan whose Added tests heading was dropped, or whose template placeholder was never replaced, closes green | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a plan lacking the section and a placeholder-proof plan | extend existing | the AC-3/AC-13 test owns the impl-test-close Gap proof refusals; two more refused cases in its existing batch. Mutations (restored): section guard → `return` and placeholder line disabled, each `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…` (1/34 matched, 0/1 passed) |
+| `impl-test-close` also validates the `test-plan.entry-NN.md` segment its re-entry rotated (external 8) | a rotated segment with an empty Gap proof closes green | extend `sprint-033 AC-27` (`runtime-tools`): a `--entry 2` refusal case with a bad entry-01 segment and a valid-segment control | extend existing | the AC-27 test owns impl-test-close's write-nothing-on-invalid-input contract. Mutation (`Number(flags.entry) > 1 && fs.existsSync(segment)` → `false && …`, restored): `node tests/run.js runtime-tools --filter "sprint-033 AC-27"` → exit 1, `FAIL - sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed…` (1/34 matched, 0/1 passed) |
+| `checks-wait --repo <owner/repo>` is validated and forwards `-R` (combined F2) | a repo-scoped wait reads the default repo's PR, or a malformed repo reaches `gh` | extend `sprint-032 AC-4/AC-5` (`runtime-tools`) with a forwarded-argv case and a malformed-repo refusal | extend existing | the test owns the gh argv and the pre-gh refusal. Mutations (restored): `-R` forwarding dropped, and the `--repo` regex check dropped, each `node tests/run.js runtime-tools --filter "sprint-032 AC-4/AC-5"` → exit 1, `FAIL - sprint-032 AC-4/AC-5: checks-wait prints…` (2/34 matched, 1/2 passed) |
+| the suite-baseline `over` compares in milliseconds (external 10) | a run past 1.5 times the median reads as not over because each side was rounded to whole seconds first | extend `sprint-037 AC-2/AC-18` (`runtime-timing`) with a millisecond case (2500 ms against a 1600 ms median) | extend existing | whole-minute ledgers never expose the rounding, so the case builds its ops in milliseconds. Mutation (`sprintMs > SUITE_OVER_FACTOR * baselineMs` → the rounded-seconds comparison, restored): `node tests/run.js runtime-timing --filter "sprint-037 AC-2/AC-18"` → exit 1, `FAIL - sprint-037 AC-2/AC-18: a dispatch open takes context_bytes…` (1/21 matched, 0/1 passed) |
+| `--headroom` removed from `context-check` (combined F1) | a caller still passing `--headroom` | none | none | no test or canonical text passes it (`grep headroom` over `tests/` and `.asd/` rules, workflows, skills, agents, project is empty); an unknown flag is already warned by the generic ignored-flag path. No test added |
+| `defectStalemate` reuses `planSection` (F12) | the Defects section lookup changes behaviour for the stalemate check | none (existing owner) | none | the existing stalemate tests in `runtime-review` own it and are green on this tree. No test added |
 
 ## Removed tests
 
@@ -54,13 +61,13 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js runtime-timing runtime-tools runner`
-- Scope: impacted — the three areas the review-fix `wave-1/iter-01` findings touch (combined F4, F6, F5 fallout; external 11); the F6 and external 11 mutation runs are `--filter` runs recorded under Added tests
-- Result: pass — exit 0, 57 passed, 0 failed, 0 skipped (57 tests); `git diff --cached --check` exit 0
+- Command: `node tests/run.js runtime-tools runtime-timing runtime-review runtime-routing runner update sync-cli sync-render contract-agents contract-rules contract-templates contract-workflows`
+- Scope: impacted — the twelve areas reading the files `git diff dc162aad...HEAD` changed (`.asd/runtime.js`, `tests/run.js`, rule, workflow, template, agent and skill canon, README, release manifest); `hooks` and `migrations` read none of them. The F6, external 11 and entry 4 mutation runs are `--filter` runs recorded under Risk → check decisions and Added tests
+- Result: pass — exit 0, 282 passed, 0 failed, 0 skipped (282 tests); `git diff --cached --check` exit 0
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`, every item current)
-- Slowest tests: 2426 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 2019 ms sprint-014 AC-2 ASD-Task trailer reconstruction; 1216 ms sprint-019 AC-8 one-command commit form; 803 ms sprint-023 AC-4 memory-check
-- HEAD: b17ba3f5
-- Line delta: tests +8650/−11521 (net -2871); other +660/−146 (net 514)
+- Slowest tests: 2010 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1383 ms sprint-019 AC-8 one-command commit form; 1210 ms sprint-017 AC-4/AC-8 emit-manifest --full-files/--full-base; 1159 ms sprint-036 AC-14 agent-liveness --returns
+- HEAD: a0d897bf
+- Line delta: tests +8705/−11521 (net -2816); other +703/−166 (net 537)
 
 ## Defects
 
