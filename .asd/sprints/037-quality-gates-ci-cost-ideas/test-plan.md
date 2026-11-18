@@ -22,17 +22,16 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 6 | 46f1b75d | delta since entry 5 (review-fix `wave-1/iter-03`, iter-03 memory fixes) |
 | 7 | 08cde94f | delta since entry 6 (review-fix `wave-1/iter-04`) |
 | 8 | b00f83b9 | delta since entry 7 (review-fix `wave-1/iter-05`) |
+| 9 |  | delta since entry 8 (review-fix `wave-1/iter-06`) |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`, entry 6's (the review-fix `wave-1/iter-03` rows) to `test-plan.entry-06.md`, entry 7's (the review-fix `wave-1/iter-04` rows) to `test-plan.entry-07.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`, entry 6's (the review-fix `wave-1/iter-03` rows) to `test-plan.entry-06.md`, entry 7's (the review-fix `wave-1/iter-04` rows) to `test-plan.entry-07.md`, entry 8's (the review-fix `wave-1/iter-05` rows) to `test-plan.entry-08.md`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `git diff 08cde94f...HEAD` outside `.asd/sprints/**`: `checkGapProof` validates every blank-line-separated table of `## Added tests` (each needs a header and a well-formed separator; a pipe-less line inside a table, an empty or `{{`-opening Gap proof in any row refused), prose between tables free (review-fix `wave-1/iter-05`, `6309a721`) | a second table after a blank line passed with an empty Gap proof; the other way round, the per-paragraph split could refuse prose or a valid second table | the dev's two cases in `sprint-037 AC-3/AC-13` (`runtime-tools`): a second table with an empty proof expecting status 2 and `empty Gap proof cell`, prose between two proven tables expecting status 0; no new test | extend existing | the AC-3/AC-13 test owns the Gap proof refusals and holds the valid control (`filled`, status 0); the dev's cases are new assertions in it (311 tests before and after). Fail-first, run in a `git archive` extraction of `6309a721^` under `.asd/tmp/` (deleted after) with the HEAD `tests/runtime-tools.test.js` copied in: `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…`, `a second table after a blank line is checked like the first (got {"status":0,…})` (1/34 matched, 0/1 passed). Control: the same copy with the HEAD `.asd/runtime.js` → exit 0 (1/34 matched, 1/1 passed). Mutations of that HEAD copy (the repo tree never mutated, `git status --short .asd/runtime.js` empty): `if (start === -1) return;` → `fail(…)` (a prose paragraph refused) → same command exit 1, same failing test (1/34 matched, 0/1 passed; the older `proseAfterBlank` assert trips first); a paragraph after the first table holding `Gap proof` refused → exit 1, same test, `prose between two proven tables is free and closes` (1/34 matched, 0/1 passed). runs: 3 |
-| the struck `Removed tests` row stays live, never rotated (`artifact-layout.md` "Test plan" Rotation, `asd-phase-impl-test.md` step 4 and 9a) | a machine-parsed token drifting | none | none | prose of the Tester's rotation and the orchestrator's step 9a filter; no machine reads a struck row (`~~` appears in no `runtime.js` parser), and the `contract-workflows` pin on the Rotation paragraph (existence only) stays green (code-style §17: a prose fix adds a test only for a machine-parsed token) |
-| `72dcc9cb` hash refresh, `81f658a7` round close, `.asd/release-manifest.json` | none reachable by a test | none | none | hashes and bookkeeping; `node .asd/sync.js --check` and the full suite (manifest hash tests included) cover them |
-
+| `git diff b00f83b9...HEAD` outside `.asd/sprints/**`: `2129602e` prose — `asd-phase-impl-test.md` step 4 re-entry rotates first, then writes each review-fix removal request as a live `Removed tests` row; the one permitted segment edit (`artifact-layout.md` Rotation, `asd-phase-impl-test.md` "Rules") covers any `Added tests` refusal `impl-test-close` names | a machine-parsed token drifting | none | none | prose of the Tester's re-entry order and repair scope; no `runtime.js` parser reads either phrase. The only pins reaching them hold: `sprint-014 AC-7` (`contract-workflows`) checks the `test-plan.entry-NN.md` rotation token in canon, and `sprint-037 AC-3/AC-13` / the rotated-segment Gap proof test (`runtime-tools`) already own `impl-test-close`'s refusal of any `Added tests` row in a segment; the impacted set ran green (code-style §17: a prose fix adds a test only for a machine-parsed token) |
+| `.asd/release-manifest.json` hash refresh for the two files above | none reachable by a test | none | none | hashes; the manifest hash tests (`update` area) and `node .asd/sync.js --check` (`ok: true`) cover them |
 
 ## Removed tests
 
@@ -57,12 +56,12 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (every area, `hooks` and `migrations` included)
-- Scope: full — `.asd/runtime.js` changed and every area reaches it through `tests/lib.js`, so no narrower set is honest; the suite op `suite-impl-test-8` brackets the run (the entry 8 fail-first and mutation runs are `--filter` runs in a temp extraction recorded under Risk → check decisions)
-- Result: pass — exit 0, 311 passed, 0 failed, 0 skipped (311 tests)
+- Command: `node tests/run.js contract-workflows contract-rules contract-templates runtime-tools sync-cli sync-render update`
+- Scope: impacted — the delta is two prose canon files and the manifest hashes, no runtime or test code; the areas reading `artifact-layout.md`, `asd-phase-impl-test.md` and `.asd/release-manifest.json` (search-derived), the safety valve not triggered (no build or CI config, no shared module, `.asd/runtime.js` and `.asd/sync.js` unchanged); the suite op `suite-impl-test-9` brackets the run
+- Result: pass — exit 0, 187 passed, 0 failed, 0 skipped (187 tests)
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
-- Slowest tests: 1984 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1441 ms sprint-019 AC-8 one-command commit form; 1139 ms sprint-036 AC-14 agent-liveness --returns; 1106 ms sprint-017 AC-4/AC-8 emit-manifest --full-files
-- HEAD: 81f658a7
+- Slowest tests: 3029 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1593 ms sprint-019 AC-8 one-command commit form; 1121 ms sprint-023 AC-4 memory-check; 777 ms sprint-014 AC-2 failed dispatch reconstruction
+- HEAD: 4fa3bccc
 - Line delta: tests +8723/−11521 (net -2798); other +798/−199 (net 599)
 
 ## Defects
