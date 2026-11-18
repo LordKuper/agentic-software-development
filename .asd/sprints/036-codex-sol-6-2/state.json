@@ -1,7 +1,7 @@
 {
   "sprint_id": "036-codex-sol-6-2",
   "branch": "sprint/036-codex-sol-6-2",
-  "phase": "design-promote",
+  "phase": "cleanup",
   "workflow": "lite",
   "documents": {
     "audit": true,
