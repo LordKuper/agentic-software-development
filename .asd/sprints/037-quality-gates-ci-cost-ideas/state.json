@@ -141,6 +141,13 @@
       "reason": "risk:diff-mode detection scope",
       "raise_effort": false,
       "resolved_model": "sonnet"
+    },
+    "Task 12": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:mirror edits verified by tests/run.js README mirror tests and git grep",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],

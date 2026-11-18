@@ -58,3 +58,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-18 — orchestrator fix aeb46831: Task 9 rule folded into review-policy.md "Change-surface rule" (a new heading reached no reviewer bundle)
 - 2026-11-18 — Task 2 flagged choice accepted: `DELTA_EXCLUDED_GLOBS` constant in runtime.js (no view predicate existed to reuse)
+- 2026-11-18 — route Task 11: standard, dispatch HEAD fdd66242
+- 2026-11-18 — route Task 12: standard, dispatch HEAD fdd66242
