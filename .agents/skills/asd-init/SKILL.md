@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:f1702844a2d5075192fb6563f0e7f6fd222f1be1b3c78ea2253d034976e3371f content_digest=sha256:a5286db095d1e2cf316fce8b68acaeed2ca20b50d28319a815c5604e1d3f6cec asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:5c46ac20f233e8595cec676a04a740860433ed2fa074beb2c65aecfb9090bbe9 content_digest=sha256:805e7f52d259e18d481eccb71a7c787831129743a521a3bcd5e1810b1801949a asd_version=14.7.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -92,7 +92,7 @@ Fresh and re-init only.
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
-6. Apply diff; write config
+6. Apply diff; write config. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `$asd-sync` brings it current under either value, and under `disabled` the next `$asd-sprint` start's `attribution-check` also inserts the owned `attribution` key
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ### Sprint-mediated
