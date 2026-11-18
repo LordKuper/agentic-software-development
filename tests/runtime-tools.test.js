@@ -2,7 +2,7 @@
 
 // runtime.js gate commands: commit and attribution checks, memory-check, retro intake, stubs, checks-wait, scratch-dir, design-tokens
 
-const { assert, fs, path, execFileSync, spawnSync, sync, update, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, loadManifest, makeMiniRepo, writeFile, runtimeCli, runtimeCliResult, sandboxGitRepo, readRepoFile, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, scriptedWait, RUNTIME_JS, runtimeSpawn, disabledAttributionRepo, OFF_VALUE, linkedLedgerCases, recordedOwnedKeys } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, update, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, loadManifest, makeMiniRepo, writeFile, runtimeCli, runtimeCliResult, sandboxGitRepo, readRepoFile, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, scriptedWait, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync, disabledAttributionRepo, OFF_VALUE, linkedLedgerCases, recordedOwnedKeys } = require('./lib.js');
 
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {
   const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
@@ -586,7 +586,7 @@ test('sprint-032 AC-4/AC-5: checks-wait prints {"checks":...} and exits 0 on pas
   }
 });
 
-test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 characters counted as characters, fails a longer one and a memory-check hit among the named staged paths only, ignores a sibling\'s staged memory hit, and refuses a missing subject', () => {
+test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 characters counted as characters, fails a longer one and a memory-check hit among the named staged paths only, ignores a sibling\'s staged memory hit, and refuses a missing subject', async () => {
   const memory = '.claude/agent-memory/asd-x';
   const { repo, env, git } = sandboxGitRepo();
   writeFile(repo, 'docs/own.md', 'plain\n');
@@ -594,28 +594,31 @@ test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 charact
   git('commit', '-q', '-m', 'base');
   writeFile(repo, `${memory}/note.md`, 'seen in sprint 019\n');
   git('add', '--', `${memory}/note.md`);
-  const check = (subject, paths) => {
+  const check = async (subject, paths) => {
     const args = ['commit-check', ...(subject === undefined ? [] : ['--subject', subject]), ...(paths === undefined ? [] : ['--', ...paths])];
-    try {
-      return { status: 0, report: JSON.parse(runtimeCli(args, { cwd: repo, env, stdio: 'pipe' })) };
-    } catch (error) {
-      return { status: error.status, report: error.stdout ? JSON.parse(error.stdout) : null, stderr: String(error.stderr).trim() };
-    }
+    const { status, stdout, stderr } = await runtimeSpawnAsync(args, { cwd: repo, env });
+    return status === 0 ? { status, report: JSON.parse(stdout) } : { status, report: stdout ? JSON.parse(stdout) : null, stderr: stderr.trim() };
   };
   const HEADER_MAX = 50;
   const fits = `chore(test): ${'x'.repeat(HEADER_MAX - 'chore(test): '.length)}`;
-  assert.deepStrictEqual(check(fits, ['docs/own.md']), { status: 0, report: { ok: true, header: { length: HEADER_MAX, max: HEADER_MAX }, memory: [] } }, 'AC-12: a header of exactly the limit passes');
-  const tooLong = check(`${fits}x`, ['docs/own.md']);
+  const [atLimit, tooLong, chars, hit, directory, everyStaged, missing] = await Promise.all([
+    check(fits, ['docs/own.md']),
+    check(`${fits}x`, ['docs/own.md']),
+    check(`feat: ${'é'.repeat(HEADER_MAX - 'feat: '.length)}`, ['docs/own.md']),
+    check(fits, [`${memory}/note.md`]),
+    check(fits, [memory]),
+    check(fits),
+    check(undefined, ['docs/own.md']),
+  ]);
+  assert.deepStrictEqual(atLimit, { status: 0, report: { ok: true, header: { length: HEADER_MAX, max: HEADER_MAX }, memory: [] } }, 'AC-12: a header of exactly the limit passes');
   assert.deepStrictEqual([tooLong.status, tooLong.report.ok, tooLong.report.header], [1, false, { length: HEADER_MAX + 1, max: HEADER_MAX }], 'AC-12: one character over fails with exit 1 and the measured length');
-  assert.strictEqual(check(`feat: ${'é'.repeat(HEADER_MAX - 'feat: '.length)}`, ['docs/own.md']).status, 0, 'AC-12: the limit counts characters, never bytes');
+  assert.strictEqual(chars.status, 0, 'AC-12: the limit counts characters, never bytes');
 
-  assert.deepStrictEqual(check(fits, ['docs/own.md']).report.memory, [], 'AC-21: a staged memory hit outside the named paths is a sibling\'s, never this commit\'s');
-  const hit = check(fits, [`${memory}/note.md`]);
+  assert.deepStrictEqual(atLimit.report.memory, [], 'AC-21: a staged memory hit outside the named paths is a sibling\'s, never this commit\'s');
   assert.deepStrictEqual([hit.status, hit.report.ok, hit.report.memory.map((entry) => [entry.path, entry.token])], [1, false, [[`${memory}/note.md`, 'sprint 019']]], 'AC-21: a hit among the named staged paths fails the commit check');
-  assert.strictEqual(check(fits, [memory]).status, 1, 'a named directory covers the memory files under it');
-  assert.strictEqual(check(fits).status, 1, 'with no paths named every staged memory write is checked');
+  assert.strictEqual(directory.status, 1, 'a named directory covers the memory files under it');
+  assert.strictEqual(everyStaged.status, 1, 'with no paths named every staged memory write is checked');
 
-  const missing = check(undefined, ['docs/own.md']);
   assert.ok(missing.status === 2 && /commit-check takes --subject/.test(missing.stderr), `a missing subject is refused (got ${JSON.stringify(missing)})`);
 });
 
@@ -742,63 +745,75 @@ function attributionRepo(value) {
 }
 
 /** Runs `commit-check --message-file` over `message` written to a fresh file, in the sandbox repo; returns the exit status, the parsed JSON report (null without stdout) and stderr. */
-function commitCheckMessage(sandbox, message) {
+async function commitCheckMessage(sandbox, message) {
   const file = path.join(mkTempDir(), 'check.commit-msg');
   fs.writeFileSync(file, message, 'utf8');
-  const { status, stdout, stderr } = runtimeSpawn(['commit-check', '--message-file', file], { cwd: sandbox.repo, env: sandbox.env });
+  const { status, stdout, stderr } = await runtimeSpawnAsync(['commit-check', '--message-file', file], { cwd: sandbox.repo, env: sandbox.env });
   return { status, report: stdout === '' ? null : JSON.parse(stdout), stderr };
 }
 
-test('sprint-036 AC-12: commit-check --message-file reads the header from the first line, fails an ASD-Task line outside the last paragraph and names it, ignores trailing blank lines and CRLF, and takes exactly one of --subject and --message-file', () => {
+test('sprint-036 AC-12: commit-check --message-file reads the header from the first line, fails an ASD-Task line outside the last paragraph and names it, ignores trailing blank lines and CRLF, and takes exactly one of --subject and --message-file', async () => {
   const sandbox = attributionRepo(null);
   const HEADER = 'feat(x): add y';
   const TRAILERS = 'ASD-Task: Task 1\nASD-Task: D-2\nCo-Authored-By: Pair <pair@example.invalid>';
   const report = (ok, misplaced, length = HEADER.length) => ({ ok, header: { length, max: 50 }, memory: [], misplaced });
-  const outcome = (message) => {
-    const { status, report: checked } = commitCheckMessage(sandbox, message);
+  const outcome = async (message) => {
+    const { status, report: checked } = await commitCheckMessage(sandbox, message);
     return [status, checked];
   };
-
-  assert.deepStrictEqual(outcome(`${HEADER}\n\nWhy.\n\n${TRAILERS}\n`), [0, report(true, [])], 'AC-12: every ASD-Task line in the final paragraph, beside a Co-Authored-By line, passes');
-  assert.deepStrictEqual(outcome(`${HEADER}\n`), [0, report(true, [])], 'AC-12: a message with no trailer has none misplaced');
-  assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line followed by a body paragraph fails the check and is named');
-  assert.deepStrictEqual(outcome(`${HEADER}\nASD-Task: Task 1\n\nBody.\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line glued under the header is outside the last paragraph');
-  assert.deepStrictEqual(outcome(`${HEADER}\nASD-Task: Task 1\n`), [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: a message with no blank line is all subject paragraph, so a trailer directly under the header is misplaced');
-  assert.deepStrictEqual(outcome(`${HEADER}\n\nASD-Task: Task 1\n\n\n`), [0, report(true, [])], 'AC-12: trailing blank lines do not move the last paragraph');
-  assert.deepStrictEqual(outcome(`${HEADER}\r\n\r\nASD-Task: Task 1\r\n`), [0, report(true, [])], 'AC-12: a CRLF message measures its header without the carriage return and finds its last paragraph');
   const longHeader = `feat(x): ${'y'.repeat(50)}`;
-  assert.deepStrictEqual(outcome(`${longHeader}\n\nASD-Task: Task 1\n`), [1, report(false, [], longHeader.length)], 'AC-12: the header limit applies to the message file\'s first line');
-
   const file = path.join(mkTempDir(), 'both.commit-msg');
   fs.writeFileSync(file, `${HEADER}\n`, 'utf8');
-  const refusals = [
-    ['both flags', ['commit-check', '--subject', HEADER, '--message-file', file]],
-    ['an empty message-file path', ['commit-check', '--message-file', '']],
-    ['neither flag', ['commit-check']],
-  ].map(([label, args]) => [label, runtimeSpawn(args, { cwd: sandbox.repo, env: sandbox.env })]);
+  const [full, bare, glued, gluedBody, noBlank, blanks, crlf, long, ...refusals] = await Promise.all([
+    outcome(`${HEADER}\n\nWhy.\n\n${TRAILERS}\n`),
+    outcome(`${HEADER}\n`),
+    outcome(`${HEADER}\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n`),
+    outcome(`${HEADER}\nASD-Task: Task 1\n\nBody.\n`),
+    outcome(`${HEADER}\nASD-Task: Task 1\n`),
+    outcome(`${HEADER}\n\nASD-Task: Task 1\n\n\n`),
+    outcome(`${HEADER}\r\n\r\nASD-Task: Task 1\r\n`),
+    outcome(`${longHeader}\n\nASD-Task: Task 1\n`),
+    ...[
+      ['both flags', ['commit-check', '--subject', HEADER, '--message-file', file]],
+      ['an empty message-file path', ['commit-check', '--message-file', '']],
+      ['neither flag', ['commit-check']],
+    ].map(async ([label, args]) => [label, await runtimeSpawnAsync(args, { cwd: sandbox.repo, env: sandbox.env })]),
+  ]);
+
+  assert.deepStrictEqual(full, [0, report(true, [])], 'AC-12: every ASD-Task line in the final paragraph, beside a Co-Authored-By line, passes');
+  assert.deepStrictEqual(bare, [0, report(true, [])], 'AC-12: a message with no trailer has none misplaced');
+  assert.deepStrictEqual(glued, [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line followed by a body paragraph fails the check and is named');
+  assert.deepStrictEqual(gluedBody, [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: an ASD-Task line glued under the header is outside the last paragraph');
+  assert.deepStrictEqual(noBlank, [1, report(false, ['ASD-Task: Task 1'])], 'AC-12: a message with no blank line is all subject paragraph, so a trailer directly under the header is misplaced');
+  assert.deepStrictEqual(blanks, [0, report(true, [])], 'AC-12: trailing blank lines do not move the last paragraph');
+  assert.deepStrictEqual(crlf, [0, report(true, [])], 'AC-12: a CRLF message measures its header without the carriage return and finds its last paragraph');
+  assert.deepStrictEqual(long, [1, report(false, [], longHeader.length)], 'AC-12: the header limit applies to the message file\'s first line');
+
   assert.deepStrictEqual(refusals.map(([label, run]) => [label, run.status, run.stdout, /commit-check takes --subject/.test(run.stderr)]), refusals.map(([label]) => [label, 2, '', true]), 'AC-12: exactly one of --subject and --message-file, never both, neither or an empty path, and nothing is reported');
 });
 
-test('sprint-036 AC-16: under git.ai_attribution disabled commit-check fails a Claude or Codex Co-authored-by trailer in any key case and lists it, passes a human co-author, and reports no ai_attribution under enabled or an absent key', () => {
+test('sprint-036 AC-16: under git.ai_attribution disabled commit-check fails a Claude or Codex Co-authored-by trailer in any key case and lists it, passes a human co-author, and reports no ai_attribution under enabled or an absent key', async () => {
   const CLAUDE = 'Co-authored-by: Claude <noreply@anthropic.com>';
   const CODEX = 'CO-AUTHORED-BY: Codex <noreply@openai.com>';
   const HUMAN = 'Co-Authored-By: Pair <pair@example.invalid>';
   const message = (...trailers) => `feat(x): add y\n\nASD-Task: Task 1\n${trailers.join('\n')}\n`;
   const disabled = attributionRepo('disabled');
-
-  const flagged = commitCheckMessage(disabled, message(CLAUDE, CODEX, HUMAN));
-  assert.deepStrictEqual([flagged.status, flagged.report.ok, flagged.report.ai_attribution, flagged.report.misplaced], [1, false, [CLAUDE, CODEX], []], 'AC-16: each Claude or Codex trailer is listed whatever its key case, a human co-author beside them is not, and the commit fails');
-  const human = commitCheckMessage(disabled, message(HUMAN));
-  assert.deepStrictEqual([human.status, human.report.ok, human.report.ai_attribution], [0, true, []], 'AC-16: a human Co-Authored-By passes under disabled');
   const CODEX_HOST_HUMAN = 'Co-authored-by: Pat <pat@codex.dev>';
   const NAME_ONLY = 'Co-authored-by: Claude';
   const BOT_ADDRESSES = ['Co-authored-by: Helper <noreply@anthropic.com>', 'Co-authored-by: Helper <NoReply@OpenAI.com>'];
-  const humanOnCodexHost = commitCheckMessage(disabled, message(CODEX_HOST_HUMAN));
+  const [flagged, human, humanOnCodexHost, identities] = await Promise.all([
+    commitCheckMessage(disabled, message(CLAUDE, CODEX, HUMAN)),
+    commitCheckMessage(disabled, message(HUMAN)),
+    commitCheckMessage(disabled, message(CODEX_HOST_HUMAN)),
+    commitCheckMessage(disabled, message(NAME_ONLY, ...BOT_ADDRESSES, CODEX_HOST_HUMAN)),
+  ]);
+
+  assert.deepStrictEqual([flagged.status, flagged.report.ok, flagged.report.ai_attribution, flagged.report.misplaced], [1, false, [CLAUDE, CODEX], []], 'AC-16: each Claude or Codex trailer is listed whatever its key case, a human co-author beside them is not, and the commit fails');
+  assert.deepStrictEqual([human.status, human.report.ok, human.report.ai_attribution], [0, true, []], 'AC-16: a human Co-Authored-By passes under disabled');
   assert.deepStrictEqual([humanOnCodexHost.status, humanOnCodexHost.report.ai_attribution], [0, []], 'AC-16: a human whose address merely contains the word codex is not an AI trailer');
-  const identities = commitCheckMessage(disabled, message(NAME_ONLY, ...BOT_ADDRESSES, CODEX_HOST_HUMAN));
   assert.deepStrictEqual([identities.status, identities.report.ai_attribution], [1, [NAME_ONLY, ...BOT_ADDRESSES]], 'AC-16: the identity is parsed - a name-only Claude and either bot address under any name are rejected, a human beside them is not');
   for (const value of ['enabled', null]) {
-    const enabled = commitCheckMessage(attributionRepo(value), message(CLAUDE, CODEX));
+    const enabled = await commitCheckMessage(attributionRepo(value), message(CLAUDE, CODEX));
     assert.deepStrictEqual([enabled.status, enabled.report.ok, 'ai_attribution' in enabled.report], [0, true, false], `AC-16: ai_attribution ${value === null ? 'absent' : value} rejects nothing and adds no report field`);
   }
 });
