@@ -15,6 +15,7 @@ test_paths: "tests/**"
 test_durations: "node tests/run.js"
 
 checks:
+  context: "node .asd/runtime.js context-check"
   agnix: "npx --yes agnix@0.61.0 --strict -c .agnix.toml .claude .codex .agents AGENTS.md CLAUDE.md"
 
 custom:

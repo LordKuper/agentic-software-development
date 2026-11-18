@@ -60,3 +60,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — Task 2 flagged choice accepted: `DELTA_EXCLUDED_GLOBS` constant in runtime.js (no view predicate existed to reuse)
 - 2026-11-18 — route Task 11: standard, dispatch HEAD fdd66242
 - 2026-11-18 — route Task 12: standard, dispatch HEAD fdd66242
+- 2026-11-18 — Task 12 flagged choices accepted: new README test FAQ entry (no prior one), root `.agnix.toml` in the folder map, AC-20 omitted from CHANGELOG (repo-internal)

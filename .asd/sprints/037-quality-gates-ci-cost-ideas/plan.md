@@ -134,12 +134,12 @@ Material risk: change: diff-mode detection scope
 ### Task 11: Runner durations
 Material risk: none
 Test-only: tests/run.js
-- [ ] `runAll`: print each test's duration in ms on its `ok`/`FAIL` line and a ten-slowest summary after the count line; adapt any test that parses runner output (AC-16)
+- [x] `runAll`: print each test's duration in ms on its `ok`/`FAIL` line and a ten-slowest summary after the count line; adapt any test that parses runner output (AC-16)
 
 ### Task 12: README, changelog, version
 Material risk: artifact: mirror edits verified by tests/run.js README mirror tests and git grep
-- [ ] `README.md`: runtime command list (`context-check`, `test-delta`, `stubs-due`, `impl-test-close --green`), `commands.yaml` schema (`test_paths`, `test_durations`, `checks`), folder map (`context-ceilings.json`), phase rows (`:182-196`: scope lists open PRs and due stubs, impl gate runs `checks`, retro check Home), reviewer and scout read-only text (`:245,264`), test FAQ (`:489-493`), `/asd-init` gate-class note (AC-1, AC-3, AC-5, AC-8, AC-12, AC-16, AC-21)
-- [ ] `CHANGELOG.md` and `.asd/release-manifest.json` `asd_version`: 14.9.0
+- [x] `README.md`: runtime command list (`context-check`, `test-delta`, `stubs-due`, `impl-test-close --green`), `commands.yaml` schema (`test_paths`, `test_durations`, `checks`), folder map (`context-ceilings.json`), phase rows (`:182-196`: scope lists open PRs and due stubs, impl gate runs `checks`, retro check Home), reviewer and scout read-only text (`:245,264`), test FAQ (`:489-493`), `/asd-init` gate-class note (AC-1, AC-3, AC-5, AC-8, AC-12, AC-16, AC-21)
+- [x] `CHANGELOG.md` and `.asd/release-manifest.json` `asd_version`: 14.9.0
 
 ## Risks
 - A check written in wave 2 (`impl-test-close`) gates this sprint's own `impl-test`: the tester records gap proofs from entry 1.
