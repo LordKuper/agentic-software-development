@@ -98,3 +98,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test entry 7: standard, dispatch HEAD ebf924a707b019cc7536b164a3e483a0494c8044
 - 2026-11-18 — impl-test: impacted set green (425/425), 0/0 tests
 - 2026-11-18 — latch-refresh wave-1/iter-06: combined cleared (.asd/runtime.js, .asd/sync.js)
+- 2026-11-18 — impl-review wave-1/iter-06 (floor critical): combined APPROVE (latched 6), external CONCERNS (1 kept critical, 2-4 below floor; no stalemate; the "in-place is not atomic" tripwire did not fire); no pre-existing, memory or question items; cap not reached (next iter-07, floor critical) → impl review-fix (review_fixes_pending=wave-1/iter-06).
+- 2026-11-18 — route review-fix wave-1/iter-06 (A: external 1): standard, dispatch HEAD d4fbaabce7b1b26ba57be1e1296a0ae87acfb526; risk change: security
