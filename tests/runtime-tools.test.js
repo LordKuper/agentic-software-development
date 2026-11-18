@@ -660,7 +660,7 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
   const head = git('rev-parse', '--short=8', 'HEAD').trim();
   const work = mkTempDir();
   const entryRow = (entry, analysed, scope) => `| ${entry} | ${analysed} | ${scope} |`;
-  const plan = ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', entryRow(1, 'abc12345', 'full change surface'), entryRow(2, '', 'delta since entry 1'), '', '## Defects', ''].join('\n');
+  const plan = ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', entryRow(1, 'abc12345', 'full change surface'), entryRow(2, '', 'delta since entry 1'), '', '## Added tests', '', '| Test | Gap proof |', '|---|---|', '', '## Defects', ''].join('\n');
   let runs = 0;
   const close = async (log, overrides = {}, planText = plan) => {
     runs += 1;
