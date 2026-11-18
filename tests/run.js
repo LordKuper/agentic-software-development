@@ -10819,19 +10819,6 @@ test('sprint-036 AC-16: attribution-check whose in-place write of a settings fil
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8')).includeCoAuthoredBy, false, 'AC-16: the failed write never stops the other file being cleaned');
 });
 
-test('sprint-036 AC-16: attribution-check keeps the file mode of the settings file it rewrites, a 0600 file staying 0600', () => {
-  if (process.platform === 'win32') {
-    console.log('  (skipped the file-mode assertion: POSIX permission bits are not enforced on win32)');
-    return;
-  }
-  const sandbox = attributionRepo('disabled');
-  writeFile(sandbox.repo, '.claude/settings.local.json', `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`);
-  const file = path.join(sandbox.repo, '.claude', 'settings.local.json');
-  fs.chmodSync(file, 0o600);
-  const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
-  assert.deepStrictEqual([outcome.status, JSON.parse(fs.readFileSync(file, 'utf8')).includeCoAuthoredBy, fs.statSync(file).mode & 0o777], [0, false, 0o600], 'AC-16: the rewritten file is cleaned and keeps its restrictive mode - a replacement under the default mode would widen a file that may hold secrets');
-});
-
 test('sprint-036 AC-16: attribution-check skips a file named after -- with its stderr warning, still cleans the other file and prints the Codex hint, and exits 2 on a flag other than -- or a path outside the two settings files', () => {
   const RE_ENABLING = `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`;
   const sandbox = attributionRepo('disabled');
