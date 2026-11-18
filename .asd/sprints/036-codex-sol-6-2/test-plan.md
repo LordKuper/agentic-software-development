@@ -19,7 +19,7 @@ responsibility:
 | 6 | cdc1a55b | delta since 8f9eb1cd: review-fix wave-1/iter-04 commit f7229065 (the check inserts and records the owned value without sync, restores on a write error, warns per file on a read error); views 0d40d74a; tester bd2d284a |
 | 7 | 6e04da1e | delta since cdc1a55b: review-fix wave-1/iter-05 commit 01497426 (`rewriteInPlace` non-truncating write with descriptor restore; `recordOwnedKeys` link guard, atomic ledger save, boolean return; the check's ledger line; asd-sprint ledger clause removed); views eb63010f; tester e59544ce |
 | 8 | 39145211 | delta since 6e04da1e: review-fix wave-1/iter-06 commits ff7b49e0 (`recordOwnedKeys` link guard before `loadSyncState`), hash ledger 2e0e50d3; tester f844ba86 |
-| 9 |  | delta since 39145211: review-fix wave-1/iter-07 commits 26c3f66e (link guard in `loadSyncState`, `recordOwnedKeys` duplicate removed, sync.js CLI catch-all -> one `sync: <message>` line, exit 1), hash ledger 69e01d42; tester 1f34644c |
+| 9 | 77db90cd | delta since 39145211: review-fix wave-1/iter-07 commits 26c3f66e (link guard in `loadSyncState`, `recordOwnedKeys` duplicate removed, sync.js CLI catch-all -> one `sync: <message>` line, exit 1), hash ledger 69e01d42; tester 1f34644c |
 
 ## Risk → check decisions
 
