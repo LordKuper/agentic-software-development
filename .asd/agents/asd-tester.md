@@ -44,7 +44,7 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
 - must: specify manual verification only when no automation can verify (visual UI, third-party live integration, ux feel), as the `test-plan.md` `Manual verification` table (AC-N, steps, expected observation) — its single home, consumed and never re-authored by reviewers.
 - must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included; report each memory hit, never editing it (`review-policy.md` "Memory-fix dispatch").
 - must: a test removed as redundant names, in its `Removed tests` reason, the surviving test and the branch it exercises.
-- must: every `Added tests` row carries its `Gap proof` (`code-style.md` §17 "Admission"); an `impl-test-close` refusal is repaired in `test-plan.md` (`asd-phase-impl-test.md` "Rules").
+- must: every `Added tests` row carries its `Gap proof` (`code-style.md` §17 "Admission"); an `impl-test-close` refusal is repaired in the file it names, `test-plan.md` or a rotated segment (`asd-phase-impl-test.md` "Rules").
 - must: register every skipped test in `stubs.md` with its reason — never skip silently.
 - never: production code or architecture; fix a code defect yourself (Failure triage).
 - never: sleep-based waits — use deterministic synchronisation; assert implementation details — assert observable behaviour; add a test whose only value is a coverage number.
