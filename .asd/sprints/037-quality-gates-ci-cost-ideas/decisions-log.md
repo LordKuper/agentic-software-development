@@ -61,3 +61,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route Task 11: standard, dispatch HEAD fdd66242
 - 2026-11-18 — route Task 12: standard, dispatch HEAD fdd66242
 - 2026-11-18 — Task 12 flagged choices accepted: new README test FAQ entry (no prior one), root `.agnix.toml` in the folder map, AC-20 omitted from CHANGELOG (repo-internal)
+
+## 2026-11-18 — impl assessment approved
+
+- **Decision**: Impl complete: Tasks 1-12 done in three waves; build, lint, `checks.context` and `checks.agnix` (0 errors, 0 warnings) pass at the gate; context ceilings seeded (111 keys, headroom 10%).
+- **Rationale**: Adaptive evidence: every checkbox ticked, flagged choices resolved, no stubs introduced. Fourteen tests fail on pins this sprint changed by design (sandbox_mode, D13, retro and scope wording); impl-test updates them.
+- **Affected docs**: plan.md, .asd/project/context-ceilings.json, .asd/project/commands.yaml
