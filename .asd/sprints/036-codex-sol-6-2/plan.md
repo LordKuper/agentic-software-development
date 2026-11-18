@@ -86,17 +86,17 @@ Material risk: change: liveness done semantics for a written return file
 ### Task 8: AI attribution setting and its sprint-start check
 Material risk: change: commit contract every agent commits under
 Material risk: change: rewrite of the user's Claude Code settings files
-- [ ] `.asd/templates/t_config.yaml`: `git.ai_attribution: enabled | disabled`, absent = `enabled` (AC-15)
-- [ ] `.asd/sync.js` json-merge of `.claude/settings.json`: with `disabled`, carry `"attribution": {"commit": "", "pr": ""}` as an ASD-owned key; with `enabled` or absent, add nothing (AC-15)
-- [ ] `.asd/runtime.js`: a deterministic attribution check run by `asd-sprint` — reads `git.ai_attribution`; when `disabled` and the Claude view exists, removes every re-enabling entry (non-empty `attribution.commit`/`attribution.pr`, `includeCoAuthoredBy: true`) from `.claude/settings.json` and `.claude/settings.local.json`, printing one line per fix; when the Codex view exists, prints the one-line ChatGPT workspace hint; silent no-op when `enabled` (AC-16)
-- [ ] `.asd/runtime.js` `commitCheck`: with `disabled`, fail on a `Co-authored-by:` trailer naming Claude or Codex (case-insensitive key) (AC-16)
-- [ ] `.asd/skills/asd-sprint/SKILL.md` Step 0: run the check on every invocation; `.asd/workflows/asd-phase-pr.md` open mode: with `disabled`, no AI attribution line in the PR body; `.asd/rules/git-strategy.md` "Commits": the trailer rule names the rejection once (AC-16)
-- [ ] `.asd/skills/asd-init/SKILL.md`: ask/edit `git.ai_attribution`; `README.md`: config schema row and runtime command list (AC-15, AC-16)
+- [x] `.asd/templates/t_config.yaml`: `git.ai_attribution: enabled | disabled`, absent = `enabled` (AC-15)
+- [x] `.asd/sync.js` json-merge of `.claude/settings.json`: with `disabled`, carry `"attribution": {"commit": "", "pr": ""}` as an ASD-owned key; with `enabled` or absent, add nothing (AC-15)
+- [x] `.asd/runtime.js`: a deterministic attribution check run by `asd-sprint` — reads `git.ai_attribution`; when `disabled` and the Claude view exists, removes every re-enabling entry (non-empty `attribution.commit`/`attribution.pr`, `includeCoAuthoredBy: true`) from `.claude/settings.json` and `.claude/settings.local.json`, printing one line per fix; when the Codex view exists, prints the one-line ChatGPT workspace hint; silent no-op when `enabled` (AC-16)
+- [x] `.asd/runtime.js` `commitCheck`: with `disabled`, fail on a `Co-authored-by:` trailer naming Claude or Codex (case-insensitive key) (AC-16)
+- [x] `.asd/skills/asd-sprint/SKILL.md` Step 0: run the check on every invocation; `.asd/workflows/asd-phase-pr.md` open mode: with `disabled`, no AI attribution line in the PR body; `.asd/rules/git-strategy.md` "Commits": the trailer rule names the rejection once (AC-16)
+- [x] `.asd/skills/asd-init/SKILL.md`: ask/edit `git.ai_attribution`; `README.md`: config schema row and runtime command list (AC-15, AC-16)
 
 ### Task 9: Disable AI attribution in this repository
 Material risk: artifact: one config value verified by the AC-16 check output
 Settings change: git.ai_attribution=disabled
-- [ ] `.asd/project/config.yaml`: `git.ai_attribution: disabled` through `asd-init` sprint-mediated mode, then the AC-16 check run once (AC-17)
+- [x] `.asd/project/config.yaml`: `git.ai_attribution: disabled` through `asd-init` sprint-mediated mode, then the AC-16 check run once (AC-17)
 
 ## Risks (optional)
 - Task 1 changes the commit form Tasks 2-7 commit under, so it runs alone in wave 1 and its agents commit with the new form from wave 2 on.

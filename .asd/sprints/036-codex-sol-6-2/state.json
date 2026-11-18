@@ -62,6 +62,13 @@
       "reason": "user request: AI attribution setting; answers: project-level Claude, Codex guard + hint, this repo disabled",
       "evidence": "decisions-log.md 2026-11-18 scope amendment AC-15..AC-17",
       "artifact_revision": "sprint.md@impl"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: Tasks 1-9 ticked, build+lint clean, round diff authorised, 3 flagged choices resolved",
+      "evidence": "decisions-log.md 2026-11-18 impl assessment approved",
+      "artifact_revision": "plan.md@impl"
     }
   ],
   "task_routing": {

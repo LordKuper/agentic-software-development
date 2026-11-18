@@ -51,3 +51,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: The user requested it mid-sprint and chose the options at the amendment gate. Codex has no local key: since openai/codex PR #22412, attribution is the ChatGPT workspace's `commit_attribution_enabled`, and its injected instructions override any disabling prompt. That is why the guard works on the commit message.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-11-18 — route Task 8: standard, dispatch HEAD 630d2547
+
+## 2026-11-18 — impl assessment approved (adaptive)
+
+- **Decision**: Accept Task 1's and Task 8's additive `commit-check` report fields (`misplaced`, `ai_attribution`): the existing keys and exit codes are unchanged, so the "shape unchanged" predicate holds for current readers. Accept the net-neutral D13 trims in `git-strategy.md` and `sprint-lifecycle.md`, which reviewers verify. Accept Task 8's `attribution-check` resetting a re-enabling value to its off value (`""`/`false`) rather than deleting the key: the re-enabling entry is gone and the off state holds even without the project key, which meets AC-16.
+- **Rationale**: Nine Tasks, every checkbox ticked. Build and lint are clean and the round diff stays inside authorised paths. No earlier disposition of these choices exists in any log segment. The known red tests (sync fixture, sprint-019 AC-8, sprint-035 AC-15) are impl-test's.
+- **Affected docs**: [plan.md](plan.md)
