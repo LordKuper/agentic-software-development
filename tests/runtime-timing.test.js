@@ -402,6 +402,7 @@ test('sprint-034 AC-9 (033#A-4): a dispatch open fills its missing tier and mode
   assert.deepStrictEqual(lookupLog, [], 'AC-9: no lookup runs for another kind');
 });
 
+// Each case owns its ledger beside the shared state.json, so the cases run side by side.
 test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the state.json beside the ledger and from the agent canon by the host rule (CLAUDECODE=1 reads the Claude model, any other shell the Codex one), and a close of a never-opened id appends nothing, warns and exits 0', async () => {
   const dir = mkTempDir();
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: { 'Task 1': { tier: 'standard', resolved_model: 'routed-model' } } }));
@@ -418,7 +419,6 @@ test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the s
     return outcome;
   };
   const lastAttrs = (ledger) => ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs;
-  // Each case owns its ledger (state.json is shared beside them), so the cases run side by side.
   const dispatch = async (name, args, env) => {
     const ledger = path.join(dir, `${name}.jsonl`);
     await timing(ledger, ['--create', '--open', 'impl', '--kind', 'phase']);
@@ -447,6 +447,7 @@ test('sprint-034 AC-9/AC-13: the timing command fills a dispatch open from the s
   assert.ok(ghost.outcome.stderr.includes('never-opened matches no open op'), `AC-13: the close warns on stderr, got ${JSON.stringify(ghost.outcome.stderr)}`);
 });
 
+// Each id owns its ledger beside the shared state.json, so the opens run side by side.
 test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev for tier standard and asd-dev-<tier> otherwise, an execution-command id gets no agent and warns naming it, and a given agent attr is never overwritten', async () => {
   const dir = mkTempDir();
   const route = (execution, tier) => ({ execution, tier, resolved_model: `${tier}-model` });
@@ -458,7 +459,6 @@ test('sprint-034 AC-9 (D-5): a routed execution-agent id is filled with asd-dev 
     'Task given': route('agent', 'escalated'),
   };
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: routing }));
-  // Each id owns its ledger (state.json is shared beside them), so the opens run side by side.
   const openDispatch = async (id, ...attrs) => {
     const ledger = path.join(dir, `${id}.jsonl`);
     const timing = async (args) => {
@@ -598,13 +598,31 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
   assert.strictEqual(runtimeSpawn(['context-check', '--ceilings', seededFile]).status, 0, 'a seeded file passes the check it was seeded for');
 });
 
-test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle lookup unless the caller gave one, timing-summary totals bundle bytes per agent and names unsized dispatches, and suite_full holds the sprint\'s longest full suite, a baseline median only from three archived full suites, and over only past 1.5 times it', () => {
+test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle lookup unless the caller gave one - read from the scratch bundle file named by its dispatch id, "/" and spaces as "-" - timing-summary totals bundle bytes per agent and names unsized dispatches, and suite_full holds the sprint\'s longest full suite, a baseline median only from three archived full suites, and over only past 1.5 times it', async () => {
   const lookups = { contextBytes: (id) => (id === 'sized' ? 1000 : undefined) };
   const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend('', { open: id, kind: 'dispatch', attrs }, minuteAt(0), lookups).text)[0].attrs;
   const base = 'agent=asd-dev;tier=standard;model=m';
   assert.strictEqual(Number(attrsOf('sized', base).context_bytes), 1000, 'the bundle size fills a dispatch open');
   assert.strictEqual(Number(attrsOf('sized', `${base};context_bytes=5`).context_bytes), 5, 'a size the caller gave wins');
   assert.ok(!('context_bytes' in attrsOf('unsized', base)), 'no bundle file leaves the attr absent');
+
+  const sprintDir = mkTempDir();
+  const slug = path.basename(sprintDir);
+  const scratch = runtimeSpawn(['scratch-dir']).stdout.trim();
+  const sizes = { 'combined wave-1/iter-01': 11, 'Task 2#2': 23 };
+  const bundleFiles = Object.keys(sizes).map((id) => path.join(scratch, `${slug}-${id.replace(/[/ ]/g, '-')}.context.md`));
+  try {
+    Object.values(sizes).forEach((size, index) => fs.writeFileSync(bundleFiles[index], 'x'.repeat(size)));
+    const opened = await Promise.all(Object.keys(sizes).map(async (id, index) => {
+      const ledger = path.join(sprintDir, `bundle-${index}.jsonl`);
+      await runtimeSpawnAsync(['timing', '--ledger', ledger, '--create', '--open', 'impl', '--kind', 'phase']);
+      await runtimeSpawnAsync(['timing', '--ledger', ledger, '--open', id, '--kind', 'dispatch', '--attrs', base]);
+      return ledgerLines(fs.readFileSync(ledger, 'utf8')).pop().attrs.context_bytes;
+    }));
+    assert.deepStrictEqual(opened.map(Number), Object.values(sizes), 'the timing command sizes a dispatch open from the bundle file of its id, a reviewer wave id and a repeat-op id included');
+  } finally {
+    bundleFiles.forEach((file) => fs.rmSync(file, { force: true }));
+  }
 
   const dispatch = (id, agent, bytes) => opLines(id, 'dispatch', 'impl#1', 1, 2, bytes === undefined ? { agent } : { agent, context_bytes: bytes });
   const bundles = opLines('impl#1', 'phase', null, 0, 30) + dispatch('d1', 'asd-dev', 100) + dispatch('d2', 'asd-dev', 200) + dispatch('d3', 'asd-tester', 50) + dispatch('d4', 'asd-dev');
