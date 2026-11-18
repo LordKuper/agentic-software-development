@@ -104,3 +104,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#6: standard, dispatch HEAD 03d77433
 - 2026-11-18 — impl-test: full suite green (311/311), 0/0 tests (1 extended)
 - 2026-11-18 — impl-review wave-1/iter-04: combined APPROVE (latched), external CONCERNS (1-3; 4 below floor) → impl review-fix (review_fixes_pending wave-1/iter-04). Routes, dev chain: external 1 (validate the contiguous Added tests table only), 2 (rejected proposals stay as struck ledger rows, never re-proposed), 3 (a failed pagination or per-PR read blocks the PR dispositions).
+- 2026-11-18 — route wave-1/iter-04 R1: standard, dispatch HEAD 4afd11c1; risk workflow gate (change)
+- 2026-11-18 — impl fix for wave-1/iter-04: findings resolved (flagged accepted: table run ends at first blank line; struck rows hold within one entry)
