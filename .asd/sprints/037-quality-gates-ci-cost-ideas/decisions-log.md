@@ -120,3 +120,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#9: standard, dispatch HEAD 4fa3bccc
 - 2026-11-18 — impl-test: impacted set green (187/187, 7 areas), 0/0 tests
 - 2026-11-18 — impl-review wave-1/iter-07: combined latched (APPROVE iter-06), external CONCERNS (1-2, critical); iteration cap reached (7) → review-cap override gate: advisor recommended override once; user chose "Override, ещё раунд" → impl review-fix (review_fixes_pending wave-1/iter-07). Routes, dev chain: external 1 + 2 as one class — any impl-test-close refusal against the live plan or the rotated segment (row, table structure or heading) is repaired with the smallest edit that clears it, at step 9 and step 10 alike (artifact-layout.md Rotation; asd-phase-impl-test.md step 9, Rules refusal bullet, Dispatch).
+- 2026-11-18 — route wave-1/iter-07 R1: standard, dispatch HEAD 0af1d66f; risk workflow gate (change)
+- 2026-11-18 — impl fix for wave-1/iter-07: findings resolved
