@@ -11035,6 +11035,22 @@ test('sprint-036 AC-16 (external 1, iter-06): attribution-check over a linked le
   assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, true, false, true]), 'AC-16: the linked file is refused before it is parsed, so the warning carries none of its text and its bytes stay');
 });
 
+test('sprint-036 AC-16 (external 1, iter-07): sync --check and --apply over a symlinked ledger or a linked .asd directory holding invalid JSON each exit 1 with one "sync: " stderr line naming the link refusal, no stack and no fragment of the linked file, and leave it byte-identical', () => {
+  const MARKER = 'LINKED-LEDGER-SECRET-MARKER';
+  const FRAGMENT = MARKER.slice(0, 8);
+  const invalid = `{ "entries": ${MARKER} `;
+  const syncSpawn = (root, args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: root, encoding: 'utf8' });
+  const outcomes = [];
+  for (const [label, { repo, behind }] of linkedLedgerCases()) {
+    fs.writeFileSync(behind, invalid, 'utf8');
+    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
+      const ran = syncSpawn(repo.root, args);
+      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(behind, 'utf8') === invalid]);
+    }
+  }
+  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true]), 'AC-16: the linked ledger is refused before it is parsed - one sync: line, exit 1, no text of the file, bytes unchanged');
+});
+
 test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
   const settingsRel = '.claude/settings.json';
   const repo = disabledAttributionRepo();
