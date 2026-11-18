@@ -105,3 +105,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test entry 8: standard, dispatch HEAD 2e0e50d3
 - 2026-11-18 — impl-test: impacted set green (426/426), 0/0 tests
 - 2026-11-18 — latch-refresh wave-1/iter-07: combined cleared (.asd/sync.js)
+- 2026-11-18 — impl-review wave-1/iter-07 (floor critical): combined APPROVE (latched 7), external CONCERNS (1 kept critical: `sync --check`/`--apply` load the ledger before any link check; no stalemate). The finding is outside the change surface (`loadSyncState`, `runCheck` and the `runApply` load are unchanged vs main, review-policy.md:53); advisor consult: neither a drop nor an autofix is the orchestrator's (no resolution kind; scope expansion).
+- 2026-11-18 — scope expansion wave-1/iter-07 (user, Complication Approval): user chose B over the recommended A (override + issue) — fix now: the link guard moves into `loadSyncState`, so every sync path refuses a linked `.asd/sync-state.json` or `.asd` before reading it; the duplicate guard in `recordOwnedKeys` goes. Supersedes the iter-05 route note's "guard in `recordOwnedKeys` only". → impl review-fix (review_fixes_pending=wave-1/iter-07).
+- 2026-11-18 — route review-fix wave-1/iter-07 (A: external 1): standard, dispatch HEAD f93d1f52; risk change: security
