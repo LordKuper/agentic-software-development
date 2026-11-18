@@ -10517,9 +10517,9 @@ test('sprint-035 AC-4: checklist-hits stamps the sprint as Last hit on each cite
   assert.ok(!fs.existsSync(missing), 'AC-4: an absent checklist is never created');
 });
 
-/** The runtime CLI's exit status, stdout and stderr for `args`. */
-function runtimeSpawn(args) {
-  const ran = spawnSync(process.execPath, [RUNTIME_JS, ...args], { encoding: 'utf8' });
+/** The runtime CLI's exit status, stdout and stderr for `args`; `options` join the `spawnSync` call and a non-zero exit is data, never a throw. */
+function runtimeSpawn(args, options = {}) {
+  const ran = spawnSync(process.execPath, [RUNTIME_JS, ...args], { encoding: 'utf8', ...options });
   return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr };
 }
 
@@ -10643,17 +10643,11 @@ function attributionRepo(value) {
   return sandbox;
 }
 
-/** Runs `node .asd/runtime.js <args>` and returns `{status, stdout, stderr}`; a non-zero exit is data, never a throw. */
-function runtimeCliRun(args, options = {}) {
-  const { status, stdout, stderr } = spawnSync(process.execPath, [RUNTIME_JS, ...args], { encoding: 'utf8', ...options });
-  return { status, stdout, stderr };
-}
-
 /** Runs `commit-check --message-file` over `message` written to a fresh file, in the sandbox repo; returns the exit status, the parsed JSON report (null without stdout) and stderr. */
 function commitCheckMessage(sandbox, message) {
   const file = path.join(mkTempDir(), 'check.commit-msg');
   fs.writeFileSync(file, message, 'utf8');
-  const { status, stdout, stderr } = runtimeCliRun(['commit-check', '--message-file', file], { cwd: sandbox.repo, env: sandbox.env });
+  const { status, stdout, stderr } = runtimeSpawn(['commit-check', '--message-file', file], { cwd: sandbox.repo, env: sandbox.env });
   return { status, report: stdout === '' ? null : JSON.parse(stdout), stderr };
 }
 
@@ -10682,7 +10676,7 @@ test('sprint-036 AC-12: commit-check --message-file reads the header from the fi
     ['both flags', ['commit-check', '--subject', HEADER, '--message-file', file]],
     ['an empty message-file path', ['commit-check', '--message-file', '']],
     ['neither flag', ['commit-check']],
-  ].map(([label, args]) => [label, runtimeCliRun(args, { cwd: sandbox.repo, env: sandbox.env })]);
+  ].map(([label, args]) => [label, runtimeSpawn(args, { cwd: sandbox.repo, env: sandbox.env })]);
   assert.deepStrictEqual(refusals.map(([label, run]) => [label, run.status, run.stdout, /commit-check takes --subject/.test(run.stderr)]), refusals.map(([label]) => [label, 2, '', true]), 'AC-12: exactly one of --subject and --message-file, never both, neither or an empty path, and nothing is reported');
 });
 
@@ -10733,7 +10727,7 @@ test('sprint-036 AC-15: readAiAttribution reads disabled only from exactly one a
 test('sprint-036 AC-16: attribution-check is silent under enabled or an absent key; under disabled it resets each re-enabling entry of .claude/settings.json and settings.local.json keeping every other key and the indentation, reports one line per fix, leaves a malformed or non-object file untouched with a stderr warning, and prints the Codex hint only when .codex/ exists', () => {
   const REENABLING = { attribution: { commit: 'Co-authored-by: Claude <noreply@anthropic.com>', pr: 'Generated with Claude Code' }, includeCoAuthoredBy: true, permissions: { allow: ['Bash(git *)'] }, model: 'opus' };
   const textOf = (settings) => `${JSON.stringify(settings, null, 4)}\n`;
-  const run = (sandbox) => runtimeCliRun(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
+  const run = (sandbox) => runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
   const readFrom = (sandbox, rel) => fs.readFileSync(path.join(sandbox.repo, rel), 'utf8');
 
   for (const value of ['enabled', null]) {
@@ -10797,8 +10791,16 @@ test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "p
   sync.runApply(root, [settingsRel]);
   assert.strictEqual(read(), applied, 'AC-15: a second apply writes nothing');
   configure('enabled');
+  assert.strictEqual(statusOf(), 'stale', 'AC-15: flipping back to enabled leaves the still-carried off value stale');
   sync.runApply(root, [settingsRel]);
-  assert.deepStrictEqual([read(), statusOf()], [applied, 'current'], 'AC-15: flipping back to enabled adds nothing and never removes the carried key');
+  assert.deepStrictEqual([read(), statusOf()], [baseline, 'current'], 'AC-15: flipping back to enabled drops the attribution key while it deep-equals the owned off value');
+
+  const own = { commit: 'x' };
+  fs.writeFileSync(settingsPath, `${JSON.stringify({ ...JSON.parse(baseline), attribution: own }, null, 2)}\n`, 'utf8');
+  const userOwned = read();
+  assert.strictEqual(statusOf(), 'current', 'AC-15: a user-set attribution value reads current under enabled');
+  sync.runApply(root, [settingsRel]);
+  assert.deepStrictEqual([read(), statusOf()], [userOwned, 'current'], 'AC-15: enabled keeps a user-set attribution value byte-identical');
 
   const target = path.join(mkTempDir(), 'settings.json');
   const raw = ['{', '    "permissions": {"allow": ["Bash(git *)"]},', '    "attribution": {"commit": "x", "pr": "y"},', '    "model":   "opus"', '}', ''].join('\n');
@@ -10837,7 +10839,7 @@ test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, 
   const ledger = path.join(dir, 'timing.jsonl');
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ task_routing: { 'Task 1': { tier: 'standard', resolved_model: 'routed-model' } } }));
   const timing = (args) => {
-    const outcome = runtimeCliRun(['timing', '--ledger', ledger, ...args]);
+    const outcome = runtimeSpawn(['timing', '--ledger', ledger, ...args]);
     assert.strictEqual(outcome.status, 0, `timing never stops the workflow: ${outcome.stderr}`);
     return outcome;
   };
@@ -10899,7 +10901,7 @@ test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return f
   const idle = `${JSON.stringify({ type: 'user', timestamp: '2026-09-29T12:00:00.000Z', message: { role: 'user', content: [{ type: 'text', text: 'task' }] } })}\n`;
   ['b2', 'c3', 'd4'].forEach((id) => fs.writeFileSync(path.join(subagents, `agent-${id}.jsonl`), idle, 'utf8'));
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
-  const watch = (agents, returnsFile) => runtimeCliRun(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
+  const watch = (agents, returnsFile) => runtimeSpawn(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
 
   const withReturns = watch('a1,b2,c3,d4', returns);
   assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - while an interrupted, missing or manifest-less return changes nothing');
@@ -10932,7 +10934,8 @@ test('sprint-036 AC-1/AC-3: the sol family maps to gpt-6.2-sol with luna unchang
 
 test('sprint-036 AC-8/AC-10/AC-11/AC-13: the refuse-to-implement rule covers every command a diff newly invokes and asd-dev cites it, scope step 3a checks the disabled documents against the scope and offers a Settings change line, and plan step 4 runs the build once and fills Decision coverage', () => {
   const rule = sectionOf('.asd/rules/artifact-layout.md', 'Tech reference docs');
-  assert.ok(rule.includes('every command or subcommand the diff newly invokes') && rule.includes('tech-reference missing for <tech>@<version>` (command: `<command>`)'), 'AC-8: the rule names every command or subcommand a diff newly invokes and the FAILED line carries the command');
+  assert.ok(rule.includes('every command or subcommand the diff newly invokes') && rule.includes('`FAILED — tech-reference missing for <command>` per uncovered command; the orchestrator writes each and re-dispatches'), 'AC-8: the rule names every command or subcommand a diff newly invokes, one FAILED line per uncovered command, and the orchestrator writes the entry and re-dispatches');
+  assert.ok(['asd-phase-impl', 'asd-phase-impl-test'].every((name) => canonText(`.asd/workflows/${name}.md`).includes('tech-reference missing: orchestrator writes it')), 'AC-8: the impl and impl-test FAILED lines carry the orchestrator-writes-it handling');
   const dev = canonText('.asd/agents/asd-dev.md');
   assert.ok(dev.includes('command or subcommand the diff newly invokes') && dev.includes('`artifact-layout.md` "Tech reference docs"'), 'AC-8: asd-dev checks each such command against the tech reference, citing the rule\'s home');
 
@@ -10963,14 +10966,14 @@ test('sprint-036 AC-7/AC-12/AC-14: providers.md passes --returns for reviewer di
   assert.ok(readme.includes('[--returns <json>]') && readme.includes('commit-check --message-file <file> -- <paths>'), 'AC-12/AC-14: the README runtime command list carries both forms');
 });
 
-test('sprint-036 leftover-term check: no canon, README, AGENTS.md, runtime, hook, docs, generated view, manifest or agent-memory line keeps a sentence or name this sprint removed - the comment-only latch exception and its lexer, the --subject one-command commit form, gpt-6.1-sol', () => {
+test('sprint-036 leftover-term check: no canon, README, AGENTS.md, runtime, hook, docs, generated view, manifest or agent-memory line keeps a sentence or name this sprint removed - the comment-only latch exception and its lexer, the --subject one-command commit form, the previous sol id', () => {
   const removed = [
     'a hunk of only blank or comment lines does not count',
     'isCommentOnlyChange',
     'projectExecutable',
     'COMMENT_LEXERS',
     'commit-check --subject "<header>" -- <paths> && git commit --only -m "<header>" [-m "<body>"]',
-    'gpt-6.1-sol',
+    ['gpt-6', '1-sol'].join('.'),
   ];
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assertSweepReachesMemory(memoryFiles);

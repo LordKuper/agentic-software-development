@@ -39,10 +39,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full — the runner is one file with no native selector (`commands.yaml` has no `test_affected`), the change surface is framework-wide shared infrastructure (`safety_valve` absent = enabled), so the impacted set is every test
-- Result: pass — 405 passed, 0 failed, 0 skipped of 405; `sprint-036 AC-15 (D-1)` (both tests) green
-- Lint / build: pass — build `node .asd/sync.js --check` exit 0; lint `git diff --cached --check` exit 0 on the staged entry content
-- HEAD: 527f694b — the run measured this tree plus the uncommitted `tests/run.js` change this entry commits next
+- Scope: full — one file with no native selector, framework-wide shared infrastructure
+- Result: pass — 405 passed, 0 failed of 405 (review-fix wave-1/iter-01 tester: combined F-3, external 13, combined F-8, combined F-5, external 8). Fail-first, scratch tree of HEAD with pre-fix files: `node tests/run.js --filter "AC-15: sync json-merge"` (1/405 matched) exit 1, failing test `sprint-036 AC-15: sync json-merge carries ...` with `AC-15: flipping back to enabled leaves the still-carried off value stale` (`.asd/sync.js` from `5c3af791^`); `--filter "sprint-036 AC-8/AC-10"` (1/405 matched) exit 1, failing test `sprint-036 AC-8/AC-10/AC-11/AC-13: ...` at the rule assert (`artifact-layout.md` from `d9fba3c2^`); both green on the live tree.
+- Lint / build: pass — build `node .asd/sync.js --check` exit 0; lint `git diff --cached --check` run on the staged entry
+- HEAD: 4ea39611 — the run measured this tree plus the uncommitted `tests/run.js` change this entry commits next
 
 ## Defects
 
