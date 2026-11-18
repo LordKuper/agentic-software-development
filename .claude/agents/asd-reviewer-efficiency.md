@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:c0fb317b6cc24155b8d0442dc74bef844a821465d1522f12d738da3ea2e90751 content_digest=sha256:00aa145ab32301f0b86f3cd5757b0f8834681e444541c54c0036be6986b7fc9f asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776 content_digest=sha256:49a4786511772eb62f8d84e71b4ecb85b811581a7664cb7eb8e648a77b13ecee asd_version=14.8.0 schema=1
 name: asd-reviewer-efficiency
 description: "Over-engineering, cohesion, complexity-vs-value, duplication/reuse, token cost, doc economy, change size, perf, test-suite cost; standard impl-review. Not: correctness, tests, doc accuracy, UI → asd-reviewer-quality; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep]
@@ -101,7 +101,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 - the diff's size is proportional to the value it delivers for its AC-N and plan Task; edits no Task needs, or a broad rewrite where a local change suffices, are findings
 
 ### Test-suite cost and check-ladder cost [impl-review]
-- over-leveled tests (an e2e journey where a unit/contract test catches the same defect), redundant tests duplicating an existing check, and hypothetical-risk tests (`code-style.md` §17); a test that adds suite runtime or fixture weight its risk does not justify
+- over-leveled tests (an e2e journey where a unit/contract test catches the same defect), redundant tests duplicating an existing check, and hypothetical-risk tests (`code-style.md` §17); a test that adds suite runtime or fixture weight its risk does not justify; a finding asking for a test is valid only per `review-policy.md` "Change-surface rule"
 
 ### Perf budget compliance [impl-review]
 - latency, memory, throughput against project budgets from `custom-coding-rules.md`

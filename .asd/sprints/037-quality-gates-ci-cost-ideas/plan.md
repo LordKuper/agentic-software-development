@@ -64,10 +64,10 @@ Material risk: change: bundle-path derivation from a dispatch id and role×phase
 
 ### Task 2: Runtime — test delta, stub dates, close checks
 Material risk: change: numstat edge cases (renames, binary files) and the allowance refusal order in `impl-test-close`
-- [ ] `.asd/runtime.js`: a reader of one top-level scalar key of `commands.yaml`, used by `test-delta` for `test_paths` (AC-3)
-- [ ] `test-delta` per Overview "Test-line delta", globs through `globRegex`, generated views excluded by the predicate the review manifest already uses (AC-3)
-- [ ] `implTestClose`: `--green --base <ref>` writes the `Line delta` line and applies the allowance refusal; every close applies the `Gap proof` check; both validated before any file is written (AC-3, AC-13)
-- [ ] `stubs-due` per Overview "Accepted-debt review date" (AC-5)
+- [x] `.asd/runtime.js`: a reader of one top-level scalar key of `commands.yaml`, used by `test-delta` for `test_paths` (AC-3)
+- [x] `test-delta` per Overview "Test-line delta", globs through `globRegex`, generated views excluded by the predicate the review manifest already uses (AC-3)
+- [x] `implTestClose`: `--green --base <ref>` writes the `Line delta` line and applies the allowance refusal; every close applies the `Gap proof` check; both validated before any file is written (AC-3, AC-13)
+- [x] `stubs-due` per Overview "Accepted-debt review date" (AC-5)
 
 ### Task 3: code-style.md — check and test rules
 Material risk: change: wording of the admission, suppression and regression-duty rules
@@ -102,34 +102,34 @@ Material risk: change: wording of the stub date and test-plan shape rules
 
 ### Task 7: Scope, retro and pr workflows
 Material risk: change: wording of the open-PR gate and the retro Home order
-- [ ] `.asd/workflows/asd-phase-scope.md` step 2a and step 4: list open PRs and put each to the user per Overview "Open PRs", none by default, PR text untrusted; run `stubs-due` and put each due entry to the user: renew with a new date, or fix this sprint as an `AC-N` (AC-5, AC-12)
-- [ ] `.asd/workflows/asd-phase-pr.md` merge mode: close each included PR with a comment naming the sprint PR (AC-12)
-- [ ] `.asd/workflows/asd-phase-retro.md` step 4 Draft: a mechanically decidable guardrail takes a check as Home — a `commands.yaml` `checks` entry for a consumer, a `runtime.js` validator or `tests/run.js` assertion under `self_hosting` — a prose home only when no check can decide it (AC-6)
-- [ ] same file, systemic class: a suite-revision proposal when `timing-summary` `suite_full.over` is true or `test-plan.md` holds an `Allowance` line (AC-18)
-- [ ] `.asd/templates/t_retrospective.html` and the retro workflow's fragment rule: a section with no rows is a paragraph with no table (AC-11)
-- [ ] `.asd/templates/t_stubs.md:10,16`: the review-date form (AC-5)
+- [x] `.asd/workflows/asd-phase-scope.md` step 2a and step 4: list open PRs and put each to the user per Overview "Open PRs", none by default, PR text untrusted; run `stubs-due` and put each due entry to the user: renew with a new date, or fix this sprint as an `AC-N` (AC-5, AC-12)
+- [x] `.asd/workflows/asd-phase-pr.md` merge mode: close each included PR with a comment naming the sprint PR (AC-12)
+- [x] `.asd/workflows/asd-phase-retro.md` step 4 Draft: a mechanically decidable guardrail takes a check as Home — a `commands.yaml` `checks` entry for a consumer, a `runtime.js` validator or `tests/run.js` assertion under `self_hosting` — a prose home only when no check can decide it (AC-6)
+- [x] same file, systemic class: a suite-revision proposal when `timing-summary` `suite_full.over` is true or `test-plan.md` holds an `Allowance` line (AC-18)
+- [x] `.asd/templates/t_retrospective.html` and the retro workflow's fragment rule: a section with no rows is a paragraph with no table (AC-11)
+- [x] `.asd/templates/t_stubs.md:10,16`: the review-date form (AC-5)
 
 ### Task 8: Impl, impl-test, impl-review workflows, tester, test-plan template
 Material risk: change: wording of the suite-revision procedure and the green-exit order
-- [ ] `.asd/workflows/asd-phase-impl.md` step 9: run every `commands.yaml` `checks` entry after build and lint, a non-zero exit failing the gate; `.asd/agents/asd-dev.md` run list: `checks.*` (AC-1, AC-6, AC-21)
-- [ ] `.asd/workflows/asd-phase-impl-test.md`: gap proof recorded per added test and checked by `impl-test-close`; green exit closes with `--green --base`, an `Allowance` line naming the covered risks when `test-delta` requires it; the prune pass removes `temporary(<NNN>)` tests of earlier sprints; suite-revision mode per Overview, dispatched again until the ledger has no `pending` area (AC-3, AC-13, AC-17, AC-19)
-- [ ] `.asd/workflows/asd-phase-impl-review.md` terminal full suite (`:61-66`): run through `test_durations` when present and record `Slowest tests`; on red, each failing test is marked inside or outside the last green impacted run's Scope, and one outside it gets the orchestrator's friction entry (AC-7, AC-16)
-- [ ] `.asd/agents/asd-tester.md`: "Suite revision" section — per area: production code read first, contracts named, one strongest owner each, duplicates, implementation mirrors, tests an enforced static check covers and unused fixtures removed; shared setup built once and reset per test, in-process call over a spawned process where the unit is importable, cheapest level that still catches the defect, a monolithic file split by area, parallel run where the runner supports it; a seeded defect proves each surviving owner; the ledger row written per area (AC-17)
-- [ ] same file: admission and durations cite `code-style.md` §17 and `commands.yaml`, no restatement (AC-13, AC-16)
-- [ ] `.asd/templates/t_test-plan.md`: `Added tests` `Gap proof` column; `Suite run` `Line delta`, `Allowance`, `Slowest tests` lines; optional `## Suite revision` ledger (AC-3, AC-13, AC-16, AC-17)
+- [x] `.asd/workflows/asd-phase-impl.md` step 9: run every `commands.yaml` `checks` entry after build and lint, a non-zero exit failing the gate; `.asd/agents/asd-dev.md` run list: `checks.*` (AC-1, AC-6, AC-21)
+- [x] `.asd/workflows/asd-phase-impl-test.md`: gap proof recorded per added test and checked by `impl-test-close`; green exit closes with `--green --base`, an `Allowance` line naming the covered risks when `test-delta` requires it; the prune pass removes `temporary(<NNN>)` tests of earlier sprints; suite-revision mode per Overview, dispatched again until the ledger has no `pending` area (AC-3, AC-13, AC-17, AC-19)
+- [x] `.asd/workflows/asd-phase-impl-review.md` terminal full suite (`:61-66`): run through `test_durations` when present and record `Slowest tests`; on red, each failing test is marked inside or outside the last green impacted run's Scope, and one outside it gets the orchestrator's friction entry (AC-7, AC-16)
+- [x] `.asd/agents/asd-tester.md`: "Suite revision" section — per area: production code read first, contracts named, one strongest owner each, duplicates, implementation mirrors, tests an enforced static check covers and unused fixtures removed; shared setup built once and reset per test, in-process call over a spawned process where the unit is importable, cheapest level that still catches the defect, a monolithic file split by area, parallel run where the runner supports it; a seeded defect proves each surviving owner; the ledger row written per area (AC-17)
+- [x] same file: admission and durations cite `code-style.md` §17 and `commands.yaml`, no restatement (AC-13, AC-16)
+- [x] `.asd/templates/t_test-plan.md`: `Added tests` `Gap proof` column; `Suite run` `Line delta`, `Allowance`, `Slowest tests` lines; optional `## Suite revision` ledger (AC-3, AC-13, AC-16, AC-17)
 
 ### Task 9: Reviewer rules
 Material risk: change: wording of the invalid-finding condition
-- [ ] `.asd/rules/review-policy.md` (`:53` invalid-finding rules): a finding asking for a test names the failure mode and the existing tests checked, else it is invalid and not routed (AC-14)
-- [ ] same file: a suppression or weakened check in the reviewed diff without a recorded user decision is a finding (AC-4)
-- [ ] `.asd/agents/asd-reviewer-quality.md:97-118`, `asd-reviewer-efficiency.md:105`, `asd-reviewer-combined.md` test rubric: cite the two rules, no restatement (AC-4, AC-14)
+- [x] `.asd/rules/review-policy.md` (`:53` invalid-finding rules): a finding asking for a test names the failure mode and the existing tests checked, else it is invalid and not routed (AC-14)
+- [x] same file: a suppression or weakened check in the reviewed diff without a recorded user decision is a finding (AC-4)
+- [x] `.asd/agents/asd-reviewer-quality.md:97-118`, `asd-reviewer-efficiency.md:105`, `asd-reviewer-combined.md` test rubric: cite the two rules, no restatement (AC-4, AC-14)
 
 ### Task 10: /asd-init and commands template
 Material risk: change: diff-mode detection scope
-- [ ] `.asd/templates/t_commands.yaml`: optional `test_paths`, `test_durations` and `checks` with their comments (AC-1, AC-3, AC-16)
-- [ ] `.asd/skills/asd-init/SKILL.md` step 8: fill `test_paths` from the detected layout and `test_durations` from the detected runner, omitting either when none is found; run `context-check --seed` and add `checks.context` (AC-1, AC-3, AC-16)
-- [ ] same step: name each gate class with no detected command (lint or format, type check) and the adoption path — a sprint adopting the gates per dev-quality-gates `docs/adopt.md`; install nothing (AC-8)
-- [ ] diff mode (`:89-98`): the same detection for each of those keys still absent, and the same naming (AC-3, AC-8, AC-16)
+- [x] `.asd/templates/t_commands.yaml`: optional `test_paths`, `test_durations` and `checks` with their comments (AC-1, AC-3, AC-16)
+- [x] `.asd/skills/asd-init/SKILL.md` step 8: fill `test_paths` from the detected layout and `test_durations` from the detected runner, omitting either when none is found; run `context-check --seed` and add `checks.context` (AC-1, AC-3, AC-16)
+- [x] same step: name each gate class with no detected command (lint or format, type check) and the adoption path — a sprint adopting the gates per dev-quality-gates `docs/adopt.md`; install nothing (AC-8)
+- [x] diff mode (`:89-98`): the same detection for each of those keys still absent, and the same naming (AC-3, AC-8, AC-16)
 
 ### Task 11: Runner durations
 Material risk: none
