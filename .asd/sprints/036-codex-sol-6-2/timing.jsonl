@@ -191,3 +191,9 @@
 {"op":"close","id":"wait iter-07 out-of-surface finding","kind":"user-wait","parent":"impl-review#7","start":"2026-11-18T03:59:39.152Z","end":"2026-11-18T06:12:58.601Z","outcome":"done","attrs":{"gate":"iter-07 out-of-surface finding"}}
 {"op":"close","id":"impl-review#7","kind":"phase","parent":null,"start":"2026-11-18T03:53:41.068Z","end":"2026-11-18T06:13:18.790Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#9","kind":"phase","parent":null,"start":"2026-11-18T06:13:18.790Z","attrs":{}}
+{"op":"open","id":"dev review-fix wave-1/iter-07","kind":"dispatch","parent":"impl#9","start":"2026-11-18T06:13:19.156Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"dev review-fix wave-1/iter-07","kind":"dispatch","parent":"impl#9","start":"2026-11-18T06:13:19.156Z","end":"2026-11-18T06:14:28.071Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"tester review-fix wave-1/iter-07","kind":"dispatch","parent":"impl#9","start":"2026-11-18T06:14:28.811Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"tester review-fix wave-1/iter-07","kind":"dispatch","parent":"impl#9","start":"2026-11-18T06:14:28.811Z","end":"2026-11-18T06:16:52.363Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl#9","kind":"phase","parent":null,"start":"2026-11-18T06:13:18.790Z","end":"2026-11-18T06:17:00.321Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#9","kind":"phase","parent":null,"start":"2026-11-18T06:17:00.321Z","attrs":{}}
