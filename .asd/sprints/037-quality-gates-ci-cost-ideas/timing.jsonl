@@ -232,3 +232,4 @@
 {"op":"close","id":"impl-review#8","kind":"phase","parent":null,"start":"2026-11-18T13:53:43.173Z","end":"2026-11-18T14:02:21.298Z","outcome":"done","attrs":{}}
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T14:02:36.491Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T14:02:36.491Z","end":"2026-11-18T14:02:36.747Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-18T14:02:49.975Z","attrs":{}}
