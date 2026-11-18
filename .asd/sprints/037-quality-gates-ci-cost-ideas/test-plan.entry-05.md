@@ -18,3 +18,15 @@ Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry
 | `checkGapProof` refuses an Added tests table whose header is followed directly by a data row (external 5) | a table with no separator row swallows its first data row as the separator and closes green | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a header-then-row plan expecting the `table separator malformed` refusal | extend existing | same owner test. Mutation (separator-shape `fail` line removed, restored): `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, same failing test (1/34 matched, 0/1 passed) |
 | PR intake and merge prose: host-qualified `<project>` (`gh repo view <origin> --json url`), `--match-head-commit <sha>`, `headRefOid`, oldest-first listing (external 1–3) | a machine-parsed token of these steps drifting | none | none | no contract test pins any of these tokens (`grep -n "nameWithOwner|headRefOid|match-head-commit|created-asc" tests/` was empty after the dead helper below was removed); the change is prose of an orchestrator-run `gh` sequence no machine parses (code-style §17: a prose fix adds a test only for a machine-parsed token) |
 | `originCheckedBeforeRepoView` in `tests/contract-workflows.test.js` still named `nameWithOwner` and nothing called it | a dead helper pinning a replaced token | none (deletion) | removed | the helper and `labelsAdded`, also uncalled since before entry 4, are deleted from `tests/contract-workflows.test.js`; no test referenced either |
+
+## Removed tests
+
+| Test | Reason | In change scope |
+|---|---|---|
+
+## Added tests
+
+Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
+
+| Test | Gap proof | Regression proof |
+|---|---|---|
