@@ -115,3 +115,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — latch-refresh wave-1/iter-08: combined cleared (.asd/sync.js)
 - 2026-11-18 — impl-review wave-1/iter-08 (floor critical): combined APPROVE (latched 8), external CONCERNS (1 kept critical: `runCheck`/`runApply` load the release manifest through a linked `.asd` before the guarded ledger load; 2 below floor; iter-07 P1 resolved; no stalemate) → impl review-fix (review_fixes_pending=wave-1/iter-08). Inside the user's iter-07 scope expansion ("every sync path refuses a linked ledger or `.asd` before reading it"), so routed without a new gate. External 2 (multiline catch-all message) rides along: one-line escape, no new surface. Tripwire: a further widening at iter-09 goes to the user.
 - 2026-11-18 — route review-fix wave-1/iter-08 (A: external 1, 2): standard, dispatch HEAD 22803432; risk change: security
+- 2026-11-18 — route review-fix tester wave-1/iter-08 (test parts of external 1, 2): standard, dispatch HEAD 17705f04
+- 2026-11-18 — impl fix for wave-1/iter-08: findings resolved (dev 64b9f1e3; hash ledger 17705f04; tester 46da53fe, full suite 430/430).
+- 2026-11-18 — route impl-test entry 10: standard, dispatch HEAD 46da53fe
