@@ -14,7 +14,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface |
+| 1 | bbb52783 | full change surface |
 
 ## Risk → check decisions
 
@@ -61,6 +61,12 @@ Pre-strategy run (step 3) at `13292f6a`: `node tests/run.js` 416/430, 14 failure
 | tests/runtime-review.test.js: the two validate-ledger CLI tests (exit 0 on a valid ledger, non-zero on a broken one) | redundant: survivor tests/runtime-review.test.js:`validate-ledger exits 0…` (merged, every assertion kept), branches the CLI verdict print and the findings check | yes |
 | tests/hooks.test.js: the Claude and Codex form tests, the three verdict-map tests and the AC-21 test | redundant: survivors tests/hooks.test.js:`the skill form follows the provider…` and `a verdict map reads…` (table-driven, every assertion kept), branches provider skill form and APPROVE/legacy verdict read | yes |
 | tests/update.test.js: `release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file` | redundant: survivor tests/update.test.js:`release-manifest.json: canon_hashes has an entry for every .asd/agents/*.md file and every entry matches the actual file…` (merged, both assertions kept), branch an agent file with no canon_hashes entry | yes |
+| tests/contract-{rules,workflows,agents,templates}.test.js: 88 tests pinning prose (names at d9bc9e45, diff 5718b216; three are one-time leftover sweeps) | prose pin: no machine-parsed token (AC-15) | yes |
+| tests/sync-render.test.js: `agents whose meta never sets wraps_cli/wraps_config_key are unaffected` | redundant: survivor tests/sync-render.test.js:`canonical agent -> Claude .md matches fixture`, branch placeholder-free render | yes |
+| tests/sync-render.test.js: `json-merge: invalid JSON target fails closed` | redundant: survivor tests/sync-render.test.js:`json-merge: statusJsonMerge stays safe (modified-foreign) on invalid JSON`, branch invalid-JSON status | yes |
+| tests/sync-render.test.js: `sprint-033 AC-1/AC-2/AC-3/AC-8: the runner variant renders haiku/medium…` | implementation-coupled: survivor `sprint-022 AC-8/AC-9, sprint-023 AC-7` (README vs frontmatter tier mirror); scout no-write assertion moved into `read-only agents` | yes |
+| tests/sync-render.test.js: `sprint-036 AC-15 (D-1)`, `(combined F1)`, `(combined F2)` | redundant: survivors `an attribution-only json-merge re-render leaves the owned hooks array byte-identical` (unchanged-array branch) and the merged `sprint-036 AC-15 (combined F1/F2)` | yes |
+| tests/sync-cli.test.js: `orphan detection (AC-14): --check reports a marked orphan`, `bare --apply…`, `iter-08` malformed manifest, `external 2` schema_version | redundant: survivors `--check exits 1 when a marked orphan is present` and the three merged sync-cli tests, every scenario kept | yes |
 
 ## Added tests
 
@@ -89,11 +95,11 @@ analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: `node tests/run.js` (`test` and `test_durations` from commands.yaml)
-- Scope: full — one file with no native selector
-- Result: pass — 433 passed, 0 failed, 0 skipped
+- Scope: full — every area, no filter (step 8 after the suite revision)
+- Result: pass — 310 passed, 0 failed, 0 skipped
 - Lint / build: pass — `git diff --cached --check` clean on the staged paths, `node .asd/sync.js --check` ok (66 items, all current)
 - Slowest tests: 7222 ms sprint-031 AC-9 (issue #74) emit-manifest command-line budget split; 2573 ms AC-5 negative-cache recovers on fingerprint change; 2531 ms sprint-035 AC-15 latch-refresh clears per manifest; 2504 ms sprint-036 AC-9 latch-refresh comment-only change; 2462 ms sprint-017 AC-4/AC-8 emit-manifest --full-files/--full-base; 2167 ms sprint-036 AC-14 agent-liveness --returns; 2156 ms sprint-023 AC-2 asd-sprint Step 0 order; 2098 ms sprint-021 AC-7 agentLiveness transcript verdicts; 1679 ms sprint-020 AC-1/AC-6 SessionStart chain; 1662 ms sprint-017 AC-1 review-waves git range
-- HEAD: 984cd797447f662ed4dd27cb7c4576e73952d7ec
+- HEAD: 369eac49 (`suite impl-test#7`; only test-plan.md changed since)
 
 ## Defects
 
@@ -101,6 +107,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
+| D-1 | 1 | AGENTS.md | AC-20: canon still describes the suite as one file — AGENTS.md "Build and lint" (`tests/run.js` is a real … test runner), "Phase chain" (`tests/run.js` §16), "Conventions" (`tests/run.js` among Node code); sprint-lifecycle.md "Cleanup phase" step 3 (impacted set is the full `node tests/run.js`) | none (AC-20) | pending | |
 
 ## Suite revision (optional)
 
@@ -108,7 +115,7 @@ Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` 
 
 - Before: 430 tests (416 passing, 14 failing on pins this sprint changed), 11573 `tests/run.js` lines, 70.7 s full run (`node tests/run.js`, one file, at `13292f6a`, before this entry's edits)
 - Split: `0b9c1b80` — `tests/run.js` (loader) + `tests/lib.js` + 15 `tests/<area>.test.js`; sorted test-name list identical before and after (433 names, `diff` empty), full run 433/433 green, 82.3 s on a loaded machine (the same tests ran 70.7 s before: spawn-heavy tests vary about 20% between runs)
-- After: (written when no area is `pending`)
+- After: 310 tests, 8685 lines over `tests/*.js` (`tests/run.js` loader 79 lines, `tests/lib.js`, 15 area files), 40.6 s full run (`suite impl-test#7` at `369eac49`); an area run is `node tests/run.js <area>…`
 
 | Area | State | Tests before → after | Seeded-defect proof |
 |---|---|---|---|
@@ -117,13 +124,13 @@ Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` 
 | runtime-routing | done | 22 → 21 | aa95f2e7: the three preflight cache tests use a stand-in `node` (`withExitZeroNode` preload) instead of `.cmd` stubs, so the PowerShell hop stays in its one `.cmd` test; positiveInteger and unread-flag cases run as async batches; the typed-vs-legacy risk test and two duplicate assertions removed (see Removed tests); area 10.4 s → 2.1 s. Seeded (restored, exit 1 on the owner): fingerprint ignoring model, command or auth generation (AC-5 negative-cache); expiry `>` → `>=`; persisted entry echoing an extra field; positiveInteger refusing zero padding; unread-flag warning dropped; legacy bare-string risk read as artifact, typed change risk read as artifact |
 | runtime-timing | done | 21 → 21 | 782c2a21, ccb36289: both agent-liveness CLI tests and the context-check test start their independent runs together (2.1 s → 1.1 s each, 1.05 s → 0.76 s), the host-rule and routed-agent dispatch-fill tests give each case its own ledger and run side by side (0.36 s, 0.41 s → about 0.25 s each); the remaining 17 tests are distinct contracts, no duplicate found; the 1 s liveness poll floor is production behaviour; area now 5.6 s. Seeded (restored, exit 1 on the owner): `STALL ` print renamed; `unobservable` verdict renamed; context-check exit code forced 0; host rule inverted; routed lookup reading the wrong key; a never-opened close writing a line; standard tier given a suffix; command execution given an agent; a given agent overwritten |
 | hooks | done | 14 → 10 | 86ea4c89, 3d37e159: one `hookContext` builds the sprint tree once and the hook runs for every case of a contract in one async batch; the Claude/Codex form tests, the three verdict-map tests and the AC-21 test merged into table-driven survivors, every assertion kept (see Removed tests); area 3.6 s → 1.7 s. Seeded (restored, exit 1 on the owner): skill form inverted per provider; APPROVE prefix never matching; legacy skips alone reading green; iterations sorted lexically; merged-unclosed never and always done; conflict warning off; archived done sprint recovered; archived phase outside the chain recovered; `Next phase:` line renamed |
-| sync-cli | pending | 14 → | |
+| sync-cli | done | 14 → 10 | seeded, each red: bare `--apply` and not-found batch recomputing the ledger → `each abort the batch`; link guard disabled → `refuse the link`; stderr CR/LF fold weakened → `unsupported or spans CR and LF`; orphan sole-failure → `--check exits 1 when a marked orphan` |
 | sweeps | done | 13 → 0 | no survivor: the 13 one-time removal sweeps of sprints 021-036 go wholesale (AC-19); nothing to seed |
-| contract-rules | pending | 31 → | |
-| contract-workflows | pending | 63 → | |
-| contract-agents | pending | 25 → | |
-| contract-templates | pending | 34 → | |
-| sync-render | pending | 61 → | |
+| contract-rules | done | 31 → 14 | seeded, each red (`node tests/run.js contract-rules --filter <name>` exit 1, restored): `--cached` dropped from commands.yaml lint → `AC-6: commands.yaml`; `core.md` See-also entry renamed → `is the rule-doc index`; `### Documentation economy` renamed → `Documentation economy id`; `priorTier` renamed in providers.md → `states every input key`; `tmpdir()` appended to sync.js → `no ASD script calls the OS temp`; `--ff-only` dropped in git-strategy.md → `sprint-023 AC-2` |
+| contract-workflows | done | 63 → 23 | seeded, each red: `codex_command` renamed in t_config.yaml; `APPROVE (skipped:` altered in t_review-report.md; `findings resolved` reworded in asd-phase-impl.md; `c4` dropped from reserved ids; `test-plan.entry-NN.md` renamed in README; bogus flag on the impl-review `emit-manifest` line; `latched` dropped from t_state.json; `AskUserQuestion` added to asd-advisor; `report_by` altered in agent-protocol.md; `await-merge` dropped from the README pr row; `Grep` dropped from the impl skill allowed-tools; `asd-scout` dropped from the cleanup Owner line; `{{CLEANUP}}` renamed in scope; `safety_valve` flipped in t_config.yaml; two phases swapped in the `core.md` glossary chain — each fails its owner test |
+| contract-agents | done | 25 → 8 | seeded, each red: `Write` added to asd-advisor tools → `read-only agents`; Claude view `maxTurns: 99` → `maxTurns cap`; `full` renamed in the t_test-plan.md Scope line → `scope values "Operation timing" lists` |
+| contract-templates | done | 34 → 14 | seeded, each red: extra key in t_review-scope.json; `skip_design_phases` appended to t_config.yaml; TOC threshold 9 in artifact-layout.md; `<iteration id>` renamed in README; `checklist-hits` renamed in retro — each fails its owner test |
+| sync-render | done | 61 → 56 | seeded, each red: `sonnet/` added to README family list and runner effort `low` → `the model family and effort each agent renders`; `writtenKeys` forced true → `combined F1/F2`; `renderOwnedArray` keep-raw shortcut disabled → `attribution-only json-merge re-render`; `statusJsonMerge` catch → `stale` → `statusJsonMerge stays safe` |
 | update | done | 37 → 36 | the canon_hashes agent-coverage test merged into the entry-matches-file test, both assertions kept (see Removed tests); the other 35 split pure state-machine classification (no I/O) from driver write behaviour, different contracts, and cost 0.3 s together, nothing to speed. Seeded (manifest restored in a `finally`): an agent entry renamed away in `.asd/release-manifest.json` → `--filter "canon_hashes has an entry for every"` exit 1; an agent hash altered → same filter exit 1 |
 | migrations | done | 19 → 19 | no change: each test owns one migration version or one branch of it (6.0.0: last member / multi-line / nested shadow / printed recovery, 4.0.0: three commands.yaml states), no duplicates, 0.34 s for the area; nothing seeded because no test changed |
 | runner | done | 1 → 1 | the `--filter` test no longer reads the loaded test list, so an area run passes; extended with `runtime-timing --filter` pass, `hooks --filter` of a runtime-timing test → exit 1, `no-such-area` → exit 1 `unknown area`; seeded: loader ignores area arguments (`for (const area of known)`) → `--filter "sprint-027 AC-9"` exit 1, 1 matched, fails; unknown-area refusal disabled (`if (false)`) → same filter exit 1, fails |

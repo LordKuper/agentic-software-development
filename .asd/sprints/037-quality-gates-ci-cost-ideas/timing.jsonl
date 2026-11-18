@@ -67,3 +67,8 @@
 {"op":"close","id":"suite revision 1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:14:21.800Z","end":"2026-11-18T10:44:25.275Z","outcome":"done","attrs":{"context_bytes":81365}}
 {"op":"open","id":"suite revision 2","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.503Z","attrs":{"context_bytes":81365}}
 {"op":"open","id":"suite revision 3","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.664Z","attrs":{"context_bytes":81365}}
+{"op":"close","id":"suite revision 3","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.664Z","end":"2026-11-18T10:57:58.092Z","outcome":"done","attrs":{"context_bytes":81365}}
+{"op":"open","id":"suite impl-test#7","kind":"suite","parent":"suite revision 2","start":"2026-11-18T11:08:57.556Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#7","kind":"suite","parent":"suite revision 2","start":"2026-11-18T11:08:57.556Z","end":"2026-11-18T11:09:38.174Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"suite revision 2","kind":"dispatch","parent":"impl-test#1","start":"2026-11-18T10:44:25.503Z","end":"2026-11-18T11:09:58.227Z","outcome":"done","attrs":{"context_bytes":81365}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-18T09:56:07.247Z","end":"2026-11-18T11:11:13.963Z","outcome":"done","attrs":{}}

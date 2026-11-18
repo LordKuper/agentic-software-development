@@ -78,3 +78,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route suite revision 1: standard, dispatch HEAD 239450d9
 - 2026-11-18 — route suite revision 2: standard, dispatch HEAD 983ec5e0
 - 2026-11-18 — route suite revision 3: standard, dispatch HEAD 983ec5e0
+- 2026-11-18 — impl-test: defects D-1 → impl test-fix (digest 5f15122e)
