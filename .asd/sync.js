@@ -750,17 +750,18 @@ function writtenKeys(before, previous, ownedKeys) {
 // the digest stays the owned array's alone, which that write leaves as it was.
 // With no entry the file was never applied, so its value reads as the user's.
 // Returns whether it saved. A ledger or `.asd` directory that is a symlink or
-// junction is refused (thrown), the save going through a sibling temp file
+// junction is refused (thrown) before the ledger is read, so no text of a linked
+// file reaches a parse error; the save goes through a sibling temp file
 // renamed over the ledger so a failure never leaves it half-written.
 function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
+  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
+  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
   const syncState = loadSyncState(repoRoot);
   const entry = syncState.entries[relKey];
   if (!entry) return false;
   const previous = entry.owned_keys || [];
   const written = writtenKeys(before, previous, ownedKeys);
   if (written.length === previous.length && written.every((key) => previous.includes(key))) return false;
-  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
-  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
   syncState.entries[relKey] = { ...entry, owned_keys: written };
   writeAtomically(ledger, normalizeText(JSON.stringify(syncState, null, 2) + '\n'));
   return true;
