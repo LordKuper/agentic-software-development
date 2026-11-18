@@ -67,3 +67,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Impl complete: Tasks 1-12 done in three waves; build, lint, `checks.context` and `checks.agnix` (0 errors, 0 warnings) pass at the gate; context ceilings seeded (111 keys, headroom 10%).
 - **Rationale**: Adaptive evidence: every checkbox ticked, flagged choices resolved, no stubs introduced. Fourteen tests fail on pins this sprint changed by design (sandbox_mode, D13, retro and scope wording); impl-test updates them.
 - **Affected docs**: plan.md, .asd/project/context-ceilings.json, .asd/project/commands.yaml
+- 2026-11-18 — route impl-test entry 1: standard, dispatch HEAD 13292f6a
+- 2026-11-18 — orchestrator: `custom-coding-rules.md` D13 self-check line repointed to `context-check` (the D13 test was removed at impl-test entry 1)
