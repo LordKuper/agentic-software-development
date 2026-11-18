@@ -35,3 +35,4 @@
 - [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — rule making an agent write a new file (scratch commit-msg): check its Tools write list and "deny" entries
 - [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — owned key added under one setting: does the flip back remove it, by recorded ownership, never by value equality alone?
 - [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
+- [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
