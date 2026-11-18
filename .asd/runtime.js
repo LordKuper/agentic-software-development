@@ -2336,18 +2336,20 @@ function planSection(lines, name) {
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
-/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a well-formed separator and a `Gap proof` column that is non-empty and is no wholly unreplaced `{{…}}` template cell in every row. */
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a well-formed separator, no row without a leading pipe, and a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row. */
 function checkGapProof(lines, source = 'test-plan') {
   const section = planSection(lines, 'Added tests');
   if (section === null) fail(`${source} has no ## Added tests section`);
-  const [header, separator, ...rows] = lines.slice(section.start, section.end).filter((line) => line.trim().startsWith('|')).map(tableCells);
+  const body = lines.slice(section.start, section.end);
+  if (body.some((line) => line.includes('|') && !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+  const [header, separator, ...rows] = body.filter((line) => line.trim().startsWith('|')).map(tableCells);
   if (separator === undefined) return;
   if (separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
   if (rows.length === 0) return;
   const column = header.indexOf('Gap proof');
   if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
   if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-  if (rows.some((cells) => /^\{\{.*\}\}$/.test(cells[column]))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+  if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
