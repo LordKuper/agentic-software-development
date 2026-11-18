@@ -15,6 +15,10 @@ test-plan.entry-NN.md: .asd/rules/artifact-layout.md "Test plan". Change surface
 itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2 (full on entry 1, delta
 since the prior entry's `HEAD analysed` on re-entry).
 Rules: .asd/workflows/asd-phase-impl-test.md "Rules", .asd/rules/code-style.md §17.
+English machine literals, never translated (`impl-test-close` and `defect-stalemate` parse them): the
+`## Added tests`, `## Suite run` and `## Defects` headings, the `Gap proof` column header, the
+`Entry`, `Location`, `Symptom` and `Failing test` column headers of `Defects`, and the `- Line delta:`
+and `- Allowance:` labels.
 -->
 
 ## Entry log
@@ -36,7 +40,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 | Test | Reason | In change scope |
 |---|---|---|
-| {{file:name}} | {{trivial \| redundant: survivor <file:name>, branch <what it exercises> \| mock-confirming \| implementation-coupled \| flaky}} | {{yes \| no — user approved <date>}} |
+| {{file:name}} | {{trivial \| redundant: survivor <file:name>, branch <what it exercises> \| mock-confirming \| implementation-coupled \| flaky}} | {{yes \| no — user approved <date> \| no — scope AC-N}} |
 
 ## Added tests
 
@@ -50,8 +54,8 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
-it with the cycle's one **full-suite** run once the last review wave's reviewers are
-APPROVE/latched. The review-fix tester also records here the check a finding requires; `impl-test`
+its run lines with the cycle's one **full-suite** run once the last review wave's reviewers are
+APPROVE/latched, keeping `Line delta` and `Allowance`. The review-fix tester also records here the check a finding requires; `impl-test`
 step 8 reuses it per "Impacted test set". The `pr` gate always reads whatever is recorded here last — the full-suite
 record, by the time `pr` runs. Each per-entry record measures only the tree that entry
 analysed, not any tree produced later

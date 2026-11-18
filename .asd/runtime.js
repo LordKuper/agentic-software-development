@@ -654,12 +654,10 @@ function persistReview(input) {
 function defectStalemate(markdown) {
   if (typeof markdown !== 'string') fail('test-plan markdown required');
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
-  const headings = lines.flatMap((line, i) => (/^## Defects\b/.test(line) ? [i + 1] : []));
-  if (headings.length === 0) fail('test-plan has no ## Defects section');
-  if (headings.length > 1) fail(`test-plan has ${headings.length} ## Defects sections at lines ${headings.join(', ')}`);
-  const end = lines.findIndex((line, i) => i >= headings[0] && /^## /.test(line));
-  const [header, separator, ...rows] = lines.slice(headings[0], end === -1 ? lines.length : end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${headings[0] + i + 1}`, cells: tableCells(line) }] : []));
-  if (header === undefined) fail(`line ${headings[0]}: Defects table missing`);
+  const section = planSection(lines, 'Defects');
+  if (section === null) fail('test-plan has no ## Defects section');
+  const [header, separator, ...rows] = lines.slice(section.start, section.end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${section.start + i + 1}`, cells: tableCells(line) }] : []));
+  if (header === undefined) fail(`line ${section.start}: Defects table missing`);
   const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.cells.includes(name) ? header.cells.indexOf(name) : fail(`${header.at}: Defects table has no ${name} column`)));
   if (separator === undefined || separator.cells.length !== header.cells.length || !separator.cells.every((cell) => /^:?-+:?$/.test(cell))) fail(`${(separator || header).at}: Defects table separator malformed`);
   const byEntry = new Map();
@@ -2012,18 +2010,18 @@ function contextByteTotals(ops) {
   return { total: sized.reduce((sum, op) => sum + Number(op.attrs.context_bytes), 0), by_agent: byAgent, dispatches_without: dispatches.filter((op) => !sized.includes(op)).map((op) => op.id) };
 }
 
-/** Seconds of the longest closed full-suite `suite` op of `ops`, null when it ran none. */
-function fullSuiteSeconds(ops) {
+/** Milliseconds of the longest closed full-suite `suite` op of `ops`, null when it ran none. */
+function fullSuiteMs(ops) {
   const full = ops.filter((op) => op.kind === 'suite' && op.attrs.scope === 'full');
-  return full.length === 0 ? null : seconds(Math.max(...full.map((op) => op.ms)));
+  return full.length === 0 ? null : Math.max(...full.map((op) => op.ms));
 }
 
-/** The sprint's full-suite seconds against the median of archived ledgers' (null under `SUITE_BASELINE_MIN_SAMPLES`); `over` when the sprint's exceeds `SUITE_OVER_FACTOR` times it. */
+/** The sprint's full-suite seconds against the median of archived ledgers' (null under `SUITE_BASELINE_MIN_SAMPLES`); `over` when the sprint's exceeds `SUITE_OVER_FACTOR` times it, compared in milliseconds and rounded only in the reported seconds. */
 function suiteFullTotals(ops, archivedTexts) {
-  const samples = archivedTexts.map((text) => fullSuiteSeconds(closedOps(ledgerState(timingEntries(text)).closed))).filter((value) => value !== null);
-  const sprintSeconds = fullSuiteSeconds(ops);
-  const baseline = samples.length < SUITE_BASELINE_MIN_SAMPLES ? null : median(samples);
-  return { sprint_seconds: sprintSeconds, baseline_median: baseline, over: sprintSeconds !== null && baseline !== null && sprintSeconds > SUITE_OVER_FACTOR * baseline };
+  const samples = archivedTexts.map((text) => fullSuiteMs(closedOps(ledgerState(timingEntries(text)).closed))).filter((value) => value !== null);
+  const sprintMs = fullSuiteMs(ops);
+  const baselineMs = samples.length < SUITE_BASELINE_MIN_SAMPLES ? null : median(samples);
+  return { sprint_seconds: sprintMs === null ? null : seconds(sprintMs), baseline_median: baselineMs === null ? null : seconds(baselineMs), over: sprintMs !== null && baselineMs !== null && sprintMs > SUITE_OVER_FACTOR * baselineMs };
 }
 
 /** Per phase and kind, the median of archived sprints' totals and how many sprints recorded it; null with no archived ledger. */
@@ -2204,7 +2202,7 @@ function contextCommand(flags) {
 
 /** The default ceilings file of `context-check`. */
 const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
-/** Percent above the measured size a seeded ceiling sits, unless `--headroom` says otherwise. */
+/** Percent above the measured size a seeded ceiling sits. */
 const CONTEXT_HEADROOM_PERCENT = 10;
 /** A ceiling key naming a context bundle, `<role>@<phase>`; any other key is a repo-relative file. */
 const CONTEXT_BUNDLE_KEY = /^([a-z0-9-]+)@([a-z]+(?:-[a-z]+)*)$/;
@@ -2237,30 +2235,35 @@ function readCeilings(file) {
   return ceilings;
 }
 
-/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `flags.headroom` percent (default `CONTEXT_HEADROOM_PERCENT`) rounded up. */
-function seedCeilings(flags, file) {
-  const percent = flags.headroom === undefined ? CONTEXT_HEADROOM_PERCENT : Number(flags.headroom);
-  if (!Number.isFinite(percent) || percent < 0) fail('--headroom must be a non-negative number');
+/** The project rules files and reliability checklist present, repo-relative: each needs a ceiling key. */
+function contextProjectFiles() {
   const dir = path.join(__dirname, 'project');
   const names = fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => /^custom-.+-rules\.md$/.test(name) || name === 'reliability-checklist.md') : [];
-  const keys = names.map((name) => `.asd/project/${name}`).concat(flags.bundles === true ? contextBundleKeys() : []).sort();
-  const ceilings = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + percent) / 100))]));
+  return names.map((name) => `.asd/project/${name}`);
+}
+
+/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `CONTEXT_HEADROOM_PERCENT` rounded up. */
+function seedCeilings(flags, file) {
+  const keys = contextProjectFiles().concat(flags.bundles === true ? contextBundleKeys() : []).sort();
+  const ceilings = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + CONTEXT_HEADROOM_PERCENT) / 100))]));
   fs.writeFileSync(file, `${JSON.stringify(ceilings, null, 2)}\n`, 'utf8');
   return { out: file, keys: keys.length };
 }
 
-/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling; with `--seed`, seeds the file instead. */
+/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling, plus each present project file with no ceiling key (`ceiling: null`, fail-closed for a file created after the seed); with `--seed`, seeds the file instead. */
 function contextCheckCommand(flags) {
   const file = typeof flags.ceilings === 'string' ? flags.ceilings : path.join(__dirname, '..', CONTEXT_CEILINGS_FILE);
   if (flags.seed === true) return seedCeilings(flags, file);
-  if (flags.bundles !== undefined || flags.headroom !== undefined) fail('--bundles and --headroom apply to --seed only');
-  const over = Object.entries(readCeilings(file)).map(([key, ceiling]) => ({ key, bytes: contextSize(key), ceiling })).filter((entry) => entry.bytes > entry.ceiling);
-  return { over };
+  if (flags.bundles !== undefined) fail('--bundles applies to --seed only');
+  const ceilings = readCeilings(file);
+  const over = Object.entries(ceilings).map(([key, ceiling]) => ({ key, bytes: contextSize(key), ceiling })).filter((entry) => entry.bytes > entry.ceiling);
+  const unbounded = contextProjectFiles().filter((key) => !(key in ceilings)).map((key) => ({ key, bytes: contextSize(key), ceiling: null }));
+  return { over: over.concat(unbounded) };
 }
 
-/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure, unparseable or non-array output included, throws. */
-function readChecks(pr) {
-  const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
+/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`, in `repo` (`<owner>/<repo>`) when given, else the `gh` default; any other `gh` failure, unparseable or non-array output included, throws. */
+function readChecks(pr, repo) {
+  const result = spawnSync('gh', ['pr', 'checks', String(pr), ...(repo === undefined ? [] : ['-R', repo]), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
   if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
   if (/no checks reported/.test(result.stderr || '')) return 'none';
   let rows = null;
@@ -2326,21 +2329,22 @@ function testDelta(base, commandsFile) {
 /** `{start, end}` line range of the one `## <name>` section of a test plan's `lines`, its body after the heading up to the next `## ` heading; null when absent, several fail. */
 function planSection(lines, name) {
   const starts = lines.flatMap((line, index) => (new RegExp(`^## ${name}\\b`).test(line) ? [index + 1] : []));
-  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections`);
+  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
   if (starts.length === 0) return null;
   const next = lines.findIndex((line, index) => index >= starts[0] && /^## /.test(line));
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
-/** Fails unless the `Added tests` table of a test plan, when it holds a data row, has a `Gap proof` column non-empty in every row. */
-function checkGapProof(lines) {
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a `Gap proof` column that is non-empty and holds no `{{…}}` placeholder in every row. */
+function checkGapProof(lines, source = 'test-plan') {
   const section = planSection(lines, 'Added tests');
-  if (section === null) return;
+  if (section === null) fail(`${source} has no ## Added tests section`);
   const [header, , ...rows] = lines.slice(section.start, section.end).filter((line) => line.trim().startsWith('|')).map(tableCells);
   if (rows.length === 0) return;
   const column = header.indexOf('Gap proof');
-  if (column === -1) fail('Added tests table has rows and no Gap proof column');
-  if (rows.some((cells) => !cells[column])) fail('Added tests row has an empty Gap proof cell');
+  if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
+  if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
+  if (rows.some((cells) => /\{\{.*\}\}/.test(cells[column]))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
@@ -2392,7 +2396,7 @@ function fillHeadAnalysed(text, entry, head) {
   return text.replace(row, `$1 ${head} $2`);
 }
 
-/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs, and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
+/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs of the live plan and of the `test-plan.entry-NN.md` segment its re-entry rotated (NN the prior entry), and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
 function implTestClose(flags, now = new Date()) {
   const missing = ['test-plan', 'entry', 'decisions', 'line'].filter((name) => typeof flags[name] !== 'string');
   if (missing.length > 0) fail(`impl-test-close requires ${missing.map((name) => `--${name}`).join(', ')}`);
@@ -2405,6 +2409,8 @@ function implTestClose(flags, now = new Date()) {
   const filled = fillHeadAnalysed(text, flags.entry, head);
   const lines = filled.split(/\r?\n/);
   checkGapProof(lines);
+  const segment = `${flags['test-plan'].replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
+  if (Number(flags.entry) > 1 && fs.existsSync(segment)) checkGapProof(fs.readFileSync(segment, 'utf8').split(/\r?\n/), path.basename(segment));
   const plan = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands)).join(text.includes('\r\n') ? '\r\n' : '\n') : filled;
   const log = fs.readFileSync(flags.decisions, 'utf8');
   fs.writeFileSync(flags['test-plan'], plan, 'utf8');
@@ -2549,10 +2555,10 @@ const COMMAND_FLAGS = {
   'checklist-hits': ['checklist', 'sprint-dir'],
   section: ['file', 'heading'],
   context: ['role', 'phase', 'out', 'base-ref'],
-  'context-check': ['ceilings', 'seed', 'bundles', 'headroom'],
+  'context-check': ['ceilings', 'seed', 'bundles'],
   'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
-  'checks-wait': ['pr'],
+  'checks-wait': ['pr', 'repo'],
   timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
   'timing-recover': ['ledger'],
 };
@@ -2706,7 +2712,8 @@ async function main(argv) {
   }
   if (command === 'checks-wait') {
     if (!/^[1-9]\d*$/.test(flags.pr)) fail('--pr <positive integer> required');
-    const checks = await waitForChecks({ read: () => readChecks(flags.pr), sleep: delay, now: Date.now });
+    if (flags.repo !== undefined && !/^[\w.-]+(\/[\w.-]+){1,2}$/.test(flags.repo)) fail('--repo must be <owner>/<repo>');
+    const checks = await waitForChecks({ read: () => readChecks(flags.pr, flags.repo), sleep: delay, now: Date.now });
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
