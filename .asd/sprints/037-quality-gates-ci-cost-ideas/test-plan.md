@@ -16,14 +16,15 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 |---|---|---|
 | 1 | bbb52783 | full change surface |
 | 2 | b6f345ae | delta since entry 1 |
+| 3 |  | delta since entry 2 |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| D-1 test-fix prose: `AGENTS.md` tail (per-area suite), `sprint-lifecycle.md` "Cleanup phase" step 3, `asd-phase-retro.md` Draft step, `commands.yaml` comment and `test_paths`/`test_durations` | a machine-parsed token changed (a heading, a command, a parsed field) and a pin goes stale | content contract (existing owners) | none | `git diff bbb52783...HEAD` changes only prose sentences: no heading, table header, quoted gate phrase or `commands.yaml` key/value a test parses (`test`, `lint`, `build`, `test_durations`, `test_paths` values unchanged in the machine-read form). The impacted run below is green on every behaviour and contract test; the one red test is the `upstream_hashes` byte ledger (D-2), not a pin. No test added (§17: prose adds none) |
+| `git diff b6f345ae...HEAD` outside `.asd/sprints/**` is `.asd/release-manifest.json` alone: two `upstream_hashes` values (`.asd/rules/sprint-lifecycle.md`, `.asd/workflows/asd-phase-retro.md`) recomputed by `sync.js --apply` for D-2 | a recorded hash drifts from its file again, or a changed value is not a hash of the file | content contract (existing owner) | none | `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)` already owns it and is the test that went red on D-2; it is green on this tree. A second test would repeat the same comparison (§17). No test added |
 
 ## Removed tests
 
@@ -48,12 +49,12 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-tools sync-cli sync-render update`
-- Scope: impacted — the eight areas whose tests reference a changed file or section (AGENTS.md, `sprint-lifecycle.md`, `asd-phase-retro.md`, `commands.yaml`; the `update` area reads the manifest hashes of the two rule files)
-- Result: fail — exit 1, 194 passed, 1 failed, 0 skipped (195 tests); the failure is `release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)`: `.asd/rules/sprint-lifecycle.md` and `.asd/workflows/asd-phase-retro.md` out of date (D-2)
-- Lint / build: not run this entry (no staged content beyond test-plan files)
-- Slowest tests: 1821 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1478 ms sprint-019 AC-8 one-command commit form; 1133 ms sprint-023 AC-4 memory-check; 665 ms sprint-030 AC-9 rotate-decisions
-- HEAD: 911db381
+- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-tools sync-cli sync-render update hooks`
+- Scope: impacted — entry 2's eight areas (its gate never went green) plus `hooks`, the one further area whose test reads `.asd/release-manifest.json`
+- Result: pass — exit 0, 205 passed, 0 failed, 0 skipped (205 tests); the `upstream_hashes` ledger test that failed on D-2 is green
+- Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`, every item current)
+- Slowest tests: 2426 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 2019 ms sprint-014 AC-2 ASD-Task trailer reconstruction; 1216 ms sprint-019 AC-8 one-command commit form; 803 ms sprint-023 AC-4 memory-check
+- HEAD: b12d7ce1
 
 ## Defects
 
