@@ -11051,6 +11051,14 @@ test('sprint-036 AC-16 (external 1, iter-07): sync --check and --apply over a sy
   assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true]), 'AC-16: the linked ledger is refused before it is parsed - one sync: line, exit 1, no text of the file, bytes unchanged');
 });
 
+test('sprint-036 AC-16 (external 1, iter-07): sync --check over an unlinked ledger of an unsupported schema_version exits 1 with one "sync: " stderr line naming it, no stack and no stdout - the CLI catch-all reports any thrown error, not only a link refusal', () => {
+  const repo = disabledAttributionRepo();
+  const ledger = path.join(repo.root, '.asd', 'sync-state.json');
+  fs.writeFileSync(ledger, JSON.stringify({ schema_version: 99, entries: {} }), 'utf8');
+  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
+  assert.deepStrictEqual([ran.status, ran.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(ran.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
+});
+
 test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
   const settingsRel = '.claude/settings.json';
   const repo = disabledAttributionRepo();
