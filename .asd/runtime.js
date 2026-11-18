@@ -80,7 +80,7 @@ const IMPL_CYCLE = ['impl', 'impl-test', 'impl-review'];
 const DECISION_ENTRY = /^(## |- )\d{4}-\d{2}-\d{2} /m;
 /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
 const ACTS_ON = ['consumer', 'asd'];
-/** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); systemic proposals never are. */
+/** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); a systemic-proposals section never is, though it may hold no table. */
 const RETRO_TABLES = [
   { section: 'actions', prefix: 'A', cells: 4, guardrail: 1, actsOn: 2, home: 3, required: false },
   { section: 'systemic-proposals', prefix: 'P', cells: 4, guardrail: 0, actsOn: 1, home: 2, required: true },
@@ -111,6 +111,10 @@ const LEAF_MACHINE_KINDS = ['dispatch', 'suite', 'external-review'];
 const TIMING_OUTCOMES = ['done', 'interrupted', 'continued'];
 /** Longest leaf machine operations the timing summary always lists as slow. */
 const SLOW_TOP_N = 5;
+/** Archived full-suite runs the suite baseline needs before it reports a median. */
+const SUITE_BASELINE_MIN_SAMPLES = 3;
+/** How many times its baseline median the sprint's full suite may take before it is over. */
+const SUITE_OVER_FACTOR = 1.5;
 /** Minutes past which a leaf machine operation is slow, and a phase stretch covered by no operation is idle. */
 const SLOW_MINUTES = 30;
 /** Longest commit header, `<type>(<scope>): <subject>` whole, in characters. */
@@ -201,10 +205,14 @@ function loadWorkflow(name) {
   return definition;
 }
 
+/** The name of every workflow definition. */
+function workflowNames() {
+  return fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
+}
+
 /** The reviewer keys one review node accepts: the union of every definition's `reviewers[node]`. */
 function reviewerKeys(node) {
-  const names = fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
-  return [...new Set(names.flatMap((name) => loadWorkflow(name).reviewers[node]))];
+  return [...new Set(workflowNames().flatMap((name) => loadWorkflow(name).reviewers[node]))];
 }
 
 /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
@@ -684,12 +692,13 @@ function retroRow(table, attributes, content, ordinal) {
   return { id, acts_on: actsOn, guardrail: htmlText(cells[table.guardrail].replace(/<\/?code>/g, '`')), home: htmlText(cells[table.home]) };
 }
 
-/** Parses a retrospective's Action and Systemic-proposal rows: each id is `A-N`/`P-N` from its 1-based `<tbody>` ordinal, `covered by:` rows counted, so a retro with or without `<tr id>` yields the same ids; a declared id disagreeing with its ordinal fails. */
+/** Parses a retrospective's Action and Systemic-proposal rows; a section holding no `<table>` has zero rows, a `<table>` without `<tbody>` fails. Each id is `A-N`/`P-N` from its 1-based `<tbody>` ordinal, `covered by:` rows counted, so a retro with or without `<tr id>` yields the same ids; a declared id disagreeing with its ordinal fails. */
 function retroRows(html) {
   if (typeof html !== 'string') fail('retrospective html required');
   return RETRO_TABLES.flatMap((table) => {
     const section = new RegExp(`<section id="${table.section}"[^>]*>([\\s\\S]*?)</section>`).exec(html);
     if (section === null) return table.required ? fail(`retrospective has no ${table.section} section`) : [];
+    if (!/<table\b/.test(section[1])) return [];
     const body = /<tbody\b[^>]*>([\s\S]*?)<\/tbody>/.exec(section[1]);
     if (body === null) fail(`retrospective ${table.section} table has no tbody`);
     return [...body[1].matchAll(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/g)].map((row, index) => retroRow(table, row[1], row[2], index + 1));
@@ -1783,7 +1792,7 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. */
+/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. A missing `context_bytes` is filled from `lookups.contextBytes(id)`, absent when it returns undefined. */
 function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const filled = { ...attrs };
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
@@ -1791,6 +1800,8 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   try {
     if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
+    const bytes = filled.context_bytes === undefined && lookups.contextBytes ? lookups.contextBytes(id) : undefined;
+    if (bytes !== undefined) filled.context_bytes = bytes;
   } catch (error) {
     warnings.push(`open of ${id}: dispatch attrs lookup failed: ${error.message}`);
   }
@@ -1855,10 +1866,19 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+/** The size of the context bundle of dispatch `id` of the sprint whose folder holds `ledger`: the file at the scratch path of its id, `/` and spaces as `-`, or of the id without a trailing `#<n>`; undefined when neither exists. */
+function contextBundleBytes(ledger, id) {
+  const slug = path.basename(path.dirname(path.resolve(ledger)));
+  const names = [id, phaseName(id)].map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
+  const found = names.map((name) => path.join(scratchDir(), name)).find((candidate) => fs.existsSync(candidate));
+  return found === undefined ? undefined : fs.statSync(found).size;
+}
+
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one), `contextBytes(id)` its context bundle's size. The agent file and `sync.js` are read only when called. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
+    contextBytes: (id) => contextBundleBytes(ledger, id),
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
@@ -1976,6 +1996,32 @@ function reworkTotals(ops) {
   };
 }
 
+/** Context bundle bytes of the closed dispatch `ops`: the total, per agent `{count, bytes}`, and the ids of the dispatches whose bundle size was not recorded. */
+function contextByteTotals(ops) {
+  const dispatches = ops.filter((op) => op.kind === 'dispatch');
+  const sized = dispatches.filter((op) => Number.isFinite(Number(op.attrs.context_bytes)) && op.attrs.context_bytes !== '');
+  const byAgent = {};
+  sized.forEach((op) => {
+    const group = byAgent[op.attrs.agent || 'unknown'] || { count: 0, bytes: 0 };
+    byAgent[op.attrs.agent || 'unknown'] = { count: group.count + 1, bytes: group.bytes + Number(op.attrs.context_bytes) };
+  });
+  return { total: sized.reduce((sum, op) => sum + Number(op.attrs.context_bytes), 0), by_agent: byAgent, dispatches_without: dispatches.filter((op) => !sized.includes(op)).map((op) => op.id) };
+}
+
+/** Seconds of the longest closed full-suite `suite` op of `ops`, null when it ran none. */
+function fullSuiteSeconds(ops) {
+  const full = ops.filter((op) => op.kind === 'suite' && op.attrs.scope === 'full');
+  return full.length === 0 ? null : seconds(Math.max(...full.map((op) => op.ms)));
+}
+
+/** The sprint's full-suite seconds against the median of archived ledgers' (null under `SUITE_BASELINE_MIN_SAMPLES`); `over` when the sprint's exceeds `SUITE_OVER_FACTOR` times it. */
+function suiteFullTotals(ops, archivedTexts) {
+  const samples = archivedTexts.map((text) => fullSuiteSeconds(closedOps(ledgerState(timingEntries(text)).closed))).filter((value) => value !== null);
+  const sprintSeconds = fullSuiteSeconds(ops);
+  const baseline = samples.length < SUITE_BASELINE_MIN_SAMPLES ? null : median(samples);
+  return { sprint_seconds: sprintSeconds, baseline_median: baseline, over: sprintSeconds !== null && baseline !== null && sprintSeconds > SUITE_OVER_FACTOR * baseline };
+}
+
 /** Per phase and kind, the median of archived sprints' totals and how many sprints recorded it; null with no archived ledger. */
 function timingBaseline(archivedTexts) {
   if (archivedTexts.length === 0) return null;
@@ -2042,6 +2088,8 @@ function timingSummary(text, archivedTexts) {
       user_waits: ofKind('user-wait').sort((a, b) => a.start - b.start).map((op) => ({ id: op.id, gate: op.attrs.gate || null, parent: op.parent, start: new Date(op.start).toISOString(), seconds: seconds(op.ms), outcome: op.outcome })),
       rework: reworkTotals(ops),
       baseline: timingBaseline(archivedTexts),
+      context_bytes: contextByteTotals(ops),
+      suite_full: suiteFullTotals(ops, archivedTexts),
       gaps: timingGaps(ops, open, unpaired),
     },
   };
@@ -2090,12 +2138,18 @@ function refFile(ref) {
   return cut === -1 ? ref : ref.slice(0, cut);
 }
 
-/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
-function contextRefs(tableText, role, phase) {
+/** The grant rows of the table in `tableText` (providers.md), each `{role, phase, refs}`. */
+function grantRows(tableText) {
   const blocks = [...markdownSection(tableText, CONTEXT_SECTION).matchAll(/^```json\n([\s\S]*?)\n```$/gm)];
   if (blocks.length !== 1) fail(`"${CONTEXT_SECTION}" must hold one json block, found ${blocks.length}`);
   const rows = JSON.parse(blocks[0][1]);
   if (!Array.isArray(rows) || rows.some((row) => !row || typeof row.role !== 'string' || typeof row.phase !== 'string')) fail('grant rows must be {role, phase, refs}');
+  return rows;
+}
+
+/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
+function contextRefs(tableText, role, phase) {
+  const rows = grantRows(tableText);
   const { VARIANT_SUFFIXES } = require('./sync.js');
   const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
@@ -2122,9 +2176,8 @@ function sectionCommand(flags) {
   return markdownSection(fs.readFileSync(flags.file, 'utf8'), flags.heading);
 }
 
-/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. With `--base-ref`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
-function contextCommand(flags) {
-  if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
+/** The bundle text and ref count for `flags.role` in `flags.phase`. With `flags['base-ref']`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
+function buildContext(flags) {
   const root = path.join(__dirname, '..');
   const baseRef = verifiedBaseRef(flags);
   const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
@@ -2134,9 +2187,71 @@ function contextCommand(flags) {
   const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
   new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
   const refs = allRefs.filter((ref) => !omitted.includes(ref));
-  const bundle = contextBundle(refs, read);
+  return { bundle: contextBundle(refs, read), refs: refs.length };
+}
+
+/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. */
+function contextCommand(flags) {
+  if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
+  const { bundle, refs } = buildContext(flags);
   fs.writeFileSync(flags.out, bundle, 'utf8');
-  return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
+  return { out: flags.out, refs, bytes: Buffer.byteLength(bundle) };
+}
+
+/** The default ceilings file of `context-check`. */
+const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
+/** Percent above the measured size a seeded ceiling sits, unless `--headroom` says otherwise. */
+const CONTEXT_HEADROOM_PERCENT = 10;
+/** A ceiling key naming a context bundle, `<role>@<phase>`; any other key is a repo-relative file. */
+const CONTEXT_BUNDLE_KEY = /^([a-z0-9-]+)@([a-z]+(?:-[a-z]+)*)$/;
+
+/** Every `<role>@<phase>` the grant table gives a bundle: each role it names in each phase of every workflow definition, the `*` rows being role defaults, not a phase. */
+function contextBundleKeys() {
+  const rows = grantRows(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'));
+  const phases = [...new Set(workflowNames().flatMap((name) => loadWorkflow(name).phases))];
+  return [...new Set(rows.map((row) => row.role))].flatMap((role) => phases.filter((phase) => rows.some((row) => row.role === role && (row.phase === '*' || row.phase === phase))).map((phase) => `${role}@${phase}`));
+}
+
+/** The bytes a ceiling `key` measures: a bundle's size, or a repo file's, 0 when absent. */
+function contextSize(key) {
+  const bundle = CONTEXT_BUNDLE_KEY.exec(key);
+  if (bundle !== null) return Buffer.byteLength(buildContext({ role: bundle[1], phase: bundle[2] }).bundle);
+  const file = path.join(__dirname, '..', key);
+  return fs.existsSync(file) ? fs.statSync(file).size : 0;
+}
+
+/** The ceilings object in `file`: key to positive integer bytes; an absent or malformed file fails. */
+function readCeilings(file) {
+  if (!fs.existsSync(file)) fail(`ceilings file not found: ${file}`);
+  let ceilings;
+  try {
+    ceilings = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    fail(`${file} unreadable: ${error.message}`);
+  }
+  if (!ceilings || typeof ceilings !== 'object' || Array.isArray(ceilings) || Object.values(ceilings).some((bytes) => !Number.isInteger(bytes) || bytes < 1)) fail(`${file} must be an object of key to positive integer bytes`);
+  return ceilings;
+}
+
+/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `flags.headroom` percent (default `CONTEXT_HEADROOM_PERCENT`) rounded up. */
+function seedCeilings(flags, file) {
+  const percent = flags.headroom === undefined ? CONTEXT_HEADROOM_PERCENT : Number(flags.headroom);
+  if (!Number.isFinite(percent) || percent < 0) fail('--headroom must be a non-negative number');
+  const dir = path.join(__dirname, 'project');
+  const names = fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => /^custom-.+-rules\.md$/.test(name) || name === 'reliability-checklist.md') : [];
+  const keys = names.map((name) => `.asd/project/${name}`).concat(flags.bundles === true ? contextBundleKeys() : []).sort();
+  const ceilings = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + percent) / 100))]));
+  fs.writeFileSync(file, `${JSON.stringify(ceilings, null, 2)}\n`, 'utf8');
+  return { out: file, keys: keys.length };
+}
+
+/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling; with `--seed`, seeds the file instead. */
+function contextCheckCommand(flags) {
+  const file = typeof flags.ceilings === 'string' ? flags.ceilings : path.join(__dirname, '..', CONTEXT_CEILINGS_FILE);
+  if (flags.seed === true) return seedCeilings(flags, file);
+  if (flags.bundles !== undefined || flags.headroom !== undefined) fail('--bundles and --headroom apply to --seed only');
+  const over = Object.entries(readCeilings(file)).map(([key, ceiling]) => ({ key, bytes: contextSize(key), ceiling })).filter((entry) => entry.bytes > entry.ceiling);
+  return { over };
 }
 
 /** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure, unparseable or non-array output included, throws. */
@@ -2327,6 +2442,7 @@ const COMMAND_FLAGS = {
   'checklist-hits': ['checklist', 'sprint-dir'],
   section: ['file', 'heading'],
   context: ['role', 'phase', 'out', 'base-ref'],
+  'context-check': ['ceilings', 'seed', 'bundles', 'headroom'],
   'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
   'checks-wait': ['pr'],
@@ -2364,7 +2480,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
@@ -2463,6 +2579,11 @@ async function main(argv) {
       return 1;
     }
   }
+  if (command === 'context-check') {
+    const result = contextCheckCommand(flags);
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.over !== undefined && result.over.length > 0 ? 1 : 0;
+  }
   if (command === 'agent-liveness') return agentLivenessCommand(flags);
   if (command === 'timing-summary') {
     process.stdout.write(JSON.stringify(timingSummaryCommand(flags)) + '\n');
@@ -2474,7 +2595,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
