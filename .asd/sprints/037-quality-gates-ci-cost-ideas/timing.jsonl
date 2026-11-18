@@ -239,3 +239,4 @@
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-18T14:07:53.764Z","attrs":{}}
 {"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-18T14:07:53.764Z","end":"2026-11-18T14:09:50.258Z","outcome":"done","attrs":{}}
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-18T14:11:48.214Z","attrs":{}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-18T14:11:48.214Z","end":"2026-11-18T14:12:17.303Z","outcome":"done","attrs":{}}

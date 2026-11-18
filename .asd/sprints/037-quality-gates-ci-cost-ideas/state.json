@@ -315,6 +315,10 @@
   "updated_at": "2026-11-18T11:11:13.794Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 129,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/129",
+    "state": "open"
+  },
   "archived_at": null
 }
