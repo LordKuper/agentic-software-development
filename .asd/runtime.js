@@ -2242,15 +2242,16 @@ function contextProjectFiles() {
   return names.map((name) => `.asd/project/${name}`);
 }
 
-/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `CONTEXT_HEADROOM_PERCENT` rounded up. */
+/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `CONTEXT_HEADROOM_PERCENT` rounded up; an existing `file` keeps every key and value and gains only the missing keys, so a seed never raises or lowers a ceiling. */
 function seedCeilings(flags, file) {
-  const keys = contextProjectFiles().concat(flags.bundles === true ? contextBundleKeys() : []).sort();
-  const ceilings = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + CONTEXT_HEADROOM_PERCENT) / 100))]));
-  fs.writeFileSync(file, `${JSON.stringify(ceilings, null, 2)}\n`, 'utf8');
+  const existing = fs.existsSync(file) ? readCeilings(file) : {};
+  const keys = contextProjectFiles().concat(flags.bundles === true ? contextBundleKeys() : []).filter((key) => !(key in existing)).sort();
+  const added = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + CONTEXT_HEADROOM_PERCENT) / 100))]));
+  fs.writeFileSync(file, `${JSON.stringify({ ...existing, ...added }, null, 2)}\n`, 'utf8');
   return { out: file, keys: keys.length };
 }
 
-/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling, plus each present project file with no ceiling key (`ceiling: null`, fail-closed for a file created after the seed); with `--seed`, seeds the file instead. */
+/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling, plus each present project file with no ceiling key (`ceiling: null`, fail-closed for a file created after the seed, which `--seed` adds); with `--seed`, seeds the file instead. */
 function contextCheckCommand(flags) {
   const file = typeof flags.ceilings === 'string' ? flags.ceilings : path.join(__dirname, '..', CONTEXT_CEILINGS_FILE);
   if (flags.seed === true) return seedCeilings(flags, file);
@@ -2261,7 +2262,7 @@ function contextCheckCommand(flags) {
   return { over: over.concat(unbounded) };
 }
 
-/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`, in `repo` (`<owner>/<repo>`) when given, else the `gh` default; any other `gh` failure, unparseable or non-array output included, throws. */
+/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`, in `repo` (`[<host>/]<owner>/<repo>`) when given, else the `gh` default; any other `gh` failure, unparseable or non-array output included, throws. */
 function readChecks(pr, repo) {
   const result = spawnSync('gh', ['pr', 'checks', String(pr), ...(repo === undefined ? [] : ['-R', repo]), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
   if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
@@ -2335,16 +2336,18 @@ function planSection(lines, name) {
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
-/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a `Gap proof` column that is non-empty and holds no `{{…}}` placeholder in every row. */
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a well-formed separator and a `Gap proof` column that is non-empty and is no wholly unreplaced `{{…}}` template cell in every row. */
 function checkGapProof(lines, source = 'test-plan') {
   const section = planSection(lines, 'Added tests');
   if (section === null) fail(`${source} has no ## Added tests section`);
-  const [header, , ...rows] = lines.slice(section.start, section.end).filter((line) => line.trim().startsWith('|')).map(tableCells);
+  const [header, separator, ...rows] = lines.slice(section.start, section.end).filter((line) => line.trim().startsWith('|')).map(tableCells);
+  if (separator === undefined) return;
+  if (separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
   if (rows.length === 0) return;
   const column = header.indexOf('Gap proof');
   if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
   if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-  if (rows.some((cells) => /\{\{.*\}\}/.test(cells[column]))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+  if (rows.some((cells) => /^\{\{.*\}\}$/.test(cells[column]))) fail(`${source} Added tests row has an unreplaced {{…}} Gap proof template cell`);
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
@@ -2712,7 +2715,7 @@ async function main(argv) {
   }
   if (command === 'checks-wait') {
     if (!/^[1-9]\d*$/.test(flags.pr)) fail('--pr <positive integer> required');
-    if (flags.repo !== undefined && !/^[\w.-]+(\/[\w.-]+){1,2}$/.test(flags.repo)) fail('--repo must be <owner>/<repo>');
+    if (flags.repo !== undefined && !/^[\w.-]+(\/[\w.-]+){1,2}$/.test(flags.repo)) fail('--repo must be [<host>/]<owner>/<repo>');
     const checks = await waitForChecks({ read: () => readChecks(flags.pr, flags.repo), sleep: delay, now: Date.now });
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
