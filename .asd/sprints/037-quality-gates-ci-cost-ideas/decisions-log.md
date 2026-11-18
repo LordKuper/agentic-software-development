@@ -69,3 +69,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md, .asd/project/context-ceilings.json, .asd/project/commands.yaml
 - 2026-11-18 — route impl-test entry 1: standard, dispatch HEAD 13292f6a
 - 2026-11-18 — orchestrator: `custom-coding-rules.md` D13 self-check line repointed to `context-check` (the D13 test was removed at impl-test entry 1)
+
+## 2026-11-18 — skill size cap waiver
+
+- **Decision**: User accepted raising the sprint-026 AC-15 standalone-skills byte cap from 61 051 to 62 351 B in `tests/run.js`.
+- **Rationale**: `asd-init` grew 1 300 B carrying AC-3, AC-8 and AC-16, all accepted scope; the AC-4 rule makes a raised cap a quality waiver.
+- **Affected docs**: tests/run.js, test-plan.md
+- 2026-11-18 — route suite revision 1: standard, dispatch HEAD 239450d9

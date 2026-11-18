@@ -76,6 +76,13 @@
       "reason": "adaptive: all 12 Tasks ticked; build, lint, checks.context, checks.agnix pass; flagged choices of Tasks 2 and 12 accepted in decisions log; no stubs introduced; every round-diff path authorised",
       "evidence": "decisions-log.md 2026-11-18 impl assessment; commit c2415afb",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "quality waiver",
+      "decision_actor": "user",
+      "reason": "user answer: accept raising the standalone-skills byte cap 61051 -> 62351 B (asd-init growth from AC-3, AC-8, AC-16)",
+      "evidence": "decisions-log.md 2026-11-18 skill size cap waiver; test-plan.md entry 1",
+      "artifact_revision": "tests/run.js@984cd797"
     }
   ],
   "task_routing": {
