@@ -181,3 +181,8 @@
 {"op":"close","id":"dev wave-1/iter-05 R1","kind":"dispatch","parent":"impl#8","start":"2026-11-18T12:44:54.252Z","end":"2026-11-18T12:48:24.662Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl#8","kind":"phase","parent":null,"start":"2026-11-18T12:44:53.804Z","end":"2026-11-18T12:48:24.846Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#8","kind":"phase","parent":null,"start":"2026-11-18T12:48:31.701Z","attrs":{}}
+{"op":"open","id":"impl-test-8","kind":"dispatch","parent":"impl-test#8","start":"2026-11-18T12:48:32.365Z","attrs":{}}
+{"op":"open","id":"suite-impl-test-8","kind":"suite","parent":"impl-test-8","start":"2026-11-18T12:49:51.279Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite-impl-test-8","kind":"suite","parent":"impl-test-8","start":"2026-11-18T12:49:51.279Z","end":"2026-11-18T12:50:29.670Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-test-8","kind":"dispatch","parent":"impl-test#8","start":"2026-11-18T12:48:32.365Z","end":"2026-11-18T12:51:28.023Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-test#8","kind":"phase","parent":null,"start":"2026-11-18T12:48:31.701Z","end":"2026-11-18T12:51:28.532Z","outcome":"done","attrs":{}}

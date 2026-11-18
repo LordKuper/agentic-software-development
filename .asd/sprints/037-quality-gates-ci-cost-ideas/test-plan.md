@@ -21,7 +21,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 5 | 6104618d | delta since entry 4 (review-fix `wave-1/iter-02`) |
 | 6 | 46f1b75d | delta since entry 5 (review-fix `wave-1/iter-03`, iter-03 memory fixes) |
 | 7 | 08cde94f | delta since entry 6 (review-fix `wave-1/iter-04`) |
-| 8 |  | delta since entry 7 (review-fix `wave-1/iter-05`) |
+| 8 | b00f83b9 | delta since entry 7 (review-fix `wave-1/iter-05`) |
 
 ## Risk → check decisions
 
@@ -63,7 +63,7 @@ analysed, not any tree produced later
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
 - Slowest tests: 1984 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1441 ms sprint-019 AC-8 one-command commit form; 1139 ms sprint-036 AC-14 agent-liveness --returns; 1106 ms sprint-017 AC-4/AC-8 emit-manifest --full-files
 - HEAD: 81f658a7
-- Line delta: tests +8719/−11521 (net -2802); other +797/−198 (net 599)
+- Line delta: tests +8723/−11521 (net -2798); other +798/−199 (net 599)
 
 ## Defects
 
