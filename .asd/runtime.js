@@ -80,7 +80,7 @@ const IMPL_CYCLE = ['impl', 'impl-test', 'impl-review'];
 const DECISION_ENTRY = /^(## |- )\d{4}-\d{2}-\d{2} /m;
 /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
 const ACTS_ON = ['consumer', 'asd'];
-/** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); systemic proposals never are. */
+/** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); a systemic-proposals section never is, though it may hold no table. */
 const RETRO_TABLES = [
   { section: 'actions', prefix: 'A', cells: 4, guardrail: 1, actsOn: 2, home: 3, required: false },
   { section: 'systemic-proposals', prefix: 'P', cells: 4, guardrail: 0, actsOn: 1, home: 2, required: true },
@@ -111,6 +111,10 @@ const LEAF_MACHINE_KINDS = ['dispatch', 'suite', 'external-review'];
 const TIMING_OUTCOMES = ['done', 'interrupted', 'continued'];
 /** Longest leaf machine operations the timing summary always lists as slow. */
 const SLOW_TOP_N = 5;
+/** Archived full-suite runs the suite baseline needs before it reports a median. */
+const SUITE_BASELINE_MIN_SAMPLES = 3;
+/** How many times its baseline median the sprint's full suite may take before it is over. */
+const SUITE_OVER_FACTOR = 1.5;
 /** Minutes past which a leaf machine operation is slow, and a phase stretch covered by no operation is idle. */
 const SLOW_MINUTES = 30;
 /** Longest commit header, `<type>(<scope>): <subject>` whole, in characters. */
@@ -201,10 +205,14 @@ function loadWorkflow(name) {
   return definition;
 }
 
+/** The name of every workflow definition. */
+function workflowNames() {
+  return fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
+}
+
 /** The reviewer keys one review node accepts: the union of every definition's `reviewers[node]`. */
 function reviewerKeys(node) {
-  const names = fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
-  return [...new Set(names.flatMap((name) => loadWorkflow(name).reviewers[node]))];
+  return [...new Set(workflowNames().flatMap((name) => loadWorkflow(name).reviewers[node]))];
 }
 
 /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
@@ -646,12 +654,10 @@ function persistReview(input) {
 function defectStalemate(markdown) {
   if (typeof markdown !== 'string') fail('test-plan markdown required');
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
-  const headings = lines.flatMap((line, i) => (/^## Defects\b/.test(line) ? [i + 1] : []));
-  if (headings.length === 0) fail('test-plan has no ## Defects section');
-  if (headings.length > 1) fail(`test-plan has ${headings.length} ## Defects sections at lines ${headings.join(', ')}`);
-  const end = lines.findIndex((line, i) => i >= headings[0] && /^## /.test(line));
-  const [header, separator, ...rows] = lines.slice(headings[0], end === -1 ? lines.length : end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${headings[0] + i + 1}`, cells: tableCells(line) }] : []));
-  if (header === undefined) fail(`line ${headings[0]}: Defects table missing`);
+  const section = planSection(lines, 'Defects');
+  if (section === null) fail('test-plan has no ## Defects section');
+  const [header, separator, ...rows] = lines.slice(section.start, section.end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${section.start + i + 1}`, cells: tableCells(line) }] : []));
+  if (header === undefined) fail(`line ${section.start}: Defects table missing`);
   const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.cells.includes(name) ? header.cells.indexOf(name) : fail(`${header.at}: Defects table has no ${name} column`)));
   if (separator === undefined || separator.cells.length !== header.cells.length || !separator.cells.every((cell) => /^:?-+:?$/.test(cell))) fail(`${(separator || header).at}: Defects table separator malformed`);
   const byEntry = new Map();
@@ -684,12 +690,13 @@ function retroRow(table, attributes, content, ordinal) {
   return { id, acts_on: actsOn, guardrail: htmlText(cells[table.guardrail].replace(/<\/?code>/g, '`')), home: htmlText(cells[table.home]) };
 }
 
-/** Parses a retrospective's Action and Systemic-proposal rows: each id is `A-N`/`P-N` from its 1-based `<tbody>` ordinal, `covered by:` rows counted, so a retro with or without `<tr id>` yields the same ids; a declared id disagreeing with its ordinal fails. */
+/** Parses a retrospective's Action and Systemic-proposal rows; a section holding no `<table>` has zero rows, a `<table>` without `<tbody>` fails. Each id is `A-N`/`P-N` from its 1-based `<tbody>` ordinal, `covered by:` rows counted, so a retro with or without `<tr id>` yields the same ids; a declared id disagreeing with its ordinal fails. */
 function retroRows(html) {
   if (typeof html !== 'string') fail('retrospective html required');
   return RETRO_TABLES.flatMap((table) => {
     const section = new RegExp(`<section id="${table.section}"[^>]*>([\\s\\S]*?)</section>`).exec(html);
     if (section === null) return table.required ? fail(`retrospective has no ${table.section} section`) : [];
+    if (!/<table\b/.test(section[1])) return [];
     const body = /<tbody\b[^>]*>([\s\S]*?)<\/tbody>/.exec(section[1]);
     if (body === null) fail(`retrospective ${table.section} table has no tbody`);
     return [...body[1].matchAll(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/g)].map((row, index) => retroRow(table, row[1], row[2], index + 1));
@@ -1076,22 +1083,26 @@ function commitCheckCommand(args) {
   return report.ok ? 0 : 1;
 }
 
-/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
-function numstatLines(output, files, discounts = new Map()) {
-  const listed = new Set(stringArray(files, 'files'));
+/** The entries `{file, added, deleted}` of `git diff --numstat -z -M` output, a rename keyed by its destination path and a binary file's counts both null. */
+function numstatEntries(output) {
   const tokens = output.split('\0');
-  let lines = 0;
+  const entries = [];
   let at = 0;
   while (at < tokens.length - 1) {
     const entry = /^(-|\d+)\t(-|\d+)\t([\s\S]*)$/.exec(tokens[at]);
     if (!entry) fail(`numstat entry malformed: ${tokens[at]}`);
     const [, added, deleted, file] = entry;
     const isRename = file === '';
-    const counted = isRename ? tokens[at + 2] : file;
-    if (added !== '-' && listed.has(counted)) lines += Number(added) + Number(deleted) - (discounts.get(counted) || 0);
+    entries.push({ file: isRename ? tokens[at + 2] : file, added: added === '-' ? null : Number(added), deleted: deleted === '-' ? null : Number(deleted) });
     at += isRename ? 3 : 1;
   }
-  return lines;
+  return entries;
+}
+
+/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
+function numstatLines(output, files, discounts = new Map()) {
+  const listed = new Set(stringArray(files, 'files'));
+  return numstatEntries(output).filter((entry) => entry.added !== null && listed.has(entry.file)).reduce((lines, entry) => lines + entry.added + entry.deleted - (discounts.get(entry.file) || 0), 0);
 }
 
 /** Review waves a scope of `files` files, `lines` changed lines and `bytes` of diff needs: the most of one per WAVE_THRESHOLD_LINES, WAVE_THRESHOLD_FILES and WAVE_THRESHOLD_BYTES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
@@ -1783,7 +1794,7 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. */
+/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. A missing `context_bytes` is filled from `lookups.contextBytes(id)`, absent when it returns undefined. */
 function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const filled = { ...attrs };
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
@@ -1791,6 +1802,8 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   try {
     if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
+    const bytes = filled.context_bytes === undefined && lookups.contextBytes ? lookups.contextBytes(id) : undefined;
+    if (bytes !== undefined) filled.context_bytes = bytes;
   } catch (error) {
     warnings.push(`open of ${id}: dispatch attrs lookup failed: ${error.message}`);
   }
@@ -1855,10 +1868,19 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+/** The size of the context bundle of dispatch `id` of the sprint whose folder holds `ledger`: the file at the scratch path of its id, `/` and spaces as `-`, or of the id without a trailing `#<n>`; undefined when neither exists. */
+function contextBundleBytes(ledger, id) {
+  const slug = path.basename(path.dirname(path.resolve(ledger)));
+  const names = [id, phaseName(id)].map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
+  const found = names.map((name) => path.join(scratchDir(), name)).find((candidate) => fs.existsSync(candidate));
+  return found === undefined ? undefined : fs.statSync(found).size;
+}
+
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one), `contextBytes(id)` its context bundle's size. The agent file and `sync.js` are read only when called. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
+    contextBytes: (id) => contextBundleBytes(ledger, id),
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
@@ -1976,6 +1998,32 @@ function reworkTotals(ops) {
   };
 }
 
+/** Context bundle bytes of the closed dispatch `ops`: the total, per agent `{count, bytes}`, and the ids of the dispatches whose bundle size was not recorded. */
+function contextByteTotals(ops) {
+  const dispatches = ops.filter((op) => op.kind === 'dispatch');
+  const sized = dispatches.filter((op) => Number.isFinite(Number(op.attrs.context_bytes)) && op.attrs.context_bytes !== '');
+  const byAgent = {};
+  sized.forEach((op) => {
+    const group = byAgent[op.attrs.agent || 'unknown'] || { count: 0, bytes: 0 };
+    byAgent[op.attrs.agent || 'unknown'] = { count: group.count + 1, bytes: group.bytes + Number(op.attrs.context_bytes) };
+  });
+  return { total: sized.reduce((sum, op) => sum + Number(op.attrs.context_bytes), 0), by_agent: byAgent, dispatches_without: dispatches.filter((op) => !sized.includes(op)).map((op) => op.id) };
+}
+
+/** Milliseconds of the longest closed full-suite `suite` op of `ops`, null when it ran none. */
+function fullSuiteMs(ops) {
+  const full = ops.filter((op) => op.kind === 'suite' && op.attrs.scope === 'full');
+  return full.length === 0 ? null : Math.max(...full.map((op) => op.ms));
+}
+
+/** The sprint's full-suite seconds against the median of archived ledgers' (null under `SUITE_BASELINE_MIN_SAMPLES`); `over` when the sprint's exceeds `SUITE_OVER_FACTOR` times it, compared in milliseconds and rounded only in the reported seconds. */
+function suiteFullTotals(ops, archivedTexts) {
+  const samples = archivedTexts.map((text) => fullSuiteMs(closedOps(ledgerState(timingEntries(text)).closed))).filter((value) => value !== null);
+  const sprintMs = fullSuiteMs(ops);
+  const baselineMs = samples.length < SUITE_BASELINE_MIN_SAMPLES ? null : median(samples);
+  return { sprint_seconds: sprintMs === null ? null : seconds(sprintMs), baseline_median: baselineMs === null ? null : seconds(baselineMs), over: sprintMs !== null && baselineMs !== null && sprintMs > SUITE_OVER_FACTOR * baselineMs };
+}
+
 /** Per phase and kind, the median of archived sprints' totals and how many sprints recorded it; null with no archived ledger. */
 function timingBaseline(archivedTexts) {
   if (archivedTexts.length === 0) return null;
@@ -2042,6 +2090,8 @@ function timingSummary(text, archivedTexts) {
       user_waits: ofKind('user-wait').sort((a, b) => a.start - b.start).map((op) => ({ id: op.id, gate: op.attrs.gate || null, parent: op.parent, start: new Date(op.start).toISOString(), seconds: seconds(op.ms), outcome: op.outcome })),
       rework: reworkTotals(ops),
       baseline: timingBaseline(archivedTexts),
+      context_bytes: contextByteTotals(ops),
+      suite_full: suiteFullTotals(ops, archivedTexts),
       gaps: timingGaps(ops, open, unpaired),
     },
   };
@@ -2090,12 +2140,18 @@ function refFile(ref) {
   return cut === -1 ? ref : ref.slice(0, cut);
 }
 
-/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
-function contextRefs(tableText, role, phase) {
+/** The grant rows of the table in `tableText` (providers.md), each `{role, phase, refs}`. */
+function grantRows(tableText) {
   const blocks = [...markdownSection(tableText, CONTEXT_SECTION).matchAll(/^```json\n([\s\S]*?)\n```$/gm)];
   if (blocks.length !== 1) fail(`"${CONTEXT_SECTION}" must hold one json block, found ${blocks.length}`);
   const rows = JSON.parse(blocks[0][1]);
   if (!Array.isArray(rows) || rows.some((row) => !row || typeof row.role !== 'string' || typeof row.phase !== 'string')) fail('grant rows must be {role, phase, refs}');
+  return rows;
+}
+
+/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
+function contextRefs(tableText, role, phase) {
+  const rows = grantRows(tableText);
   const { VARIANT_SUFFIXES } = require('./sync.js');
   const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
@@ -2122,9 +2178,8 @@ function sectionCommand(flags) {
   return markdownSection(fs.readFileSync(flags.file, 'utf8'), flags.heading);
 }
 
-/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. With `--base-ref`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
-function contextCommand(flags) {
-  if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
+/** The bundle text and ref count for `flags.role` in `flags.phase`. With `flags['base-ref']`, the review-policy, external-review and reliability-checklist template refs read from that git ref instead of the working tree, and one absent there, or lacking a granted section, is omitted with a stderr note. */
+function buildContext(flags) {
   const root = path.join(__dirname, '..');
   const baseRef = verifiedBaseRef(flags);
   const readText = (file) => (baseRef !== null && BASE_REF_FILES.includes(file) ? gitShow(baseRef, file) : fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), 'utf8') : null);
@@ -2134,14 +2189,82 @@ function contextCommand(flags) {
   const omitted = allRefs.filter((ref) => baseRef !== null && BASE_REF_FILES.includes(refFile(ref)) && (read[refFile(ref)] === null || sectionAbsent(ref)));
   new Set(omitted.map((ref) => (read[refFile(ref)] === null ? refFile(ref) : ref))).forEach((name) => process.stderr.write(`runtime: ${name} absent at ${baseRef}, omitted from the bundle\n`));
   const refs = allRefs.filter((ref) => !omitted.includes(ref));
-  const bundle = contextBundle(refs, read);
-  fs.writeFileSync(flags.out, bundle, 'utf8');
-  return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
+  return { bundle: contextBundle(refs, read), refs: refs.length };
 }
 
-/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure, unparseable or non-array output included, throws. */
-function readChecks(pr) {
-  const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
+/** Builds the bundle for `--role` in `--phase` and writes it to `--out` only once every ref resolved. */
+function contextCommand(flags) {
+  if (typeof flags.role !== 'string' || typeof flags.phase !== 'string' || typeof flags.out !== 'string') fail('--role <agent|orchestrator>, --phase <phase> and --out <file> required');
+  const { bundle, refs } = buildContext(flags);
+  fs.writeFileSync(flags.out, bundle, 'utf8');
+  return { out: flags.out, refs, bytes: Buffer.byteLength(bundle) };
+}
+
+/** The default ceilings file of `context-check`. */
+const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
+/** Percent above the measured size a seeded ceiling sits. */
+const CONTEXT_HEADROOM_PERCENT = 10;
+/** A ceiling key naming a context bundle, `<role>@<phase>`; any other key is a repo-relative file. */
+const CONTEXT_BUNDLE_KEY = /^([a-z0-9-]+)@([a-z]+(?:-[a-z]+)*)$/;
+
+/** Every `<role>@<phase>` the grant table gives a bundle: each role it names in each phase of every workflow definition, the `*` rows being role defaults, not a phase. */
+function contextBundleKeys() {
+  const rows = grantRows(fs.readFileSync(path.join(__dirname, 'rules', 'providers.md'), 'utf8'));
+  const phases = [...new Set(workflowNames().flatMap((name) => loadWorkflow(name).phases))];
+  return [...new Set(rows.map((row) => row.role))].flatMap((role) => phases.filter((phase) => rows.some((row) => row.role === role && (row.phase === '*' || row.phase === phase))).map((phase) => `${role}@${phase}`));
+}
+
+/** The bytes a ceiling `key` measures: a bundle's size, or a repo file's, 0 when absent. */
+function contextSize(key) {
+  const bundle = CONTEXT_BUNDLE_KEY.exec(key);
+  if (bundle !== null) return Buffer.byteLength(buildContext({ role: bundle[1], phase: bundle[2] }).bundle);
+  const file = path.join(__dirname, '..', key);
+  return fs.existsSync(file) ? fs.statSync(file).size : 0;
+}
+
+/** The ceilings object in `file`: key to positive integer bytes; an absent or malformed file fails. */
+function readCeilings(file) {
+  if (!fs.existsSync(file)) fail(`ceilings file not found: ${file}`);
+  let ceilings;
+  try {
+    ceilings = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    fail(`${file} unreadable: ${error.message}`);
+  }
+  if (!ceilings || typeof ceilings !== 'object' || Array.isArray(ceilings) || Object.values(ceilings).some((bytes) => !Number.isInteger(bytes) || bytes < 1)) fail(`${file} must be an object of key to positive integer bytes`);
+  return ceilings;
+}
+
+/** The project rules files and reliability checklist present, repo-relative: each needs a ceiling key. */
+function contextProjectFiles() {
+  const dir = path.join(__dirname, 'project');
+  const names = fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => /^custom-.+-rules\.md$/.test(name) || name === 'reliability-checklist.md') : [];
+  return names.map((name) => `.asd/project/${name}`);
+}
+
+/** Writes `file` with a ceiling per project rules file and reliability checklist present, plus per bundle key with `flags.bundles`, each the current size plus `CONTEXT_HEADROOM_PERCENT` rounded up; an existing `file` keeps every key and value and gains only the missing keys, so a seed never raises or lowers a ceiling. */
+function seedCeilings(flags, file) {
+  const existing = fs.existsSync(file) ? readCeilings(file) : {};
+  const keys = contextProjectFiles().concat(flags.bundles === true ? contextBundleKeys() : []).filter((key) => !(key in existing)).sort();
+  const added = Object.fromEntries(keys.map((key) => [key, Math.max(1, Math.ceil(contextSize(key) * (100 + CONTEXT_HEADROOM_PERCENT) / 100))]));
+  fs.writeFileSync(file, `${JSON.stringify({ ...existing, ...added }, null, 2)}\n`, 'utf8');
+  return { out: file, keys: keys.length };
+}
+
+/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling, plus each present project file with no ceiling key (`ceiling: null`, fail-closed for a file created after the seed, which `--seed` adds); with `--seed`, seeds the file instead. */
+function contextCheckCommand(flags) {
+  const file = typeof flags.ceilings === 'string' ? flags.ceilings : path.join(__dirname, '..', CONTEXT_CEILINGS_FILE);
+  if (flags.seed === true) return seedCeilings(flags, file);
+  if (flags.bundles !== undefined) fail('--bundles applies to --seed only');
+  const ceilings = readCeilings(file);
+  const over = Object.entries(ceilings).map(([key, ceiling]) => ({ key, bytes: contextSize(key), ceiling })).filter((entry) => entry.bytes > entry.ceiling);
+  const unbounded = contextProjectFiles().filter((key) => !(key in ceilings)).map((key) => ({ key, bytes: contextSize(key), ceiling: null }));
+  return { over: over.concat(unbounded) };
+}
+
+/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`, in `repo` (`[<host>/]<owner>/<repo>`) when given, else the `gh` default; any other `gh` failure, unparseable or non-array output included, throws. */
+function readChecks(pr, repo) {
+  const result = spawnSync('gh', ['pr', 'checks', String(pr), ...(repo === undefined ? [] : ['-R', repo]), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
   if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
   if (/no checks reported/.test(result.stderr || '')) return 'none';
   let rows = null;
@@ -2170,6 +2293,111 @@ async function waitForChecks({ read, sleep, now }) {
   }
 }
 
+/** Test globs used when `commands.yaml` sets no `test_paths`. */
+const DEFAULT_TEST_PATHS = '**/test/**, **/tests/**, **/__tests__/**, **/spec/**, **/*.test.*, **/*.spec.*, **/*_test.*, **/test_*.*';
+/** Paths no line delta counts: sprint files and the generated provider views. */
+const DELTA_EXCLUDED_GLOBS = ['.asd/sprints/**', '.claude/agents/**', '.claude/skills/**', '.claude/hooks/**', '.codex/agents/**', '.codex/hooks/**', '.agents/skills/**'];
+/** Net test lines above which, when they also exceed the other net lines, the close needs a written allowance. */
+const TEST_ALLOWANCE_LINES = 200;
+
+/** The scalar value of one top-level `key:` line of a `commands.yaml`, or null when the key is absent; an empty or nested value fails. */
+function commandsScalar(text, key) {
+  const line = text.split(/\r?\n/).find((candidate) => candidate.startsWith(`${key}:`));
+  if (line === undefined) return null;
+  const value = designScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
+  if (value === '') fail(`commands.yaml ${key} must be a non-empty scalar`);
+  return value;
+}
+
+/** `{test, other, allowance_required}` line counts of `git diff --numstat -z -M <base>...HEAD`: a path matching a `test_paths` glob of `commandsFile` (else `DEFAULT_TEST_PATHS`) counts as test, any other as other, excluded paths not at all; net is added minus removed, and an allowance is required when test net exceeds `TEST_ALLOWANCE_LINES` and the other net. */
+function testDelta(base, commandsFile) {
+  const explicit = typeof commandsFile === 'string';
+  const file = explicit ? commandsFile : path.join(__dirname, 'project', 'commands.yaml');
+  if (explicit && !fs.existsSync(file)) fail(`--commands ${file} not found`);
+  const configured = fs.existsSync(file) ? commandsScalar(fs.readFileSync(file, 'utf8'), 'test_paths') : null;
+  const tests = (configured || DEFAULT_TEST_PATHS).split(',').map((glob) => globRegex(glob.trim()));
+  const excluded = DELTA_EXCLUDED_GLOBS.map(globRegex);
+  const delta = { test: { added: 0, removed: 0 }, other: { added: 0, removed: 0 } };
+  numstatEntries(runGit(['diff', '--numstat', '-z', '-M', `${gitRef(base, '--base')}...HEAD`])).filter((entry) => !excluded.some((pattern) => pattern.test(entry.file))).forEach((entry) => {
+    const side = delta[tests.some((pattern) => pattern.test(entry.file)) ? 'test' : 'other'];
+    side.added += entry.added || 0;
+    side.removed += entry.deleted || 0;
+  });
+  const [test, other] = [delta.test, delta.other].map((side) => ({ ...side, net: side.added - side.removed }));
+  return { test, other, allowance_required: test.net > TEST_ALLOWANCE_LINES && test.net > other.net };
+}
+
+/** `{start, end}` line range of the one `## <name>` section of a test plan's `lines`, its body after the heading up to the next `## ` heading; null when absent, several fail. */
+function planSection(lines, name) {
+  const starts = lines.flatMap((line, index) => (new RegExp(`^## ${name}\\b`).test(line) ? [index + 1] : []));
+  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
+  if (starts.length === 0) return null;
+  const next = lines.findIndex((line, index) => index >= starts[0] && /^## /.test(line));
+  return { start: starts[0], end: next === -1 ? lines.length : next };
+}
+
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose every table, a run of lines from a line opening with a pipe to the next blank line, has a header and a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and, when it has a data row, a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside a table is free. */
+function checkGapProof(lines, source = 'test-plan') {
+  const section = planSection(lines, 'Added tests');
+  if (section === null) fail(`${source} has no ## Added tests section`);
+  lines.slice(section.start, section.end).join('\n').split(/\n[ \t]*\n/).forEach((paragraph) => {
+    const paragraphLines = paragraph.trim().split('\n');
+    const start = paragraphLines.findIndex((line) => line.trim().startsWith('|'));
+    if (start === -1) return;
+    const run = paragraphLines.slice(start);
+    if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+    const [header, separator, ...rows] = run.map(tableCells);
+    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
+    if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
+    if (rows.length === 0) return;
+    const column = header.indexOf('Gap proof');
+    if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
+    if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
+    if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+  });
+}
+
+/** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
+function setLineDelta(lines, delta) {
+  const section = planSection(lines, 'Suite run');
+  if (section === null) fail('test-plan has no ## Suite run section');
+  const body = lines.slice(section.start, section.end);
+  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) fail(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
+  const side = (counts) => `+${counts.added}/\u2212${counts.removed} (net ${counts.net})`;
+  const line = `- Line delta: tests ${side(delta.test)}; other ${side(delta.other)}`;
+  const existing = body.findIndex((candidate) => /^[ \t]*-[ \t]+Line delta:/.test(candidate));
+  if (existing !== -1) return lines.map((candidate, index) => (index === section.start + existing ? line : candidate));
+  const last = body.reduce((found, candidate, index) => (candidate.trim() === '' ? found : index), -1);
+  return [...lines.slice(0, section.start + last + 1), line, ...lines.slice(section.start + last + 1)];
+}
+
+/** Due accepted-debt rows `{file, state, date}` of a stubs table: a Reason opening `(accepted-debt)` that has no `review <date>:`, a date not a real calendar date, or a date before `today` (`YYYY-MM-DD`). */
+function stubsDue(markdown, today) {
+  const due = [];
+  markdown.split(/\r?\n/).filter((line) => line.trim().startsWith('|')).forEach((line) => {
+    const [, file, reason] = tableCells(line);
+    if (reason === undefined || !reason.startsWith('(accepted-debt)')) return;
+    const stated = /^\(accepted-debt\)\s+review\s+([^\s:]+):/.exec(reason);
+    if (stated === null) return due.push({ file, state: 'missing', date: null });
+    const [, date] = stated;
+    const [year, month, day] = date.split('-').map(Number);
+    const calendar = new Date(Date.UTC(year, month - 1, day));
+    const isReal = /^\d{4}-\d{2}-\d{2}$/.test(date) && calendar.getUTCFullYear() === year && calendar.getUTCMonth() === month - 1 && calendar.getUTCDate() === day;
+    if (!isReal) due.push({ file, state: 'invalid', date });
+    else if (date < today) due.push({ file, state: 'expired', date });
+  });
+  return due;
+}
+
+/** `stubs-due`: `{due}` of the stubs table at `--stubs`, judged against `--today` (default the local date). */
+function stubsDueCommand(flags) {
+  if (typeof flags.stubs !== 'string') fail('--stubs <path> required');
+  const now = new Date();
+  const today = flags.today === undefined ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` : flags.today;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) fail('--today must be YYYY-MM-DD');
+  return { due: stubsDue(fs.readFileSync(flags.stubs, 'utf8'), today) };
+}
+
 /** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
 function fillHeadAnalysed(text, entry, head) {
   const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
@@ -2178,16 +2406,24 @@ function fillHeadAnalysed(text, entry, head) {
   return text.replace(row, `$1 ${head} $2`);
 }
 
-/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; both inputs are validated before either file is written. */
+/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs of the live plan and of the `test-plan.entry-NN.md` segment its re-entry rotated (NN the prior entry), and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
 function implTestClose(flags, now = new Date()) {
   const missing = ['test-plan', 'entry', 'decisions', 'line'].filter((name) => typeof flags[name] !== 'string');
   if (missing.length > 0) fail(`impl-test-close requires ${missing.map((name) => `--${name}`).join(', ')}`);
   if (!/^[1-9]\d*$/.test(flags.entry)) fail('--entry <positive integer> required');
   if (flags.line.trim() === '' || /[\r\n]/.test(flags.line)) fail('--line must be one non-empty line');
+  if (flags.green === true && typeof flags.base !== 'string') fail('--green requires --base <ref>');
+  if (flags.green !== true && (flags.base !== undefined || flags.commands !== undefined)) fail('--base and --commands apply with --green only');
   const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
-  const filled = fillHeadAnalysed(fs.readFileSync(flags['test-plan'], 'utf8'), flags.entry, head);
+  const text = fs.readFileSync(flags['test-plan'], 'utf8');
+  const filled = fillHeadAnalysed(text, flags.entry, head);
+  const lines = filled.split(/\r?\n/);
+  checkGapProof(lines);
+  const segment = `${flags['test-plan'].replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
+  if (Number(flags.entry) > 1 && fs.existsSync(segment)) checkGapProof(fs.readFileSync(segment, 'utf8').split(/\r?\n/), path.basename(segment));
+  const plan = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands)).join(text.includes('\r\n') ? '\r\n' : '\n') : filled;
   const log = fs.readFileSync(flags.decisions, 'utf8');
-  fs.writeFileSync(flags['test-plan'], filled, 'utf8');
+  fs.writeFileSync(flags['test-plan'], plan, 'utf8');
   fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
   return { entry: Number(flags.entry), head };
 }
@@ -2314,7 +2550,9 @@ const COMMAND_FLAGS = {
   'external-record-failure': ['input'],
   'route-task': ['input'],
   'defect-stalemate': ['plan'],
-  'impl-test-close': ['test-plan', 'entry', 'decisions', 'line'],
+  'impl-test-close': ['test-plan', 'entry', 'decisions', 'line', 'green', 'base', 'commands'],
+  'test-delta': ['base', 'commands'],
+  'stubs-due': ['stubs', 'today'],
   'design-tokens': ['design', 'html'],
   'draft-snapshot': ['files', 'out', 'previous'],
   'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
@@ -2327,9 +2565,10 @@ const COMMAND_FLAGS = {
   'checklist-hits': ['checklist', 'sprint-dir'],
   section: ['file', 'heading'],
   context: ['role', 'phase', 'out', 'base-ref'],
+  'context-check': ['ceilings', 'seed', 'bundles'],
   'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
-  'checks-wait': ['pr'],
+  'checks-wait': ['pr', 'repo'],
   timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
   'timing-recover': ['ledger'],
 };
@@ -2364,7 +2603,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
@@ -2410,6 +2649,14 @@ async function main(argv) {
   }
   if (command === 'impl-test-close') {
     process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    return 0;
+  }
+  if (command === 'test-delta') {
+    process.stdout.write(JSON.stringify(testDelta(flags.base, flags.commands)) + '\n');
+    return 0;
+  }
+  if (command === 'stubs-due') {
+    process.stdout.write(JSON.stringify(stubsDueCommand(flags)) + '\n');
     return 0;
   }
   if (command === 'design-tokens') {
@@ -2463,6 +2710,11 @@ async function main(argv) {
       return 1;
     }
   }
+  if (command === 'context-check') {
+    const result = contextCheckCommand(flags);
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.over !== undefined && result.over.length > 0 ? 1 : 0;
+  }
   if (command === 'agent-liveness') return agentLivenessCommand(flags);
   if (command === 'timing-summary') {
     process.stdout.write(JSON.stringify(timingSummaryCommand(flags)) + '\n');
@@ -2470,11 +2722,12 @@ async function main(argv) {
   }
   if (command === 'checks-wait') {
     if (!/^[1-9]\d*$/.test(flags.pr)) fail('--pr <positive integer> required');
-    const checks = await waitForChecks({ read: () => readChecks(flags.pr), sleep: delay, now: Date.now });
+    if (flags.repo !== undefined && !/^[\w.-]+(\/[\w.-]+){1,2}$/.test(flags.repo)) fail('--repo must be [<host>/]<owner>/<repo>');
+    const checks = await waitForChecks({ read: () => readChecks(flags.pr, flags.repo), sleep: delay, now: Date.now });
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Write", "Bash", "WebFetch"], "maxTurns": 100
   },
-  "codex": { "model": "luna", "model_reasoning_effort": "medium", "sandbox_mode": "read-only", "web_search": "disabled" }
+  "codex": { "model": "luna", "model_reasoning_effort": "medium", "web_search": "disabled" }
 }
 ---
 

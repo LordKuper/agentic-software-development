@@ -67,7 +67,7 @@ Root `AGENTS.md`'s managed block is generated from `t_AGENTS.md` exactly as in a
 
 ### Build and lint are sync checks; one test suite
 
-Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json or compiler. Per `.asd/project/commands.yaml`, build is `node .asd/sync.js --check` and lint is `git diff --cached --check`; a dev runs both before reporting COMPLETED. `tests/run.js` is a real zero-dependency test runner covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
+Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json or compiler. Per `.asd/project/commands.yaml`, build is `node .asd/sync.js --check` and lint is `git diff --cached --check`; a dev runs both before reporting COMPLETED. `tests/run.js` is a zero-dependency runner loading the per-area files `tests/<area>.test.js` (shared helpers `tests/lib.js`; `node tests/run.js <area>…` runs only those areas, `--filter` narrows by test name, no argument runs all), covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
 
 - `node tests/run.js` stays green for any canonical edit — Node source, rule doc, README, template, skill, workflow, hook.
 - Hooks run clean: exit 0, never throw (designed to fail silently).
@@ -92,7 +92,7 @@ These artifacts mirror/reference each other. A change in one usually needs match
 - **README.md** mirrors phase list, agent roster + model tiers (both Claude and Codex columns), config schema, folder map. Keep synced with `.asd/rules/` and actual agent/skill files.
 - **`core.md` "See also"** lists every rule doc — add/remove a rule doc → update list.
 - **Reviewer verdict token**: first-line `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, `<phase>` = `design` or `impl`. Aggregating phase workflow, `review-policy.md`, and agent file must agree.
-- **Phase chain**: every chain assertion names the same phases in the same order for its workflow — twelve for `standard`, ten for `lite` (`.asd/workflows/<name>.json`, `sprint-lifecycle.md` "Workflows"). `tests/run.js` §16 machine-checks the mirrors it reaches (skill/workflow file set, workflow `NEXT:`, rule-doc chain lines, README table/flowchart/count words); for prose it cannot reach, grep the phase names and update every hit together.
+- **Phase chain**: every chain assertion names the same phases in the same order for its workflow — twelve for `standard`, ten for `lite` (`.asd/workflows/<name>.json`, `sprint-lifecycle.md` "Workflows"). `tests/contract-workflows.test.js` and `tests/contract-templates.test.js` machine-check the mirrors they reach (skill/workflow file set, workflow `NEXT:`, rule-doc chain lines, README table/flowchart/count words); for prose it cannot reach, grep the phase names and update every hit together.
 - **Agent ↔ skill/workflow dispatch**: a phase workflow names agents it dispatches; those agent files must exist with matching capabilities. An agent's `description` (≤300 chars; generated variant suffixes exempt) reads `<what it does>; <phase/dispatch purpose>. Not: <x> → <agent>; …` — keep delegation targets real.
 - **Template variables** `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` resolve at dispatch; use only these in skill/agent/workflow bodies.
 - **`.asd/release-manifest.json`**: `managed_paths` must list every canonical tree/file update.js should track; `model_families` mirrors `providers.md`'s table; a new canonical agent or skill (the render sources `computeCanonHashes` walks) needs a `canon_hashes` entry — non-render canon (e.g. `.asd/migrations/`) is tracked via `managed_paths` + `upstream_hashes` only, no `canon_hashes` entry.
@@ -101,7 +101,7 @@ These artifacts mirror/reference each other. A change in one usually needs match
 
 - Skill/agent files use JSON frontmatter (not YAML) between `---` fences — `name`/`description` required, provider-specific config under `claude`/`codex` keys. Description is the trigger, must be specific.
 - Templates carry `t_` prefix, live only in `.asd/templates/`.
-- Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written by consumer dev agents AND this repo's own Node code (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, `tests/run.js`, hooks) — no exemption for framework code.
+- Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written by consumer dev agents AND this repo's own Node code (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, `tests/**`, hooks) — no exemption for framework code.
 - HTML artifact templates share the `t_html-shell.html` shell (sticky TOC sidebar, conditionally trimmed below a section-count threshold; mermaid script likewise conditional on diagram presence — self-contained single file, no sibling stylesheet); keep that structure when editing other `t_*.html`.
 
 ### Hard rules (in addition to the block's)

@@ -54,6 +54,11 @@ Review, at every phase, covers only the change surface — the iteration's diff 
 
 **Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the orchestrator commits a reviewer's memory writes — made while reviewing, with its review file; made in a memory-fix dispatch ("Autofix vs escalation"), when that dispatch returns (`git-strategy.md` "Commit before review", which owns that bookkeeping). A memory file a concurrent co-author holds mid-edit is ownerless the same way, and the same rule assigns it. Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
 
+**Test-request and suppression findings.**
+
+- A finding asking for a test, or more tests, names the failure mode it catches and the existing tests checked against it; without both it is invalid and never routed to a fix round.
+- A suppression or weakened check (a disabled, skipped or downgraded lint rule, type check, test or validator; an inline suppression) the reviewed diff adds with no recorded user decision is a `high` finding. Ban and exception: `code-style.md` §5; the decision is the quality-waiver gate (`checkpoints.md` "Gate policy").
+
 ## Over-engineering checklist (critical, undroppable)
 
 Efficiency reviewer flags any of these as `critical`:

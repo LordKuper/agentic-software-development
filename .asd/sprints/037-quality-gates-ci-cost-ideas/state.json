@@ -1,0 +1,324 @@
+{
+  "sprint_id": "037-quality-gates-ci-cost-ideas",
+  "branch": "sprint/037-quality-gates-ci-cost-ideas",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-18 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "user answer: everything except G7 (approach B without G7, plus G8 and the F-1 fix)",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "intake skipped this sprint: retro-candidates exits 2 on 036 retrospective (F-1); no open issue or PR; no disposition written",
+      "evidence": "decisions-log.md 2026-11-18 scope gate; cost 0 iterations / 0 fix rounds each",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "user answer: accept, everything in one sprint (AC-1..AC-20, no split)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "user request: agnix mandatory for this repo in every sprint, errors and warnings fixed; AC-21 added, AC-10 retired by it",
+      "evidence": "decisions-log.md 2026-11-18 scope amendment AC-21; Task assigned at plan",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "user answers: CDX-SUB-002 - remove codex.sandbox_mode and correct providers.md/README; CC-SK-007 - exclude the rule in .agnix.toml with a reason (quality waiver)",
+      "evidence": "audit.md Contradictions; decisions-log.md 2026-11-18 agnix findings",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: every Contradictions entry settled by a user answer; every AC-N checked deliverable; no check failed to run",
+      "evidence": "audit.md Contradictions, Existing implementation found, Gaps; three asd-scout scans; agnix 0.61.0 run",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "user answer: accept plan",
+      "evidence": "decisions-log.md 2026-11-18 plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: all 12 Tasks ticked; build, lint, checks.context, checks.agnix pass; flagged choices of Tasks 2 and 12 accepted in decisions log; no stubs introduced; every round-diff path authorised",
+      "evidence": "decisions-log.md 2026-11-18 impl assessment; commit c2415afb",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "quality waiver",
+      "decision_actor": "user",
+      "reason": "user answer: accept raising the standalone-skills byte cap 61051 -> 62351 B (asd-init growth from AC-3, AC-8, AC-16)",
+      "evidence": "decisions-log.md 2026-11-18 skill size cap waiver; test-plan.md entry 1",
+      "artifact_revision": "tests/run.js@984cd797"
+    },
+    {
+      "gate": "review-cap override",
+      "decision_actor": "user",
+      "reason": "user answer: \"Override, ещё раунд\" after advisor consult (override once, fix the refusal-repair class in all four places); iter-07 external 1-2 critical",
+      "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-07; reviews/impl/wave-1/iter-07/external.md",
+      "artifact_revision": "impl-review wave-1/iter-07"
+    },
+    {
+      "gate": "review-cap override",
+      "decision_actor": "user",
+      "reason": "user answer at iter-07: \"Override, ещё раунд\" with its stated condition \"Если iter-08 снова сузится — принять\"; iter-08 narrowed to one finding (external 1, Entry log/Suite run refusals) → cap-accept",
+      "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-08; reviews/impl/wave-1/iter-08/external.md",
+      "artifact_revision": "impl-review wave-1/iter-08"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:bundle-path derivation from a dispatch id and role×phase enumeration have edges no named test establishes",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the admission, suppression and regression-duty rules",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the Codex read-only guarantee in providers.md",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the gate and intake rules",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the stub date and test-plan shape rules",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:numstat edge cases (renames, binary files) and the allowance refusal order in `impl-test-close`",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the open-PR gate and the retro Home order",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the suite-revision procedure and the green-exit order",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the invalid-finding condition",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:diff-mode detection scope",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 12": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:mirror edits verified by tests/run.js README mirror tests and git grep",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "D-1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:mirror wording of the per-area suite",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-02 R1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-02 R2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-02 R3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-03 R1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-03 R2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-04 R1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 8,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-04": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-06": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-07": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-08": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "56f02fbc35b88429daf3aff09c0c7e8c5085a698",
+            "iter-02": "cc385ccd50a96c1ff46f124be61123d42162224e",
+            "iter-03": "056a3e731550778ac75b0c0c0224f0021891bd88",
+            "iter-04": "834a02bfb3ed90eef9c1dbe2d6d5e11f57a1e898",
+            "iter-05": "d4617a0cc678933b812fa3f271a192249576a885",
+            "iter-06": "2b84acf7a497e3f8be470447a05e06c84e831c43",
+            "iter-07": "99785e45a688150da2e28bfc15bfd1baeaf848dc",
+            "iter-08": "43bc0236a622fadef0d0bc699122dc42c0c8ab20"
+          },
+          "latched": {
+            "combined": 6
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-11-18T08:42:04.000Z",
+  "updated_at": "2026-11-18T11:11:13.794Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 129,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/129",
+    "state": "open"
+  },
+  "archived_at": null
+}

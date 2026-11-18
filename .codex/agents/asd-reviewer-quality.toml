@@ -1,9 +1,8 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168 content_digest=sha256:7522f8621ea4ed550eb6ff8c6f0c803c89b9cc02bbaa11b20a5d7cbf4d6187bb asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd content_digest=sha256:11163fcc018872d37543184238d94de58a252241607b88c9db119e5f7ce4188a asd_version=14.8.0 schema=1
 name = "asd-reviewer-quality"
 description = "AC→code→test trace, bugs, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility; standard impl-review. Not: simplicity, perf, token cost → asd-reviewer-efficiency; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
 web_search = "live"
 developer_instructions = """
 # Role
@@ -82,6 +81,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 
 ### Best practices [impl-review]
 - language/framework idiomatic patterns; cite source rule when used
+- an added suppression or weakened check: `review-policy.md` "Change-surface rule"
 
 ### AC → code trace [impl-review]
 - every AC-N has a corresponding code path
@@ -92,7 +92,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - every AC-N has a check asserting observable behaviour at some level
 
 ### Test check-ladder adequacy [impl-review]
-- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost
+- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost; a finding asking for a test is valid only per `review-policy.md` "Change-surface rule"
 
 ### Test removal validity [impl-review]
 - every `test-plan.md` removal carries a reason valid under `code-style.md` §17; an out-of-scope removal carries recorded user approval

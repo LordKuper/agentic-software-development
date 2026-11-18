@@ -1,0 +1,143 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 3dd3e9d6..e1d37d53 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -59,7 +59,7 @@
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "19669dbda0b93e4aae5be5b146036e1e544df2e3b877ed69e710e5396efa16cb",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "6f0c8d5d6cb4df1ef5add3ae7bc8fa4bcc3ca4144780b0c249a0a207741aab6d",
++    ".asd/rules/artifact-layout.md": "4b97a390ebd4e5a1000582fc9f935a333ce75c0fc4b3b6c946ad942d1bbd316b",
+     ".asd/rules/checkpoints.md": "bf399860b8b59e92b3b02e71188d2ee633527a46eba0ec1cbdc4c245b86c14dd",
+     ".asd/rules/code-style.md": "97d5ba305edace4cca78d13f7bed70d01fa76eb6a1d3d31e36fc00298359d246",
+     ".asd/rules/core.md": "1d59078ad0eeb85596ed30b2ba55d7020267c57abc6a6f5f359e54e6c01a2607",
+@@ -128,7 +128,7 @@
+     ".asd/workflows/asd-phase-design-review.md": "6019b2b59b6792386046399dc3223f9225dada3d2f2cec7fe2fa2ff61f50e64e",
+     ".asd/workflows/asd-phase-design.md": "f7cbb2a79463cb59b8c8c6ce82039a3b14808004f74ce59b22e4df4530f26b9d",
+     ".asd/workflows/asd-phase-impl-review.md": "04caaffa4d6e2a204d2cfb269bf367c60c90e702ff4c387665cf59ab672cb3ce",
+-    ".asd/workflows/asd-phase-impl-test.md": "7cd6793b1b7aa25909b7007ec003480c13ea330e350347044b4a6e5f8a709837",
++    ".asd/workflows/asd-phase-impl-test.md": "db2486a87c04ed316a3c11a166a97d2823f9fc1fa91299791d8696f7c9f776b4",
+     ".asd/workflows/asd-phase-impl.md": "2cb551c19a12fc1803fe3a6d0ba278e641260a873a5bd78cf891363ed21aea3b",
+     ".asd/workflows/asd-phase-plan.md": "ff0fe8b91f7b25574d8b777061483e795e738dd019fb087ddea72d25c66afdf4",
+     ".asd/workflows/asd-phase-pr.md": "e95054ed20f3f74b0d159dcf804d9e425144d9b03996c59c55a64f11631afbbb",
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "3f277b6f45d589cf721e715a47043849d7659bd3922533d21b3d308f731710eb",
++    ".asd/runtime.js": "0e6eab1bdfd4662bcaecb51745fc484344b2255d5e0d9874be915485b0230ea2",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 10166131..b5d672db 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -204,7 +204,7 @@ Manual step = operational action a human must perform for the plan to complete (
+ 
+ `<sprint>/test-plan.md` per `t_test-plan.md`, which holds the shape of `Added tests` (`Gap proof`), `Suite run` (`Line delta`, `Allowance`, `Slowest tests`) and the optional `## Suite revision` ledger. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects carried over, resolved entries kept). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows, plus `Suite run` for a check a finding requires. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
+ 
+-**Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited, save a refused missing `Gap proof` (`asd-phase-impl-test.md` "Rules"): a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
++**Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows, a struck `Removed tests` row (`~~<file:name>~~`, `asd-phase-impl-test.md` step 9a) excepted, of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file bar the struck rows, which stay live so step 5 and 9a keep filtering against them. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited, save a refused missing `Gap proof` (`asd-phase-impl-test.md` "Rules"): a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+ 
+ An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 289326ba..d88e9a2d 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -2336,25 +2336,25 @@ function planSection(lines, name) {
+   return { start: starts[0], end: next === -1 ? lines.length : next };
+ }
+ 
+-/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, the run of lines from its header row to the next blank line, when it has a data row, has a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside that run is free. */
++/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose every table, a run of lines from a line opening with a pipe to the next blank line, has a header and a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and, when it has a data row, a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside a table is free. */
+ function checkGapProof(lines, source = 'test-plan') {
+   const section = planSection(lines, 'Added tests');
+   if (section === null) fail(`${source} has no ## Added tests section`);
+-  const body = lines.slice(section.start, section.end);
+-  const start = body.findIndex((line) => line.trim().startsWith('|'));
+-  if (start === -1) return;
+-  const blank = body.findIndex((line, index) => index > start && line.trim() === '');
+-  const run = body.slice(start, blank === -1 ? undefined : blank);
+-  if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+-  const [header, separator, ...rows] = run.map(tableCells);
+-  if (separator === undefined) return;
+-  if (separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
+-  if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
+-  if (rows.length === 0) return;
+-  const column = header.indexOf('Gap proof');
+-  if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
+-  if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
+-  if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
++  lines.slice(section.start, section.end).join('\n').split(/\n[ \t]*\n/).forEach((paragraph) => {
++    const paragraphLines = paragraph.trim().split('\n');
++    const start = paragraphLines.findIndex((line) => line.trim().startsWith('|'));
++    if (start === -1) return;
++    const run = paragraphLines.slice(start);
++    if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
++    const [header, separator, ...rows] = run.map(tableCells);
++    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
++    if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
++    if (rows.length === 0) return;
++    const column = header.indexOf('Gap proof');
++    if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
++    if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
++    if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
++  });
+ }
+ 
+ /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index d3717c85..6283e333 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -24,7 +24,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+    - Either way: derive the **impacted set** per `sprint-lifecycle.md` "Impacted test set" (diff test files + reference/import search + AC-tag search, native selector override when `commands.yaml` carries one, the shared-infrastructure safety valve applying to step 8's suite gate only) — the scope for steps 3 and 8
+ 3. **Pre-strategy impacted run** — the tester runs the impacted existing tests before authoring; its raw result feeds the strategy pass.
+ 4. **Strategy pass** — the tester receives change surface, prior plan evidence, ACs, contracts, commands and rules (`## Rules`), and:
+-   - **re-entry**: first carries each review-fix removal row forward as a live `Removed tests` row, which step 5 collects, then rotates the previous entry's narrative rows, review-fix rows included, into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"); analyses only the delta — the material risk introduced or changed by the fix commits; leaves prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case it supersedes a rotated one
++   - **re-entry**: first carries each review-fix removal row forward as a live `Removed tests` row, which step 5 collects, then rotates the previous entry's narrative rows, review-fix rows included, into `test-plan.entry-NN.md`, leaving each struck `Removed tests` row (step 9a) live (`artifact-layout.md` "Test plan"); analyses only the delta — the material risk introduced or changed by the fix commits; leaves prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case it supersedes a rotated one
+    - **entry 1**: writes `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.), the first `Entry log` row's `HEAD analysed` left unfilled (scope = "full change surface"), and proposes each `temporary(<NNN>): ` test of an earlier sprint (`<NNN>` below this sprint's number) as a `Removed tests` row, reason `temporary: sprint <NNN>`, which step 5 splits like any removal. **Re-entry**: amends it — appends new/updated rows, the new `Entry log` row's `HEAD analysed` left unfilled (scope = "delta since entry N-1"); never rewrites prior rows outside the ones actually revised. Emits COMPLETED. The `HEAD analysed` sha is written at step 9's routing exit or in step 10, after the prune/author commit (step 7) and the suite recording (step 8) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
+ 5. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope — outside the sprint's **overall** change surface, not merely the current delta
+ 6. **Removal gate** [GATE adaptive: test removal] — only when out-of-scope removals exist: apply `checkpoints.md`; strict requests the user's explicit approval, adaptive needs recorded authority/evidence. A rejected removal becomes a struck row (step 9a).
+@@ -45,7 +45,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+    - **memory defect** (the failure traces to text in `.claude/agent-memory/<owner>/`) → step 7a, then step 8 again
+    - several kinds present → fix the test and memory defects first, re-run, then route the remaining code defects back
+    - no iteration cap: loop until the impacted set passes; an unfixable state surfaces as a dev/tester `FAILED`, never a silent exit
+-9a. **Suite revision** — only when step 8 is green, the accepted `sprint.md` scope asks for a suite revision and `test-plan.md` `## Suite revision` holds no area or a `pending` one: dispatch a fresh `asd-tester` in `suite-revision` mode (route line as step 1a), which follows `asd-tester.md` "Suite revision" (a removal the accepted scope item covers, by area and removal criteria, cites that item with no step 6; any other out-of-scope removal is written as a proposed `Removed tests` row, never deleted, its area staying `pending`), sets the areas it finishes to `done` and commits. Before each further dispatch apply step 6's gate over those proposed rows: that dispatch deletes the approved ones; a rejected one stays in `Removed tests` as a struck row (`~~<file:name>~~`) recording the rejection by test identity, which no later dispatch proposes again and step 5 does not collect. Dispatch again until no area is `pending` — the ledger is the only hand-off, an interrupted revision resumes from it — then step 8 over the revised tree.
++9a. **Suite revision** — only when step 8 is green, the accepted `sprint.md` scope asks for a suite revision and `test-plan.md` `## Suite revision` holds no area or a `pending` one: dispatch a fresh `asd-tester` in `suite-revision` mode (route line as step 1a), which follows `asd-tester.md` "Suite revision" (a removal the accepted scope item covers, by area and removal criteria, cites that item with no step 6; any other out-of-scope removal is written as a proposed `Removed tests` row, never deleted, its area staying `pending`), sets the areas it finishes to `done` and commits. Before each further dispatch apply step 6's gate over those proposed rows: that dispatch deletes the approved ones; a rejected one stays in `Removed tests` as a struck row (`~~<file:name>~~`, never rotated) recording the rejection by test identity, which no later dispatch proposes again and step 5 does not collect. Dispatch again until no area is `pending` — the ledger is the only hand-off, an interrupted revision resumes from it — then step 8 over the revised tree.
+ 10. **Green impacted run** — first, when `commands.yaml` carries `smoke` (absent → skipped), a fresh `asd-tester-runner` runs it once and records `Smoke: <command> — pass|fail` in `Suite run`; a fail goes, as in step 8, to a fresh base `asd-tester`, which appends the code-defect `D-N` row (`Failing test: none (smoke)`, `Symptom` the first failure line) and routes it per step 9's code-defect branch instead of closing green. Then the manual-verification check (`artifact-layout.md` "Test plan" Manual verification): each `Manual verification` row gets it once, at the first entry whose suite gate is green after the row is written — request a user decision (pass / fail, with notes) for each row still lacking a result, record each as `result: <pass|fail> — <notes>` beneath its row (impl-review reads it there), and append one decisions-log line. Then close the entry (mechanical, no gate) with `node .asd/runtime.js impl-test-close --test-plan <sprint>/test-plan.md --entry <N> --decisions <sprint>/decisions-log.md --green --base <git.base_branch> --line "impl-test: impacted set green (<counts>), <added>/<removed> tests"`, which also records `Line delta` in `Suite run`, fills this entry's `Entry log` row `HEAD analysed` with the current HEAD and appends the decisions-log line; a refusal is repaired per `Rules`; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") and the timing ledger — `git status --porcelain` MUST be empty before this step's COMPLETED; emit COMPLETED with `NEXT: impl-review`
+ 11. tester `QUESTION` or FAILED → escalation consult, then `agent-protocol.md` "Relay"; ABORT → relay, halt; no signal → `sprint-lifecycle.md` "State recovery" failed dispatch before re-dispatch
+ 12. On `ADVICE_NEEDED` from the tester → relay per `agent-protocol.md` "Relay"; execution resumes, no halt.
+diff --git a/tests/runtime-tools.test.js b/tests/runtime-tools.test.js
+index 36363918..c89ba435 100644
+--- a/tests/runtime-tools.test.js
++++ b/tests/runtime-tools.test.js
+@@ -1151,7 +1151,7 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
+   };
+   const green = (text, ref) => close(text, '--green', '--base', ref, '--commands', commands);
+   const proven = gapRow('seeded x: node tests/run.js -> exit 0');
+-  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator, trailingPlaceholder, noLeadingPipe, oneCell, proseAfterBlank] = await Promise.all([
++  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator, trailingPlaceholder, noLeadingPipe, oneCell, proseAfterBlank, secondTableEmpty, proseBetweenTables] = await Promise.all([
+     delta(base),
+     delta('HEAD'),
+     close(plan(gapRow(''))),
+@@ -1171,6 +1171,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
+     close(plan([...gapRow('seeded x: node tests/run.js -> exit 1'), 'b.js:t | seeded y | n/a |'])),
+     close(plan([...proven, '| b.js:t |'])),
+     close(plan([...proven, '', 'A note: a | b is prose outside the table.'])),
++    close(plan([...proven, '', ...gapRow('')])),
++    close(plan([...proven, '', 'Second table follows.', '', ...gapRow('seeded y: node tests/run.js -> exit 1')])),
+   ]);
+   const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
+ 
+@@ -1185,6 +1187,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
+   refused(noLeadingPipe, /row lacks a leading pipe/, 'a row after a well-formed table with no leading pipe is refused, not dropped');
+   refused(oneCell, /row cell count differs from the header's 3/, 'a one-cell row after a well-formed table is refused, not read as a proof');
+   assert.strictEqual(proseAfterBlank.status, 0, 'a pipe in prose after the blank line ending the table is outside the table and closes');
++  refused(secondTableEmpty, /empty Gap proof cell/, 'a second table after a blank line is checked like the first');
++  assert.strictEqual(proseBetweenTables.status, 0, 'prose between two proven tables is free and closes');
+   refused(noSeparator, /table separator malformed/, 'a header followed directly by a data row is refused');
+   assert.strictEqual(filled.status, 0, 'a filled Gap proof closes');
+   assert.strictEqual(noRow.status, 0, 'a table with no row needs no proof');

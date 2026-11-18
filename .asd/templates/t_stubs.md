@@ -7,13 +7,13 @@ responsibility:
 
 # Stubs
 
-Only OPEN stubs. Resolved stubs deleted immediately. Migrated stubs deleted from prior sprint and re-registered under the new sprint. Accepted-debt entries kept; their Reason field MUST begin with `(accepted-debt)` so the pr-phase block exempts them.
+Only OPEN stubs. Resolved stubs deleted immediately. Migrated stubs deleted from prior sprint and re-registered under the new sprint. Accepted-debt entries kept; their Reason field MUST begin with `(accepted-debt) review YYYY-MM-DD:` (a real calendar date) so the pr-phase block exempts them; a passed or invalid date puts the entry before the next scope gate.
 
 Persists across sprint archival.
 
 | Sprint | File:Line | Reason | Owner |
 |---|---|---|---|
-| {{NNN-slug}} | {{path:N}} | {{why; prefix with `(accepted-debt)` if known debt}} | {{agent}} |
+| {{NNN-slug}} | {{path:N}} | {{why; known debt: `(accepted-debt) review YYYY-MM-DD: why`}} | {{agent}} |
 
 <!-- when empty: -->
 <!-- | — | — | no open stubs | — | -->

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168 content_digest=sha256:8705de9229a4df5f8d72f1e5c3d2174b232bcb6e63c833a011eae27d2e5a7938 asd_version=14.5.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd content_digest=sha256:a12cd1a44abcd6f8db2a0d6d57b131f9bab2bdd05ca800586963700753798bcd asd_version=14.8.0 schema=1
 name: asd-reviewer-quality
 description: "AC→code→test trace, bugs, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility; standard impl-review. Not: simplicity, perf, token cost → asd-reviewer-efficiency; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -86,6 +86,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 
 ### Best practices [impl-review]
 - language/framework idiomatic patterns; cite source rule when used
+- an added suppression or weakened check: `review-policy.md` "Change-surface rule"
 
 ### AC → code trace [impl-review]
 - every AC-N has a corresponding code path
@@ -96,7 +97,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - every AC-N has a check asserting observable behaviour at some level
 
 ### Test check-ladder adequacy [impl-review]
-- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost
+- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost; a finding asking for a test is valid only per `review-policy.md` "Change-surface rule"
 
 ### Test removal validity [impl-review]
 - every `test-plan.md` removal carries a reason valid under `code-style.md` §17; an out-of-scope removal carries recorded user approval

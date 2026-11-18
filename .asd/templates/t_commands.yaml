@@ -19,6 +19,21 @@ run: "{{command to start application locally}}"
 # from a detected smoke script or target; omit entirely when none is found — never invent one.
 # smoke: "{{command to run the built product end to end}}"
 
+# optional: globs of the project's test files, comma-separated; test-delta counts their lines against
+# other code. Absent -> a default list of common test layouts. Populated by /asd-init only from a
+# detected test layout; omit when none is found — never invent one.
+# test_paths: "{{glob}}[, {{glob}}…]"
+
+# optional: the test command in its duration-reporting form; the full-suite run uses it when present
+# and records the ten slowest tests. Populated by /asd-init only from a detected runner; omit when
+# unsure — never invent one.
+# test_durations: "{{test command that reports per-test durations}}"
+
+# optional: named checks, each run by the impl completion gate after build and lint; a non-zero exit
+# fails the gate. /asd-init adds `context`; add others (type check, architecture check) here.
+# checks:
+#   {{name}}: "{{command}}"
+
 custom:
   # optional named commands beyond the required four
   # examples: format, typecheck, migrate, seed, e2e, coverage, docker-build, deploy-staging

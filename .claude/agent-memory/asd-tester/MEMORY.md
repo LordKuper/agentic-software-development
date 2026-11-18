@@ -9,3 +9,4 @@
 - [Refusal tests need a valid control](feedback_refusal-tests-need-valid-control.md) — a bad-input/non-zero/untouched test passes on the pre-fix tree (unknown command); add a valid-call control and stderr regexes.
 - [Fail-first via pre-fix tree](feedback_failfirst-pre-fix-tree.md) — prove a committed fix red by running the new runner in a git-archive of the pre-fix commit; tar needs cd, not -C C:.
 - [Guard at a second call site](feedback_guard-at-second-call-site.md) — status-only tests miss the render-side filter; age hooks to stale; quote spaced --require paths.
+- [Suite split and cost levers](project_suite-split-and-cost-levers.md) — tests/<area>.test.js + lib.js loader; spawn costs; async overlap and template-repo levers.

@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 100, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "disabled" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "disabled" }
 }
 ---
 
@@ -102,7 +102,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 - the diff's size is proportional to the value it delivers for its AC-N and plan Task; edits no Task needs, or a broad rewrite where a local change suffices, are findings
 
 ### Test-suite cost and check-ladder cost [impl-review]
-- over-leveled tests (an e2e journey where a unit/contract test catches the same defect), redundant tests duplicating an existing check, and hypothetical-risk tests (`code-style.md` §17); a test that adds suite runtime or fixture weight its risk does not justify
+- over-leveled tests (an e2e journey where a unit/contract test catches the same defect), redundant tests duplicating an existing check, and hypothetical-risk tests (`code-style.md` §17); a test that adds suite runtime or fixture weight its risk does not justify; a finding asking for a test is valid only per `review-policy.md` "Change-surface rule"
 
 ### Perf budget compliance [impl-review]
 - latency, memory, throughput against project budgets from `custom-coding-rules.md`

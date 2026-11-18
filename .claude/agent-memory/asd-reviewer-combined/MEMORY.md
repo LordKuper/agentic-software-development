@@ -37,3 +37,8 @@
 - [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
 - [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
 - [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — "marker absent from output" leak test over a JSON.parse error: V8 shows only ±10 chars, a long marker never leaks whole
+- [Seed-time key sets](feedback_seed-time-key-sets.md) — seed keyed by files present at seed time misses lazy ones; on a fail-closed fix, trace who adds the key at the creation site
+- [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — a `{{…}}`-anywhere refusal false-refuses text citing a template placeholder; ask for a start/whole-cell anchor
+- [Impacted scope claims](feedback_impacted-scope-claims.md) — "area reads none of the changed files": check shared-helper imports, direct spawns, and a changed runner (safety valve)
+- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — fix routes a case to "waits for step N" from a later step: does the flow return to N; same case in Escalation JSON?
+- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — grep in-scope agent-memory lines for MEMORY_HISTORY_PATTERNS tokens; a committed hit bypassed memory-check

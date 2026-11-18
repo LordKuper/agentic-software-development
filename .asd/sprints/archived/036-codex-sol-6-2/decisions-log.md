@@ -1,0 +1,51 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), .asd/project/retro-backlog.md (retro row dispositions), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+- YYYY-MM-DD — stall: <agent> <dispatch ids>
+- YYYY-MM-DD — cleanup checkpoint <sha>
+- YYYY-MM-DD — cleanup: removed <paths/symbols>; reverted <ids or none>; verified <build, lint, tests @sha>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`, or `.asd/project/retro-backlog.md` (retro row dispositions). Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-11-18 — PR #128 opened
+
+- **Decision**: DoD met (430/430 reused at 46da53fe and re-run green after the bump; wave-1/iter-09 combined and External APPROVE; retrospective present). `asd_version` 14.7.0 → 14.8.0 (feat → MINOR), CHANGELOG v14.8.0. PR #128 opened, adaptive publication.
+- **Rationale**: Scope authority recorded at the scope gate and both scope amendments; the user's standing rule merges the sprint PR in the same run.
+- **Affected docs**: CHANGELOG.md, .asd/release-manifest.json
+
+## 2026-11-18 — sprint closure
+
+- **Decision**: Sprint closed: PR #128 merged as 4ee1b61179f1c59bf99f96d09653b382f63fa9eb; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 037 start; release v14.8.0 tagged and published, included issues #123-#127 closed, so no release retry.
+- **Affected docs**: `state.json`
