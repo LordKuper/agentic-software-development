@@ -1,9 +1,16 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
-  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
   "cleanup": true,
   "user_gates": "adaptive",
   "gate_decisions": [
@@ -55,13 +62,34 @@
       "reason": "adaptive: every Contradictions entry settled by a user answer; every AC-N checked deliverable; no check failed to run",
       "evidence": "audit.md Contradictions, Existing implementation found, Gaps; three asd-scout scans; agnix 0.61.0 run",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "user answer: accept plan",
+      "evidence": "decisions-log.md 2026-11-18 plan accepted",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
   "skipped_phases": [],
   "reviews": {
-    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 0,
+          "verdicts": {},
+          "iteration_heads": {},
+          "latched": {}
+        }
+      ]
+    }
   },
   "created_at": "2026-11-18T08:42:04.000Z",
   "updated_at": "2026-11-18T08:42:04.000Z",

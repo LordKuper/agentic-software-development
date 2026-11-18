@@ -18,3 +18,7 @@
 {"op":"close","id":"asd-scout audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-18T09:08:12.355Z","end":"2026-11-18T09:11:31.271Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
 {"op":"close","id":"asd-scout audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-18T09:08:12.355Z","end":"2026-11-18T09:13:15.613Z","outcome":"done","attrs":{"agent":"asd-scout","tier":"standard","model":"haiku"}}
 {"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-18T09:07:33.508Z","end":"2026-11-18T09:22:56.479Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-18T09:23:01.850Z","attrs":{}}
+{"op":"open","id":"wait plan","kind":"user-wait","parent":"plan#1","start":"2026-11-18T09:29:10.861Z","attrs":{}}
+{"op":"close","id":"wait plan","kind":"user-wait","parent":"plan#1","start":"2026-11-18T09:29:10.861Z","end":"2026-11-18T09:39:37.063Z","outcome":"done","attrs":{}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-18T09:23:01.850Z","end":"2026-11-18T09:39:37.123Z","outcome":"done","attrs":{}}
