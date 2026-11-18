@@ -56,12 +56,12 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js contract-workflows contract-rules contract-agents contract-templates runtime-tools sync-cli sync-render update`
-- Scope: impacted — the delta is four prose canon files, their regenerated tester views and the manifest hashes, no runtime or test code; the areas reading `artifact-layout.md`, `asd-phase-impl-test.md`, `asd-tester.md`, the generated views and `.asd/release-manifest.json` (search-derived), the safety valve not triggered (no build or CI config, no shared module, `.asd/runtime.js` and `.asd/sync.js` unchanged); the suite op `suite-impl-test-10` brackets the run
-- Result: pass — exit 0, 195 passed, 0 failed, 0 skipped (195 tests)
+- Command: `node tests/run.js`
+- Scope: full
+- Result: pass — exit 0, 311 passed, 0 failed (311 tests), 39.4 s wall clock
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
-- Slowest tests: 2121 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1516 ms sprint-019 AC-8 one-command commit form; 891 ms sprint-023 AC-4 memory-check; 728 ms sprint-014 AC-2 failed dispatch reconstruction
-- HEAD: d0ff075b
+- Slowest tests: 1. 2162 ms sprint-023 AC-2; 2. 1608 ms sprint-019 AC-8; 3. 1157 ms sprint-036 AC-14; 4. 1146 ms sprint-017 AC-4/AC-8 (D6/D9a-c); 5. 1073 ms sprint-021 AC-7 (D7); 6. 939 ms sprint-023 AC-4; 7. 924 ms sprint-027 AC-9 (D9); 8. 890 ms sprint-020 AC-9; 9. 776 ms sprint-026 AC-14 (D11); 10. 764 ms sprint-017 AC-1 (D1/D2), sprint-023 AC-1, sprint-028 AC-21
+- HEAD: 9cf39b68
 - Line delta: tests +8723/−11521 (net -2798); other +799/−200 (net 599)
 
 ## Defects
