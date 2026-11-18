@@ -93,3 +93,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#4: standard, dispatch HEAD f86c9bf2
 - 2026-11-18 — impl-test: impacted set green (282/282, 12 areas), 0/0 tests (5 extended)
 - 2026-11-18 — impl-review wave-1/iter-02: combined CONCERNS (F1-F4), external CONCERNS (1-7) → impl review-fix (review_fixes_pending wave-1/iter-02). Dedup: external 4 = combined F1, external 6 = combined F2, external 7 = combined F3. Routes: dev chain — combined F1 (seed keeps existing ceilings, adds missing; scope step 2a seeds at checklist creation), F2, F3, external 1 (HOST/OWNER/REPO), 2 (`--match-head-commit`), 3 (oldest-first listing under the 200 cap, no pagination), 5; combined F4 → next impl-test entry runs the full suite (`tests/run.js` changed: shared-infrastructure safety valve).
+- 2026-11-18 — route wave-1/iter-02 R1, R2, R3: standard, dispatch HEAD 989e2a64; risk workflow gate (change)
+- 2026-11-18 — impl fix for wave-1/iter-02: findings resolved (flagged accepted: `<project>` from `gh repo view --json url`; additive seed fails on a malformed ceilings file; ASD-repo `-R` stays host-less, github.com)
