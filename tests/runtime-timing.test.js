@@ -587,12 +587,25 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
   const [unbounded] = Object.keys(committed).filter((key) => !BUNDLE_KEY.test(key));
   const droppedFile = path.join(mkTempDir(), 'dropped.json');
   fs.writeFileSync(droppedFile, JSON.stringify(Object.fromEntries(Object.entries(committed).filter(([key]) => key !== unbounded))), 'utf8');
-  const [clean, violated, seeding, missingKey] = await Promise.all([
+  const reseededFile = path.join(mkTempDir(), 'reseeded.json');
+  const reseedInput = { ...Object.fromEntries(Object.entries(committed).filter(([key]) => key !== unbounded)), [lowered]: 1 };
+  fs.writeFileSync(reseededFile, JSON.stringify(reseedInput), 'utf8');
+  const malformedFile = path.join(mkTempDir(), 'malformed.json');
+  fs.writeFileSync(malformedFile, '{ not json', 'utf8');
+  const [clean, violated, seeding, missingKey, reseeding, malformed] = await Promise.all([
     runtimeSpawnAsync(['context-check']),
     runtimeSpawnAsync(['context-check', '--ceilings', loweredFile]),
     runtimeSpawnAsync(['context-check', '--seed', '--bundles', '--ceilings', seededFile]),
     runtimeSpawnAsync(['context-check', '--ceilings', droppedFile]),
+    runtimeSpawnAsync(['context-check', '--seed', '--ceilings', reseededFile]),
+    runtimeSpawnAsync(['context-check', '--seed', '--ceilings', malformedFile]),
   ]);
+  assert.strictEqual(reseeding.status, 0, 'a seed into an existing file succeeds');
+  const { [unbounded]: addedCeiling, ...kept } = JSON.parse(fs.readFileSync(reseededFile, 'utf8'));
+  assert.deepStrictEqual(kept, reseedInput, 'a seed into an existing file keeps every existing key and value, the lowered ceiling included');
+  assert.ok(addedCeiling > 1, 'the missing project key gains a size-derived ceiling');
+  assert.notStrictEqual(malformed.status, 0, 'a seed into a malformed file fails');
+  assert.strictEqual(fs.readFileSync(malformedFile, 'utf8'), '{ not json', 'a malformed file is left as it was');
   assert.deepStrictEqual([clean.status, JSON.parse(clean.stdout)], [0, { over: [] }], 'every committed ceiling holds its bundle');
   assert.strictEqual(violated.status, 1, 'a bundle over its ceiling fails the check');
   assert.deepStrictEqual(JSON.parse(violated.stdout).over.map((entry) => entry.key), [lowered], 'only the lowered key is reported');

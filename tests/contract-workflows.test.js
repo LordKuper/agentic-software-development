@@ -515,17 +515,6 @@ test('sprint-031 AC-1/AC-2/AC-3: standard dispatches combined and External Revie
   }
 });
 
-/** Every label a step's `--add-label` writes, comma lists split. */
-function labelsAdded(text) {
-  return [...text.matchAll(/--add-label ([a-z,-]+)/g)].flatMap((match) => match[1].split(','));
-}
-
-/** True when the `<origin>` lookup is named before the `gh repo view <origin>` that consumes it. */
-function originCheckedBeforeRepoView(text) {
-  const lookup = text.indexOf('`<origin>` = `git remote get-url origin`');
-  return lookup !== -1 && text.indexOf('`gh repo view <origin> --json nameWithOwner -q .nameWithOwner`') > lookup;
-}
-
 test('sprint-035 AC-14: the config template ships safety_valve enabled at top level, and the README config schema and asd-init name the key', () => {
   assert.ok(/^safety_valve: enabled$/m.test(canonText('.asd/templates/t_config.yaml')), 'the config template carries the key at top level, enabled');
   assert.deepStrictEqual(['README.md', '.asd/skills/asd-init/SKILL.md'].filter((rel) => !canonText(rel).includes('safety_valve')), [], 'the config schema mirrors name the key');
