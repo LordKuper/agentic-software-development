@@ -43,7 +43,6 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 - Result: pass — 405 passed, 0 failed, 0 skipped of 405; `sprint-036 AC-15 (D-1)` (both tests) green
 - Lint / build: pass — build `node .asd/sync.js --check` exit 0; lint `git diff --cached --check` exit 0 on the staged entry content
 - HEAD: 527f694b — the run measured this tree plus the uncommitted `tests/run.js` change this entry commits next
-- AC-5 live probe: pending (orchestrator)
 
 ## Defects
 
@@ -52,3 +51,11 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
 | D-1 | 1 | .asd/sync.js | AssertionError [ERR_ASSERTION]: AC-15: adding the attribution key must not re-indent the hooks.SessionStart array it did not change | sprint-036 AC-15 (D-1): a json-merge re-render that only adds the owned attribution key keeps the owned hooks array as it was indented - the file reads as JSON.stringify with two spaces writes it | fixed | 2d190ca6 |
+
+## Manual verification
+
+| AC | Steps | Expected observation |
+|---|---|---|
+| AC-5 | `echo "Reply with exactly: PROBE OK" \| codex exec --model gpt-6.2-sol -c model_reasoning_effort="high" --sandbox read-only -` (third-party live integration: the model is served only by the provider) | a reply, exit 0 |
+
+result: pass — 2026-11-18 04:14, codex-cli 0.169.1, exit 0, reply `PROBE OK` (21 563 tokens). An attempt at 03:09 was refused by the account's usage limit, which is not a model-access error.
