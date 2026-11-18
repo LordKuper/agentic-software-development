@@ -23,15 +23,15 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 7 | 08cde94f | delta since entry 6 (review-fix `wave-1/iter-04`) |
 | 8 | b00f83b9 | delta since entry 7 (review-fix `wave-1/iter-05`) |
 | 9 | c0648345 | delta since entry 8 (review-fix `wave-1/iter-06`) |
+| 10 | | delta since entry 9 (review-fix `wave-1/iter-07`) |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`, entry 6's (the review-fix `wave-1/iter-03` rows) to `test-plan.entry-06.md`, entry 7's (the review-fix `wave-1/iter-04` rows) to `test-plan.entry-07.md`, entry 8's (the review-fix `wave-1/iter-05` rows) to `test-plan.entry-08.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`, entry 6's (the review-fix `wave-1/iter-03` rows) to `test-plan.entry-06.md`, entry 7's (the review-fix `wave-1/iter-04` rows) to `test-plan.entry-07.md`, entry 8's (the review-fix `wave-1/iter-05` rows) to `test-plan.entry-08.md`, entry 9's (the review-fix `wave-1/iter-06` rows) to `test-plan.entry-09.md`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `git diff b00f83b9...HEAD` outside `.asd/sprints/**`: `2129602e` prose — `asd-phase-impl-test.md` step 4 re-entry rotates first, then writes each review-fix removal request as a live `Removed tests` row; the one permitted segment edit (`artifact-layout.md` Rotation, `asd-phase-impl-test.md` "Rules") covers any `Added tests` refusal `impl-test-close` names | a machine-parsed token drifting | none | none | prose of the Tester's re-entry order and repair scope; no `runtime.js` parser reads either phrase. The only pins reaching them hold: `sprint-014 AC-7` (`contract-workflows`) checks the `test-plan.entry-NN.md` rotation token in canon, and `sprint-037 AC-3/AC-13` / the rotated-segment Gap proof test (`runtime-tools`) already own `impl-test-close`'s refusal of any `Added tests` row in a segment; the impacted set ran green (code-style §17: a prose fix adds a test only for a machine-parsed token) |
-| `.asd/release-manifest.json` hash refresh for the two files above | none reachable by a test | none | none | hashes; the manifest hash tests (`update` area) and `node .asd/sync.js --check` (`ok: true`) cover them |
+| `git diff c0648345...HEAD` outside `.asd/sprints/**`: `97e7525b` prose — `asd-phase-impl-test.md` step 9 / Rules / Dispatch, `artifact-layout.md` Rotation and `asd-tester.md` line 47 now send any `impl-test-close` refusal (row, table structure, heading; live plan or rotated segment) at step 9 or step 10 to a fresh base tester making the smallest edit in the file the refusal names; the regenerated tester views and the manifest hash refresh | a machine-parsed token drifting | none | none | prose of the Tester's refusal-repair scope; `impl-test-close` is unchanged (`.asd/runtime.js` and `tests/` untouched), and no test pins the edited sentences (grep of `tests/*.js` for the Rotation, Rules and `asd-tester.md` phrases: no hit); the reaching pins hold — `sprint-014 AC-7` (`contract-workflows`, the `test-plan.entry-NN.md` rotation token), `sprint-037 AC-3/AC-13` and the rotated-segment Gap proof test (`runtime-tools`, `impl-test-close`'s refusals), the generated-view and manifest-hash tests (`contract-agents`, `sync-render`, `update`); the impacted set ran green (code-style §17: a prose fix adds a test only for a machine-parsed token) |
 
 ## Removed tests
 
@@ -56,12 +56,12 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js contract-workflows contract-rules contract-templates runtime-tools sync-cli sync-render update`
-- Scope: impacted — the delta is two prose canon files and the manifest hashes, no runtime or test code; the areas reading `artifact-layout.md`, `asd-phase-impl-test.md` and `.asd/release-manifest.json` (search-derived), the safety valve not triggered (no build or CI config, no shared module, `.asd/runtime.js` and `.asd/sync.js` unchanged); the suite op `suite-impl-test-9` brackets the run
-- Result: pass — exit 0, 187 passed, 0 failed, 0 skipped (187 tests)
+- Command: `node tests/run.js contract-workflows contract-rules contract-agents contract-templates runtime-tools sync-cli sync-render update`
+- Scope: impacted — the delta is four prose canon files, their regenerated tester views and the manifest hashes, no runtime or test code; the areas reading `artifact-layout.md`, `asd-phase-impl-test.md`, `asd-tester.md`, the generated views and `.asd/release-manifest.json` (search-derived), the safety valve not triggered (no build or CI config, no shared module, `.asd/runtime.js` and `.asd/sync.js` unchanged); the suite op `suite-impl-test-10` brackets the run
+- Result: pass — exit 0, 195 passed, 0 failed, 0 skipped (195 tests)
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
-- Slowest tests: 3029 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1593 ms sprint-019 AC-8 one-command commit form; 1121 ms sprint-023 AC-4 memory-check; 777 ms sprint-014 AC-2 failed dispatch reconstruction
-- HEAD: 4fa3bccc
+- Slowest tests: 2121 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1516 ms sprint-019 AC-8 one-command commit form; 891 ms sprint-023 AC-4 memory-check; 728 ms sprint-014 AC-2 failed dispatch reconstruction
+- HEAD: d0ff075b
 - Line delta: tests +8723/−11521 (net -2798); other +798/−199 (net 599)
 
 ## Defects
