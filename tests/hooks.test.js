@@ -2,7 +2,7 @@
 
 // SessionStart hook output
 
-const { assert, fs, path, execFileSync, sync, runtime, REPO_ROOT, test, mkTempDir, writeFile, readWorkflowDefinitions, readRepoFile, disabledAttributionRepo } = require('./lib.js');
+const { assert, fs, path, execFileSync, execFileAsync, sync, runtime, REPO_ROOT, test, mkTempDir, writeFile, readWorkflowDefinitions, readRepoFile, disabledAttributionRepo } = require('./lib.js');
 
 /** Installs a copy of the SessionStart hook plus every workflow definition it reads its chain from into a temp repo root, so a run never sees the live sprint. */
 function installHook(tempRoot) {
@@ -223,7 +223,7 @@ test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr p
   assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
 });
 
-test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exactly when every frozen design document is the boolean false - a legacy skip_design_phases moves nothing, a document true, absent or unseeded falls back to design, a non-object documents value never breaks the hook, and no other phase moves', () => {
+test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exactly when every frozen design document is the boolean false - a legacy skip_design_phases moves nothing, a document true, absent or unseeded falls back to design, a non-object documents value never breaks the hook, and no other phase moves', async () => {
   const template = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
   const designDocs = Object.keys(template.documents || {}).filter((name) => name !== 'audit');
   assert.ok(designDocs.length >= 4, `t_state.json "documents" must still freeze the design documents the collapse test reads - only [${designDocs.join(', ')}] found, so the cases below assert nothing`);
@@ -241,19 +241,19 @@ test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exac
   ];
   const label = ([phase, fields, next]) => `${phase} + ${JSON.stringify(fields)} -> ${next}`;
 
-  const observed = cases.map(([phase, fields]) => {
+  const observed = await Promise.all(cases.map(async ([phase, fields]) => {
     const tempRoot = mkTempDir();
     installHook(tempRoot);
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'sprint/999-fixture', ...fields }));
-    const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    const { stdout: out } = await execFileAsync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
     const next = /Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext);
     return label([phase, fields, next ? next[1] : '<no Next phase line>']);
-  });
+  }));
 
   assert.deepStrictEqual(observed, cases.map(label), 'the session hook must agree with the audit exit (sprint-lifecycle.md "Design/design-review/design-promote collapse"): plan only when every frozen design document is a bare false, whatever a legacy skip_design_phases says, and only while phase is audit - any other phase keeps its successor in the standard definition');
 });
 
-test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflow definition - an absent workflow reads standard, every phase of every definition reports its successor, the design collapse moves only a chain holding design, and a missing, unknown, invalid or malformed definition drops the Next phase line with exit 0 and the summary intact', () => {
+test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflow definition - an absent workflow reads standard, every phase of every definition reports its successor, the design collapse moves only a chain holding design, and a missing, unknown, invalid or malformed definition drops the Next phase line with exit 0 and the summary intact', async () => {
   const definitions = readWorkflowDefinitions();
   const off = Object.fromEntries(Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((name) => name !== 'audit').map((name) => [name, false]));
   const none = '<no Next phase line>';
@@ -277,7 +277,7 @@ test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflo
   );
   const label = ([fields, overrides, withDefinitions, next]) => `${JSON.stringify(fields)} ${JSON.stringify(overrides)}${withDefinitions ? '' : ' without definitions'} -> ${next}`;
 
-  const observed = cases.map(([fields, overrides, withDefinitions]) => {
+  const observed = await Promise.all(cases.map(async ([fields, overrides, withDefinitions]) => {
     const tempRoot = mkTempDir();
     if (withDefinitions) installHook(tempRoot);
     else writeFile(tempRoot, '.asd/hooks/session-start.js', readRepoFile('.asd/hooks/session-start.js'));
@@ -285,14 +285,14 @@ test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflo
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', branch: 'sprint/999-fixture', ...fields }));
     let out;
     try {
-      out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+      ({ stdout: out } = await execFileAsync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' }));
     } catch (error) {
-      return label([fields, overrides, withDefinitions, `exit ${error.status}`]);
+      return label([fields, overrides, withDefinitions, `exit ${error.code}`]);
     }
     const text = JSON.parse(out).hookSpecificOutput.additionalContext;
     const next = /Next phase: (\S+)/.exec(text);
     return label([fields, overrides, withDefinitions, !text.includes('Active sprint: 999-fixture') ? `<no summary: ${text}>` : next ? next[1] : none]);
-  });
+  }));
 
   assert.deepStrictEqual(observed, cases.map(label), 'sprint-lifecycle.md "Workflows": the hook resolves .asd/workflows/<state.workflow || standard>.json and shows the successor in its phases - a sprint in flight before this field (sprint 020 itself) must still resolve standard, a lite sprint must never be told its next phase is a standard one, the collapse to plan is derived from a chain that holds design and never applied to one without it, and any unreadable definition must degrade to no chain info rather than a wrong phase, a throw or a lost summary (hooks must never block a session)');
 });
