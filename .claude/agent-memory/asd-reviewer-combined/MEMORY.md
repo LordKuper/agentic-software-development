@@ -8,7 +8,7 @@
 - [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
 - [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, per-mode rows, External Review twins) against agent Inputs required/modes
 - [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
-- [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Quality finding, move its WHY to JSDoc
+- [In-body comment sweep](feedback_in-body-comment-sweep.md) — added `//` lines in JS bodies, or a context comment a reorder detached: high Quality finding, move its WHY to the header doc
 - [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
 - [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
 - [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
