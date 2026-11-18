@@ -65,10 +65,9 @@ Fresh and re-init only.
    - test layout (`test_paths`): the test directories and filename patterns found by repo search
      (`tests/`, `__tests__/`, `*.test.*`, `*_test.go`, `test_*.py`, …) → comma-separated globs.
      None found → omit; the runtime's default list applies
-   - duration-reporting test form (`test_durations`), keyed on the detected runner like
-     `test_affected`: pytest → `pytest --durations=10`, jest → `jest --verbose`, go →
-     `go test -v`, node's built-in runner → its test command as is. No match, or unsure of the flag
-     → omit; never guess
+   - duration-reporting test form (`test_durations`): `test` plus the detected runner's flag, its
+     targets and options kept — pytest `--durations=10`, jest `--verbose`, go `-v`, node's runner
+     as is. No match, a wrapper `test` the flag would not reach, or unsure → omit; never guess
    - gate classes with no command (`## Reference` "Gate-class gaps"): lint or format, type check —
      name each class in which detection found no script, config or tool
    Record into proposal; do not prompt per-command yet
