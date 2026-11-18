@@ -17,13 +17,13 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user /asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); node .asd/runtime.js attribution-check (Step 0, edits only attribution keys of .claude/settings.json and settings.local.json)", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user /asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, node .asd/runtime.js attribution-check (edits only attribution keys of .claude/settings.json and settings.local.json) and git add/git commit of that edit (Attribution check)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
 
 ## Steps
 
 ### Step 0: fast-forward the base branch
-Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy. Then run `node .asd/runtime.js attribution-check` on every invocation: silent unless `git.ai_attribution: disabled`, else it resets any re-enabling Claude Code project setting and prints one line per fix or Codex hint, which you relay to the user; a stderr warning never blocks.
+Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
 
 ### Step 1: detect active sprint
 - A sprint is active while `state.json.phase != "done"`, its folder at `.asd/sprints/<NNN-slug>/` or, legacy, `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"`
@@ -41,13 +41,16 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 2a. Unless `self_hosting: enabled`: `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --check-version`. `newer: true` → request user decision (hard, `checkpoints.md` "Gate policy"): update to v<remote> now, then start | continue on v<local>; carry the answer to scope. A warning → continue.
 3. Collect scope as a plain chat message; request user decision only to confirm start or abort
 4. Delegate to skill `asd-phase-scope`, passing scope text, any merged-unclosed sprint Step 1 carries and step 2a's answer; its step 1 asks the workflow choice, runs the closure write and, on *update*, the update
-5. On COMPLETED → advance per Step 3
+5. On COMPLETED → "Attribution check", then advance per Step 3
 
 ### Step 2B: resume flow
-1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`
+1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`, then "Attribution check"
 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Workflows"), neither offers `design`, `design-review` or `design-promote`.
 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
+
+### Attribution check
+Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change, so skip the check and tell the user to commit or revert it. Else `node .asd/runtime.js attribution-check`, relaying its fix and Codex-hint lines (a stderr warning never blocks); if that `git status` now lists a file, commit it as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
 
 ### Step 3: phase chain advancement
 After any phase skill returns:

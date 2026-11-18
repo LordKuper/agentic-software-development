@@ -80,7 +80,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all 
 
 ## Signals
 ```json
-{"QUESTION": "blocker: escalation consult, then relay per agent-protocol.md 'Relay'", "FAILED": "blocker, asd-init's at step 6 included: escalation consult, then relay, halt, resume on the user's decision", "ABORT": "blocker: relay, halt", "BLOCKED_MANUAL": "no immediate halt: unblocked work continues; the phase halts at step 8 only after every unblocked task COMPLETED", "ADVICE_NEEDED": "relay per agent-protocol.md 'Relay'; execution resumes, never a halt or a blocker"}
+{"QUESTION": "blocker: escalation consult, then relay per agent-protocol.md 'Relay'", "FAILED": "blocker, asd-init's at step 6 included: escalation consult, then relay, halt, resume on the user's decision; tech-reference missing: orchestrator writes it", "ABORT": "blocker: relay, halt", "BLOCKED_MANUAL": "no immediate halt: unblocked work continues; the phase halts at step 8 only after every unblocked task COMPLETED", "ADVICE_NEEDED": "relay per agent-protocol.md 'Relay'; execution resumes, never a halt or a blocker"}
 ```
 
 ## Exit
