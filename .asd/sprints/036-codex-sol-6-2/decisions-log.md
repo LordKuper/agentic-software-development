@@ -95,3 +95,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route review-fix wave-1/iter-05 (A: external 1, 2, 3): standard, dispatch HEAD bf086f6148acbb83086c6deb63c090e4204ec956; risk change: security
 - 2026-11-18 — route review-fix tester wave-1/iter-05 (test parts of external 1-3): standard, dispatch HEAD eb63010f0bc2258a8157324be498bfa41456123f
 - 2026-11-18 — impl fix for wave-1/iter-05: findings resolved (dev 01497426; views eb63010f; tester e59544ce, full suite 425/425). Flagged choice accepted: `closeQuietly` and the temp-file removal swallow a close or unlink error by design (cleanup never throws), each through an explicit return.
+- 2026-11-18 — route impl-test entry 7: standard, dispatch HEAD ebf924a707b019cc7536b164a3e483a0494c8044
+- 2026-11-18 — impl-test: impacted set green (425/425), 0/0 tests
