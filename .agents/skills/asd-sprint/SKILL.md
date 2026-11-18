@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:c59ef2e5e08697318c6df7bc4a8fe24408846f7dfcac73c538ef797f01849861 content_digest=sha256:b9d6acaf17060564e7eb3e5df5ed628e023a3181f3fdb308b0d4a65dcbe01b4a asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:512729ab91a23feb75b21ec702e3e21b06e7c74cc2d6665409c6b8ef89339c79 content_digest=sha256:dacfd1f646b21959a5222c2d3c90f98ad7e9cac9688db37bdbb489230be4c445 asd_version=14.7.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -15,7 +15,7 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user $asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, node .asd/runtime.js attribution-check (edits only attribution keys of .claude/settings.json and settings.local.json) and git add/git commit of that edit (Attribution check)", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user $asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, node .asd/sync.js --apply .claude/settings.json and node .asd/runtime.js attribution-check (edit only attribution keys of .claude/settings.json and settings.local.json, the sync also its hooks and .asd/sync-state.json), git ls-files and git add/git commit of the tracked files they changed (Attribution check)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
 
 ## Steps
@@ -48,7 +48,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
 
 ### Attribution check
-Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change. Then `node .asd/runtime.js attribution-check [-- <listed files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint; relay its fix, hint and warning lines (a warning never blocks). Commit each file a fix line names as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
+Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json .asd/sync-state.json`: a listed file is a user change. When `.claude/` exists and neither `.claude/settings.json` nor `.asd/sync-state.json` is listed, run `node .asd/sync.js --apply .claude/settings.json`: it inserts the owned `attribution` key `attribution-check` never inserts and records sync as its writer; a failure is relayed as a warning, never blocks. Then `node .asd/runtime.js attribution-check [-- <listed settings files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint; relay its fix, hint and warning lines (a warning never blocks). Commit as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review") only the files that were not listed, are tracked (`git ls-files --error-unmatch -- <file>` succeeds) and that a fix line names or the sync changed; an untracked or ignored file, `settings.local.json` typically, is edited but never staged.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
