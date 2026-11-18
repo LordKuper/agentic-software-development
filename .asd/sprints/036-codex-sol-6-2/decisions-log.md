@@ -120,3 +120,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test entry 10: standard, dispatch HEAD 46da53fe
 - 2026-11-18 — impl-test: impacted set green (430/430), 0/0 tests
 - 2026-11-18 — latch-refresh wave-1/iter-09: combined cleared (.asd/sync.js)
+- 2026-11-18 — impl-review wave-1/iter-09 (floor critical): combined APPROVE, external APPROVE after floor (1 medium dropped below floor: U+2028/U+2029 in the CLI one-line message; iter-08 P1 resolved) → reviewer DoD met (wave 1 of 1).
+- 2026-11-18 — impl-review DoD met: terminal full suite reused — 430/430 green at 46da53fe, no code, test or stub path changed since (only sprint files); green handoff (adaptive, orchestrator) → design-promote.
