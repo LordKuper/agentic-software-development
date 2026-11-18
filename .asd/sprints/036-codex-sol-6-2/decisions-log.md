@@ -112,3 +112,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl fix for wave-1/iter-07: findings resolved (dev 26c3f66e; hash ledger 69e01d42; tester 1f34644c, full suite 427/427). Flagged choice accepted: `sync.js`'s CLI entry now catches any thrown error and prints one `sync: <message>` line with exit 1 instead of a stack.
 - 2026-11-18 — route impl-test entry 9: standard, dispatch HEAD 1f34644c
 - 2026-11-18 — impl-test: impacted set green (428/428), 1/0 tests
+- 2026-11-18 — latch-refresh wave-1/iter-08: combined cleared (.asd/sync.js)

@@ -1,0 +1,97 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 9800de8c..1c5157ce 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -90,7 +90,7 @@
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "130680300092626999dea4304766a714a3c76402afa5ec026fa9714cc0a5d3a8",
++    ".asd/sync.js": "c3f19e6cf9b300f14a27b2cd79afcb3899381c3312bf19c33199fdc46db6c7b4",
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 7fdb7e29..6baf7342 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -749,13 +749,11 @@ function writtenKeys(before, previous, ownedKeys) {
+ // so a later release finds them. Touches only `owned_keys` of an existing entry:
+ // the digest stays the owned array's alone, which that write leaves as it was.
+ // With no entry the file was never applied, so its value reads as the user's.
+-// Returns whether it saved. A ledger or `.asd` directory that is a symlink or
+-// junction is refused (thrown) before the ledger is read, so no text of a linked
+-// file reaches a parse error; the save goes through a sibling temp file
+-// renamed over the ledger so a failure never leaves it half-written.
++// Returns whether it saved. A linked ledger or `.asd` directory is refused by
++// `loadSyncState`; the save goes through a sibling temp file renamed over the
++// ledger so a failure never leaves it half-written.
+ function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
+   const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
+-  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
+   const syncState = loadSyncState(repoRoot);
+   const entry = syncState.entries[relKey];
+   if (!entry) return false;
+@@ -1060,8 +1058,13 @@ function loadReleaseManifest(repoRoot) {
+   return manifest;
+ }
+ 
++// Reads the ledger, refusing (thrown, before any read or parse) a ledger or
++// `.asd` directory that is a symlink or junction, so no text of a linked file
++// reaches a parse error and every caller shares the one guard. A missing ledger
++// reads as the empty state.
+ function loadSyncState(repoRoot) {
+   const p = path.join(repoRoot, '.asd', 'sync-state.json');
++  if (isSymlink(p) || isSymlink(path.dirname(p))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
+   if (!fs.existsSync(p)) return { schema_version: SCHEMA_VERSION, entries: {} };
+   const state = JSON.parse(readNormalized(p));
+   if (state.schema_version !== SCHEMA_VERSION) {
+@@ -1698,7 +1701,12 @@ function main(argv) {
+ }
+ 
+ if (require.main === module) {
+-  process.exitCode = main(process.argv);
++  try {
++    process.exitCode = main(process.argv);
++  } catch (error) {
++    process.stderr.write(`sync: ${error.message}\n`);
++    process.exitCode = 1;
++  }
+ }
+ 
+ module.exports = {
+diff --git a/tests/run.js b/tests/run.js
+index 2e5cd699..cd7a3c87 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -11035,6 +11035,30 @@ test('sprint-036 AC-16 (external 1, iter-06): attribution-check over a linked le
+   assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, true, false, true]), 'AC-16: the linked file is refused before it is parsed, so the warning carries none of its text and its bytes stay');
+ });
+ 
++test('sprint-036 AC-16 (external 1, iter-07): sync --check and --apply over a symlinked ledger or a linked .asd directory holding invalid JSON each exit 1 with one "sync: " stderr line naming the link refusal, no stack and no fragment of the linked file, and leave it byte-identical', () => {
++  const MARKER = 'LINKED-LEDGER-SECRET-MARKER';
++  const FRAGMENT = MARKER.slice(0, 8);
++  const invalid = `{ "entries": ${MARKER} `;
++  const syncSpawn = (root, args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: root, encoding: 'utf8' });
++  const outcomes = [];
++  for (const [label, { repo, behind }] of linkedLedgerCases()) {
++    fs.writeFileSync(behind, invalid, 'utf8');
++    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
++      const ran = syncSpawn(repo.root, args);
++      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(behind, 'utf8') === invalid]);
++    }
++  }
++  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true]), 'AC-16: the linked ledger is refused before it is parsed - one sync: line, exit 1, no text of the file, bytes unchanged');
++});
++
++test('sprint-036 AC-16 (external 1, iter-07): sync --check over an unlinked ledger of an unsupported schema_version exits 1 with one "sync: " stderr line naming it, no stack and no stdout - the CLI catch-all reports any thrown error, not only a link refusal', () => {
++  const repo = disabledAttributionRepo();
++  const ledger = path.join(repo.root, '.asd', 'sync-state.json');
++  fs.writeFileSync(ledger, JSON.stringify({ schema_version: 99, entries: {} }), 'utf8');
++  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
++  assert.deepStrictEqual([ran.status, ran.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(ran.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
++});
++
+ test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
+   const settingsRel = '.claude/settings.json';
+   const repo = disabledAttributionRepo();
