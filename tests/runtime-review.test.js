@@ -2,7 +2,7 @@
 
 // runtime.js review machinery: coverage ledger, emit-manifest, persist-review, record-verdicts, latch-refresh, review waves
 
-const { assert, fs, path, execFileSync, spawnSync, update, runtime, REPO_ROOT, tests, test, mkTempDir, writeFile, declaredScopeFields, runtimeCli, runtimeCliResult, sandboxGitRepo, readWorkflowDefinitions, readRepoFile, internalReviewers, reviewerRubric, canonText, sectionOf, stepOf, spans, RUNTIME_JS } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, update, runtime, REPO_ROOT, tests, test, mkTempDir, writeFile, declaredScopeFields, runtimeCli, runtimeCliResult, sandboxGitRepo, sandboxGitRepoFrom, readWorkflowDefinitions, readRepoFile, internalReviewers, reviewerRubric, canonText, sectionOf, stepOf, spans, RUNTIME_JS } = require('./lib.js');
 
 function buildManifest(files, rules, sections) {
   return {
@@ -1273,7 +1273,7 @@ test('sprint-031 AC-9 (issue #74): emit-manifest splits a scope above the comman
   const argumentCost = (arg) => 2 * arg.length + 3;
   const { repo, env, git } = sandboxGitRepo();
   const body = (tag) => Array.from({ length: 20 }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
-  const scope = Array.from({ length: 800 }, (_, index) => `s/${'n'.repeat(16 + ((index * 7) % 13))}${String(index).padStart(4, '0')}.js`);
+  const scope = Array.from({ length: 400 }, (_, index) => `s/${'n'.repeat(52 + ((index * 7) % 13))}${String(index).padStart(4, '0')}.js`);
   const sourceOf = new Map(scope.filter((_, index) => (index * 5) % 3 !== 0).map((file) => [file, file.replace('s/', 'o/')]));
   scope.forEach((file) => writeFile(repo, sourceOf.get(file) || file, body(file)));
   git('add', '-A');
@@ -1624,15 +1624,16 @@ const LATCH_BASE_FILES = {
 
 /** Runs `latch-refresh` over a sandbox repo whose wave 1 latched `latched` at `LATCH_BASE_FILES`, with `change` committed afterwards and `manifests` (reviewer to listed files) on disk in the wave's first iteration; `flat` lays the state and manifests out as the legacy flat impl node, `heads: false` leaves the iteration heads empty. Returns the CLI result, the state text before and after, and the latch map after. */
 function latchScenario({ change, manifests, latched, flat = false, heads = true }) {
-  const { repo, env, git } = sandboxGitRepo();
   const write = (root, rel, text) => {
     fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
     fs.writeFileSync(path.join(root, rel), text, 'utf8');
   };
-  Object.entries(LATCH_BASE_FILES).forEach(([rel, text]) => write(repo, rel, text));
-  git('add', '-A');
-  git('commit', '-q', '-m', 'base');
-  const base = git('rev-parse', 'HEAD').trim();
+  const { repo, env, git, shared: base } = sandboxGitRepoFrom('latch-base', (template) => {
+    Object.entries(LATCH_BASE_FILES).forEach(([rel, text]) => write(template.repo, rel, text));
+    template.git('add', '-A');
+    template.git('commit', '-q', '-m', 'base');
+    return template.git('rev-parse', 'HEAD').trim();
+  });
   Object.entries(change).forEach(([rel, text]) => write(repo, rel, text));
   git('add', '-A');
   git('commit', '-q', '-m', 'fix round');

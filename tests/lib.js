@@ -8,7 +8,9 @@ const fs = require('node:fs');
 
 const path = require('node:path');
 
-const { execFileSync, spawnSync } = require('node:child_process');
+const { execFile, execFileSync, spawn, spawnSync } = require('node:child_process');
+
+const { promisify } = require('node:util');
 
 const sync = require('../.asd/sync.js');
 
@@ -17,6 +19,9 @@ const update = require('../.asd/skills/asd-update/update.js');
 const migration900 = require('../.asd/migrations/9.0.0.js');
 
 const runtime = require('../.asd/runtime.js');
+
+/** `execFileSync` without blocking: a rejection carries the exit status in `code`; independent slow spawns overlap under `Promise.all`. */
+const execFileAsync = promisify(execFile);
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 
@@ -103,15 +108,33 @@ function runtimeCliResult(args, options) {
   }
 }
 
-/** A temp git repo isolated from the host's config - no signing, no autocrlf, a throwaway identity - so a git fixture's line endings and commits never depend on the machine running it (EFF-4). */
-function sandboxGitRepo() {
-  const repo = mkTempDir();
+/** Binds git to `repo`, isolated from the host's config - no signing, no autocrlf, a throwaway identity - so a git fixture's line endings and commits never depend on the machine running it (EFF-4). */
+function sandboxGit(repo) {
   const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
   fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
   const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
   const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, env, encoding: 'utf8' });
-  git('init', '-q');
   return { repo, env, git };
+}
+
+const sandboxTemplates = new Map();
+
+/** A sandbox git repo copied from the template `build(sandbox)` populates once per `key` for the whole run, so the init and the base commits are paid once, not per test; `shared` carries what `build` returned (a base commit id). The default template is an empty initialised repo. */
+function sandboxGitRepoFrom(key, build) {
+  if (!sandboxTemplates.has(key)) {
+    const template = sandboxGit(mkTempDir());
+    template.git('init', '-q');
+    sandboxTemplates.set(key, { repo: template.repo, shared: build ? build(template) : undefined });
+  }
+  const { repo: source, shared } = sandboxTemplates.get(key);
+  const repo = mkTempDir();
+  fs.cpSync(source, repo, { recursive: true });
+  return { ...sandboxGit(repo), shared };
+}
+
+/** A temp git repo isolated from the host's config; see `sandboxGitRepoFrom`. */
+function sandboxGitRepo() {
+  return sandboxGitRepoFrom('empty');
 }
 
 /** Every sprint workflow definition, loaded and shape-checked by the runtime's own loader - the chain, routing and roster source since sprint 020. */
@@ -353,6 +376,19 @@ function runtimeSpawn(args, options = {}) {
   return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr };
 }
 
+/** `runtimeSpawn` without blocking: resolves the same `{status, stdout, stderr}`, so independent slow CLI runs overlap. */
+function runtimeSpawnAsync(args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [RUNTIME_JS, ...args], options);
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8').on('data', (chunk) => { stdout += chunk; });
+    child.stderr.setEncoding('utf8').on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (status) => resolve({ status, stdout, stderr }));
+  });
+}
+
 /** A mini repo whose `.claude/settings.json` sync applied, then `extra` top-level keys added to it and `git.ai_attribution` set to disabled: sync's record of the file exists and its owned attribution value is missing. */
 function disabledAttributionRepo(extra = {}) {
   const settingsRel = '.claude/settings.json';
@@ -434,6 +470,7 @@ module.exports = {
   runtimeCli,
   runtimeCliResult,
   sandboxGitRepo,
+  sandboxGitRepoFrom,
   readWorkflowDefinitions,
   workflowReviewerAgents,
   arrowChain,
@@ -465,7 +502,9 @@ module.exports = {
   legacyReviewerKeys1400,
   scriptedWait,
   RUNTIME_JS,
+  execFileAsync,
   runtimeSpawn,
+  runtimeSpawnAsync,
   disabledAttributionRepo,
   OFF_VALUE,
   linkedLedgerRepo,
