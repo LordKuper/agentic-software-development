@@ -1085,22 +1085,26 @@ function commitCheckCommand(args) {
   return report.ok ? 0 : 1;
 }
 
-/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
-function numstatLines(output, files, discounts = new Map()) {
-  const listed = new Set(stringArray(files, 'files'));
+/** The entries `{file, added, deleted}` of `git diff --numstat -z -M` output, a rename keyed by its destination path and a binary file's counts both null. */
+function numstatEntries(output) {
   const tokens = output.split('\0');
-  let lines = 0;
+  const entries = [];
   let at = 0;
   while (at < tokens.length - 1) {
     const entry = /^(-|\d+)\t(-|\d+)\t([\s\S]*)$/.exec(tokens[at]);
     if (!entry) fail(`numstat entry malformed: ${tokens[at]}`);
     const [, added, deleted, file] = entry;
     const isRename = file === '';
-    const counted = isRename ? tokens[at + 2] : file;
-    if (added !== '-' && listed.has(counted)) lines += Number(added) + Number(deleted) - (discounts.get(counted) || 0);
+    entries.push({ file: isRename ? tokens[at + 2] : file, added: added === '-' ? null : Number(added), deleted: deleted === '-' ? null : Number(deleted) });
     at += isRename ? 3 : 1;
   }
-  return lines;
+  return entries;
+}
+
+/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
+function numstatLines(output, files, discounts = new Map()) {
+  const listed = new Set(stringArray(files, 'files'));
+  return numstatEntries(output).filter((entry) => entry.added !== null && listed.has(entry.file)).reduce((lines, entry) => lines + entry.added + entry.deleted - (discounts.get(entry.file) || 0), 0);
 }
 
 /** Review waves a scope of `files` files, `lines` changed lines and `bytes` of diff needs: the most of one per WAVE_THRESHOLD_LINES, WAVE_THRESHOLD_FILES and WAVE_THRESHOLD_BYTES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
@@ -2285,6 +2289,101 @@ async function waitForChecks({ read, sleep, now }) {
   }
 }
 
+/** Test globs used when `commands.yaml` sets no `test_paths`. */
+const DEFAULT_TEST_PATHS = '**/test/**, **/tests/**, **/__tests__/**, **/spec/**, **/*.test.*, **/*.spec.*, **/*_test.*, **/test_*.*';
+/** Paths no line delta counts: sprint files and the generated provider views. */
+const DELTA_EXCLUDED_GLOBS = ['.asd/sprints/**', '.claude/agents/**', '.claude/skills/**', '.claude/hooks/**', '.codex/agents/**', '.codex/hooks/**', '.agents/skills/**'];
+/** Net test lines above which, when they also exceed the other net lines, the close needs a written allowance. */
+const TEST_ALLOWANCE_LINES = 200;
+
+/** The scalar value of one top-level `key:` line of a `commands.yaml`, or null when the key is absent; an empty or nested value fails. */
+function commandsScalar(text, key) {
+  const line = text.split(/\r?\n/).find((candidate) => candidate.startsWith(`${key}:`));
+  if (line === undefined) return null;
+  const value = designScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
+  if (value === '') fail(`commands.yaml ${key} must be a non-empty scalar`);
+  return value;
+}
+
+/** `{test, other, allowance_required}` line counts of `git diff --numstat -z -M <base>...HEAD`: a path matching a `test_paths` glob of `commandsFile` (else `DEFAULT_TEST_PATHS`) counts as test, any other as other, excluded paths not at all; net is added minus removed, and an allowance is required when test net exceeds `TEST_ALLOWANCE_LINES` and the other net. */
+function testDelta(base, commandsFile) {
+  const explicit = typeof commandsFile === 'string';
+  const file = explicit ? commandsFile : path.join(__dirname, 'project', 'commands.yaml');
+  if (explicit && !fs.existsSync(file)) fail(`--commands ${file} not found`);
+  const configured = fs.existsSync(file) ? commandsScalar(fs.readFileSync(file, 'utf8'), 'test_paths') : null;
+  const tests = (configured || DEFAULT_TEST_PATHS).split(',').map((glob) => globRegex(glob.trim()));
+  const excluded = DELTA_EXCLUDED_GLOBS.map(globRegex);
+  const delta = { test: { added: 0, removed: 0 }, other: { added: 0, removed: 0 } };
+  numstatEntries(runGit(['diff', '--numstat', '-z', '-M', `${gitRef(base, '--base')}...HEAD`])).filter((entry) => !excluded.some((pattern) => pattern.test(entry.file))).forEach((entry) => {
+    const side = delta[tests.some((pattern) => pattern.test(entry.file)) ? 'test' : 'other'];
+    side.added += entry.added || 0;
+    side.removed += entry.deleted || 0;
+  });
+  const [test, other] = [delta.test, delta.other].map((side) => ({ ...side, net: side.added - side.removed }));
+  return { test, other, allowance_required: test.net > TEST_ALLOWANCE_LINES && test.net > other.net };
+}
+
+/** `{start, end}` line range of the one `## <name>` section of a test plan's `lines`, its body after the heading up to the next `## ` heading; null when absent, several fail. */
+function planSection(lines, name) {
+  const starts = lines.flatMap((line, index) => (new RegExp(`^## ${name}\\b`).test(line) ? [index + 1] : []));
+  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections`);
+  if (starts.length === 0) return null;
+  const next = lines.findIndex((line, index) => index >= starts[0] && /^## /.test(line));
+  return { start: starts[0], end: next === -1 ? lines.length : next };
+}
+
+/** Fails unless the `Added tests` table of a test plan, when it holds a data row, has a `Gap proof` column non-empty in every row. */
+function checkGapProof(lines) {
+  const section = planSection(lines, 'Added tests');
+  if (section === null) return;
+  const [header, , ...rows] = lines.slice(section.start, section.end).filter((line) => line.trim().startsWith('|')).map(tableCells);
+  if (rows.length === 0) return;
+  const column = header.indexOf('Gap proof');
+  if (column === -1) fail('Added tests table has rows and no Gap proof column');
+  if (rows.some((cells) => !cells[column])) fail('Added tests row has an empty Gap proof cell');
+}
+
+/** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
+function setLineDelta(lines, delta) {
+  const section = planSection(lines, 'Suite run');
+  if (section === null) fail('test-plan has no ## Suite run section');
+  const body = lines.slice(section.start, section.end);
+  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) fail(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
+  const side = (counts) => `+${counts.added}/\u2212${counts.removed} (net ${counts.net})`;
+  const line = `- Line delta: tests ${side(delta.test)}; other ${side(delta.other)}`;
+  const existing = body.findIndex((candidate) => /^[ \t]*-[ \t]+Line delta:/.test(candidate));
+  if (existing !== -1) return lines.map((candidate, index) => (index === section.start + existing ? line : candidate));
+  const last = body.reduce((found, candidate, index) => (candidate.trim() === '' ? found : index), -1);
+  return [...lines.slice(0, section.start + last + 1), line, ...lines.slice(section.start + last + 1)];
+}
+
+/** Due accepted-debt rows `{file, state, date}` of a stubs table: a Reason opening `(accepted-debt)` that has no `review <date>:`, a date not a real calendar date, or a date before `today` (`YYYY-MM-DD`). */
+function stubsDue(markdown, today) {
+  const due = [];
+  markdown.split(/\r?\n/).filter((line) => line.trim().startsWith('|')).forEach((line) => {
+    const [, file, reason] = tableCells(line);
+    if (reason === undefined || !reason.startsWith('(accepted-debt)')) return;
+    const stated = /^\(accepted-debt\)\s+review\s+([^\s:]+):/.exec(reason);
+    if (stated === null) return due.push({ file, state: 'missing', date: null });
+    const [, date] = stated;
+    const [year, month, day] = date.split('-').map(Number);
+    const calendar = new Date(Date.UTC(year, month - 1, day));
+    const isReal = /^\d{4}-\d{2}-\d{2}$/.test(date) && calendar.getUTCFullYear() === year && calendar.getUTCMonth() === month - 1 && calendar.getUTCDate() === day;
+    if (!isReal) due.push({ file, state: 'invalid', date });
+    else if (date < today) due.push({ file, state: 'expired', date });
+  });
+  return due;
+}
+
+/** `stubs-due`: `{due}` of the stubs table at `--stubs`, judged against `--today` (default the local date). */
+function stubsDueCommand(flags) {
+  if (typeof flags.stubs !== 'string') fail('--stubs <path> required');
+  const now = new Date();
+  const today = flags.today === undefined ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` : flags.today;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) fail('--today must be YYYY-MM-DD');
+  return { due: stubsDue(fs.readFileSync(flags.stubs, 'utf8'), today) };
+}
+
 /** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
 function fillHeadAnalysed(text, entry, head) {
   const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
@@ -2293,16 +2392,22 @@ function fillHeadAnalysed(text, entry, head) {
   return text.replace(row, `$1 ${head} $2`);
 }
 
-/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; both inputs are validated before either file is written. */
+/** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs, and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
 function implTestClose(flags, now = new Date()) {
   const missing = ['test-plan', 'entry', 'decisions', 'line'].filter((name) => typeof flags[name] !== 'string');
   if (missing.length > 0) fail(`impl-test-close requires ${missing.map((name) => `--${name}`).join(', ')}`);
   if (!/^[1-9]\d*$/.test(flags.entry)) fail('--entry <positive integer> required');
   if (flags.line.trim() === '' || /[\r\n]/.test(flags.line)) fail('--line must be one non-empty line');
+  if (flags.green === true && typeof flags.base !== 'string') fail('--green requires --base <ref>');
+  if (flags.green !== true && (flags.base !== undefined || flags.commands !== undefined)) fail('--base and --commands apply with --green only');
   const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
-  const filled = fillHeadAnalysed(fs.readFileSync(flags['test-plan'], 'utf8'), flags.entry, head);
+  const text = fs.readFileSync(flags['test-plan'], 'utf8');
+  const filled = fillHeadAnalysed(text, flags.entry, head);
+  const lines = filled.split(/\r?\n/);
+  checkGapProof(lines);
+  const plan = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands)).join(text.includes('\r\n') ? '\r\n' : '\n') : filled;
   const log = fs.readFileSync(flags.decisions, 'utf8');
-  fs.writeFileSync(flags['test-plan'], filled, 'utf8');
+  fs.writeFileSync(flags['test-plan'], plan, 'utf8');
   fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
   return { entry: Number(flags.entry), head };
 }
@@ -2429,7 +2534,9 @@ const COMMAND_FLAGS = {
   'external-record-failure': ['input'],
   'route-task': ['input'],
   'defect-stalemate': ['plan'],
-  'impl-test-close': ['test-plan', 'entry', 'decisions', 'line'],
+  'impl-test-close': ['test-plan', 'entry', 'decisions', 'line', 'green', 'base', 'commands'],
+  'test-delta': ['base', 'commands'],
+  'stubs-due': ['stubs', 'today'],
   'design-tokens': ['design', 'html'],
   'draft-snapshot': ['files', 'out', 'previous'],
   'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
@@ -2480,7 +2587,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
@@ -2526,6 +2633,14 @@ async function main(argv) {
   }
   if (command === 'impl-test-close') {
     process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    return 0;
+  }
+  if (command === 'test-delta') {
+    process.stdout.write(JSON.stringify(testDelta(flags.base, flags.commands)) + '\n');
+    return 0;
+  }
+  if (command === 'stubs-due') {
+    process.stdout.write(JSON.stringify(stubsDueCommand(flags)) + '\n');
     return 0;
   }
   if (command === 'design-tokens') {
@@ -2595,7 +2710,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
