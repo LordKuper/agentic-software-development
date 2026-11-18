@@ -16,7 +16,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 |---|---|---|
 | 1 | bbb52783 | full change surface |
 | 2 | b6f345ae | delta since entry 1 |
-| 3 |  | delta since entry 2 |
+| 3 | dc162aad | delta since entry 2 |
 
 ## Risk → check decisions
 
@@ -55,6 +55,7 @@ analysed, not any tree produced later
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`, every item current)
 - Slowest tests: 2426 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 2019 ms sprint-014 AC-2 ASD-Task trailer reconstruction; 1216 ms sprint-019 AC-8 one-command commit form; 803 ms sprint-023 AC-4 memory-check
 - HEAD: b12d7ce1
+- Line delta: tests +8650/−11521 (net -2871); other +660/−146 (net 514)
 
 ## Defects
 

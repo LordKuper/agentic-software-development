@@ -83,3 +83,8 @@
 {"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:05.970Z","attrs":{}}
 {"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:05.970Z","end":"2026-11-18T11:16:18.073Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:18.175Z","attrs":{}}
+{"op":"open","id":"impl-test-3","kind":"dispatch","parent":"impl-test#3","start":"2026-11-18T11:16:27.574Z","attrs":{"context_bytes":81365}}
+{"op":"open","id":"suite-impl-test-3","kind":"suite","parent":"impl-test-3","start":"2026-11-18T11:16:48.513Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite-impl-test-3","kind":"suite","parent":"impl-test-3","start":"2026-11-18T11:16:48.513Z","end":"2026-11-18T11:17:05.138Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test-3","kind":"dispatch","parent":"impl-test#3","start":"2026-11-18T11:16:27.574Z","end":"2026-11-18T11:17:44.404Z","outcome":"done","attrs":{"context_bytes":81365}}
+{"op":"close","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-18T11:16:18.175Z","end":"2026-11-18T11:17:49.304Z","outcome":"done","attrs":{}}

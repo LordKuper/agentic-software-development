@@ -84,3 +84,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#2: standard, dispatch HEAD 911db381
 - 2026-11-18 — impl-test: defects D-2 → impl test-fix (digest e597bf66)
 - 2026-11-18 — impl test-fix: defects D-2 resolved (orchestrator sync --apply recomputed upstream_hashes; F-3)
+- 2026-11-18 — route impl-test#3: standard, dispatch HEAD b12d7ce1
+- 2026-11-18 — impl-test: impacted set green (205/205, 9 areas), 0/0 tests
