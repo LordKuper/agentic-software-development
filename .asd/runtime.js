@@ -971,22 +971,43 @@ function ownAttribution(settings) {
   return [`attribution ${verb} ${JSON.stringify(sync.ATTRIBUTION_OFF)}`];
 }
 
-/** Writes `text` over `file` in place and returns null, or the warning of a failed write: the original `bytes` are then written back, and the file is reported untouched only when that restore succeeded. */
+/** Writes `content` at offset 0 of `fd` and cuts the file to `length`; a short write throws. */
+function writeFromStart(fd, content, length) {
+  if (fs.writeSync(fd, content, 0, content.length, 0) !== content.length) throw new Error('short write');
+  fs.ftruncateSync(fd, length);
+}
+
+/** Writes `text` over `file` through one descriptor without truncating first, shorter text padded with spaces to the old length until the final cut, and returns null, or the warning of a failed write: the original `bytes` are then written back through the same descriptor, and the file is reported untouched only when that restore succeeded. The descriptor is always closed; a close error after the write changes nothing. ponytail: one in-place write keeps the file's mode, ACL and owner and is never empty; only an OS crash or power loss during that write can still leave it damaged. */
 function rewriteInPlace(file, relative, text, bytes) {
+  const next = Buffer.from(text, 'utf8');
+  const padded = Buffer.concat([next, Buffer.alloc(Math.max(0, bytes.length - next.length), 0x20)]);
+  let fd = null;
   try {
-    fs.writeFileSync(file, text, 'utf8');
+    fd = fs.openSync(file, 'r+');
+    writeFromStart(fd, padded, next.length);
     return null;
   } catch (error) {
     try {
-      fs.writeFileSync(file, bytes);
+      if (fd !== null) writeFromStart(fd, bytes, bytes.length);
     } catch (_) {
       return `runtime: ${relative} could not be rewritten (${error.message}) and may be damaged; restore it from git`;
     }
     return `runtime: ${relative} could not be rewritten (${error.message}), left untouched`;
+  } finally {
+    if (fd !== null) closeQuietly(fd);
   }
 }
 
-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it; a record that cannot be saved is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. ponytail: written in place, a failed write restored from the original bytes, so only a process kill mid-write can still truncate a small settings file; temp file plus rename is the upgrade once mode and ACL copying is solved on every OS. */
+/** Closes `fd`, a close error never thrown: the data it carried is already written or restored. */
+function closeQuietly(fd) {
+  try {
+    fs.closeSync(fd);
+  } catch (_) {
+    return;
+  }
+}
+
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it, the ledger then named by a line of its own; a record that cannot be saved, a symlinked ledger included, is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. */
 function cleanSettingsFile(repoRoot, relative) {
   const sync = require('./sync.js');
   const file = path.join(repoRoot, relative);
@@ -1018,11 +1039,11 @@ function cleanSettingsFile(repoRoot, relative) {
   const lines = fixes.map((fix) => `attribution: ${relative}: ${fix}`);
   if (relative !== OWNED_ATTRIBUTION_FILE || !changed.includes('attribution')) return { lines, warning: null };
   try {
-    sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
+    const isSaved = sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
+    return { lines: isSaved ? lines.concat(`attribution: .asd/sync-state.json: recorded the owned attribution of ${relative}`) : lines, warning: null };
   } catch (error) {
     return { lines, warning: `runtime: ${relative} was fixed but its record in .asd/sync-state.json could not be saved (${error.message}), run /asd-sync` };
   }
-  return { lines, warning: null };
 }
 
 /** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */

@@ -749,15 +749,50 @@ function writtenKeys(before, previous, ownedKeys) {
 // so a later release finds them. Touches only `owned_keys` of an existing entry:
 // the digest stays the owned array's alone, which that write leaves as it was.
 // With no entry the file was never applied, so its value reads as the user's.
+// Returns whether it saved. A ledger or `.asd` directory that is a symlink or
+// junction is refused (thrown), the save going through a sibling temp file
+// renamed over the ledger so a failure never leaves it half-written.
 function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
   const syncState = loadSyncState(repoRoot);
   const entry = syncState.entries[relKey];
-  if (!entry) return;
+  if (!entry) return false;
   const previous = entry.owned_keys || [];
   const written = writtenKeys(before, previous, ownedKeys);
-  if (written.length === previous.length && written.every((key) => previous.includes(key))) return;
+  if (written.length === previous.length && written.every((key) => previous.includes(key))) return false;
+  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
+  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
   syncState.entries[relKey] = { ...entry, owned_keys: written };
-  saveSyncState(repoRoot, syncState);
+  writeAtomically(ledger, normalizeText(JSON.stringify(syncState, null, 2) + '\n'));
+  return true;
+}
+
+// Writes `text` to a sibling temp file this call creates exclusively, then
+// renames it over `filePath`. A temp file this call created is removed on
+// failure; a removal that itself fails leaves the stray file and never throws.
+function writeAtomically(filePath, text) {
+  const partial = `${filePath}.${process.pid}.tmp`;
+  let isCreated = false;
+  try {
+    const fd = fs.openSync(partial, 'wx');
+    isCreated = true;
+    try {
+      fs.writeFileSync(fd, text, 'utf8');
+    } finally {
+      fs.closeSync(fd);
+    }
+    fs.renameSync(partial, filePath);
+  } catch (error) {
+    if (isCreated) removeQuietly(partial);
+    throw error;
+  }
+}
+
+function removeQuietly(filePath) {
+  try {
+    fs.unlinkSync(filePath);
+  } catch (_) {
+    return;
+  }
 }
 
 // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
