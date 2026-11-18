@@ -10980,40 +10980,59 @@ test('sprint-036 AC-15/AC-16 (external 5): attribution-check with no sync-state 
   assert.deepStrictEqual([empty.status, empty.stderr, JSON.parse(fs.readFileSync(path.join(emptyState, settingsRel), 'utf8')).attribution, fs.readFileSync(path.join(emptyState, '.asd', 'sync-state.json'), 'utf8')], [0, '', OFF_VALUE, stateBefore], 'AC-15: a file sync never applied reads as the user\'s, so its sync-state bytes are unchanged');
 });
 
+function linkedLedgerRepo() {
+  const repo = disabledAttributionRepo();
+  const behind = path.join(mkTempDir(), 'sync-state.json');
+  const ledger = path.join(repo.root, '.asd', 'sync-state.json');
+  fs.copyFileSync(ledger, behind);
+  fs.unlinkSync(ledger);
+  try {
+    fs.symlinkSync(behind, ledger, 'file');
+  } catch (_) {
+    return null;
+  }
+  return { repo, behind };
+}
+
+function linkedAsdDirRepo() {
+  const repo = disabledAttributionRepo();
+  const real = path.join(repo.root, 'asd-real');
+  fs.renameSync(path.join(repo.root, '.asd'), real);
+  fs.symlinkSync(real, path.join(repo.root, '.asd'), 'junction');
+  return { repo, behind: path.join(real, 'sync-state.json') };
+}
+
+function linkedLedgerCases() {
+  const cases = [['a linked .asd directory', linkedAsdDirRepo()]];
+  const fileLink = linkedLedgerRepo();
+  if (fileLink === null) console.log('  (skipped the ledger-file link assertions: fs.symlinkSync unsupported in this environment)');
+  else cases.push(['a symlinked ledger', fileLink]);
+  return cases;
+}
+
 test('sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory inserts the value, warns its record could not be saved, names no ledger line and leaves the linked ledger byte-identical', () => {
   const settingsRel = '.claude/settings.json';
   const warning = `runtime: ${settingsRel} was fixed but its record in .asd/sync-state.json could not be saved (.asd/sync-state.json or .asd is a symlink or junction), run /asd-sync\n`;
   const FIX_LINE = `attribution: ${settingsRel}: attribution set to {"commit":"","pr":""}\n`;
-  const linkedLedger = () => {
-    const repo = disabledAttributionRepo();
-    const behind = path.join(mkTempDir(), 'sync-state.json');
-    const ledger = path.join(repo.root, '.asd', 'sync-state.json');
-    fs.copyFileSync(ledger, behind);
-    fs.unlinkSync(ledger);
-    try {
-      fs.symlinkSync(behind, ledger, 'file');
-    } catch (_) {
-      return null;
-    }
-    return { repo, behind };
-  };
-  const linkedDir = () => {
-    const repo = disabledAttributionRepo();
-    const real = path.join(repo.root, 'asd-real');
-    fs.renameSync(path.join(repo.root, '.asd'), real);
-    fs.symlinkSync(real, path.join(repo.root, '.asd'), 'junction');
-    return { repo, behind: path.join(real, 'sync-state.json') };
-  };
-  const cases = [['a linked .asd directory', linkedDir()]];
-  const fileLink = linkedLedger();
-  if (fileLink === null) console.log('  (skipped the ledger-file link assertions: fs.symlinkSync unsupported in this environment)');
-  else cases.push(['a symlinked ledger', fileLink]);
+  const cases = linkedLedgerCases();
   const outcomes = cases.map(([label, { repo, behind }]) => {
     const ledgerBefore = fs.readFileSync(behind, 'utf8');
     const check = repo.check();
     return [label, check.status, check.stdout, check.stderr, fs.readFileSync(behind, 'utf8') === ledgerBefore, JSON.parse(repo.read(settingsRel)).attribution];
   });
   assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, FIX_LINE, warning, true, OFF_VALUE]), 'AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link\'s target keeps its bytes');
+});
+
+test('sprint-036 AC-16 (external 1, iter-06): attribution-check over a linked ledger holding invalid JSON warns its record could not be saved without any text of the linked file in stdout or stderr, and leaves that file byte-identical', () => {
+  const MARKER = 'LINKED-LEDGER-SECRET-MARKER';
+  const warning = 'could not be saved (.asd/sync-state.json or .asd is a symlink or junction), run /asd-sync\n';
+  const outcomes = linkedLedgerCases().map(([label, { repo, behind }]) => {
+    const invalid = `{ "entries": ${MARKER} `;
+    fs.writeFileSync(behind, invalid, 'utf8');
+    const check = repo.check();
+    return [label, check.status, check.stderr.endsWith(warning), `${check.stdout}${check.stderr}`.includes(MARKER), fs.readFileSync(behind, 'utf8') === invalid];
+  });
+  assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, true, false, true]), 'AC-16: the linked file is refused before it is parsed, so the warning carries none of its text and its bytes stay');
 });
 
 test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
