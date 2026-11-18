@@ -2336,15 +2336,20 @@ function planSection(lines, name) {
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
-/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, when it has a data row, has a well-formed separator, no row without a leading pipe, and a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row. */
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, the run of lines from its header row to the next blank line, when it has a data row, has a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside that run is free. */
 function checkGapProof(lines, source = 'test-plan') {
   const section = planSection(lines, 'Added tests');
   if (section === null) fail(`${source} has no ## Added tests section`);
   const body = lines.slice(section.start, section.end);
-  if (body.some((line) => line.includes('|') && !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
-  const [header, separator, ...rows] = body.filter((line) => line.trim().startsWith('|')).map(tableCells);
+  const start = body.findIndex((line) => line.trim().startsWith('|'));
+  if (start === -1) return;
+  const blank = body.findIndex((line, index) => index > start && line.trim() === '');
+  const run = body.slice(start, blank === -1 ? undefined : blank);
+  if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+  const [header, separator, ...rows] = run.map(tableCells);
   if (separator === undefined) return;
   if (separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
+  if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
   if (rows.length === 0) return;
   const column = header.indexOf('Gap proof');
   if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
