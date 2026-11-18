@@ -110,3 +110,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl-test: full suite green (311/311), 0/0 tests (1 extended)
 - 2026-11-18 — latch-refresh wave-1/iter-05: cleared combined (files .asd/runtime.js)
 - 2026-11-18 — impl-review wave-1/iter-05: combined APPROVE (latched), external CONCERNS (1-2, critical) → impl review-fix (review_fixes_pending wave-1/iter-05). Routes, dev chain: external 1 (validate every Added tests table block: each contiguous pipe run needs header + well-formed separator, Gap proof checked per block), 2 (struck Removed tests rows stay live across rotation).
+- 2026-11-18 — route wave-1/iter-05 R1: standard, dispatch HEAD ef35db06; risk workflow gate (change)
+- 2026-11-18 — impl fix for wave-1/iter-05: findings resolved (flagged accepted: Added tests tables split by blank line, a pipe-less line inside a table still refused; header-only table refused)
