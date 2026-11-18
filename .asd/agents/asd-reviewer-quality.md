@@ -87,6 +87,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 
 ### Best practices [impl-review]
 - language/framework idiomatic patterns; cite source rule when used
+- an added suppression or weakened check: `review-policy.md` "Test-request and suppression findings"
 
 ### AC → code trace [impl-review]
 - every AC-N has a corresponding code path
@@ -97,7 +98,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - every AC-N has a check asserting observable behaviour at some level
 
 ### Test check-ladder adequacy [impl-review]
-- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost
+- each material risk has a check at a level that catches its defect, judged against `code-style.md` §17; an over-leveled, redundant or hypothetical-risk test is efficiency's Test-suite cost; a finding asking for a test is valid only per `review-policy.md` "Test-request and suppression findings"
 
 ### Test removal validity [impl-review]
 - every `test-plan.md` removal carries a reason valid under `code-style.md` §17; an out-of-scope removal carries recorded user approval
