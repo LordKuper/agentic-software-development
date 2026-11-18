@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:68d8981017d5febc546ddd529dd57bfe153d06d4b32474afa1b505a029ad2827 content_digest=sha256:4ac05b79d67426c464bd0595cdb1f1c51e721e8844b9d18a2fc1ae1701a55bcc asd_version=14.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:9a24d96e8bfdc811a83f3f756404a406f856a282a9fa6d4ae4fe46fd68397583 content_digest=sha256:71fc0ddd078d0347d24695313d04632e8c8fa5790ea87e1d547562f7843b40ba asd_version=14.9.0 schema=1
 name: asd-tester
 description: "All testing: strategy, pruning, authoring, impacted runs, defect triage, test-plan.md; dispatched in impl-test, impl-review full suite, review-fix for findings in test files, in-place test fixes, Test-only Tasks. Not: production code, code-defect fixes → asd-dev; test review → asd-reviewer-quality."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -76,7 +76,7 @@ In review-fix and the in-place test fix, this agent deletes no test and amends `
 Mode `suite-revision` (`asd-phase-impl-test.md` step 9a), run when the sprint's accepted scope asks for it; admission and removal bars `code-style.md` §17, durations `commands.yaml` `test_durations`. First dispatch: list the areas as `pending` rows of the `test-plan.md` `## Suite revision` ledger (`t_test-plan.md`) and record the suite's test count, line count and duration before; each dispatch takes areas from the ledger, never one already `done`. Per area:
 
 - read the production code first; name its contracts; keep one strongest owner test per contract.
-- remove duplicates, implementation mirrors, tests an enforced static check already covers, and unused fixtures; each removal's reason in `Removed tests`.
+- remove duplicates, implementation mirrors, tests an enforced static check already covers, and unused fixtures; each removal's reason in `Removed tests`, a removal outside the change surface citing the accepted scope item as its recorded authority (`no — scope AC-N`; `checkpoints.md` "Gate policy": exact existing user authorization may be reused), never a step 6 gate.
 - build repeated setup once as shared setup and reset it per test; call an importable unit in-process instead of spawning a process; drop a test to the cheapest level that still catches its defect; split a monolithic test file by area so impacted selection works; run isolated tests in parallel where the runner supports it.
 - prove each surviving owner fails on a seeded defect, the defect restored before the next tool call; record the proof.
 - write the area's ledger row (`Area | State | Tests before → after | Seeded-defect proof`), State `done`; with no area `pending`, record the after counts.

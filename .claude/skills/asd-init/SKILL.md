@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:98e81b04279a49f4bd7808c36925411a441323cc6c7115e5423d0ceea0fad1fc content_digest=sha256:9301e9fc82540bd3e25ee84d0f43d534c4326d1fdf2e6c6cfc80e4deed7af8f4 asd_version=14.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:be6007e434d3631a9c3e0a7f83a9756e46341baacd3f5b145590a0e1d083378b content_digest=sha256:826f53331673b3308d63f61fe501d525e977ab8c4da08d4c850f3285815efa16 asd_version=14.9.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -64,10 +64,9 @@ Fresh and re-init only.
    - test layout (`test_paths`): the test directories and filename patterns found by repo search
      (`tests/`, `__tests__/`, `*.test.*`, `*_test.go`, `test_*.py`, …) → comma-separated globs.
      None found → omit; the runtime's default list applies
-   - duration-reporting test form (`test_durations`), keyed on the detected runner like
-     `test_affected`: pytest → `pytest --durations=10`, jest → `jest --verbose`, go →
-     `go test -v`, node's built-in runner → its test command as is. No match, or unsure of the flag
-     → omit; never guess
+   - duration-reporting test form (`test_durations`): `test` plus the detected runner's flag, its
+     targets and options kept — pytest `--durations=10`, jest `--verbose`, go `-v`, node's runner
+     as is. No match, a wrapper `test` the flag would not reach, or unsure → omit; never guess
    - gate classes with no command (`## Reference` "Gate-class gaps"): lint or format, type check —
      name each class in which detection found no script, config or tool
    Record into proposal; do not prompt per-command yet
