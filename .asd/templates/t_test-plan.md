@@ -42,9 +42,9 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
 
-| Test | Regression proof |
-|---|---|
-| {{file:name}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test>; runs: <n> \| mutation <what>: <command> → exit <code>, <failing test>; runs: <n> — evidence and run-count bound per code-style.md §17}} |
+| Test | Gap proof | Regression proof |
+|---|---|---|
+| {{file:name}} | {{seeded <defect>: <command> → exit 0 (<existing tests of the unit>) \| search <pattern> in <paths>: no test of <unit>}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test>; runs: <n> \| mutation <what>: <command> → exit <code>, <failing test>; runs: <n> — evidence and run-count bound per code-style.md §17}} |
 
 ## Suite run
 
@@ -62,6 +62,9 @@ analysed, not any tree produced later
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
 - Smoke: {{`smoke` from commands.yaml}} — {{pass \| fail}}; line omitted when the key is absent
+- Line delta: {{written by `impl-test-close --green`: tests +A/−R (net N); other +A/−R (net N)}}
+- Allowance: {{risks the added test lines cover, when `test-delta` requires it \| line omitted}}
+- Slowest tests: {{ten, name and ms, from the `test_durations` run \| line omitted when the key is absent}}
 - HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
 
 ## Defects
@@ -71,6 +74,17 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
 | D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim \| AC-N and the deviation, when no test fails}} | {{runner-reported test name \| none (AC-N) \| none (smoke)}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
+
+## Suite revision (optional)
+
+Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` "Suite revision"). The ledger is the resume point: the orchestrator dispatches again until no area is `pending`.
+
+- Before: {{tests, test lines, duration}}
+- After: {{same, written when no area is `pending`}}
+
+| Area | State | Tests before → after | Seeded-defect proof |
+|---|---|---|---|
+| {{area}} | {{pending \| done}} | {{N → M}} | {{command → exit <code>, <failing test>, per surviving owner}} |
 
 ## Manual verification (optional)
 
