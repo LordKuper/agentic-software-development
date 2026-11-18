@@ -20,17 +20,17 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 4 | 7e8c5385 | delta since entry 3 (review-fix `wave-1/iter-01`) |
 | 5 | 6104618d | delta since entry 4 (review-fix `wave-1/iter-02`) |
 | 6 | 46f1b75d | delta since entry 5 (review-fix `wave-1/iter-03`, iter-03 memory fixes) |
+| 7 | f51c903f | delta since entry 6 (review-fix `wave-1/iter-04`) |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`, entry 6's (the review-fix `wave-1/iter-03` rows) to `test-plan.entry-06.md`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `git diff 6104618d...HEAD` outside `.asd/sprints/**`: `checkGapProof` refuses a pipe-less row in `## Added tests` with `Added tests table row lacks a leading pipe` (external 6) | a row typed without its leading pipe is filtered out of the table and never checked, so an empty-proof row closes green | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a well-formed table followed by a pipe-less row expecting status 2 and the refusal | extend existing | the AC-3/AC-13 test owns the Gap proof refusals and already holds the valid control (`filled`, status 0). Mutation (the pipe-less `fail` line removed, restored): `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…` (1/34 matched, 0/1 passed) |
-| same function: the placeholder refusal is start-anchored (`cells[column].startsWith('{{')`), so `{{x}} (pending)` is refused and mid-text `{{X}}` still closes (external 7) | a half-replaced template cell with trailing text slips past the whole-cell anchor | extend the same test with a `{{seeded defect}} (pending)` row expecting the placeholder refusal; the mid-text `{{X}}` control from entry 5 stays | extend existing | one assert on the same test. Mutation (`startsWith('{{')` → the whole-cell `/^{{.*}}$/` test, restored): same command → exit 1, same failing test (1/34 matched, 0/1 passed); `git status` after the run shows `.asd/runtime.js` unmodified. runs: 2 (both mutations of this entry) |
-| prose changes of `cd79c7ec` and `7c160ef3`: the suite-revision proposed-row route (`asd-phase-impl-test.md` step 9a, `asd-tester.md`), `gh api --hostname <host> --paginate` open-PR number list, `gh auth status --hostname`, the checklist seed after all rows, closing only AC-line `(PR #N)` PRs (`asd-phase-pr.md`) | a machine-parsed token of these steps drifting | none | none | a grep of `tests/contract-*.js` and `tests/runtime-*.test.js` for `gh pr list`, `created-asc`, `gh api`, `auth status`, `--seed`, `(PR #`, `isDraft` hits no pin of any of these tokens; the changes are prose of orchestrator-run `gh` sequences and a dispatch route no machine parses (code-style §17: a prose fix adds a test only for a machine-parsed token) |
-| iter-03 memory-fix commits `71b411ea`, `ba739293` and the view sync | none reachable by a test | none | none | agent memory text and generated views; `node .asd/sync.js --check` (`ok: true`) and the full suite cover the views |
+| `git diff 46f1b75d...HEAD` outside `.asd/sprints/**`: `checkGapProof` validates only the contiguous `## Added tests` table (header row to the next blank line) and refuses a row whose cell count differs from the header's (`row cell count differs from the header's N`) (external 1, `59922fc5`) | a one-cell row reads as a proof or is dropped, so a malformed row closes green; the other way round, a pipe in prose after the table is refused as a table row | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a `| b.js:t |` row after the valid `proven` table expecting status 2 and the cell-count refusal, and a blank line then a prose line holding a pipe expecting status 0 | extend existing | the AC-3/AC-13 test owns the Gap proof refusals and already holds the valid control (`filled`, status 0); both cases are new assertions in it (311 tests before and after). Mutations (each restored in a `finally`, `git status --short .asd/runtime.js` empty after): the cell-count `fail` line removed → `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…` (1/34 matched, 0/1 passed); `const run = body.slice(start, blank === -1 ? undefined : blank)` → `body.slice(start)` → same command, exit 1, same failing test (1/34 matched, 0/1 passed). runs: 2 |
+| struck rejected-removal row (`d13d0a8b`, `asd-phase-impl-test.md` step 9a, `asd-tester.md`) and the pagination-failure block (`f2503796`, `asd-phase-scope.md`) | a machine-parsed token drifting | none | none | prose of a dispatch route and an orchestrator-run `gh` sequence; no machine parses either (code-style §17: a prose fix adds a test only for a machine-parsed token) |
+| `wave-1/iter-04` view sync (`03c09b3a`), release-manifest hashes, `CHANGELOG.md` | none reachable by a test | none | none | generated views and hashes; `node .asd/sync.js --check` (`ok: true`) and the full suite (manifest hash test included) cover them |
 
 ## Removed tests
 
@@ -56,12 +56,12 @@ analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: `node tests/run.js` (every area, `hooks` and `migrations` included)
-- Scope: full — `.asd/runtime.js` changed and every area reaches it through `tests/lib.js`, so no narrower set is honest; the suite op `suite-impl-test-6` brackets the run (the entry 6 mutation runs are `--filter` runs recorded under Risk → check decisions)
+- Scope: full — `.asd/runtime.js` changed and every area reaches it through `tests/lib.js`, so no narrower set is honest; the suite op `suite-impl-test-7` brackets the run (the entry 7 mutation runs are `--filter` runs recorded under Risk → check decisions)
 - Result: pass — exit 0, 311 passed, 0 failed, 0 skipped (311 tests)
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
-- Slowest tests: 2038 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1449 ms sprint-019 AC-8 one-command commit form; 1137 ms sprint-036 AC-14 agent-liveness --returns; 1081 ms sprint-021 AC-7 (D7) agentLiveness
-- HEAD: 03d77433 (the run tree includes this entry's staged `tests/runtime-tools.test.js` edit)
-- Line delta: tests +8715/−11521 (net -2806); other +790/−196 (net 594)
+- Slowest tests: 2298 ms sprint-019 AC-8 one-command commit form; 2205 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1105 ms sprint-036 AC-14 agent-liveness --returns; 1062 ms sprint-021 AC-7 (D7) agentLiveness
+- HEAD: f51c903f (the run tree includes this entry's staged `tests/runtime-tools.test.js` edit)
+- Line delta: tests +8720/−11522 (net -2802); other +797/−198 (net 599)
 
 ## Defects
 
