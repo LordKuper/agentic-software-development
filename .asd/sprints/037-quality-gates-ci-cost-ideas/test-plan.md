@@ -89,7 +89,23 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` "Suite revision"). The ledger is the resume point: the orchestrator dispatches again until no area is `pending`.
 
 - Before: 430 tests (416 passing, 14 failing on pins this sprint changed), 11573 `tests/run.js` lines, 70.7 s full run (`node tests/run.js`, one file, at `13292f6a`, before this entry's edits)
+- Split: `0b9c1b80` — `tests/run.js` (loader) + `tests/lib.js` + 15 `tests/<area>.test.js`; sorted test-name list identical before and after (433 names, `diff` empty), full run 433/433 green, 82.3 s on a loaded machine (the same tests ran 70.7 s before: spawn-heavy tests vary about 20% between runs)
 - After: (written when no area is `pending`)
 
 | Area | State | Tests before → after | Seeded-defect proof |
 |---|---|---|---|
+| runtime-review | pending | 44 → | |
+| runtime-tools | pending | 34 → | |
+| runtime-routing | pending | 22 → | |
+| runtime-timing | pending | 21 → | |
+| hooks | pending | 14 → | |
+| sync-cli | pending | 14 → | |
+| sweeps | pending | 13 → | |
+| contract-rules | pending | 31 → | |
+| contract-workflows | pending | 63 → | |
+| contract-agents | pending | 25 → | |
+| contract-templates | pending | 34 → | |
+| sync-render | pending | 61 → | |
+| update | pending | 37 → | |
+| migrations | pending | 19 → | |
+| runner | pending | 1 → | |
