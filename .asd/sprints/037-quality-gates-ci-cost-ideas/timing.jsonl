@@ -74,3 +74,6 @@
 {"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-18T09:56:07.247Z","end":"2026-11-18T11:11:13.963Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-18T11:11:22.910Z","attrs":{}}
 {"op":"open","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-18T11:11:23.371Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92511}}
+{"op":"close","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-18T11:11:23.371Z","end":"2026-11-18T11:13:06.665Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92511}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-18T11:11:22.910Z","end":"2026-11-18T11:13:06.800Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-18T11:13:06.954Z","attrs":{}}
