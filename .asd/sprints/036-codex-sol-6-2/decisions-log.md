@@ -88,3 +88,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route review-fix wave-1/iter-04 (A: combined F1, external 1, 2, 3, 4, 5, 6): standard, dispatch HEAD eff235f90af0a082338a042cfae4610afb8a908b; risk change: security
 - 2026-11-18 — route review-fix tester wave-1/iter-04 (test parts of combined F1, external 1-6): standard, dispatch HEAD 0d40d74ae39d8a5f6f7193fbe67af1f0418cb381
 - 2026-11-18 — impl fix for wave-1/iter-04: findings resolved (dev f7229065; views 0d40d74a; tester bd2d284a, full suite 422/422). Flagged choices accepted: with no sync-state entry for `.claude/settings.json` the check records nothing (creating one would need a content digest that could bless a hand-edited owned hook); a user-modified `.asd/sync-state.json` still gets `owned_keys` written but is not committed by the check; a present non-owned `attribution` shape is replaced whole with its own fix line.
+- 2026-11-18 — route impl-test entry 6: standard, dispatch HEAD b5689946c5596b6bd855d262f83b2a84d5ea9992
+- 2026-11-18 — impl-test: impacted set green (422/422 reused from 0d40d74a), 0/0 tests
