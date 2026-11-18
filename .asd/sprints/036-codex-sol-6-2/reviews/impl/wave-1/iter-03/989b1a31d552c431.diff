@@ -1,0 +1,436 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 7e0956c8..36270990 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,7 +32,7 @@
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+     "skills/asd-init/SKILL.md": "sha256:5c46ac20f233e8595cec676a04a740860433ed2fa074beb2c65aecfb9090bbe9",
+-    "skills/asd-sprint/SKILL.md": "sha256:e6ec9ff94c0058f90f570d7b1881ff70cce1c0c597a4d177263610543c82c7bc",
++    "skills/asd-sprint/SKILL.md": "sha256:c59ef2e5e08697318c6df7bc4a8fe24408846f7dfcac73c538ef797f01849861",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     "skills/asd-update/SKILL.md": "sha256:14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+@@ -59,7 +59,7 @@
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "904bac3ff97f83ea4c476f208379f26c0d4c8ae12ec1cadf00b97e068913eacc",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "433959a8e3297bb45ebc745dbf17bf7b44450e64637f7bab35eaf370c165f859",
++    ".asd/rules/artifact-layout.md": "738b799bd3f4ee4648ac2c3023a6eff93c1db9b9504c2e5ddfea62fd36e9759b",
+     ".asd/rules/checkpoints.md": "80b2a2d9ad18dd4925666b715ab74f65713a40cfaf595ce7eb456d2e4e28bc5c",
+     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
+     ".asd/rules/core.md": "1d59078ad0eeb85596ed30b2ba55d7020267c57abc6a6f5f359e54e6c01a2607",
+@@ -85,12 +85,12 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
+     ".asd/skills/asd-phase-pr/SKILL.md": "f92c938eb06136c8295452e69d56cc0e8340bb2242ecce209ec7f93ffb99fb72",
+     ".asd/skills/asd-phase-scope/SKILL.md": "2d1f9c45dc4a88a6b9001baca727ab47e71a63a038dce71007c8aab847651cb2",
+-    ".asd/skills/asd-sprint/SKILL.md": "e6ec9ff94c0058f90f570d7b1881ff70cce1c0c597a4d177263610543c82c7bc",
++    ".asd/skills/asd-sprint/SKILL.md": "c59ef2e5e08697318c6df7bc4a8fe24408846f7dfcac73c538ef797f01849861",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "97bdef357951c15003820706411d9f0a3f2b4144a1065c77ffa5303fbec0e76d",
++    ".asd/sync.js": "5182633c872404bef29b1d182ef0819fa4e57255b6547127d00ab436c48711d7",
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+@@ -103,7 +103,7 @@
+     ".asd/templates/t_c4-views.c4": "83d96d2ff7a9cc585028d5f5995b5fd0d2fad796299d8cd1188e367479dd4710",
+     ".asd/templates/t_commands.yaml": "cd38b1edce3c6694c59bbadaa170aaf7237091fd00c8793638768e7952d54052",
+     ".asd/templates/t_concept.html": "352eebce830f9de3205e3f80c5037e25b9e554a0530bcc2ca3aa31edecea197f",
+-    ".asd/templates/t_config.yaml": "e5645d552817c9978a0de660cc7df673c12968bee2fe1f3a2c8ab9d0b31e8268",
++    ".asd/templates/t_config.yaml": "754c68649cf8534163035d25c3941ffb374f79a9b230314382bbbfad4fce1bea",
+     ".asd/templates/t_custom-coding-rules.md": "0d2b33b14599c4f60f3c6fb9a410e10eda94a96784ff46c6403ac720faabb209",
+     ".asd/templates/t_custom-common-rules.md": "a81363c75ae5af853cd6d49e265518e32a9a37ea06ba08d9afef7c48191ed96b",
+     ".asd/templates/t_custom-design-rules.md": "32bea20a1464f1170e4cb7aab64005992de81b24a954fa9a0e6765045841bb86",
+@@ -140,7 +140,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "cd60ee58762b44e19998d6b809fa1bffd4fe8e279c4edf2fd6f77b6beb8308a7",
++    ".asd/runtime.js": "223e0540ba161d88bfc8d0bd9e173db2463d8b652b37185576237b72c4e22fe5",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 397acd2a..d97848a1 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -183,9 +183,9 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
+ 
+ ## Tech reference docs (mandatory for every chosen tech)
+ 
+-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used (per entry: default-target resolution and any state mutation, verified against help or source before a Task uses it), version specifics, deprecations, project conventions; never a secret.
++`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: orchestrator. Created per chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, not recalled) with `Last verified` date, API surface used (per entry: default-target resolution and state mutation, verified against help or source before use), version specifics, deprecations, project conventions; never a secret.
+ 
+-**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` covers every command or subcommand the diff newly invokes. If not → `FAILED — tech-reference missing for <command>` per uncovered command; the orchestrator writes each and re-dispatches.
++**Refuse-to-implement rule**: Dev, Tester MUST find `tech-reference/<tech>-<version>.md` for each newly used tech, covering every command or subcommand the diff newly invokes. Else `FAILED — tech-reference missing for <tech>@<version>` or `<command>` per gap; the orchestrator writes each and re-dispatches.
+ 
+ ## Manual steps
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 0ccf4ea0..bafd9c99 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -971,7 +971,7 @@ function isInsideDirectory(root, target) {
+   return relation !== '' && relation.split(path.sep)[0] !== '..' && !path.isAbsolute(relation);
+ }
+ 
+-/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object or resolves, through a symlink or junction, outside the repo, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying, and the result is renamed over the real file from a temp file beside it. A file needing no fix, or absent, is not rewritten. */
++/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file is not a JSON object, resolves, through a symlink or junction, outside the repo, or cannot be rewritten, which is then left untouched. Only the keys a fix changes are spliced into the file, every other byte staying, and the result is renamed over the real file, keeping its mode, from a temp file beside it that a failed write never leaves. A file needing no fix, or absent, is not rewritten. */
+ function cleanSettingsFile(repoRoot, relative) {
+   const file = path.join(repoRoot, relative);
+   if (!fs.existsSync(file)) return { lines: [], warning: null };
+@@ -994,24 +994,34 @@ function cleanSettingsFile(repoRoot, relative) {
+   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+   const spliced = changed.reduce((text, key) => sync.spliceTopLevelKey(text, key, settings[key]), raw).replace(/\r?\n/g, eol);
+   const partial = `${real}.${process.pid}.tmp`;
+-  fs.writeFileSync(partial, spliced, 'utf8');
+-  fs.renameSync(partial, real);
++  try {
++    fs.writeFileSync(partial, spliced, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
++    fs.chmodSync(partial, fs.statSync(real).mode & 0o777);
++    fs.renameSync(partial, real);
++  } catch (error) {
++    fs.rmSync(partial, { force: true });
++    return { lines: [], warning: `runtime: ${relative} could not be rewritten (${error.message}), left untouched` };
++  }
+   return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
+ }
+ 
+-/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. */
+-function attributionCheck(repoRoot) {
++/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */
++function attributionCheck(repoRoot, skipped = []) {
+   const sync = require('./sync.js');
+   if (sync.readAiAttribution(repoRoot) !== 'disabled') return { lines: [], warnings: [] };
+-  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map((relative) => cleanSettingsFile(repoRoot, relative)) : [];
++  const clean = (relative) => (skipped.includes(relative)
++    ? { lines: [], warning: `runtime: ${relative} has uncommitted changes, left untouched: commit or revert it` }
++    : cleanSettingsFile(repoRoot, relative));
++  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map(clean) : [];
+   const hint = fs.existsSync(path.join(repoRoot, '.codex')) ? [CODEX_ATTRIBUTION_HINT] : [];
+   return { lines: cleaned.flatMap((entry) => entry.lines).concat(hint), warnings: cleaned.map((entry) => entry.warning).filter(Boolean) };
+ }
+ 
+-/** Runs `attribution-check` from the repo root containing the working directory: one stdout line per fix or hint, warnings on stderr, exit 0. */
++/** Runs `attribution-check [-- <settings file>...]` from the repo root containing the working directory: the files after `--` are skipped; one stdout line per fix or hint, warnings on stderr, exit 0. */
+ function attributionCheckCommand(args) {
+-  if (args.length > 0) fail('attribution-check takes no flags');
+-  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()));
++  const skipped = args.slice(1);
++  if ((args.length > 0 && args[0] !== '--') || skipped.some((file) => !ATTRIBUTION_SETTINGS_FILES.includes(file))) fail(`attribution-check takes no flags, only -- followed by ${ATTRIBUTION_SETTINGS_FILES.join(' ')}`);
++  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()), skipped);
+   warnings.forEach((warning) => process.stderr.write(`${warning}\n`));
+   lines.forEach((line) => process.stdout.write(`${line}\n`));
+   return 0;
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 60d8e297..d64159b0 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -50,7 +50,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
+ 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
+ 
+ ### Attribution check
+-Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change, so skip the check and tell the user to commit or revert it. Else `node .asd/runtime.js attribution-check`, relaying its fix and Codex-hint lines (a stderr warning never blocks); if that `git status` now lists a file, commit it as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
++Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step 1), so its edit never reaches `git.base_branch` or Step 2A step 2's gate. Silent unless `git.ai_attribution: disabled`. First `git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json`: a listed file is a user change. Then `node .asd/runtime.js attribution-check [-- <listed files>]`, which skips those files with a commit-or-revert warning and still handles the rest and the Codex hint; relay its fix, hint and warning lines (a warning never blocks). Commit each file a fix line names as `chore(sprint): reset AI attribution` (`git-strategy.md` "Commit before review").
+ 
+ ### Step 3: phase chain advancement
+ After any phase skill returns:
+diff --git a/.asd/sync-state.json b/.asd/sync-state.json
+index efb0fc63..11253594 100644
+--- a/.asd/sync-state.json
++++ b/.asd/sync-state.json
+@@ -12,7 +12,10 @@
+     },
+     ".claude/settings.json": {
+       "kind": "json-merge",
+-      "content_digest": "sha256:b5f75c794f94d58d0c1115e2ac1e932633fda56a574b2ea9f0b34fd1517e7a20"
++      "content_digest": "sha256:b5f75c794f94d58d0c1115e2ac1e932633fda56a574b2ea9f0b34fd1517e7a20",
++      "owned_keys": [
++        "attribution"
++      ]
+     },
+     ".codex/hooks.json": {
+       "kind": "json-merge",
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 54d88558..ca0f99bf 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -726,14 +726,23 @@ function insertKeyIntoObject(text, objStart, key, valueText) {
+ // under `git.ai_attribution: disabled`: Claude Code's own attribution off.
+ const ATTRIBUTION_OFF = { commit: '', pr: '' };
+ 
++// The keys of `releasedKeys` the sync-state entry of `relKey` records as written
++// by sync (`owned_keys`); a key sync never wrote is the user's own, whatever its
++// value, so it is never released.
++function recordedKeys(syncState, relKey, releasedKeys) {
++  const recorded = (syncState.entries && syncState.entries[relKey] && syncState.entries[relKey].owned_keys) || [];
++  return Object.fromEntries(Object.entries(releasedKeys).filter(([key]) => recorded.includes(key)));
++}
++
+ // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
+-// (key -> value) must hold that value, `releasedKeys` (key -> owned value)
+-// must not hold it, a different value there being the user's own. Both empty
+-// for an item that owns none. Never part of the sync-state digest: that stays
+-// the owned array's alone, so adding or dropping a key never reads as a hand
+-// edit of the hooks.
+-function ownedKeysMatch(parsed, ownedKeys, releasedKeys) {
+-  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
++// (key -> value) must hold that value and be recorded in `recorded` (the entry's
++// `owned_keys`, so a key sync owns but never recorded reads stale and is
++// seeded by the next apply), `releasedKeys` (key -> owned value) must not hold
++// it, a different value there being the user's own. Both empty for an item that
++// owns none. Never part of the sync-state digest: that stays the owned array's
++// alone, so adding or dropping a key never reads as a hand edit of the hooks.
++function ownedKeysMatch(parsed, ownedKeys, releasedKeys, recorded = []) {
++  return Object.keys(ownedKeys).every((key) => recorded.includes(key) && stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
+     && Object.keys(releasedKeys).every((key) => stableStringify(parsed[key]) !== stableStringify(releasedKeys[key]));
+ }
+ 
+@@ -757,7 +766,7 @@ function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries,
+   }
+   if (stateEntry.content_digest !== digestTag(stableStringify(ownedEntries))) return 'modified-foreign';
+   const expectedDigest = sha256Hex(stableStringify(renderedOwnedEntries));
+-  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, releasedKeys) ? 'current' : 'stale';
++  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, recordedKeys(syncState, relKey, releasedKeys), stateEntry.owned_keys) ? 'current' : 'stale';
+ }
+ 
+ // Indents every line after the first by `pad`, so a multi-line
+@@ -905,13 +914,18 @@ function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
+ // preflight pass call renderJsonMerge() early (so an invalid target throws
+ // before any write in the whole --apply batch) and pass 2 just write the
+ // result, without a second render/throw opportunity mid-write-pass.
+-function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntries, syncState) {
++function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntries, syncState, ownedKeys = {}) {
+   // Raw write, deliberately not writeNormalized: normalizing here would
+   // re-launder the foreign bytes the render step just preserved.
+   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+   fs.writeFileSync(targetPath, nextRaw, 'utf8');
+   syncState.entries = syncState.entries || {};
+-  syncState.entries[relKey] = { kind: 'json-merge', content_digest: digestTag(stableStringify(renderedOwnedEntries)) };
++  const written = Object.keys(ownedKeys);
++  syncState.entries[relKey] = {
++    kind: 'json-merge',
++    content_digest: digestTag(stableStringify(renderedOwnedEntries)),
++    ...(written.length > 0 ? { owned_keys: written } : {}),
++  };
+ }
+ 
+ function applyJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState) {
+@@ -1528,8 +1542,8 @@ function runApply(repoRoot, requestedFiles, options) {
+       // case, which is exactly what a plain statusJsonMerge status check
+       // (safe, try/catch) would not catch on its own.
+       const willWrite = status === 'missing' || status === 'stale' || (status === 'modified-foreign' && forceSet.has(rel));
+-      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys, releasedKeys) : null;
+-      resolved.push({ rel, item, status, entries, nextRaw });
++      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys, recordedKeys(syncState, item.relKey, releasedKeys)) : null;
++      resolved.push({ rel, item, status, entries, ownedKeys, nextRaw });
+     }
+   }
+ 
+@@ -1562,7 +1576,7 @@ function runApply(repoRoot, requestedFiles, options) {
+       applyManagedBlock(r.item.targetPath, r.item.relKey, r.body, syncState);
+       stateChanged = true;
+     } else if (r.item.class === 'json-merge') {
+-      writeJsonMergeRendered(r.item.targetPath, r.item.relKey, r.nextRaw, r.entries, syncState);
++      writeJsonMergeRendered(r.item.targetPath, r.item.relKey, r.nextRaw, r.entries, syncState, r.ownedKeys);
+       stateChanged = true;
+     }
+     results.push({ target: r.rel, status: r.status, applied: true, forced: r.status === 'modified-foreign' });
+diff --git a/.asd/templates/t_config.yaml b/.asd/templates/t_config.yaml
+index 8a3b5bc2..40f818be 100644
+--- a/.asd/templates/t_config.yaml
++++ b/.asd/templates/t_config.yaml
+@@ -92,6 +92,6 @@ git:
+ 
+   # AI attribution in commits and PRs. Absent field = enabled.
+   # disabled: sync keeps Claude Code's project `attribution` off and `commit-check` rejects Claude/Codex `Co-authored-by:` trailers.
+-  # enabled: sync drops its own empty `attribution` from `.claude/settings.json`; a value set there by hand stays.
++  # enabled: sync drops the `attribution` it wrote to `.claude/settings.json` (recorded in `.asd/sync-state.json`); one set there by hand stays.
+   # Values: enabled | disabled
+   ai_attribution: enabled
+diff --git a/README.md b/README.md
+index 5c431f58..4b48b58c 100644
+--- a/README.md
++++ b/README.md
+@@ -345,7 +345,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--rename-map <json>` (a plan's declared map) collapses each hunk that only applies its substitutions to one line per file, and every whole-file deletion collapses to one line naming the path and deleted line count, `review-waves` sizing only the remainder; `--test-plan` adds `test-plan.md` to Quality's and Combined's impl-review lists; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--checklist <path>` adds the reliability-checklist items whose trigger matches the reviewer's files to its rules and `--base-ref <ref>` reads its rubric from that git ref; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes the single-pass combined reviewer manifest from the Quality/Efficiency rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`; `--single` fixes one wave for `lite`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), the pre-commit header-length, trailer-placement and memory check the one-command commit form runs (`commit-check --message-file <file> -- <paths>`, or `--subject "<header>"` for a trailer-less commit; with `git.ai_attribution: disabled` also rejecting a Claude or Codex `Co-authored-by:` trailer), the sprint-start attribution check (`attribution-check`, run by `/asd-sprint` on the sprint branch after scope and at resume, a fixed tracked settings file committed as `chore(sprint): reset AI attribution`: silent unless `git.ai_attribution: disabled`, else it resets re-enabling `attribution`/`includeCoAuthoredBy` entries in the project `.claude/settings.json` and `settings.local.json` and inserts the owned `attribution` into an `.claude/settings.json` lacking it, splicing only the changed keys atomically and never writing a file that resolves outside the repo, one line per fix, and prints a Codex hint where `.codex/` exists; sync's merge carries `"attribution": {"commit": "", "pr": ""}` into `.claude/settings.json` and drops it again under `enabled` while it still equals that value), impl-test entry closing (`impl-test-close`, filling `HEAD analysed` and appending the decisions-log line), the `design-system.html` token tables and CSS variables rebuilt from `DESIGN.md` (`design-tokens --design <DESIGN.md> --html <design-system.html>`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`; `--floor <severity>` applies External Review's severity floor in code and records the dropped count), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`), decisions-log rotation into the next `decisions-log.NNN.md` segment on a phase change outside the impl cycle (`rotate-decisions --sprint <dir> --to <phase>`), a review iteration's verdicts and APPROVE latches recorded in `state.json` (`record-verdicts --state <state.json> --phase design|impl --iteration <N> --verdict "<key>=<value>[;…]"`), one rule-doc section by heading (`section --file <path> --heading <text>`), a role's per-phase context bundle from the `providers.md` grant table (`context --role <agent|orchestrator> --phase <phase> --out <file>`, passed to every dispatch as `inputs.context`; `--base-ref <ref>` reads the review-policy, external-review and checklist-template refs from that git ref), a fix round's stale APPROVE latches cleared (`latch-refresh --state <state.json> --sprint-dir <sprint>`), reliability-checklist `Last hit` stamps and removal candidates (`checklist-hits --checklist <path> --sprint-dir <sprint>`), subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>] [--returns <json>]`, an id whose reviewer return file passes the `persist-review` checks counting as done) and the operation-timing ledger (`timing` appends open/close records, filling a dispatch open's missing `tier`/`model`, appending nothing for a close of a never-opened id or an open of an id the ledger already holds, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set and the user waits for retro)
++│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--rename-map <json>` (a plan's declared map) collapses each hunk that only applies its substitutions to one line per file, and every whole-file deletion collapses to one line naming the path and deleted line count, `review-waves` sizing only the remainder; `--test-plan` adds `test-plan.md` to Quality's and Combined's impl-review lists; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--checklist <path>` adds the reliability-checklist items whose trigger matches the reviewer's files to its rules and `--base-ref <ref>` reads its rubric from that git ref; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes the single-pass combined reviewer manifest from the Quality/Efficiency rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`; `--single` fixes one wave for `lite`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), the pre-commit header-length, trailer-placement and memory check the one-command commit form runs (`commit-check --message-file <file> -- <paths>`, or `--subject "<header>"` for a trailer-less commit; with `git.ai_attribution: disabled` also rejecting a Claude or Codex `Co-authored-by:` trailer), the sprint-start attribution check (`attribution-check`, run by `/asd-sprint` on the sprint branch after scope and at resume, a fixed tracked settings file committed as `chore(sprint): reset AI attribution`: silent unless `git.ai_attribution: disabled`, else it resets re-enabling `attribution`/`includeCoAuthoredBy` entries in the project `.claude/settings.json` and `settings.local.json` and inserts the owned `attribution` into an `.claude/settings.json` lacking it, splicing only the changed keys atomically and never writing a file that resolves outside the repo, leaving a file with uncommitted changes (`-- <file>`) untouched while it processes the other, keeping a file's mode, one line per fix, and prints a Codex hint where `.codex/` exists; sync's merge carries `"attribution": {"commit": "", "pr": ""}` into `.claude/settings.json` and drops it again under `enabled` only while `.asd/sync-state.json` records sync as its writer and it still equals that value), impl-test entry closing (`impl-test-close`, filling `HEAD analysed` and appending the decisions-log line), the `design-system.html` token tables and CSS variables rebuilt from `DESIGN.md` (`design-tokens --design <DESIGN.md> --html <design-system.html>`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`; `--floor <severity>` applies External Review's severity floor in code and records the dropped count), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`), decisions-log rotation into the next `decisions-log.NNN.md` segment on a phase change outside the impl cycle (`rotate-decisions --sprint <dir> --to <phase>`), a review iteration's verdicts and APPROVE latches recorded in `state.json` (`record-verdicts --state <state.json> --phase design|impl --iteration <N> --verdict "<key>=<value>[;…]"`), one rule-doc section by heading (`section --file <path> --heading <text>`), a role's per-phase context bundle from the `providers.md` grant table (`context --role <agent|orchestrator> --phase <phase> --out <file>`, passed to every dispatch as `inputs.context`; `--base-ref <ref>` reads the review-policy, external-review and checklist-template refs from that git ref), a fix round's stale APPROVE latches cleared (`latch-refresh --state <state.json> --sprint-dir <sprint>`), reliability-checklist `Last hit` stamps and removal candidates (`checklist-hits --checklist <path> --sprint-dir <sprint>`), subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>] [--returns <json>]`, an id whose reviewer return file passes the `persist-review` checks counting as done) and the operation-timing ledger (`timing` appends open/close records, filling a dispatch open's missing `tier`/`model`, appending nothing for a close of a never-opened id or an open of an id the ledger already holds, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set and the user waits for retro)
+ │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md, agent-protocol.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md, t_reliability-checklist.md
+diff --git a/tests/run.js b/tests/run.js
+index e87ce270..d78c51c1 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -10802,6 +10802,60 @@ test('sprint-036 AC-16: attribution-check splices only the attribution keys it r
+   assert.deepStrictEqual(observed, byteKeepingCases().map(([label, , expected]) => [label, 0, '', expected]), 'AC-16: the reset changes the value span of each re-enabling key and nothing else, the file keeping its layout and line endings');
+ });
+ 
++test('sprint-036 AC-16: attribution-check that cannot write or rename its temp file over a settings file warns on stderr, exits 0, leaves no temp file and the file untouched, and still cleans the other file', () => {
++  const RE_ENABLING = `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`;
++  const stubDir = mkTempDir();
++  const stubOf = (method, matches) => {
++    const stub = path.join(stubDir, `${method}.js`);
++    fs.writeFileSync(stub, `const fs = require('fs');\nconst real = fs.${method};\nfs.${method} = (...args) => { if (${matches}) throw new Error('EPERM: stubbed ${method} failure'); return real(...args); };\n`, 'utf8');
++    return stub;
++  };
++  const failures = [
++    ['rename over the file', stubOf('renameSync', "String(args[1]).endsWith('settings.local.json')")],
++    ['write of the temp file', stubOf('writeFileSync', "String(args[0]).includes('settings.local.json.') && String(args[0]).endsWith('.tmp')")],
++  ];
++  for (const [label, stub] of failures) {
++    const sandbox = attributionRepo('disabled');
++    writeFile(sandbox.repo, '.claude/settings.json', RE_ENABLING);
++    writeFile(sandbox.repo, '.claude/settings.local.json', RE_ENABLING);
++    const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: { ...sandbox.env, NODE_OPTIONS: `--require ${stub.split(path.sep).join('/')}` } });
++    const claudeDir = path.join(sandbox.repo, '.claude');
++    assert.deepStrictEqual([outcome.status, /^runtime: \.claude\/settings\.local\.json could not be rewritten \(EPERM: stubbed \w+ failure\), left untouched$/m.test(outcome.stderr), fs.readFileSync(path.join(claudeDir, 'settings.local.json'), 'utf8'), fs.readdirSync(claudeDir).filter((name) => name.endsWith('.tmp'))], [0, true, RE_ENABLING, []], `AC-16: a failed ${label} is a warning with exit 0, the file stays as it was and no temp file stays beside it (${JSON.stringify(outcome)})`);
++    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8')).includeCoAuthoredBy, false, `AC-16: the failed ${label} never stops the other file being cleaned`);
++  }
++});
++
++test('sprint-036 AC-16: attribution-check keeps the file mode of the settings file it rewrites, a 0600 file staying 0600', () => {
++  if (process.platform === 'win32') {
++    console.log('  (skipped the file-mode assertion: POSIX permission bits are not enforced on win32)');
++    return;
++  }
++  const sandbox = attributionRepo('disabled');
++  writeFile(sandbox.repo, '.claude/settings.local.json', `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`);
++  const file = path.join(sandbox.repo, '.claude', 'settings.local.json');
++  fs.chmodSync(file, 0o600);
++  const outcome = runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
++  assert.deepStrictEqual([outcome.status, JSON.parse(fs.readFileSync(file, 'utf8')).includeCoAuthoredBy, fs.statSync(file).mode & 0o777], [0, false, 0o600], 'AC-16: the rewritten file is cleaned and keeps its restrictive mode - a replacement under the default mode would widen a file that may hold secrets');
++});
++
++test('sprint-036 AC-16: attribution-check skips a file named after -- with its stderr warning, still cleans the other file and prints the Codex hint, and exits 2 on a flag other than -- or a path outside the two settings files', () => {
++  const RE_ENABLING = `${JSON.stringify({ includeCoAuthoredBy: true }, null, 2)}\n`;
++  const sandbox = attributionRepo('disabled');
++  writeFile(sandbox.repo, '.claude/settings.json', RE_ENABLING);
++  writeFile(sandbox.repo, '.claude/settings.local.json', RE_ENABLING);
++  writeFile(sandbox.repo, '.codex/config.toml', '');
++  const run = (...args) => runtimeSpawn(['attribution-check', ...args], { cwd: sandbox.repo, env: sandbox.env });
++  const read = (rel) => fs.readFileSync(path.join(sandbox.repo, rel), 'utf8');
++
++  const skipped = run('--', '.claude/settings.json');
++  const [fixLine, hintLine, ...rest] = skipped.stdout.trimEnd().split('\n');
++  assert.deepStrictEqual([skipped.status, skipped.stderr, fixLine, /^codex: .*workspace setting/.test(hintLine), rest, read('.claude/settings.json')], [0, 'runtime: .claude/settings.json has uncommitted changes, left untouched: commit or revert it\n', 'attribution: .claude/settings.local.json: includeCoAuthoredBy set to false', true, [], RE_ENABLING], 'AC-16: the listed file is left untouched with the commit-or-revert warning, the other file is cleaned and the Codex hint still prints');
++  assert.strictEqual(JSON.parse(read('.claude/settings.local.json')).includeCoAuthoredBy, false, 'AC-16: the unlisted file is rewritten');
++
++  const refusals = [['a flag', ['--only']], ['a flag before the separator', ['--only', '--', '.claude/settings.json']], ['a path outside the two settings files', ['--', 'package.json']], ['a settings file of another name', ['--', '.claude/settings.other.json']]];
++  assert.deepStrictEqual(refusals.map(([label, args]) => [label, run(...args).status]), refusals.map(([label]) => [label, 2]), 'AC-16: only -- followed by the two project settings files is accepted');
++});
++
+ test('sprint-036 AC-16: attribution-check leaves a settings file untouched with a stderr warning when .claude or the file links outside the repo, and cleans one reached through a link that stays inside', () => {
+   const REENABLING = `${JSON.stringify({ attribution: { commit: 'x', pr: 'y' }, includeCoAuthoredBy: true }, null, 2)}\n`;
+   const run = (sandbox) => runtimeSpawn(['attribution-check'], { cwd: sandbox.repo, env: sandbox.env });
+@@ -10841,7 +10895,7 @@ test('sprint-036 AC-16: attribution-check leaves a settings file untouched with
+   assert.deepStrictEqual([fileRefused.status, /settings\.local\.json resolves outside the repository/.test(fileRefused.stderr), fs.readFileSync(outsideLocal.file, 'utf8')], [0, true, REENABLING], 'AC-16: a settings file that is itself a link outside the repo is refused and its target untouched');
+ });
+ 
+-test('sprint-036 AC-15/AC-16: under disabled attribution-check inserts the owned attribution value into a .claude/settings.json that lacks the key - never into settings.local.json - and sync reads the file current afterwards', () => {
++test('sprint-036 AC-15/AC-16: under disabled attribution-check inserts the owned attribution value into a .claude/settings.json that lacks the key - never into settings.local.json - and sync reads the file stale until its next apply records the key, with the file bytes unchanged', () => {
+   const settingsRel = '.claude/settings.json';
+   const root = makeMiniRepo();
+   sync.runApply(root, [settingsRel]);
+@@ -10853,7 +10907,11 @@ test('sprint-036 AC-15/AC-16: under disabled attribution-check inserts the owned
+ 
+   const outcome = runtimeSpawn(['attribution-check'], { cwd: root });
+   const settings = JSON.parse(fs.readFileSync(path.join(root, settingsRel), 'utf8'));
+-  assert.deepStrictEqual([outcome.status, outcome.stdout, settings.attribution, fs.readFileSync(path.join(root, '.claude/settings.local.json'), 'utf8'), statusOf()], [0, 'attribution: .claude/settings.json: attribution set to {"commit":"","pr":""}\n', { commit: '', pr: '' }, localText, 'current'], 'AC-16: the sync-managed file gains the owned value, the local file is not given a key, and sync --check reads current');
++  assert.deepStrictEqual([outcome.status, outcome.stdout, settings.attribution, fs.readFileSync(path.join(root, '.claude/settings.local.json'), 'utf8')], [0, 'attribution: .claude/settings.json: attribution set to {"commit":"","pr":""}\n', { commit: '', pr: '' }, localText], 'AC-16: the sync-managed file gains the owned value and the local file is not given a key');
++  assert.strictEqual(statusOf(), 'stale', 'AC-15: sync never wrote that key, so it is not recorded and reads stale until the next apply');
++  const inserted = fs.readFileSync(path.join(root, settingsRel), 'utf8');
++  sync.runApply(root, [settingsRel]);
++  assert.deepStrictEqual([fs.readFileSync(path.join(root, settingsRel), 'utf8'), statusOf()], [inserted, 'current'], 'AC-15: apply records the key with the file bytes unchanged, and sync --check reads current');
+   assert.strictEqual(runtimeSpawn(['attribution-check'], { cwd: root }).stdout, '', 'AC-16: a second run finds nothing to fix');
+ });
+ 
+@@ -10897,6 +10955,37 @@ test('sprint-036 AC-15: spliceTopLevelKey appends a member at the indent of the
+   ], 'AC-15: a four-space file gets four-space members and nesting; a compact or empty object gets two');
+ });
+ 
++/** The `owned_keys` the sync-state record of `.claude/settings.json` holds under `root`, undefined when it holds none. */
++function recordedOwnedKeys(root) {
++  return JSON.parse(fs.readFileSync(path.join(root, '.asd', 'sync-state.json'), 'utf8')).entries['.claude/settings.json'].owned_keys;
++}
++
++test('sprint-036 AC-15: an off attribution value the user set by hand and sync never wrote stays current and byte-identical under an absent or enabled git.ai_attribution; under disabled it reads stale once and apply records it with the file bytes unchanged', () => {
++  const settingsRel = '.claude/settings.json';
++  const handSetRoot = (config) => {
++    const root = makeMiniRepo();
++    if (config !== null) writeFile(root, '.asd/project/config.yaml', `git:\n  ai_attribution: ${config}\n`);
++    sync.runApply(root, [settingsRel]);
++    const settingsPath = path.join(root, settingsRel);
++    const handSet = `${JSON.stringify({ ...JSON.parse(fs.readFileSync(settingsPath, 'utf8')), attribution: sync.ATTRIBUTION_OFF }, null, 2)}\n`;
++    fs.writeFileSync(settingsPath, handSet, 'utf8');
++    return { root, settingsPath, handSet, statusOf: () => sync.runCheck(root).find((item) => item.target === settingsRel).status };
++  };
++
++  for (const config of [null, 'enabled']) {
++    const { root, settingsPath, handSet, statusOf } = handSetRoot(config);
++    assert.strictEqual(statusOf(), 'current', `AC-15: ai_attribution ${config === null ? 'absent' : config} - a hand-set off value is the user's own, never stale`);
++    sync.runApply(root, [settingsRel]);
++    assert.deepStrictEqual([fs.readFileSync(settingsPath, 'utf8'), recordedOwnedKeys(root)], [handSet, undefined], `AC-15: ai_attribution ${config === null ? 'absent' : config} - apply leaves the hand-set value byte-identical and records no owned key`);
++  }
++
++  const { root, settingsPath, handSet, statusOf } = handSetRoot(null);
++  writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
++  assert.strictEqual(statusOf(), 'stale', 'AC-15: under disabled the entry carries no owned_keys, so the carried value reads stale once');
++  sync.runApply(root, [settingsRel]);
++  assert.deepStrictEqual([fs.readFileSync(settingsPath, 'utf8'), statusOf(), recordedOwnedKeys(root)], [handSet, 'current', ['attribution']], 'AC-15: apply seeds the record with the file bytes unchanged');
++});
++
+ test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "pr": ""} in .claude/settings.json only under git.ai_attribution disabled - stale until applied, then current - leaves the file byte-identical under enabled or an absent key, and replaces a re-enabling value without touching its neighbours', () => {
+   const settingsRel = '.claude/settings.json';
+   const root = makeMiniRepo();
+@@ -10917,13 +11006,14 @@ test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "p
+   sync.runApply(root, [settingsRel]);
+   const carried = JSON.parse(read());
+   assert.deepStrictEqual([carried.attribution, carried.hooks, statusOf()], [{ commit: '', pr: '' }, JSON.parse(baseline).hooks, 'current'], 'AC-15: disabled adds the attribution key, the owned hooks stay and the file reads current');
++  assert.deepStrictEqual(recordedOwnedKeys(root), ['attribution'], 'AC-15: the sync-state entry records the key sync wrote');
+   const applied = read();
+   sync.runApply(root, [settingsRel]);
+   assert.strictEqual(read(), applied, 'AC-15: a second apply writes nothing');
+   configure('enabled');
+   assert.strictEqual(statusOf(), 'stale', 'AC-15: flipping back to enabled leaves the still-carried off value stale');
+   sync.runApply(root, [settingsRel]);
+-  assert.deepStrictEqual([read(), statusOf()], [baseline, 'current'], 'AC-15: flipping back to enabled drops the attribution key while it deep-equals the owned off value');
++  assert.deepStrictEqual([read(), statusOf(), recordedOwnedKeys(root)], [baseline, 'current', undefined], 'AC-15: flipping back to enabled drops the attribution key while it deep-equals the owned off value, and the record with it');
+ 
+   const own = { commit: 'x' };
+   fs.writeFileSync(settingsPath, `${JSON.stringify({ ...JSON.parse(baseline), attribution: own }, null, 2)}\n`, 'utf8');
+@@ -11076,7 +11166,7 @@ test('sprint-036 AC-1/AC-3: the sol family maps to gpt-6.2-sol with luna unchang
+ 
+ test('sprint-036 AC-8/AC-10/AC-11/AC-13: the refuse-to-implement rule covers every command a diff newly invokes and asd-dev cites it, scope step 3a checks the disabled documents against the scope and offers a Settings change line, and plan step 4 runs the build once and fills Decision coverage', () => {
+   const rule = sectionOf('.asd/rules/artifact-layout.md', 'Tech reference docs');
+-  assert.ok(rule.includes('every command or subcommand the diff newly invokes') && rule.includes('`FAILED — tech-reference missing for <command>` per uncovered command; the orchestrator writes each and re-dispatches'), 'AC-8: the rule names every command or subcommand a diff newly invokes, one FAILED line per uncovered command, and the orchestrator writes the entry and re-dispatches');
++  assert.ok(rule.includes('for each newly used tech') && rule.includes('every command or subcommand the diff newly invokes') && rule.includes('`FAILED — tech-reference missing for <tech>@<version>` or `<command>` per gap; the orchestrator writes each and re-dispatches'), 'AC-8: the rule requires an entry per newly used tech and coverage of every command or subcommand a diff newly invokes, one FAILED line per gap of either kind, and the orchestrator writes the entry and re-dispatches');
+   assert.ok(['asd-phase-impl', 'asd-phase-impl-test'].every((name) => canonText(`.asd/workflows/${name}.md`).includes('tech-reference missing: orchestrator writes it')), 'AC-8: the impl and impl-test FAILED lines carry the orchestrator-writes-it handling');
+   const dev = canonText('.asd/agents/asd-dev.md');
+   assert.ok(dev.includes('command or subcommand the diff newly invokes') && dev.includes('`artifact-layout.md` "Tech reference docs"'), 'AC-8: asd-dev checks each such command against the tech reference, citing the rule\'s home');
+@@ -11104,15 +11194,16 @@ test('sprint-036 AC-12: every agent granted the commit command writes its dispat
+   assert.deepStrictEqual(gaps, [], 'AC-12: the one-command commit form obliges these agents to write the message file, so the grant must allow what the form requires');
+ });
+ 
+-test('sprint-036 AC-16: asd-sprint runs its attribution check on the sprint branch only - after scope COMPLETED and at resume, never in Step 0 - skips a user-modified tracked settings file, and commits its edit as chore(sprint): reset AI attribution under a granted git add and git commit', () => {
++test('sprint-036 AC-16: asd-sprint runs its attribution check on the sprint branch only - after scope COMPLETED and at resume, never in Step 0 - passes the user-modified tracked settings files to the check to skip each, never skipping the whole check, and commits only the files a fix line names as chore(sprint): reset AI attribution under a granted git add and git commit', () => {
+   const skill = '.asd/skills/asd-sprint/SKILL.md';
+   const steps = sectionOf(skill, 'Steps');
+   const check = subOf(steps, 'Attribution check');
+   const SUBJECT = 'chore(sprint): reset AI attribution';
+   assert.ok(!subOf(steps, 'Step 0').includes('attribution-check'), 'AC-16: Step 0 runs on the base branch, so it never runs the check');
+   assert.ok(stepOf(subOf(steps, 'Step 2A'), '5').includes('"Attribution check"') && stepOf(subOf(steps, 'Step 2B'), '1').includes('"Attribution check"'), 'AC-16: it runs after scope COMPLETED in the new-sprint flow and when a sprint resumes');
+-  assert.ok(check.includes('git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json') && /\bskip\b/.test(check), 'AC-16: a tracked settings file with a user change skips the check');
+-  assert.ok(check.includes('node .asd/runtime.js attribution-check') && check.includes(`\`${SUBJECT}\``) && SUBJECT.length <= 50, 'AC-16: it runs the check and commits the edit under a header within the commit limit');
++  assert.ok(check.includes('git status --porcelain --untracked-files=no -- .claude/settings.json .claude/settings.local.json'), 'AC-16: a tracked settings file with a user change is found by status, an untracked file never counting');
++  assert.ok(check.includes('node .asd/runtime.js attribution-check [-- <listed files>]'), 'AC-16: the check always runs and takes the user-modified files after --, so each is skipped and the rest, with the Codex hint, still handled');
++  assert.ok(check.includes('a fix line names') && check.includes(`\`${SUBJECT}\``) && SUBJECT.length <= 50, 'AC-16: it commits only the files a fix line names, under a header within the commit limit');
+   assert.ok(jsonOf(skill, 'Preconditions').ops.some((op) => op.includes('git status --porcelain') && op.includes('git add/git commit')), 'AC-16: the skill grants the status read and the commit its step performs');
+ });
+ 

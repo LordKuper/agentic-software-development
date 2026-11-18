@@ -37,4 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-17 — PR #122 opened [GATE adaptive: PR publication]: evidence = plan tasks done, reviews green (wave 1/1 iter-05), full suite 391/391 at e22fa5b1, retrospective written; authority = user request 'Все 1–7' with same-run merge.
+
+## 2026-11-18 — retrospective written
+
+- **Decision**: `retrospective.html` written on the analysed branch: 7 entries (F-1..F-7), 7 framework actions (A-1..A-7), 0 consumer actions, 0 systemic proposals; both timing candidates merged into remediation (impl-review overrun → A-4, iter-07 user wait → A-5). Step 7 skipped: `self_hosting` enabled.
+- **Rationale**: Every F-N is a framework defect; no candidate home already covers any of them, except F-7's repeated-flag half, which retro 035 A-2 shipped as AC-7, so A-7 keeps only the value check.
+- **Affected docs**: retrospective.html

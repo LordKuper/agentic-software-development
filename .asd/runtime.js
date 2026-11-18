@@ -599,14 +599,8 @@ function applyFloor(body, floor) {
   return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, approve };
 }
 
-/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
-function persistReview(input) {
-  const { phase, reviewer, text, outDir } = input;
-  if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
-  const keys = reviewerKeys(phase);
-  if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
-  if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
-  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
+/** The checks a reviewer's returned `text` passes before it is persisted, as `{body, verdict, findings}`: the verdict token for `phase` and `reviewer`, the findings table, and for an internal reviewer its coverage ledger against the manifest at `manifestPath`. Throws on the first failure. */
+function checkReview(phase, reviewer, text, manifestPath) {
   const start = /^[ \t]*\[REVIEW-/m.exec(text);
   if (start === null) fail('returned text carries no verdict token: an interrupted dispatch, not a verdict');
   const body = text.slice(start.index).trimStart();
@@ -618,9 +612,21 @@ function persistReview(input) {
   if (!verdict.startsWith('APPROVE') && findings.length === 0) fail(`${verdict} verdict lists no finding`);
   if (verdict === 'APPROVE' && findings.length > 0) fail('APPROVE verdict lists findings');
   if (INTERNAL_REVIEWERS.includes(reviewer)) {
-    const manifest = JSON.parse(fs.readFileSync(input.manifest || path.join(outDir, `${reviewer}.manifest.json`), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     validateCoverageLedger(manifest, ledgerFromText(body), findings.map((finding) => finding.id));
   }
+  return { body, verdict, findings };
+}
+
+/** Validates one reviewer's returned text (`checkReview`) and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's manifest defaults to `<outDir>/<reviewer>.manifest.json`. `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
+function persistReview(input) {
+  const { phase, reviewer, text, outDir } = input;
+  if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
+  const keys = reviewerKeys(phase);
+  if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
+  if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
+  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
+  const { body, verdict, findings } = checkReview(phase, reviewer, text, input.manifest || path.join(outDir, `${reviewer}.manifest.json`));
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
   if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
@@ -887,16 +893,182 @@ function memoryCheck(flags, paths = []) {
   return memoryViolations(diff, names).filter(isNamed);
 }
 
-/** The pre-commit report for a commit of `paths` (all staged when none): the header's length and the memory-check hits among those paths; `ok` only when the header fits and there is no hit. */
-function commitCheck(flags, paths) {
-  const unknown = Object.keys(flags).filter((name) => name !== 'subject');
-  if (unknown.length > 0 || typeof flags.subject !== 'string' || flags.subject === '') fail('commit-check takes --subject "<header>" [-- <paths...>]');
-  const headerLength = Array.from(flags.subject).length;
-  const memory = memoryCheck({}, paths);
-  return { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+/** The `ASD-Task:` lines of a commit message lying outside its last paragraph (the text after the last blank line), trailing blank lines ignored. A message with no blank line is all subject paragraph, so a trailer glued to the subject is misplaced. */
+function misplacedTrailers(message) {
+  const lines = message.replace(/\r\n?/g, '\n').replace(/\s+$/, '').split('\n');
+  let lastParagraph = lines.length;
+  while (lastParagraph > 0 && lines[lastParagraph - 1].trim() !== '') lastParagraph -= 1;
+  return lines.slice(0, lastParagraph === 0 ? lines.length : lastParagraph).filter((line) => /^ASD-Task:/.test(line));
 }
 
-/** Runs `commit-check`: `--subject` flag, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
+/** The author name an AI `Co-authored-by:` identity starts with. */
+const AI_COAUTHOR_NAME = /^(?:openai\s+)?(?:claude|codex)\b/i;
+/** The addresses the Claude and Codex co-author trailers carry. */
+const AI_COAUTHOR_ADDRESSES = ['noreply@anthropic.com', 'noreply@openai.com'];
+
+/** The `Co-authored-by:` lines of a commit message whose parsed identity is Claude or Codex, by author name or known bot address; the key is matched case-insensitively and a human whose address merely contains the word passes. */
+function aiCoAuthorTrailers(message) {
+  return message.split(/\r?\n/).filter((line) => {
+    const identity = /^co-authored-by:\s*([^<]*?)\s*(?:<([^>]*)>)?\s*$/i.exec(line);
+    return identity !== null && (AI_COAUTHOR_NAME.test(identity[1]) || AI_COAUTHOR_ADDRESSES.includes((identity[2] || '').toLowerCase()));
+  });
+}
+
+/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph, and, under `git.ai_attribution: disabled`, `ai_attribution`, its Claude or Codex `Co-authored-by:` lines. `ok` only when the header fits and there is no hit, no misplaced trailer and no AI trailer. */
+function commitCheck(flags, paths) {
+  const unknown = Object.keys(flags).filter((name) => name !== 'subject' && name !== 'message-file');
+  const given = ['subject', 'message-file'].filter((name) => name in flags);
+  if (unknown.length > 0 || given.length !== 1 || flags[given[0]] === '') fail('commit-check takes --subject "<header>" or --message-file <path>, exactly one [-- <paths...>]');
+  const message = given[0] === 'subject' ? null : fs.readFileSync(flags['message-file'], 'utf8');
+  const header = message === null ? flags.subject : message.split(/\r?\n/)[0];
+  const headerLength = Array.from(header).length;
+  const memory = memoryCheck({}, paths);
+  const report = { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  if (message === null) return report;
+  const misplaced = misplacedTrailers(message);
+  const withMisplaced = { ...report, ok: report.ok && misplaced.length === 0, misplaced };
+  if (aiAttribution(process.cwd()) !== 'disabled') return withMisplaced;
+  const aiTrailers = aiCoAuthorTrailers(message);
+  return { ...withMisplaced, ok: withMisplaced.ok && aiTrailers.length === 0, ai_attribution: aiTrailers };
+}
+
+/** `git.ai_attribution` of the repo containing `startDir`. */
+function aiAttribution(startDir) {
+  const sync = require('./sync.js');
+  return sync.readAiAttribution(sync.findRepoRoot(startDir));
+}
+
+/** Claude Code project settings files the attribution check cleans, never the user-level file. */
+const ATTRIBUTION_SETTINGS_FILES = ['.claude/settings.json', '.claude/settings.local.json'];
+/** The one settings file whose `attribution` value sync owns, so the only one the check inserts it into and records. */
+const OWNED_ATTRIBUTION_FILE = ATTRIBUTION_SETTINGS_FILES[0];
+/** The top-level keys the attribution check may change. */
+const ATTRIBUTION_KEYS = ['attribution', 'includeCoAuthoredBy'];
+/** The attribution check's one line for a Codex view, whose attribution has no local key. */
+const CODEX_ATTRIBUTION_HINT = 'codex: attribution is the ChatGPT workspace setting commit_attribution_enabled, switch it off there';
+
+/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on. */
+function disableAttribution(settings) {
+  const attribution = settings.attribution;
+  const hasParts = attribution !== null && typeof attribution === 'object' && !Array.isArray(attribution);
+  const fixes = (hasParts ? ['commit', 'pr'] : []).filter((part) => Object.hasOwn(attribution, part) && attribution[part] !== '').map((part) => {
+    attribution[part] = '';
+    return `attribution.${part} reset to ""`;
+  });
+  if (settings.includeCoAuthoredBy === true) {
+    settings.includeCoAuthoredBy = false;
+    fixes.push('includeCoAuthoredBy set to false');
+  }
+  return fixes;
+}
+
+/** Sets `settings.attribution` to the value sync owns when it holds anything else - missing, not an object, or other members - returning its one report fragment, none when it already is that value. */
+function ownAttribution(settings) {
+  const sync = require('./sync.js');
+  if (sync.stableStringify(settings.attribution) === sync.stableStringify(sync.ATTRIBUTION_OFF)) return [];
+  const verb = Object.hasOwn(settings, 'attribution') ? 'replaced by' : 'set to';
+  settings.attribution = { ...sync.ATTRIBUTION_OFF };
+  return [`attribution ${verb} ${JSON.stringify(sync.ATTRIBUTION_OFF)}`];
+}
+
+/** Writes `content` at offset 0 of `fd` and cuts the file to `length`; a short write throws. */
+function writeFromStart(fd, content, length) {
+  if (fs.writeSync(fd, content, 0, content.length, 0) !== content.length) throw new Error('short write');
+  fs.ftruncateSync(fd, length);
+}
+
+/** Writes `text` over `file` through one descriptor without truncating first, shorter text padded with spaces to the old length until the final cut, and returns null, or the warning of a failed write: the original `bytes` are then written back through the same descriptor, and the file is reported untouched only when that restore succeeded. The descriptor is always closed; a close error after the write changes nothing. ponytail: one in-place write keeps the file's mode, ACL and owner and is never empty; only an OS crash or power loss during that write can still leave it damaged. */
+function rewriteInPlace(file, relative, text, bytes) {
+  const next = Buffer.from(text, 'utf8');
+  const padded = Buffer.concat([next, Buffer.alloc(Math.max(0, bytes.length - next.length), 0x20)]);
+  let fd = null;
+  try {
+    fd = fs.openSync(file, 'r+');
+    writeFromStart(fd, padded, next.length);
+    return null;
+  } catch (error) {
+    try {
+      if (fd !== null) writeFromStart(fd, bytes, bytes.length);
+    } catch (_) {
+      return `runtime: ${relative} could not be rewritten (${error.message}) and may be damaged; restore it from git`;
+    }
+    return `runtime: ${relative} could not be rewritten (${error.message}), left untouched`;
+  } finally {
+    if (fd !== null) closeQuietly(fd);
+  }
+}
+
+/** Closes `fd`, a close error never thrown: the data it carried is already written or restored. */
+function closeQuietly(fd) {
+  try {
+    fs.closeSync(fd);
+  } catch (_) {
+    return;
+  }
+}
+
+/** Cleans one settings file and returns `{lines, warning}`: a report line per fix, or a warning when the file or its `.claude` directory is a symlink or junction, the file cannot be read, is not a JSON object, or cannot be rewritten, which is then left untouched. `OWNED_ATTRIBUTION_FILE` also gets the owned `attribution` value inserted or put in place of another, recorded in the sync state through `recordOwnedKeys` so a later `enabled` releases it, the ledger then named by a line of its own; a record that cannot be saved, a symlinked ledger included, is a warning beside the lines. Only the keys a fix changes are spliced into the file, every other byte staying. A file needing no fix, or absent, is not rewritten. */
+function cleanSettingsFile(repoRoot, relative) {
+  const sync = require('./sync.js');
+  const file = path.join(repoRoot, relative);
+  if (!fs.existsSync(file)) return { lines: [], warning: null };
+  if (sync.isSymlink(file) || sync.isSymlink(path.dirname(file))) return { lines: [], warning: `runtime: ${relative} or its directory is a symlink or junction, left untouched` };
+  let bytes;
+  try {
+    bytes = fs.readFileSync(file);
+  } catch (error) {
+    return { lines: [], warning: `runtime: ${relative} could not be read (${error.message}), left untouched` };
+  }
+  const raw = bytes.toString('utf8');
+  const bom = raw.startsWith('﻿') ? '﻿' : '';
+  let settings;
+  try {
+    settings = JSON.parse(raw.slice(bom.length));
+  } catch (error) {
+    return { lines: [], warning: `runtime: ${relative} is not valid JSON, left untouched (${error.message})` };
+  }
+  if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) return { lines: [], warning: `runtime: ${relative} is not a JSON object, left untouched` };
+  const original = JSON.parse(raw.slice(bom.length));
+  const fixes = disableAttribution(settings).concat(relative === OWNED_ATTRIBUTION_FILE ? ownAttribution(settings) : []);
+  if (fixes.length === 0) return { lines: [], warning: null };
+  const changed = ATTRIBUTION_KEYS.filter((key) => sync.stableStringify(settings[key]) !== sync.stableStringify(original[key]));
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+  const spliced = changed.reduce((text, key) => sync.spliceTopLevelKey(text, key, settings[key]), raw).replace(/\r?\n/g, eol);
+  const failure = rewriteInPlace(file, relative, spliced, bytes);
+  if (failure !== null) return { lines: [], warning: failure };
+  const lines = fixes.map((fix) => `attribution: ${relative}: ${fix}`);
+  if (relative !== OWNED_ATTRIBUTION_FILE || !changed.includes('attribution')) return { lines, warning: null };
+  try {
+    const isSaved = sync.recordOwnedKeys(repoRoot, relative, original, { attribution: sync.ATTRIBUTION_OFF });
+    return { lines: isSaved ? lines.concat(`attribution: .asd/sync-state.json: recorded the owned attribution of ${relative}`) : lines, warning: null };
+  } catch (error) {
+    return { lines, warning: `runtime: ${relative} was fixed but its record in .asd/sync-state.json could not be saved (${error.message}), run /asd-sync` };
+  }
+}
+
+/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */
+function attributionCheck(repoRoot, skipped = []) {
+  const sync = require('./sync.js');
+  if (sync.readAiAttribution(repoRoot) !== 'disabled') return { lines: [], warnings: [] };
+  const clean = (relative) => (skipped.includes(relative)
+    ? { lines: [], warning: `runtime: ${relative} has uncommitted changes, left untouched: commit or revert it` }
+    : cleanSettingsFile(repoRoot, relative));
+  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map(clean) : [];
+  const hint = fs.existsSync(path.join(repoRoot, '.codex')) ? [CODEX_ATTRIBUTION_HINT] : [];
+  return { lines: cleaned.flatMap((entry) => entry.lines).concat(hint), warnings: cleaned.map((entry) => entry.warning).filter(Boolean) };
+}
+
+/** Runs `attribution-check [-- <settings file>...]` from the repo root containing the working directory: the files after `--` are skipped; one stdout line per fix or hint, warnings on stderr, exit 0. */
+function attributionCheckCommand(args) {
+  const skipped = args.slice(1);
+  if ((args.length > 0 && args[0] !== '--') || skipped.some((file) => !ATTRIBUTION_SETTINGS_FILES.includes(file))) fail(`attribution-check takes no flags, only -- followed by ${ATTRIBUTION_SETTINGS_FILES.join(' ')}`);
+  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()), skipped);
+  warnings.forEach((warning) => process.stderr.write(`${warning}\n`));
+  lines.forEach((line) => process.stdout.write(`${line}\n`));
+  return 0;
+}
+
+/** Runs `commit-check`: one of `--subject`/`--message-file`, then the named paths after `--`; prints the report as JSON and exits 1 when it is not ok. */
 function commitCheckCommand(args) {
   const split = args.indexOf('--');
   const report = commitCheck(parseFlagArgs(split === -1 ? args : args.slice(0, split)), split === -1 ? [] : args.slice(split + 1));
@@ -1359,90 +1531,10 @@ function recordVerdicts(flags) {
   return { phase: flags.phase, iteration: key, verdicts: node.verdicts[key], latched: node.latched };
 }
 
-const COMMENT_LEXERS = [
-  { extensions: /\.(js|mjs|cjs|jsx|ts|tsx|c|cc|cpp|h|hpp|cs|java|go|rs|swift|kt|scala|php|dart|gradle|groovy|glsl)$/i, line: '//', hasBlock: true, quotes: '\'"`' },
-  { extensions: /\.css$/i, line: '', hasBlock: true, quotes: '\'"' },
-  { extensions: /\.(scss|less)$/i, line: '//', hasBlock: true, quotes: '\'"' },
-  { extensions: /\.(py|rb|sh|bash|zsh|ps1|pl|r|ex|exs|mk)$/i, line: '#', hasBlock: false, quotes: '\'"' },
-  { extensions: /\.(sql|lua|hs|elm)$/i, line: '--', hasBlock: false, quotes: "'" },
-];
-
-/** Whether the `marker` line comment opens at `index`: a `#` not followed by `!` (shebang) and after whitespace (so `$#` stays code), a `//` not after `:` (so `http://` stays code). */
-function startsLineComment(blob, index, marker) {
-  if (marker === '' || !blob.startsWith(marker, index)) return false;
-  const before = blob[index - 1];
-  if (marker === '#') return blob[index + 1] !== '!' && (before === undefined || /\s/.test(before));
-  return !(marker === '//' && before === ':');
-}
-
-/** `blob` with its comments, trailing whitespace outside strings and lines left empty outside a string removed, so two blobs differing only in comments project equal. It stops stripping where it cannot follow: at a line end inside a `'`/`"` string, or inside a block comment opened after code on its line, the rest of the blob comes back verbatim (from the opener for a block). ponytail: regex literals and nested template literals are read naively, so a quote or `/*` inside a regex may start a string or block; the stop rule and plain equality keep such a misread on the code side, never on a comment. Upgrade path: a real tokenizer per language. */
-function projectExecutable(blob, lexer) {
-  const lines = [];
-  let current = '';
-  let state = 'code';
-  let quote = '';
-  let opener = null;
-  const stopAt = (keep, from) => lines.map((line) => `${line}\n`).join('') + current.slice(0, keep) + blob.slice(from);
-  for (let index = 0; index <= blob.length; index++) {
-    const char = blob[index];
-    const next = blob[index + 1];
-    if (char === '\n' || char === undefined) {
-      if (state === 'string' && quote !== '`') return stopAt(current.length, index);
-      if (state === 'block' && opener !== null) return stopAt(opener.keep, opener.index);
-      if (state === 'string') lines.push(current);
-      else if (current.trim() !== '') lines.push(current.trimEnd());
-      current = '';
-      if (state === 'line') state = 'code';
-    } else if (state === 'block') {
-      if (char === '*' && next === '/') {
-        index++;
-        state = 'code';
-      }
-    } else if (state === 'string') {
-      current += char;
-      if (char === '\\' && next !== undefined && next !== '\n') {
-        current += next;
-        index++;
-      } else if (char === quote) state = 'code';
-    } else if (state === 'code') {
-      if (lexer.hasBlock && char === '/' && next === '*') {
-        opener = current.trim() === '' ? null : { index, keep: current.length };
-        index++;
-        state = 'block';
-      } else if (startsLineComment(blob, index, lexer.line)) state = 'line';
-      else {
-        current += char;
-        if (lexer.quotes.includes(char)) {
-          state = 'string';
-          quote = char;
-        } else if (char === '\\' && next !== undefined && next !== '\n') {
-          current += next;
-          index++;
-        }
-      }
-    }
-  }
-  return lines.join('\n');
-}
-
-/** True when `file` changed only in comments and blank lines: its base and head blobs, read by `readBlob('base' | 'head')` (null when the file is absent on that side), differ yet project to the same executable text. An unknown extension, an added or deleted file and a change that leaves the text identical (a mode change) are never comment-only, so a doubtful change keeps counting as code. */
-function isCommentOnlyChange(file, readBlob) {
-  const lexer = COMMENT_LEXERS.find((candidate) => candidate.extensions.test(file));
-  if (lexer === undefined) return false;
-  const base = readBlob('base');
-  const head = readBlob('head');
-  return base !== null && head !== null && base !== head && projectExecutable(base, lexer) === projectExecutable(head, lexer);
-}
-
-/** Production executable files changed between `sha` and HEAD, a file changed only in comments and blank lines left out; sprint artefacts never count. */
+/** Production executable files changed between `sha` and HEAD; sprint artefacts never count. */
 function changedProductionFiles(sha) {
-  const tokens = runGit(['diff', '--name-status', '--no-renames', '-z', sha, 'HEAD']).split('\0');
-  const changes = [];
-  for (let index = 0; index + 1 < tokens.length; index += 2) changes.push({ status: tokens[index], file: tokens[index + 1] });
-  return changes.filter(({ file }) => isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/')).filter(({ status, file }) => {
-    const readBlob = (side) => ((side === 'base' ? status === 'A' : status === 'D') ? null : runGit(['show', `${side === 'head' ? 'HEAD' : sha}:${file}`]));
-    return !isCommentOnlyChange(file, readBlob);
-  }).map(({ file }) => file);
+  const files = runGit(['diff', '--name-only', '--no-renames', '-z', sha, 'HEAD']).split('\0');
+  return files.filter((file) => file !== '' && isExecutable(file) && !isTest(file) && !file.startsWith('.asd/sprints/'));
 }
 
 /** Each reviewer's files across every iteration manifest of a wave's review directory, as reviewer to path set; External Review reads its scope file. */
@@ -1521,7 +1613,31 @@ function transcriptSnapshot(file) {
   return { size: stat.size, mtimeMs: stat.mtimeMs, text: fs.readFileSync(file, 'utf8') };
 }
 
-/** Checks each `--agents` Claude subagent's transcript, under `$CLAUDE_CONFIG_DIR/projects` when that is set and `~/.claude/projects` otherwise, every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
+/** Whether a reviewer's `{return, manifest}` entry names a return file that exists and passes `checkReview` for the phase and reviewer the dispatch's own manifest names, so a verdict line of another reviewer or phase is no return; a manifest without a `reviewer` (an External Review scope file) means External Review. A missing or invalid file is false. */
+function isReviewReturned(entry) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
+    const phase = manifest.phase.replace(/-review$/, '');
+    const reviewer = manifest.reviewer === undefined ? EXTERNAL_REVIEWER : manifest.reviewer;
+    if (!REVIEW_NODES.includes(phase) || !reviewerKeys(phase).includes(reviewer)) return false;
+    checkReview(phase, reviewer, fs.readFileSync(entry.return, 'utf8'), entry.manifest);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/** The `--returns` file's agent id to `{return, manifest}` map, `{}` while the file is missing or unparseable. */
+function readReturns(file) {
+  try {
+    const returns = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return returns !== null && typeof returns === 'object' ? returns : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/** Checks each `--agents` Claude subagent's transcript, under `$CLAUDE_CONFIG_DIR/projects` when that is set and `~/.claude/projects` otherwise, every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. An agent whose `--returns` entry names a return file passing `checkReview` is done, whatever its transcript shows. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
 async function agentLivenessCommand(flags) {
   if (typeof flags.agents !== 'string') fail('--agents <id,...> required');
   const ids = [...new Set(flags.agents.split(','))];
@@ -1532,7 +1648,12 @@ async function agentLivenessCommand(flags) {
   const projectsDir = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
   const watched = new Map(ids.map((id) => [id, { file: null, previous: undefined }]));
   for (;;) {
+    const returns = flags.returns === undefined ? {} : readReturns(flags.returns);
     for (const [id, agent] of watched) {
+      if (returns[id] && isReviewReturned(returns[id])) {
+        watched.delete(id);
+        continue;
+      }
       agent.file = agent.file || findTranscript(projectsDir, id);
       const current = transcriptSnapshot(agent.file);
       const verdict = agentLiveness(agent.previous, current, Date.now(), budgetMs);
@@ -1677,7 +1798,14 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   return filled;
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id already open, or of a phase whose bare name is already open, is skipped and warns. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+/** The first `<base>#<n>` (n from 2) not in `held`, `base` being `id` without its trailing `#<n>`. */
+function nextFreeId(held, id) {
+  let ordinal = 2;
+  while (held.has(`${phaseName(id)}#${ordinal}`)) ordinal += 1;
+  return `${phaseName(id)}#${ordinal}`;
+}
+
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id the ledger already holds, open or closed, is skipped and warns with the next free id; so is an open of a phase whose bare name is already open. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
 function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
@@ -1686,12 +1814,18 @@ function timingAppend(text, flags, now, lookups = {}) {
   const written = [];
   for (const id of request.close) written.push(...timingCloses(entries.concat(written), open, id, request.outcome, now, warnings));
   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
+  const held = new Set(entries.map((entry) => entry.id));
   for (const name of request.open) {
     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
-    if (open.has(id) || (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name))) {
-      warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
+    if (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name)) {
+      warnings.push(`open of ${name} skipped: already open`);
       continue;
     }
+    if (held.has(id)) {
+      warnings.push(`open of ${id} skipped: id already in the ledger, next free id ${nextFreeId(held, id)}`);
+      continue;
+    }
+    held.add(id);
     const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
     const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs };
     open.set(id, entry);
@@ -1721,13 +1855,13 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
+/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one). The agent file and `sync.js` are read only when called. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
-      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[id];
+      const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
       const agent = routed && routed.execution === 'agent' && routed.tier !== undefined ? (routed.tier === 'standard' ? 'asd-dev' : `asd-dev-${routed.tier}`) : undefined;
       return routed && { agent, tier: routed.tier, model: routed.resolved_model };
     },
@@ -2170,7 +2304,7 @@ function designTokensCommand(flags) {
   return { tokens: leaves.length };
 }
 
-/** The flags each command reads; `commit-check` and `memory-check` reject their own extras instead. */
+/** The flags each command reads; `commit-check`, `attribution-check` and `memory-check` reject their own extras instead. */
 const COMMAND_FLAGS = {
   'manifest-digest': ['manifest'],
   'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref'],
@@ -2193,7 +2327,7 @@ const COMMAND_FLAGS = {
   'checklist-hits': ['checklist', 'sprint-dir'],
   section: ['file', 'heading'],
   context: ['role', 'phase', 'out', 'base-ref'],
-  'agent-liveness': ['agents', 'interval', 'budget-min'],
+  'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
   'checks-wait': ['pr'],
   timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
@@ -2211,6 +2345,7 @@ function parseFlagArgs(argv, booleanFlags) {
   for (let i = 0; i < argv.length; i += 1) {
     if (!argv[i].startsWith('--')) fail('flags require values');
     const name = argv[i].slice(2);
+    if (Object.hasOwn(out, name)) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
     if (bools.includes(name)) { out[name] = true; continue; }
     if (argv[i + 1] === undefined) fail('flags require values');
     out[name] = argv[i + 1];
@@ -2228,6 +2363,7 @@ async function main(argv) {
   const command = argv[2];
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
+  if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'manifest-digest') {
@@ -2338,11 +2474,11 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isCommentOnlyChange, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };

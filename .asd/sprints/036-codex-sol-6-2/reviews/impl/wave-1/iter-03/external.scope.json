@@ -1,0 +1,1 @@
+{"phase":"impl-review","iteration":3,"wave":1,"files":[".asd/release-manifest.json",".asd/rules/artifact-layout.md",".asd/runtime.js",".asd/skills/asd-sprint/SKILL.md",".asd/sync-state.json",".asd/sync.js",".asd/templates/t_config.yaml","README.md","tests/run.js"],"diff":".asd\\sprints\\036-codex-sol-6-2\\reviews\\impl\\wave-1\\iter-03\\989b1a31d552c431.diff"}

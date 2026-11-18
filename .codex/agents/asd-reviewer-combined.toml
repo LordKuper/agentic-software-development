@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914 content_digest=sha256:812171a84cb1767b04eb8d34a6b9b331f83999eb708ee8e4dd2d56f22cd63ac3 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914 content_digest=sha256:8f0faf9762db37615a2fed7d36c3891953feb6e45c54fe476df006f9cef9b57f asd_version=14.7.0 schema=1
 name = "asd-reviewer-combined"
 description = "One-pass reviewer of standard design-review and lite impl-review: Quality and Efficiency rubrics on every change, documentation entries only when a doc file is in scope, plus overall quality. Not: standard impl-review → asd-reviewer-quality, asd-reviewer-efficiency; fixing → asd-dev, asd-tester."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 web_search = "live"

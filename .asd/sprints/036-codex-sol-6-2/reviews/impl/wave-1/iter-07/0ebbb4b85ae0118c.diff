@@ -1,0 +1,219 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 62a9e6b5..9800de8c 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -90,7 +90,7 @@
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "573955924907bf322c8047a9b8996b7fbd34f6ea17f8f085648f91fca3d989b7",
++    ".asd/sync.js": "130680300092626999dea4304766a714a3c76402afa5ec026fa9714cc0a5d3a8",
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+diff --git a/.asd/sprints/036-codex-sol-6-2/test-plan.entry-07.md b/.asd/sprints/036-codex-sol-6-2/test-plan.entry-07.md
+new file mode 100644
+index 00000000..6018d1b3
+--- /dev/null
++++ b/.asd/sprints/036-codex-sol-6-2/test-plan.entry-07.md
+@@ -0,0 +1,28 @@
++# Test plan — sprint 036-codex-sol-6-2, entry 7 (rotated)
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `rewriteInPlace` writes in place through one descriptor, padded then cut, restored through it on failure (01497426, AC-16, external 1, 3). Supersedes entry 6's truncating-write row | A shorter replacement leaves padding or a longer one is cut; a short or thrown `writeSync` or a failed `ftruncateSync` leaves a damaged file reported untouched; the descriptor leaks | component (CLI, preload stub on `writeSync` and `ftruncateSync`) | none | e59544ce already pins it: `AC-16 (external 1, 3): ...whose in-place write ... fails - a thrown or short writeSync, a failed ftruncateSync - restores ...` and `AC-16 (external 1): ...overwrites a settings file in place so it holds exactly the new bytes ...`, each with a fail-first run or mutation (`Added tests`) |
++| `recordOwnedKeys` refuses a linked ledger or `.asd`, saves atomically, returns whether it saved (01497426, AC-16, external 3) | The check writes through a symlinked `sync-state.json` or a linked `.asd`; a failed save leaves a half-written ledger; an existing file at the temp name is opened over or deleted; a leftover temp file stays | component (CLI over a symlink and a junction; direct call with a stubbed `renameSync`) | none | e59544ce already pins it: `AC-16 (external 3): ...over a symlinked .asd/sync-state.json or a linked .asd directory ...` and `AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...`, fail-first |
++| the check names the ledger in a fix line of its own, only after a real save (01497426, AC-16) | The line prints for a record that was not saved, or the fix line set differs from what the skill commits | component (CLI) | none | e59544ce re-pinned `AC-15/AC-16 (external 1, 2, 5): ...inserts the missing owned attribution value ...` to the two-line output, fail-first; the linked-ledger test pins the absent line |
++| asd-sprint `### Attribution check` drops the git-status guess that committed `.asd/sync-state.json` (01497426, AC-16) | The skill commits a ledger the check did not name | content-contract pin | none | e59544ce re-pinned `AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone), fail-first |
++| views eb63010f | Stale view | static | none | `node .asd/sync.js --check` reports every target `current` |
++
++## Removed tests
++
++No test removed this entry. Entry 5 removed the 0600 mode test (`test-plan.entry-05.md`).
++
++## Added tests
++
++The review-fix tester's e59544ce added the tests below; no entry-7 test is added, each risk above being pinned. Proof runs: pre-fix tree = `git archive c8d98404` (the parent of the dev commit 01497426) extracted to `.asd/tmp/prefix-01497426/` with this `tests/run.js` copied in, deleted after; each is `node tests/run.js --filter "<substring>"`, matched 1 of 1, exit 1 unless noted.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js:`sprint-036 AC-16 (external 1, 3): attribution-check whose in-place write of a settings file fails ...` (re-authored for `writeSync` and `ftruncateSync` stubs) | fail-first: pre-fix tree, filter `external 1, 3): attribution-check whose in-place`, exit 1, `AC-16: a write failing after changing the first bytes is restored through the descriptor, the warning states the file untouched and its bytes are the original; the other file is still cleaned` |
++| tests/run.js:`sprint-036 AC-16 (external 1): attribution-check overwrites a settings file in place so it holds exactly the new bytes ...` | pre-fix tree green: `writeFileSync` also yields exact bytes, so this guards the new padding and cut; mutation in a `git archive HEAD` copy replacing `fs.ftruncateSync(fd, length);` with `void length;` in `.asd/runtime.js`: filter `external 1): attribution-check overwrites`, exit 1, `AC-16: each file is exactly the new text - the shorter one cut where the new text ends, with no trailing spaces, the longer one whole`; runs: 1 (the copy deleted, the real tree never mutated) |
++| tests/run.js:`sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory ...` | fail-first: pre-fix tree, filter `symlinked .asd/sync-state.json`, exit 1, `AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link's target keeps its bytes` |
++| tests/run.js:`sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...` | fail-first: pre-fix tree, filter `recordOwnedKeys saves the ledger atomically`, exit 1, `Missing expected exception: AC-16: an existing file at the temp name is never opened over` |
++| tests/run.js:`sprint-036 AC-15/AC-16 (external 1, 2, 5): attribution-check under disabled inserts the missing owned attribution value ...` (expects the ledger line) | fail-first: pre-fix tree, filter `inserts the missing owned attribution value`, exit 1, `AC-16: one fix line names the inserted value, a second names the ledger that saved its record, and nothing is warned` |
++| tests/run.js:`sprint-036 AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone) | fail-first: pre-fix tree, filter `asd-sprint runs its attribution check`, exit 1, `AC-16: the commit set follows the fix lines alone - the check names the sync state in a line of its own, so no git-status guess adds it` |
+diff --git a/.asd/sprints/036-codex-sol-6-2/test-plan.md b/.asd/sprints/036-codex-sol-6-2/test-plan.md
+index 9c05fcac..f6693a9f 100644
+--- a/.asd/sprints/036-codex-sol-6-2/test-plan.md
++++ b/.asd/sprints/036-codex-sol-6-2/test-plan.md
+@@ -18,18 +18,17 @@ responsibility:
+ | 5 | 8f9eb1cd | delta since 557d6957: review-fix wave-1/iter-03 commits cc4df9f7 (sync records `owned_keys` for a changed key only), e888835c (in-place settings write, symlink and junction refusal, asd-sprint `sync --apply` first and tracked-only commit); views bf520fc8; tester 7ec4c1ab |
+ | 6 | cdc1a55b | delta since 8f9eb1cd: review-fix wave-1/iter-04 commit f7229065 (the check inserts and records the owned value without sync, restores on a write error, warns per file on a read error); views 0d40d74a; tester bd2d284a |
+ | 7 | 6e04da1e | delta since cdc1a55b: review-fix wave-1/iter-05 commit 01497426 (`rewriteInPlace` non-truncating write with descriptor restore; `recordOwnedKeys` link guard, atomic ledger save, boolean return; the check's ledger line; asd-sprint ledger clause removed); views eb63010f; tester e59544ce |
++| 8 | 39145211 | delta since 6e04da1e: review-fix wave-1/iter-06 commits ff7b49e0 (`recordOwnedKeys` link guard before `loadSyncState`), hash ledger 2e0e50d3; tester f844ba86 |
+ 
+ ## Risk → check decisions
+ 
+-Entry 6's rows are rotated to `test-plan.entry-06.md`.
++Entry 7's rows are rotated to `test-plan.entry-07.md`.
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `rewriteInPlace` writes in place through one descriptor, padded then cut, restored through it on failure (01497426, AC-16, external 1, 3). Supersedes entry 6's truncating-write row | A shorter replacement leaves padding or a longer one is cut; a short or thrown `writeSync` or a failed `ftruncateSync` leaves a damaged file reported untouched; the descriptor leaks | component (CLI, preload stub on `writeSync` and `ftruncateSync`) | none | e59544ce already pins it: `AC-16 (external 1, 3): ...whose in-place write ... fails - a thrown or short writeSync, a failed ftruncateSync - restores ...` and `AC-16 (external 1): ...overwrites a settings file in place so it holds exactly the new bytes ...`, each with a fail-first run or mutation (`Added tests`) |
+-| `recordOwnedKeys` refuses a linked ledger or `.asd`, saves atomically, returns whether it saved (01497426, AC-16, external 3) | The check writes through a symlinked `sync-state.json` or a linked `.asd`; a failed save leaves a half-written ledger; an existing file at the temp name is opened over or deleted; a leftover temp file stays | component (CLI over a symlink and a junction; direct call with a stubbed `renameSync`) | none | e59544ce already pins it: `AC-16 (external 3): ...over a symlinked .asd/sync-state.json or a linked .asd directory ...` and `AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...`, fail-first |
+-| the check names the ledger in a fix line of its own, only after a real save (01497426, AC-16) | The line prints for a record that was not saved, or the fix line set differs from what the skill commits | component (CLI) | none | e59544ce re-pinned `AC-15/AC-16 (external 1, 2, 5): ...inserts the missing owned attribution value ...` to the two-line output, fail-first; the linked-ledger test pins the absent line |
+-| asd-sprint `### Attribution check` drops the git-status guess that committed `.asd/sync-state.json` (01497426, AC-16) | The skill commits a ledger the check did not name | content-contract pin | none | e59544ce re-pinned `AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone), fail-first |
+-| views eb63010f | Stale view | static | none | `node .asd/sync.js --check` reports every target `current` |
++| `recordOwnedKeys` refuses a linked `sync-state.json` or `.asd` before `loadSyncState` reads it (ff7b49e0, AC-16, external 1) | A linked ledger holding invalid JSON is parsed first, so the parse error text, and with it the linked file's content, reaches the warning; the refusal fires only after the read | component (CLI over a symlink and a junction, invalid JSON behind the link) | add | f844ba86 pins it: `AC-16 (external 1, iter-06): attribution-check over a linked ledger holding invalid JSON ...`, fail-first (`Added tests`) |
++| link helpers hoisted (`linkedLedgerRepo`, `linkedAsdDirRepo`, `linkedLedgerCases`; f844ba86) | The refactor weakens the entry 7 linked-ledger test | component | none | `AC-16 (external 3): ...over a symlinked .asd/sync-state.json or a linked .asd directory ...` keeps its assertion and expected outcomes unchanged and passes in the full run |
++| hash ledger 2e0e50d3 (`.asd/release-manifest.json` `upstream_hashes` for `.asd/sync.js`) | Stale ledger fails the hash tests and the sync check | static, suite | none | full suite green; `node .asd/sync.js --check` reports `ok: true` |
+ 
+ ## Removed tests
+ 
+@@ -37,24 +36,19 @@ No test removed this entry. Entry 5 removed the 0600 mode test (`test-plan.entry
+ 
+ ## Added tests
+ 
+-The review-fix tester's e59544ce added the tests below; no entry-7 test is added, each risk above being pinned. Proof runs: pre-fix tree = `git archive c8d98404` (the parent of the dev commit 01497426) extracted to `.asd/tmp/prefix-01497426/` with this `tests/run.js` copied in, deleted after; each is `node tests/run.js --filter "<substring>"`, matched 1 of 1, exit 1 unless noted.
++The review-fix tester's f844ba86 added the test below; entry 8 adds none further. Proof run: pre-fix tree = `git archive ff7b49e0^` (the parent of the dev commit) extracted to `.asd/tmp/prefix-ff7b49e0/` with this `tests/run.js` copied in, deleted after; `node tests/run.js --filter "linked ledger holding invalid JSON"`, matched 1 of 1, exit 1.
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js:`sprint-036 AC-16 (external 1, 3): attribution-check whose in-place write of a settings file fails ...` (re-authored for `writeSync` and `ftruncateSync` stubs) | fail-first: pre-fix tree, filter `external 1, 3): attribution-check whose in-place`, exit 1, `AC-16: a write failing after changing the first bytes is restored through the descriptor, the warning states the file untouched and its bytes are the original; the other file is still cleaned` |
+-| tests/run.js:`sprint-036 AC-16 (external 1): attribution-check overwrites a settings file in place so it holds exactly the new bytes ...` | pre-fix tree green: `writeFileSync` also yields exact bytes, so this guards the new padding and cut; mutation in a `git archive HEAD` copy replacing `fs.ftruncateSync(fd, length);` with `void length;` in `.asd/runtime.js`: filter `external 1): attribution-check overwrites`, exit 1, `AC-16: each file is exactly the new text - the shorter one cut where the new text ends, with no trailing spaces, the longer one whole`; runs: 1 (the copy deleted, the real tree never mutated) |
+-| tests/run.js:`sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory ...` | fail-first: pre-fix tree, filter `symlinked .asd/sync-state.json`, exit 1, `AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link's target keeps its bytes` |
+-| tests/run.js:`sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically ...` | fail-first: pre-fix tree, filter `recordOwnedKeys saves the ledger atomically`, exit 1, `Missing expected exception: AC-16: an existing file at the temp name is never opened over` |
+-| tests/run.js:`sprint-036 AC-15/AC-16 (external 1, 2, 5): attribution-check under disabled inserts the missing owned attribution value ...` (expects the ledger line) | fail-first: pre-fix tree, filter `inserts the missing owned attribution value`, exit 1, `AC-16: one fix line names the inserted value, a second names the ledger that saved its record, and nothing is warned` |
+-| tests/run.js:`sprint-036 AC-16: asd-sprint runs its attribution check ...` (the commit set follows the fix lines alone) | fail-first: pre-fix tree, filter `asd-sprint runs its attribution check`, exit 1, `AC-16: the commit set follows the fix lines alone - the check names the sync state in a line of its own, so no git-status guess adds it` |
++| tests/run.js:`sprint-036 AC-16 (external 1, iter-06): attribution-check over a linked ledger holding invalid JSON warns its record could not be saved without any text of the linked file in stdout or stderr, and leaves that file byte-identical` | fail-first: pre-fix tree, exit 1, 0/1 passed, `AC-16: the linked file is refused before it is parsed, so the warning carries none of its text and its bytes stay` |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+ - Scope: full — one file with no native selector, framework-wide shared infrastructure
+-- Result: pass — 425 passed, 0 failed of 425
++- Result: pass — 426 passed, 0 failed of 426
+ - Lint / build: pass — build `node .asd/sync.js --check` (every target current), lint `git diff --cached --check`, run before the commit
+-- HEAD: ebf924a7
++- HEAD: 82bd745b
+ 
+ ## Defects
+ 
+diff --git a/.asd/sync.js b/.asd/sync.js
+index ace04da2..7fdb7e29 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -750,17 +750,18 @@ function writtenKeys(before, previous, ownedKeys) {
+ // the digest stays the owned array's alone, which that write leaves as it was.
+ // With no entry the file was never applied, so its value reads as the user's.
+ // Returns whether it saved. A ledger or `.asd` directory that is a symlink or
+-// junction is refused (thrown), the save going through a sibling temp file
++// junction is refused (thrown) before the ledger is read, so no text of a linked
++// file reaches a parse error; the save goes through a sibling temp file
+ // renamed over the ledger so a failure never leaves it half-written.
+ function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
++  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
++  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
+   const syncState = loadSyncState(repoRoot);
+   const entry = syncState.entries[relKey];
+   if (!entry) return false;
+   const previous = entry.owned_keys || [];
+   const written = writtenKeys(before, previous, ownedKeys);
+   if (written.length === previous.length && written.every((key) => previous.includes(key))) return false;
+-  const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
+-  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
+   syncState.entries[relKey] = { ...entry, owned_keys: written };
+   writeAtomically(ledger, normalizeText(JSON.stringify(syncState, null, 2) + '\n'));
+   return true;
+diff --git a/tests/run.js b/tests/run.js
+index 975a2031..2e5cd699 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -10980,34 +10980,41 @@ test('sprint-036 AC-15/AC-16 (external 5): attribution-check with no sync-state
+   assert.deepStrictEqual([empty.status, empty.stderr, JSON.parse(fs.readFileSync(path.join(emptyState, settingsRel), 'utf8')).attribution, fs.readFileSync(path.join(emptyState, '.asd', 'sync-state.json'), 'utf8')], [0, '', OFF_VALUE, stateBefore], 'AC-15: a file sync never applied reads as the user\'s, so its sync-state bytes are unchanged');
+ });
+ 
++function linkedLedgerRepo() {
++  const repo = disabledAttributionRepo();
++  const behind = path.join(mkTempDir(), 'sync-state.json');
++  const ledger = path.join(repo.root, '.asd', 'sync-state.json');
++  fs.copyFileSync(ledger, behind);
++  fs.unlinkSync(ledger);
++  try {
++    fs.symlinkSync(behind, ledger, 'file');
++  } catch (_) {
++    return null;
++  }
++  return { repo, behind };
++}
++
++function linkedAsdDirRepo() {
++  const repo = disabledAttributionRepo();
++  const real = path.join(repo.root, 'asd-real');
++  fs.renameSync(path.join(repo.root, '.asd'), real);
++  fs.symlinkSync(real, path.join(repo.root, '.asd'), 'junction');
++  return { repo, behind: path.join(real, 'sync-state.json') };
++}
++
++function linkedLedgerCases() {
++  const cases = [['a linked .asd directory', linkedAsdDirRepo()]];
++  const fileLink = linkedLedgerRepo();
++  if (fileLink === null) console.log('  (skipped the ledger-file link assertions: fs.symlinkSync unsupported in this environment)');
++  else cases.push(['a symlinked ledger', fileLink]);
++  return cases;
++}
++
+ test('sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/sync-state.json or a linked .asd directory inserts the value, warns its record could not be saved, names no ledger line and leaves the linked ledger byte-identical', () => {
+   const settingsRel = '.claude/settings.json';
+   const warning = `runtime: ${settingsRel} was fixed but its record in .asd/sync-state.json could not be saved (.asd/sync-state.json or .asd is a symlink or junction), run /asd-sync\n`;
+   const FIX_LINE = `attribution: ${settingsRel}: attribution set to {"commit":"","pr":""}\n`;
+-  const linkedLedger = () => {
+-    const repo = disabledAttributionRepo();
+-    const behind = path.join(mkTempDir(), 'sync-state.json');
+-    const ledger = path.join(repo.root, '.asd', 'sync-state.json');
+-    fs.copyFileSync(ledger, behind);
+-    fs.unlinkSync(ledger);
+-    try {
+-      fs.symlinkSync(behind, ledger, 'file');
+-    } catch (_) {
+-      return null;
+-    }
+-    return { repo, behind };
+-  };
+-  const linkedDir = () => {
+-    const repo = disabledAttributionRepo();
+-    const real = path.join(repo.root, 'asd-real');
+-    fs.renameSync(path.join(repo.root, '.asd'), real);
+-    fs.symlinkSync(real, path.join(repo.root, '.asd'), 'junction');
+-    return { repo, behind: path.join(real, 'sync-state.json') };
+-  };
+-  const cases = [['a linked .asd directory', linkedDir()]];
+-  const fileLink = linkedLedger();
+-  if (fileLink === null) console.log('  (skipped the ledger-file link assertions: fs.symlinkSync unsupported in this environment)');
+-  else cases.push(['a symlinked ledger', fileLink]);
++  const cases = linkedLedgerCases();
+   const outcomes = cases.map(([label, { repo, behind }]) => {
+     const ledgerBefore = fs.readFileSync(behind, 'utf8');
+     const check = repo.check();
+@@ -11016,6 +11023,18 @@ test('sprint-036 AC-16 (external 3): attribution-check over a symlinked .asd/syn
+   assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, FIX_LINE, warning, true, OFF_VALUE]), 'AC-16: the settings value is inserted, the failed record is a warning, the ledger line is absent and the link\'s target keeps its bytes');
+ });
+ 
++test('sprint-036 AC-16 (external 1, iter-06): attribution-check over a linked ledger holding invalid JSON warns its record could not be saved without any text of the linked file in stdout or stderr, and leaves that file byte-identical', () => {
++  const MARKER = 'LINKED-LEDGER-SECRET-MARKER';
++  const warning = 'could not be saved (.asd/sync-state.json or .asd is a symlink or junction), run /asd-sync\n';
++  const outcomes = linkedLedgerCases().map(([label, { repo, behind }]) => {
++    const invalid = `{ "entries": ${MARKER} `;
++    fs.writeFileSync(behind, invalid, 'utf8');
++    const check = repo.check();
++    return [label, check.status, check.stderr.endsWith(warning), `${check.stdout}${check.stderr}`.includes(MARKER), fs.readFileSync(behind, 'utf8') === invalid];
++  });
++  assert.deepStrictEqual(outcomes, outcomes.map(([label]) => [label, 0, true, false, true]), 'AC-16: the linked file is refused before it is parsed, so the warning carries none of its text and its bytes stay');
++});
++
+ test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
+   const settingsRel = '.claude/settings.json';
+   const repo = disabledAttributionRepo();

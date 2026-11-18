@@ -21,6 +21,7 @@ Format rules (parser-critical):
 - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
 - An orchestrator-only action (naming its execution point) or a tests-only stub (`Stub <ref> → impl-test`) is its own plain-text line outside every `### Task N:` block, never a checkbox (same section)
 - A plan that renames text across many files may carry one plan-level `Rename map: <sprint-relative JSON path>` line, plain text outside every `### Task N:` block, never a checkbox; the review manifest diff collapses hunks that only apply its substitutions (same section)
+- `## Decision coverage` is a table only, no checkboxes; omit it when no user decision sets or changes a requirement, behaviour or design choice (asd-phase-plan.md)
 - The other task decomposition rules: sprint-lifecycle.md "Plan file format"
 -->
 
@@ -61,6 +62,12 @@ Test-only: {{test paths or globs}}
 | 2 | {{task ids}} |
 
 - Task {{N}} depends on Task {{M}} (optional lines, under the table)
+
+## Decision coverage
+
+| Decision | Covered by |
+|---|---|
+| {{user decision from the decisions log or accepted ux-spec}} | {{AC-N / Task N / Out of scope}} |
 
 ## Out of scope (optional)
 - {{exclusion}}

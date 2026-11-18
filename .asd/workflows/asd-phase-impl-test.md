@@ -65,7 +65,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
 
 ## Signals
 ```json
-{"QUESTION": "blocker: AC behaviour genuinely ambiguous, or a Simplicity Default trigger (new test dependency or test infrastructure) needing Complication Approval; step 11", "FAILED": "blocker: test runner broken, tech-reference missing; step 11", "FAILED: stalemate <digest>": "emitted by this workflow at step 9, a hard decision"}
+{"QUESTION": "blocker: AC behaviour genuinely ambiguous, or a Simplicity Default trigger (new test dependency or test infrastructure) needing Complication Approval; step 11", "FAILED": "blocker: test runner broken; step 11; tech-reference missing: orchestrator writes it (`artifact-layout.md` 'Tech reference docs')", "FAILED: stalemate <digest>": "emitted by this workflow at step 9, a hard decision"}
 ```
 
 ## Exit

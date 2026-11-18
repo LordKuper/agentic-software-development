@@ -8,7 +8,7 @@
 - [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
 - [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, per-mode rows, External Review twins) against agent Inputs required/modes
 - [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
-- [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Quality finding, move its WHY to JSDoc
+- [In-body comment sweep](feedback_in-body-comment-sweep.md) — added `//` lines in JS bodies, or a context comment a reorder detached: high Quality finding, move its WHY to the header doc
 - [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
 - [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
 - [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
@@ -32,3 +32,8 @@
 - [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
 - [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
 - [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it
+- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — rule making an agent write a new file (scratch commit-msg): check its Tools write list and "deny" entries
+- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — owned key added under one setting: does the flip back remove it, by recorded ownership, never by value equality alone?
+- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
+- [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
+- [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — "marker absent from output" leak test over a JSON.parse error: V8 shows only ±10 chars, a long marker never leaks whole

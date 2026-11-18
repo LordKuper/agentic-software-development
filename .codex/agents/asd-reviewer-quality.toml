@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168 content_digest=sha256:aaee676f5e55b4648848089ef04f0a697717cd01677701bdb98e9612ecdabfae asd_version=14.5.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:defbb1f013a65cbf91b6e7cc6ebb26ce2bc28183b8bd4b055fd175313f9da168 content_digest=sha256:7522f8621ea4ed550eb6ff8c6f0c803c89b9cc02bbaa11b20a5d7cbf4d6187bb asd_version=14.7.0 schema=1
 name = "asd-reviewer-quality"
 description = "AC→code→test trace, bugs, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility; standard impl-review. Not: simplicity, perf, token cost → asd-reviewer-efficiency; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 web_search = "live"

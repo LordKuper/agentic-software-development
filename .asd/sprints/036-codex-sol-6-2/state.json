@@ -1,0 +1,124 @@
+{
+  "sprint_id": "036-codex-sol-6-2",
+  "branch": "sprint/036-codex-sol-6-2",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-18 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: map bump + documented client minimum 0.167.0",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "035#A-1 A-2 A-3 P-1 and issues #123-#127 included (AC-6..AC-14)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate; cost 0 iterations / 0 fix rounds each",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "user answer: accept AC-1..AC-14 (AC-8 redrafted)",
+      "evidence": "decisions-log.md 2026-11-18 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: all 14 AC deliverable, no unsettled contradiction",
+      "evidence": "audit.md Gaps/Risks; scout scans 1-3",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "user answer: accept",
+      "evidence": "decisions-log.md 2026-11-18 plan.md accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "user request: AI attribution setting; answers: project-level Claude, Codex guard + hint, this repo disabled",
+      "evidence": "decisions-log.md 2026-11-18 scope amendment AC-15..AC-17",
+      "artifact_revision": "sprint.md@impl"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: Tasks 1-9 ticked, build+lint clean, round diff authorised, 3 flagged choices resolved",
+      "evidence": "decisions-log.md 2026-11-18 impl assessment approved",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "user answer: B, fix now — link guard moves into loadSyncState for every sync path (out-of-surface External iter-07 finding 1)",
+      "evidence": "decisions-log.md 2026-11-18 scope expansion wave-1/iter-07",
+      "artifact_revision": "reviews/impl/wave-1/iter-07/external.md"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: combined and external APPROVE at wave-1/iter-09, terminal full suite reused 430/430 at 46da53fe",
+      "evidence": "decisions-log.004.md 2026-11-18 impl-review DoD met",
+      "artifact_revision": "reviews/impl/wave-1/iter-09"
+    }
+  ],
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:model-ID literal swap verified by tests/run.js providers/README mirror test and git grep", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "risk:PR body section shape", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:refuse-to-implement rule scope", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:scope gate content", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 6": { "execution": "agent", "tier": "standard", "reason": "risk:plan acceptance preconditions", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:op id convention across recovery and re-dispatch", "raise_effort": false, "resolved_model": "sonnet" },
+    "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
+    "D-1": { "execution": "agent", "tier": "standard", "reason": "risk:json-merge render of a user-co-owned settings file", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 A": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 C": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 D": { "execution": "agent", "tier": "standard", "reason": "risk:reviewer return validation", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-02 A": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-02 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-02 C": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-03 A": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-03 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-04 A": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-05 A": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-06 A": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-07 A": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-08 A": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" }
+  },
+  "skipped_phases": ["design-promote"],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 9, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-03": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-04": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-05": { "combined": "APPROVE", "external": "CONCERNS" }, "iter-06": { "combined": "APPROVE", "external": "CONCERNS" }, "iter-07": { "combined": "APPROVE", "external": "CONCERNS" }, "iter-08": { "combined": "APPROVE", "external": "CONCERNS" }, "iter-09": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "c44e2d1a4ea825c0d10f64f70e91d28bfdf1d38e", "iter-02": "62b9a6786cc8fb248cd0a6088df94540a0458368", "iter-03": "2747cda80edec2a61ca4c9e70adc1efec95e72ee", "iter-04": "2aafaf0f4695f68e830aacaa6e36779b787383b2", "iter-05": "89adc2ed9e21b39e23ae133990a05f67cbe3e9be", "iter-06": "e95ff506435cf3abe93d934ca22a1df4a9081224", "iter-07": "a9f62d1d7f3b35bc982b6a7e790d434af3a12520", "iter-08": "f67dce884a870bb81c71d6b22748e1d27ac68376", "iter-09": "608176a639f0c15ecbdda0527c8d54aa924d1ca5" }, "latched": { "combined": 9, "external": 9 } } ] }
+  },
+  "created_at": "2026-11-17T22:39:20.000Z",
+  "updated_at": "2026-11-17T23:58:00.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": { "number": 128, "url": "https://github.com/LordKuper/agentic-software-development/pull/128", "state": "open" },
+  "archived_at": null
+}

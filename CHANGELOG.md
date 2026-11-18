@@ -2,6 +2,28 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.8.0
+
+Codex `sol` moves to `gpt-6.2-sol`, a new `git.ai_attribution` switch keeps Claude and Codex attribution out of commits and PRs, and a batch of retro-intake fixes to scope, plan, commits, timing and review bookkeeping.
+
+### Added
+- **`git.ai_attribution`** config key (`enabled` | `disabled`, absent = `enabled`, editable through `asd-init`). With `disabled`: sync renders `"attribution": {"commit": "", "pr": ""}` into `.claude/settings.json`; every `/asd-sprint` run checks the project `.claude/settings.json` and `.claude/settings.local.json`, removes any entry that turns attribution back on and reports each fix; under Codex it prints one line pointing to the ChatGPT workspace setting; `commit-check` rejects a `Co-authored-by:` trailer naming Claude or Codex; the PR body carries no AI attribution line.
+- **PR body lists External Review skips**: each impl-review wave whose last External Review was an availability skip is listed with its unreviewed files (035 A-1).
+- **Scope checks disabled documents** (issue #123): a drafted scope that needs a document whose `documents.*` setting would freeze `false` is shown at the scope gate with the choice to enable it or narrow the scope.
+- **Plan build check** (issue #124): the plan phase runs the `commands.yaml` build once before acceptance and stops naming the failing command when the toolchain is missing.
+- **Plan decision coverage** (issue #126): before acceptance, every user decision in the sprint's decisions log, and in an accepted ux-spec, maps to an `AC-N`/Task or an `Out of scope` line.
+
+### Changed
+- **Codex `sol` family resolves to `gpt-6.2-sol`** (was `gpt-6.1-sol`). It needs **Codex CLI 0.167.0 or later**: an older client gets `model_not_found` from the API. Update with `codex update`; consumers get the new ID through `/asd-update`.
+- **`commit-check`** reads the full message (`--message-file`) and rejects an `ASD-Task` line outside git's trailer block (issue #125).
+- **`timing --open`** refuses an id the ledger already holds and warns when `--attrs` is given more than once (035 A-2).
+- **Dev tech-reference check** (035 A-3): before COMPLETED a dev returns `FAILED — tech-reference missing for <command>` for each newly invoked command without an entry.
+- **APPROVE latch**: any change to a production executable file in a reviewer's scope clears its latch, comment- and blank-only hunks included; the comment-only exception is removed (035 P-1).
+- **`sync.js`** refuses a symbolic link or junction at `.asd` or `.asd/sync-state.json` before reading anything, and prints any error as one line.
+
+### Fixed
+- **`agent-liveness`** reports a reviewer dispatch whose return file exists and validates as finished, never STALL (issue #127).
+
 ## v14.7.0
 
 Verification hardening: APPROVE latches follow the code that actually merges, a diff-triggered reliability checklist, an optional smoke command, pre-existing findings filed as issues instead of fixed in the sprint, and self-hosted reviews that read their rules from the base branch.

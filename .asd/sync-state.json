@@ -12,7 +12,10 @@
     },
     ".claude/settings.json": {
       "kind": "json-merge",
-      "content_digest": "sha256:b5f75c794f94d58d0c1115e2ac1e932633fda56a574b2ea9f0b34fd1517e7a20"
+      "content_digest": "sha256:b5f75c794f94d58d0c1115e2ac1e932633fda56a574b2ea9f0b34fd1517e7a20",
+      "owned_keys": [
+        "attribution"
+      ]
     },
     ".codex/hooks.json": {
       "kind": "json-merge",
