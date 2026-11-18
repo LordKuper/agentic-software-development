@@ -101,3 +101,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — impl-review wave-1/iter-03: combined CONCERNS (F1; F2-F3 memory-fixed), external CONCERNS (1-9; 10 below floor; 9 memory-fixed) → impl review-fix (review_fixes_pending wave-1/iter-03). Dedup: external 8 = combined F1. Routes, dev chain: combined F1 (uncovered suite-revision removals stay proposed rows, area pending, step 6 before the next revision dispatch), external 1 (close only AC-line `(PR #N)` includes), 2 + 4 (exhaustive `gh api --paginate` number list, then one `gh pr view` per PR carrying summary and `headRefOid` together), 3 (`gh auth status --hostname <host>`), 5 (seed after all accepted checklist rows), 6 (refuse pipe-less rows), 7 (start-anchored placeholder refusal).
 - 2026-11-18 — route wave-1/iter-03 R1, R2: standard, dispatch HEAD 7f9cf292; risk workflow gate (change)
 - 2026-11-18 — impl fix for wave-1/iter-03: findings resolved
+- 2026-11-18 — route impl-test#6: standard, dispatch HEAD 03d77433
+- 2026-11-18 — impl-test: full suite green (311/311), 0/0 tests (1 extended)
