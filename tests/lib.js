@@ -233,11 +233,6 @@ function grantRows() {
   return JSON.parse(match[1]);
 }
 
-/** Every ref a role is granted across all its rows, in table order. */
-function grantedRefs(role) {
-  return grantRows().filter((row) => row.role === role).flatMap((row) => row.refs);
-}
-
 /** The body of the first `## <heading>` section, prefix-matched as canon citations are. */
 function sectionOf(rel, heading) {
   const body = canonText(rel).split(`\n## ${heading}`)[1];
@@ -250,21 +245,6 @@ function jsonOf(rel, heading) {
   const match = /```json\n([\s\S]*?)\n```/.exec(sectionOf(rel, heading));
   assert.ok(match, `${rel} "${heading}" must carry a json block`);
   return JSON.parse(match[1]);
-}
-
-/** Every string leaf of the JSON block in a section's text (arrays, objects, nested), in order. */
-function jsonText(section) {
-  const leaves = [];
-  const walk = (node) => (typeof node === 'string' ? leaves.push(node) : node && typeof node === 'object' ? Object.values(node).forEach(walk) : undefined);
-  walk(JSON.parse(/```json\n([\s\S]*?)\n```/.exec(section)[1]));
-  return leaves;
-}
-
-/** The body of the first `### <heading>` subhead inside a section's text, prefix-matched. */
-function subOf(text, heading) {
-  const body = text.split(`\n### ${heading}`)[1];
-  assert.ok(body !== undefined, `the "${heading}" subhead must still exist`);
-  return body.split('\n### ')[0];
 }
 
 /** One numbered step of a workflow section, sub-bullets included. */
@@ -321,25 +301,6 @@ function migrateConfig900(text) {
     return { report, output: captured.join(''), text: fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : undefined, rerun: run };
   };
   return run();
-}
-
-/** Terms naming a review mechanism sprint 017's review waves replaced (AC-5); shared by the canon sweep and the agent-memory sweep. */
-const REPLACED_REVIEW_MECHANISMS = [/\.part-|part-N|--halve|outOfPart|out-of-part|SPLIT_THRESHOLD|split trigger|union property|part merge|split dispatch|DISPATCH_CEILING|dispatch ceiling|sub-wave|APPROVE \(partial:|--test-plan-files/i, /\b(?:base_ref|head_ref|exclude_paths)\b/];
-
-const AGENT_MEMORY_ROOT = '.claude/agent-memory';
-
-/** Asserts a sweep's file list holds a file of every agent-memory directory that has one, those of agents no longer on the roster included. */
-function assertSweepReachesMemory(files) {
-  const root = path.join(REPO_ROOT, AGENT_MEMORY_ROOT);
-  const populated = fs.readdirSync(root, { withFileTypes: true }).filter((entry) => entry.isDirectory() && fs.readdirSync(path.join(root, entry.name)).some((name) => name.endsWith('.md'))).map((entry) => entry.name);
-  assert.ok(populated.length > 0, 'sanity: the memory root must hold a populated directory, or the sweep reach check compares nothing');
-  assert.deepStrictEqual(populated.filter((dir) => !files.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/${dir}/`))), [], 'sanity: the sweep must reach every memory directory (artifact-layout.md "Leftover-term check")');
-}
-
-/** Every memory file a dispatched roster agent loads: the `.md` files under `.claude/agent-memory/<agent>/`, for each agent `.claude/agents/` defines. */
-function rosterMemoryFiles() {
-  const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3));
-  return fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT, dir)).filter((name) => name.endsWith('.md')).map((name) => `${AGENT_MEMORY_ROOT}/${dir}/${name}`));
 }
 
 function canonAgents() {
@@ -531,20 +492,13 @@ module.exports = {
   canonText,
   headingBody,
   grantRows,
-  grantedRefs,
   sectionOf,
   jsonOf,
-  jsonText,
-  subOf,
   stepOf,
   spans,
   canonMarkdownFiles,
   readRemovedConfigKeys,
   migrateConfig900,
-  REPLACED_REVIEW_MECHANISMS,
-  AGENT_MEMORY_ROOT,
-  assertSweepReachesMemory,
-  rosterMemoryFiles,
   canonAgents,
   headingsOf,
   FORM_DOMAIN_SECTIONS,
