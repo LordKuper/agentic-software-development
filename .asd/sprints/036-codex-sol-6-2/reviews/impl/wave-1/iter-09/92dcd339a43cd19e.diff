@@ -1,0 +1,81 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 1c5157ce..3db7c562 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -90,7 +90,7 @@
+     ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
+     ".asd/skills/asd-update/SKILL.md": "14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "c3f19e6cf9b300f14a27b2cd79afcb3899381c3312bf19c33199fdc46db6c7b4",
++    ".asd/sync.js": "c9134e159e3a307e453f16405fb389390df9dcd5da0cf2b0470dfc5d9426ed01",
+     ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 6baf7342..0755590d 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -1530,8 +1530,8 @@ function orphanStatus(orphan) {
+ // 'orphan-modified' once hand-edited); an unmarked one is informational only
+ // ('orphan-unmarked') - a consumer's own file, not this tool's to flag.
+ function runCheck(repoRoot) {
+-  const manifest = loadReleaseManifest(repoRoot);
+   const syncState = loadSyncState(repoRoot);
++  const manifest = loadReleaseManifest(repoRoot);
+   const plan = buildSyncPlan(repoRoot);
+   const report = [];
+   for (const item of plan) {
+@@ -1566,8 +1566,8 @@ function runCheck(repoRoot) {
+ // with zero writes performed - even if it's the last file in a multi-file
+ // request and earlier ones would otherwise have rendered fine.
+ function runApply(repoRoot, requestedFiles, options) {
+-  const manifest = loadReleaseManifest(repoRoot);
+   const syncState = loadSyncState(repoRoot);
++  const manifest = loadReleaseManifest(repoRoot);
+   const plan = buildSyncPlan(repoRoot);
+   const planByRel = new Map();
+   for (const item of plan) {
+@@ -1704,7 +1704,7 @@ if (require.main === module) {
+   try {
+     process.exitCode = main(process.argv);
+   } catch (error) {
+-    process.stderr.write(`sync: ${error.message}\n`);
++    process.stderr.write(`sync: ${String(error.message).replace(/[\r\n]+/g, ' ')}\n`);
+     process.exitCode = 1;
+   }
+ }
+diff --git a/tests/run.js b/tests/run.js
+index cd7a3c87..611ecc7e 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -11059,6 +11059,30 @@ test('sprint-036 AC-16 (external 1, iter-07): sync --check over an unlinked ledg
+   assert.deepStrictEqual([ran.status, ran.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(ran.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
+ });
+ 
++test('sprint-036 AC-16 (external 1, iter-08): sync --check and --apply over a linked .asd directory or symlinked ledger whose release manifest is malformed JSON exit 1 with one "sync: " link-refusal line carrying no fragment of that manifest, and leave manifest and ledger byte-identical', () => {
++  const MARKER = 'LINKED-MANIFEST-SECRET-MARKER';
++  const FRAGMENT = MARKER.slice(0, 8);
++  const invalid = `{ "schema_version": ${MARKER} `;
++  const outcomes = [];
++  for (const [label, { repo, behind }] of linkedLedgerCases()) {
++    const manifestPath = path.join(repo.root, '.asd', 'release-manifest.json');
++    fs.writeFileSync(manifestPath, invalid, 'utf8');
++    const ledgerBefore = fs.readFileSync(behind, 'utf8');
++    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
++      const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: repo.root, encoding: 'utf8' });
++      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(manifestPath, 'utf8') === invalid, fs.readFileSync(behind, 'utf8') === ledgerBefore]);
++    }
++  }
++  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true, true]), 'AC-16: the link guard runs before the release manifest is read - one sync: line, exit 1, no manifest text, no byte changed');
++});
++
++test('sprint-036 AC-16 (external 2, iter-08): sync --check over an unlinked ledger whose schema_version value spans CR and LF lines exits 1 with exactly one stderr line - the CLI catch-all folds the message to one line', () => {
++  const repo = disabledAttributionRepo();
++  fs.writeFileSync(path.join(repo.root, '.asd', 'sync-state.json'), JSON.stringify({ schema_version: 'first\r\nsecond\nthird', entries: {} }), 'utf8');
++  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
++  assert.deepStrictEqual([ran.status, ran.stdout, ran.stderr.split('\n').length, /^sync: [^\n\r]*first second third[^\n\r]*\n$/.test(ran.stderr)], [1, '', 2, true], 'AC-16: a multi-line thrown message ends as one stderr line');
++});
++
+ test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
+   const settingsRel = '.claude/settings.json';
+   const repo = disabledAttributionRepo();
