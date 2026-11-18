@@ -107,7 +107,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
-| D-1 | 1 | AGENTS.md | AC-20: canon still describes the suite as one file — AGENTS.md "Build and lint" (`tests/run.js` is a real … test runner), "Phase chain" (`tests/run.js` §16), "Conventions" (`tests/run.js` among Node code); sprint-lifecycle.md "Cleanup phase" step 3 (impacted set is the full `node tests/run.js`) | none (AC-20) | pending | |
+| D-1 | 1 | AGENTS.md | AC-20: canon still describes the suite as one file — AGENTS.md "Build and lint" (`tests/run.js` is a real … test runner), "Phase chain" (`tests/run.js` §16), "Conventions" (`tests/run.js` among Node code); sprint-lifecycle.md "Cleanup phase" step 3 (impacted set is the full `node tests/run.js`) | none (AC-20) | fixed | 0c10f603 |
 
 ## Suite revision (optional)
 
