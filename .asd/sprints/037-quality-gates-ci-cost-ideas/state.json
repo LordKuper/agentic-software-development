@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "impl-review",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -169,6 +169,27 @@
       "reason": "artifact-risk:mirror wording of the per-area suite",
       "raise_effort": false,
       "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "wave-1/iter-01 R3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -199,7 +220,7 @@
   },
   "created_at": "2026-11-18T08:42:04.000Z",
   "updated_at": "2026-11-18T11:11:13.794Z",
-  "review_fixes_pending": "wave-1/iter-01",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

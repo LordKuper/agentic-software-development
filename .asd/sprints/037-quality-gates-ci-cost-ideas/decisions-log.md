@@ -87,3 +87,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route impl-test#3: standard, dispatch HEAD b12d7ce1
 - 2026-11-18 — impl-test: impacted set green (205/205, 9 areas), 0/0 tests
 - 2026-11-18 — impl-review wave-1/iter-01: combined CONCERNS (F1-F12), external CONCERNS (1-11) → impl review-fix (review_fixes_pending wave-1/iter-01). Dedup: external 1 = combined F2, external 2 = combined F5, external 4 = combined F3, external 6 = combined F9. Routes: dev chain — combined F1 (drop `--headroom`, simplify; departs plan Overview, no caller), F2, F3, F5, F7, F8, F9, F10, F11, F12, external 3, 5, 7, 8, 9, 10; tester chain — combined F4, F6, external 11 (tests/run.js).
+- 2026-11-18 — route wave-1/iter-01 R1, R2, R3: standard, dispatch HEAD c0248783; risk workflow gate (change), public contract (change)
+- 2026-11-18 — route wave-1/iter-01 tester (combined F4, F6, external 11): standard, dispatch HEAD 0e38c05d
+- 2026-11-18 — impl fix for wave-1/iter-01: findings resolved (flagged accepted: external 5 keeps only Line delta/Allowance; sprint PR merge stays on gh default repo; close validates the rotated segment)
