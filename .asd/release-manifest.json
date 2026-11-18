@@ -59,7 +59,7 @@
   "upstream_hashes": {
     ".asd/agents/asd-external-review.md": "19669dbda0b93e4aae5be5b146036e1e544df2e3b877ed69e710e5396efa16cb",
     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
-    ".asd/rules/artifact-layout.md": "4b97a390ebd4e5a1000582fc9f935a333ce75c0fc4b3b6c946ad942d1bbd316b",
+    ".asd/rules/artifact-layout.md": "3fe0ee2cc0d7f0f7ac8ee44774768f2628d2e8c48ea14c5a71b70bb0ca5ee3a7",
     ".asd/rules/checkpoints.md": "bf399860b8b59e92b3b02e71188d2ee633527a46eba0ec1cbdc4c245b86c14dd",
     ".asd/rules/code-style.md": "97d5ba305edace4cca78d13f7bed70d01fa76eb6a1d3d31e36fc00298359d246",
     ".asd/rules/core.md": "1d59078ad0eeb85596ed30b2ba55d7020267c57abc6a6f5f359e54e6c01a2607",
@@ -128,7 +128,7 @@
     ".asd/workflows/asd-phase-design-review.md": "6019b2b59b6792386046399dc3223f9225dada3d2f2cec7fe2fa2ff61f50e64e",
     ".asd/workflows/asd-phase-design.md": "f7cbb2a79463cb59b8c8c6ce82039a3b14808004f74ce59b22e4df4530f26b9d",
     ".asd/workflows/asd-phase-impl-review.md": "04caaffa4d6e2a204d2cfb269bf367c60c90e702ff4c387665cf59ab672cb3ce",
-    ".asd/workflows/asd-phase-impl-test.md": "db2486a87c04ed316a3c11a166a97d2823f9fc1fa91299791d8696f7c9f776b4",
+    ".asd/workflows/asd-phase-impl-test.md": "2994ccd0bf4f219d5f56bb2299b9a48686b865933396c0a805ed5417733d0253",
     ".asd/workflows/asd-phase-impl.md": "2cb551c19a12fc1803fe3a6d0ba278e641260a873a5bd78cf891363ed21aea3b",
     ".asd/workflows/asd-phase-plan.md": "ff0fe8b91f7b25574d8b777061483e795e738dd019fb087ddea72d25c66afdf4",
     ".asd/workflows/asd-phase-pr.md": "e95054ed20f3f74b0d159dcf804d9e425144d9b03996c59c55a64f11631afbbb",
