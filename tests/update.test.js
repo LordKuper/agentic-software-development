@@ -77,17 +77,6 @@ test('update state machine: unsafe manifest path is rejected regardless of hashe
   );
 });
 
-test('release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file', () => {
-  const manifest = loadManifest();
-  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
-  const missing = fs
-    .readdirSync(agentsDir)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => `agents/${f}`)
-    .filter((key) => !(key in (manifest.canon_hashes || {})));
-  assert.deepStrictEqual(missing, [], `canon_hashes missing entries for: ${missing.join(', ')}`);
-});
-
 function writeManifest(root, overrides) {
   const manifest = Object.assign(
     {
@@ -513,8 +502,14 @@ test('update.js applyPlan (regression): a migration requiring .asd/sync.js from 
   assert.strictEqual(result.migrations.reports['9.9.9'].helperResult, 'NEW_ENGINE_HELPER', 'must observe the JUST-WRITTEN engine export, never a cached stale copy missing it');
 });
 
-test('release-manifest.json: every canon_hashes entry matches the actual file (relative to .asd/)', () => {
+test('release-manifest.json: canon_hashes has an entry for every .asd/agents/*.md file and every entry matches the actual file (relative to .asd/)', () => {
   const manifest = loadManifest();
+  const missing = fs
+    .readdirSync(path.join(REPO_ROOT, '.asd', 'agents'))
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => `agents/${f}`)
+    .filter((key) => !(key in (manifest.canon_hashes || {})));
+  assert.deepStrictEqual(missing, [], `canon_hashes missing entries for: ${missing.join(', ')}`);
   const stale = [];
   for (const [relToAsd, recorded] of Object.entries(manifest.canon_hashes || {})) {
     const abs = path.join(REPO_ROOT, '.asd', relToAsd);
