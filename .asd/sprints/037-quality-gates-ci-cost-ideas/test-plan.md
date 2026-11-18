@@ -107,11 +107,11 @@ Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` 
 
 | Area | State | Tests before → after | Seeded-defect proof |
 |---|---|---|---|
-| runtime-review | pending | 44 → | |
-| runtime-tools | pending | 34 → | |
+| runtime-review | pending | 44 → | partial (82b1807f): `sandboxGitRepoFrom` template copy, latch scenarios share one base commit (3.5 s → 2.2 s, 3.0 s → 1.6 s), split-budget fixture 800 → 400 longer paths (7.0 s → 4.5 s); seeded: `scopes.has(reviewer)` branch of latchRefresh made false → `--filter latch-refresh` exit 1, 2 matched, both fail; `GIT_ARGS_BUDGET` 32000 → 3200000 → `--filter "sprint-031 AC-9"` exit 1, 1 matched, fails; left: emit-manifest, review-waves, base-ref git tests, duplicate review of the contracts |
+| runtime-tools | pending | 34 → | partial (cc2a58f3): commit-check message and refusal cases run as one async batch (1.8 s → 0.45 s, 1.7 s → 0.6 s, 1.25 s → 0.7 s); seeded: header limit +1 → `--filter "sprint-033 AC-12/AC-21"` exit 1, 1 matched, fails; misplaced-trailer clause dropped → `--filter "sprint-036 AC-12: commit-check"` exit 1, fails; AI-trailer clause dropped → `--filter "sprint-036 AC-16: under git.ai_attribution disabled commit-check"` exit 1, fails; left: one-command commit form, memory-check, test-delta, impl-test-close, design-tokens, attribution-check |
 | runtime-routing | pending | 22 → | |
-| runtime-timing | pending | 21 → | |
-| hooks | pending | 14 → | |
+| runtime-timing | pending | 21 → | partial (782c2a21): both agent-liveness CLI tests and the context-check test start their independent runs together (2.1 s → 1.1 s each, 1.05 s → 0.76 s); seeded: `STALL ` print renamed → `--filter agent-liveness` exit 1, 2 matched, both fail; `unobservable` verdict renamed → `--filter "agentLiveness turns"` exit 1 fails; `over.length > 0 ? 1 : 0` → `? 0 : 0` → `--filter "sprint-037 AC-1: context-check"` exit 1 fails; left: duplicate review of the 19 other tests |
+| hooks | pending | 14 → | partial (86ea4c89): the workflow-chain and design-collapse cases run as one async batch (2.4 s → 0.55 s, 0.76 s → 0.2 s; area 4.9 s → 2.8 s); seeded: `Next phase:` line renamed in the hook → `--filter "sprint-020 AC-1/AC-6"` exit 1, 1 matched, fails, and `--filter "sprint-013 AC-14"` exit 1 fails; left: duplicate review of the other 12 tests |
 | sync-cli | pending | 14 → | |
 | sweeps | done | 13 → 0 | no survivor: the 13 one-time removal sweeps of sprints 021-036 go wholesale (AC-19); nothing to seed |
 | contract-rules | pending | 31 → | |
@@ -121,4 +121,4 @@ Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` 
 | sync-render | pending | 61 → | |
 | update | pending | 37 → | |
 | migrations | pending | 19 → | |
-| runner | pending | 1 → | |
+| runner | done | 1 → 1 | the `--filter` test no longer reads the loaded test list, so an area run passes; extended with `runtime-timing --filter` pass, `hooks --filter` of a runtime-timing test → exit 1, `no-such-area` → exit 1 `unknown area`; seeded: loader ignores area arguments (`for (const area of known)`) → `--filter "sprint-027 AC-9"` exit 1, 1 matched, fails; unknown-area refusal disabled (`if (false)`) → same filter exit 1, fails |
