@@ -19,6 +19,12 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | scope | `retro-candidates` rejects a retrospective whose Systemic proposals section has no table | — |
+| F-2 | impl | audit missed an existing context-load ceiling | research.md G2, audit.md |
+| F-3 | impl | clean `sync.js --check` skipped the hash-ledger recompute | test-plan.md D-2 |
+| F-4 | impl-review | commit-check before staging skipped the memory check | reviews/impl/wave-1/iter-03 combined F2 |
+| F-5 | impl-review | external review kept finding a narrower critical edge of each fix until the iteration cap | reviews/impl/wave-1/iter-05..iter-08 external |
+| F-6 | impl-review | `sync.js --apply` with a directory argument silently skips the hash-ledger recompute | — |
+| F-7 | impl-review | External Review wrote iteration-specific tokens into its memory again | reviews/impl/wave-1/iter-08 |
 
 ## F-1 — `retro-candidates` rejects a retrospective whose Systemic proposals section has no table
 
@@ -51,3 +57,27 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: The orchestrator ran `commit-check` on reviewer memory before `git add`; its memory check reads only `git diff --cached`, so it scanned nothing and passed. An `asd-external-review` memory edit carrying `wave-1 iter-02` was committed; combined iter-03 F2 caught it.
 - **Impact**: One memory-fix dispatch in impl-review.
 - **Refs**: reviews/impl/wave-1/iter-03 combined F2
+
+## F-5 — external review kept finding a narrower critical edge of each fix until the iteration cap
+
+- **Phase**: impl-review
+- **Surface**: rule — `review-policy.md` "Iteration severity floor" against the External Review wrapped CLI
+- **What happened**: From iter-05 to iter-08 codex returned one or two critical findings per iteration, each a narrower case of the previous fix (gap-proof per table → struck-row rotation → rotate/carry order → segment repair scope → refusal repair at both exits → Entry log/Suite run refusals). The fix briefs named only the cited edge, so each round surfaced the next one; the cap (7) was reached, the user overrode once and the iter-08 finding was cap-accepted.
+- **Impact**: Four extra review-fix rounds (dev + tester + external each); one accepted open finding (impl-test-close Entry log/Suite run refusals have no repair route).
+- **Refs**: reviews/impl/wave-1/iter-05..iter-08 external.md; state.json gate_decisions review-cap override
+
+## F-6 — `sync.js --apply` with a directory argument silently skips the hash-ledger recompute
+
+- **Phase**: impl-review
+- **Surface**: tool — `.asd/sync.js` `--apply`
+- **What happened**: `--apply .claude/skills .agents/skills` treated the directories as invalid targets and returned `hashLedger: null` with exit 0 and no error line; the release-manifest upstream hashes stayed stale until a rerun with a file path.
+- **Impact**: One extra sync run; a stale ledger would have failed the next suite.
+- **Refs**: —
+
+## F-7 — External Review wrote iteration-specific tokens into its memory again
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-external-review` memory write against `git-strategy.md` memory check
+- **What happened**: After F-4 was fixed, the iter-08 run again added `iter-08` references to `reference_codex-invocation.md`; commit-check refused them and a memory-fix dispatch removed them.
+- **Impact**: One memory-fix dispatch.
+- **Refs**: reviews/impl/wave-1/iter-08

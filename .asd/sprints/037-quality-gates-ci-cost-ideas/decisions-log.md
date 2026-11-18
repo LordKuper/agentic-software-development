@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-11-18 — cleanup checkpoint 99d7ba6f0797d3cf113dafb1a80eb19c36c9652b
+- 2026-11-18 — cleanup: removed tests/lib.js grantedRefs, jsonText, subOf, REPLACED_REVIEW_MECHANISMS, AGENT_MEMORY_ROOT, assertSweepReachesMemory, rosterMemoryFiles (no caller; sweep consumers removed in the suite revision); reverted none; verified build, lint, tests (full 311/311) @f987e679
