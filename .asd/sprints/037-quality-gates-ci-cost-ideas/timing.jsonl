@@ -186,3 +186,11 @@
 {"op":"close","id":"suite-impl-test-8","kind":"suite","parent":"impl-test-8","start":"2026-11-18T12:49:51.279Z","end":"2026-11-18T12:50:29.670Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-test-8","kind":"dispatch","parent":"impl-test#8","start":"2026-11-18T12:48:32.365Z","end":"2026-11-18T12:51:28.023Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl-test#8","kind":"phase","parent":null,"start":"2026-11-18T12:48:31.701Z","end":"2026-11-18T12:51:28.532Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#6","kind":"phase","parent":null,"start":"2026-11-18T12:51:34.608Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-06","kind":"review-iteration","parent":"impl-review#6","start":"2026-11-18T12:51:35.077Z","attrs":{}}
+{"op":"open","id":"combined wave-1/iter-06","kind":"dispatch","parent":"impl-review wave-1/iter-06","start":"2026-11-18T12:51:36.277Z","attrs":{"context_bytes":101578}}
+{"op":"open","id":"external wave-1/iter-06","kind":"external-review","parent":"impl-review wave-1/iter-06","start":"2026-11-18T12:51:36.332Z","attrs":{}}
+{"op":"close","id":"combined wave-1/iter-06","kind":"dispatch","parent":"impl-review wave-1/iter-06","start":"2026-11-18T12:51:36.277Z","end":"2026-11-18T12:54:22.981Z","outcome":"done","attrs":{"context_bytes":101578}}
+{"op":"close","id":"external wave-1/iter-06","kind":"external-review","parent":"impl-review wave-1/iter-06","start":"2026-11-18T12:51:36.332Z","end":"2026-11-18T12:55:45.109Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review wave-1/iter-06","kind":"review-iteration","parent":"impl-review#6","start":"2026-11-18T12:51:35.077Z","end":"2026-11-18T12:56:06.405Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review#6","kind":"phase","parent":null,"start":"2026-11-18T12:51:34.608Z","end":"2026-11-18T12:56:06.462Z","outcome":"done","attrs":{}}

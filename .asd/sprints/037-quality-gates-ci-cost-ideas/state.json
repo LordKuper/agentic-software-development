@@ -245,7 +245,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 5,
+          "iteration": 6,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -266,6 +266,10 @@
             "iter-05": {
               "combined": "APPROVE",
               "external": "CONCERNS"
+            },
+            "iter-06": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
             }
           },
           "iteration_heads": {
@@ -273,10 +277,11 @@
             "iter-02": "cc385ccd50a96c1ff46f124be61123d42162224e",
             "iter-03": "056a3e731550778ac75b0c0c0224f0021891bd88",
             "iter-04": "834a02bfb3ed90eef9c1dbe2d6d5e11f57a1e898",
-            "iter-05": "d4617a0cc678933b812fa3f271a192249576a885"
+            "iter-05": "d4617a0cc678933b812fa3f271a192249576a885",
+            "iter-06": "2b84acf7a497e3f8be470447a05e06c84e831c43"
           },
           "latched": {
-            "combined": 5
+            "combined": 6
           }
         }
       ]
@@ -284,7 +289,7 @@
   },
   "created_at": "2026-11-18T08:42:04.000Z",
   "updated_at": "2026-11-18T11:11:13.794Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-06",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
