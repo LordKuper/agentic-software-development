@@ -19,18 +19,18 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 3 | dc162aad | delta since entry 2 |
 | 4 | 7e8c5385 | delta since entry 3 (review-fix `wave-1/iter-01`) |
 | 5 | 6104618d | delta since entry 4 (review-fix `wave-1/iter-02`) |
+| 6 | 03d77433 | delta since entry 5 (review-fix `wave-1/iter-03`, iter-03 memory fixes) |
 
 ## Risk → check decisions
 
-Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`.
+Entry 1's rows, removals and added tests moved to `test-plan.entry-01.md`, entry 2's to `test-plan.entry-02.md`, entry 3's to `test-plan.entry-03.md`, entry 4's (the review-fix `wave-1/iter-01` rows) to `test-plan.entry-04.md`, entry 5's (the review-fix `wave-1/iter-02` rows) to `test-plan.entry-05.md`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `git diff 7e8c5385...HEAD` outside `.asd/sprints/**`: `context-check --seed` into an existing ceilings file keeps every existing key and value and adds only the missing project keys; a malformed file fails (combined F1 / external 4) | a re-seed raises a lowered ceiling or drops a key, or a malformed file is overwritten | extend `sprint-037 AC-1` (`runtime-timing`) with a seed into a file holding a lowered ceiling and one missing project key, and a seed into a malformed file | extend existing | the AC-1 test owns the context-check exit contract and the seed; the added case expects the lowered value kept, the other keys untouched, the missing key added, and the malformed file non-zero and unchanged. Mutation (`const existing = fs.existsSync(file) ? readCeilings(file) : {};` → `const existing = {};`, restored): `node tests/run.js runtime-timing --filter "sprint-037 AC-1"` → exit 1, `FAIL - sprint-037 AC-1: context-check exits 0 over the committed ceilings…` (1/21 matched, 0/1 passed) |
-| `checkGapProof` refuses only a wholly unreplaced `{{…}}` Gap proof cell (anchored), so a proof citing `{{X}}` mid-text closes (combined F2 / external 6) | the placeholder check refuses a real proof that quotes a template token | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a mid-text `{{X}}` control row expecting status 0 | extend existing | the AC-3/AC-13 test owns the Gap proof refusals; the whole-cell placeholder case was already there, the mid-text control is the new row. Mutation (anchors dropped, `/^{{.*}}$/` → `/{{.*}}/`, restored): `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…` (1/34 matched, 0/1 passed) |
-| `checkGapProof` refuses an Added tests table whose header is followed directly by a data row (external 5) | a table with no separator row swallows its first data row as the separator and closes green | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a header-then-row plan expecting the `table separator malformed` refusal | extend existing | same owner test. Mutation (separator-shape `fail` line removed, restored): `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, same failing test (1/34 matched, 0/1 passed) |
-| PR intake and merge prose: host-qualified `<project>` (`gh repo view <origin> --json url`), `--match-head-commit <sha>`, `headRefOid`, oldest-first listing (external 1–3) | a machine-parsed token of these steps drifting | none | none | no contract test pins any of these tokens (`grep -n "nameWithOwner|headRefOid|match-head-commit|created-asc" tests/` was empty after the dead helper below was removed); the change is prose of an orchestrator-run `gh` sequence no machine parses (code-style §17: a prose fix adds a test only for a machine-parsed token) |
-| `originCheckedBeforeRepoView` in `tests/contract-workflows.test.js` still named `nameWithOwner` and nothing called it | a dead helper pinning a replaced token | none (deletion) | removed | the helper and `labelsAdded`, also uncalled since before entry 4, are deleted from `tests/contract-workflows.test.js`; no test referenced either |
+| `git diff 6104618d...HEAD` outside `.asd/sprints/**`: `checkGapProof` refuses a pipe-less row in `## Added tests` with `Added tests table row lacks a leading pipe` (external 6) | a row typed without its leading pipe is filtered out of the table and never checked, so an empty-proof row closes green | extend `sprint-037 AC-3/AC-13` (`runtime-tools`) with a well-formed table followed by a pipe-less row expecting status 2 and the refusal | extend existing | the AC-3/AC-13 test owns the Gap proof refusals and already holds the valid control (`filled`, status 0). Mutation (the pipe-less `fail` line removed, restored): `node tests/run.js runtime-tools --filter "sprint-037 AC-3/AC-13"` → exit 1, `FAIL - sprint-037 AC-3/AC-13: test-delta splits the sprint diff…` (1/34 matched, 0/1 passed) |
+| same function: the placeholder refusal is start-anchored (`cells[column].startsWith('{{')`), so `{{x}} (pending)` is refused and mid-text `{{X}}` still closes (external 7) | a half-replaced template cell with trailing text slips past the whole-cell anchor | extend the same test with a `{{seeded defect}} (pending)` row expecting the placeholder refusal; the mid-text `{{X}}` control from entry 5 stays | extend existing | one assert on the same test. Mutation (`startsWith('{{')` → the whole-cell `/^{{.*}}$/` test, restored): same command → exit 1, same failing test (1/34 matched, 0/1 passed); `git status` after the run shows `.asd/runtime.js` unmodified. runs: 2 (both mutations of this entry) |
+| prose changes of `cd79c7ec` and `7c160ef3`: the suite-revision proposed-row route (`asd-phase-impl-test.md` step 9a, `asd-tester.md`), `gh api --hostname <host> --paginate` open-PR number list, `gh auth status --hostname`, the checklist seed after all rows, closing only AC-line `(PR #N)` PRs (`asd-phase-pr.md`) | a machine-parsed token of these steps drifting | none | none | a grep of `tests/contract-*.js` and `tests/runtime-*.test.js` for `gh pr list`, `created-asc`, `gh api`, `auth status`, `--seed`, `(PR #`, `isDraft` hits no pin of any of these tokens; the changes are prose of orchestrator-run `gh` sequences and a dispatch route no machine parses (code-style §17: a prose fix adds a test only for a machine-parsed token) |
+| iter-03 memory-fix commits `71b411ea`, `ba739293` and the view sync | none reachable by a test | none | none | agent memory text and generated views; `node .asd/sync.js --check` (`ok: true`) and the full suite cover the views |
 
 ## Removed tests
 
@@ -56,12 +56,12 @@ analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: `node tests/run.js` (every area, `hooks` and `migrations` included)
-- Scope: full — the shared runner `tests/run.js` changed since the prior full run, so the step 8 safety valve applies; the suite op `suite-impl-test-5` brackets the run (the entry 4 mutation runs and the entry 5 mutation runs are `--filter` runs recorded under Risk → check decisions)
+- Scope: full — `.asd/runtime.js` changed and every area reaches it through `tests/lib.js`, so no narrower set is honest; the suite op `suite-impl-test-6` brackets the run (the entry 6 mutation runs are `--filter` runs recorded under Risk → check decisions)
 - Result: pass — exit 0, 311 passed, 0 failed, 0 skipped (311 tests)
 - Lint / build: `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`)
-- Slowest tests: 2360 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1457 ms sprint-019 AC-8 one-command commit form; 1111 ms sprint-036 AC-14 agent-liveness --returns; 1058 ms sprint-021 AC-7 (D7) agentLiveness
-- HEAD: cc6d78d5
-- Line delta: tests +8711/−11521 (net -2810); other +740/−174 (net 566)
+- Slowest tests: 2038 ms sprint-023 AC-2 git-strategy.md "Branch" commands; 1449 ms sprint-019 AC-8 one-command commit form; 1137 ms sprint-036 AC-14 agent-liveness --returns; 1081 ms sprint-021 AC-7 (D7) agentLiveness
+- HEAD: 03d77433 (the run tree includes this entry's staged `tests/runtime-tools.test.js` edit)
+- Line delta: tests +8716/−11522 (net -2806); other +790/−196 (net 594)
 
 ## Defects
 

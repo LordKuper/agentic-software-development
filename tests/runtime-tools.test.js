@@ -1151,7 +1151,7 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   };
   const green = (text, ref) => close(text, '--green', '--base', ref, '--commands', commands);
   const proven = gapRow('seeded x: node tests/run.js -> exit 0');
-  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator] = await Promise.all([
+  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator, trailingPlaceholder, noLeadingPipe] = await Promise.all([
     delta(base),
     delta('HEAD'),
     close(plan(gapRow(''))),
@@ -1167,6 +1167,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
     close(plan(gapRow('{{seeded defect}}'))),
     close(plan(gapRow('seeded {{X}} mid-text: node tests/run.js -> exit 1'))),
     close(plan(['| Test | Gap proof | Regression proof |', '| a.js:t | seeded x | n/a |'])),
+    close(plan(gapRow('{{seeded defect}} (pending)'))),
+    close(plan([...gapRow('seeded x: node tests/run.js -> exit 1'), 'b.js:t | seeded y | n/a |'])),
   ]);
   const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
 
@@ -1177,6 +1179,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   refused(noSection, /has no ## Added tests section/, 'a plan with no Added tests section is refused');
   refused(placeholder, /unresolved {{…}} Gap proof placeholder/, 'a template placeholder left as the Gap proof is refused');
   assert.strictEqual(midPlaceholder.status, 0, 'a Gap proof citing {{X}} mid-text is no unreplaced template cell and closes');
+  refused(trailingPlaceholder, /unresolved {{…}} Gap proof placeholder/, 'a Gap proof opening with a template placeholder is refused whatever follows it');
+  refused(noLeadingPipe, /row lacks a leading pipe/, 'a row after a well-formed table with no leading pipe is refused, not dropped');
   refused(noSeparator, /table separator malformed/, 'a header followed directly by a data row is refused');
   assert.strictEqual(filled.status, 0, 'a filled Gap proof closes');
   assert.strictEqual(noRow.status, 0, 'a table with no row needs no proof');
