@@ -151,3 +151,8 @@
 {"op":"close","id":"impl-test-6","kind":"dispatch","parent":"impl-test#6","start":"2026-11-18T12:20:45.600Z","end":"2026-11-18T12:23:36.939Z","outcome":"done","attrs":{"context_bytes":81849}}
 {"op":"close","id":"impl-test#6","kind":"phase","parent":null,"start":"2026-11-18T12:20:45.341Z","end":"2026-11-18T12:24:30.946Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-11-18T12:24:31.311Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-04","kind":"review-iteration","parent":"impl-review#4","start":"2026-11-18T12:24:50.220Z","attrs":{}}
+{"op":"open","id":"combined wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-11-18T12:24:51.379Z","attrs":{"context_bytes":101402}}
+{"op":"open","id":"external wave-1/iter-04","kind":"external-review","parent":"impl-review wave-1/iter-04","start":"2026-11-18T12:24:51.435Z","attrs":{}}
+{"op":"close","id":"combined wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-11-18T12:24:51.379Z","end":"2026-11-18T12:29:25.996Z","outcome":"done","attrs":{"context_bytes":101402}}
+{"op":"close","id":"external wave-1/iter-04","kind":"external-review","parent":"impl-review wave-1/iter-04","start":"2026-11-18T12:24:51.435Z","end":"2026-11-18T12:33:57.110Z","outcome":"done","attrs":{}}

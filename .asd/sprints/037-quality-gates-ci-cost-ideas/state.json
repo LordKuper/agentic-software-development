@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -238,7 +238,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 3,
+          "iteration": 4,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -251,21 +251,28 @@
             "iter-03": {
               "combined": "CONCERNS",
               "external": "CONCERNS"
+            },
+            "iter-04": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
             }
           },
           "iteration_heads": {
             "iter-01": "56f02fbc35b88429daf3aff09c0c7e8c5085a698",
             "iter-02": "cc385ccd50a96c1ff46f124be61123d42162224e",
-            "iter-03": "056a3e731550778ac75b0c0c0224f0021891bd88"
+            "iter-03": "056a3e731550778ac75b0c0c0224f0021891bd88",
+            "iter-04": "834a02bfb3ed90eef9c1dbe2d6d5e11f57a1e898"
           },
-          "latched": {}
+          "latched": {
+            "combined": 4
+          }
         }
       ]
     }
   },
   "created_at": "2026-11-18T08:42:04.000Z",
   "updated_at": "2026-11-18T11:11:13.794Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-04",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
