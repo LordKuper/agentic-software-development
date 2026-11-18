@@ -83,6 +83,13 @@
       "reason": "user answer: accept raising the standalone-skills byte cap 61051 -> 62351 B (asd-init growth from AC-3, AC-8, AC-16)",
       "evidence": "decisions-log.md 2026-11-18 skill size cap waiver; test-plan.md entry 1",
       "artifact_revision": "tests/run.js@984cd797"
+    },
+    {
+      "gate": "review-cap override",
+      "decision_actor": "user",
+      "reason": "user answer: \"Override, ещё раунд\" after advisor consult (override once, fix the refusal-repair class in all four places); iter-07 external 1-2 critical",
+      "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-07; reviews/impl/wave-1/iter-07/external.md",
+      "artifact_revision": "impl-review wave-1/iter-07"
     }
   ],
   "task_routing": {
@@ -245,7 +252,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 6,
+          "iteration": 7,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -270,6 +277,10 @@
             "iter-06": {
               "combined": "APPROVE",
               "external": "CONCERNS"
+            },
+            "iter-07": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
             }
           },
           "iteration_heads": {
@@ -278,7 +289,8 @@
             "iter-03": "056a3e731550778ac75b0c0c0224f0021891bd88",
             "iter-04": "834a02bfb3ed90eef9c1dbe2d6d5e11f57a1e898",
             "iter-05": "d4617a0cc678933b812fa3f271a192249576a885",
-            "iter-06": "2b84acf7a497e3f8be470447a05e06c84e831c43"
+            "iter-06": "2b84acf7a497e3f8be470447a05e06c84e831c43",
+            "iter-07": "99785e45a688150da2e28bfc15bfd1baeaf848dc"
           },
           "latched": {
             "combined": 6
@@ -289,7 +301,7 @@
   },
   "created_at": "2026-11-18T08:42:04.000Z",
   "updated_at": "2026-11-18T11:11:13.794Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-07",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
