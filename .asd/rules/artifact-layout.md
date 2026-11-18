@@ -183,9 +183,9 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used (per entry: default-target resolution and any state mutation, verified against help or source before a Task uses it), version specifics, deprecations, project conventions; never a secret.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: orchestrator. Created per chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, not recalled) with `Last verified` date, API surface used (per entry: default-target resolution and state mutation, verified against help or source before use), version specifics, deprecations, project conventions; never a secret.
 
-**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` covers every command or subcommand the diff newly invokes. If not → `FAILED — tech-reference missing for <command>` per uncovered command; the orchestrator writes each and re-dispatches.
+**Refuse-to-implement rule**: Dev, Tester MUST find `tech-reference/<tech>-<version>.md` for each newly used tech, covering every command or subcommand the diff newly invokes. Else `FAILED — tech-reference missing for <tech>@<version>` or `<command>` per gap; the orchestrator writes each and re-dispatches.
 
 ## Manual steps
 

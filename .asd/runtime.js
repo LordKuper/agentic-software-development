@@ -1005,19 +1005,23 @@ function cleanSettingsFile(repoRoot, relative) {
   return { lines: fixes.map((fix) => `attribution: ${relative}: ${fix}`), warning: null };
 }
 
-/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. */
-function attributionCheck(repoRoot) {
+/** The sprint-start attribution check for the repo at `repoRoot`: nothing unless `git.ai_attribution` is `disabled`, else the Claude Code settings fixes (only when `.claude/` exists, files in `ATTRIBUTION_SETTINGS_FILES` order) and the Codex hint (only when `.codex/` exists), as `{lines, warnings}`. A file in `skipped` (one the user has uncommitted changes in) is left untouched with a warning, the others still processed. */
+function attributionCheck(repoRoot, skipped = []) {
   const sync = require('./sync.js');
   if (sync.readAiAttribution(repoRoot) !== 'disabled') return { lines: [], warnings: [] };
-  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map((relative) => cleanSettingsFile(repoRoot, relative)) : [];
+  const clean = (relative) => (skipped.includes(relative)
+    ? { lines: [], warning: `runtime: ${relative} has uncommitted changes, left untouched: commit or revert it` }
+    : cleanSettingsFile(repoRoot, relative));
+  const cleaned = fs.existsSync(path.join(repoRoot, '.claude')) ? ATTRIBUTION_SETTINGS_FILES.map(clean) : [];
   const hint = fs.existsSync(path.join(repoRoot, '.codex')) ? [CODEX_ATTRIBUTION_HINT] : [];
   return { lines: cleaned.flatMap((entry) => entry.lines).concat(hint), warnings: cleaned.map((entry) => entry.warning).filter(Boolean) };
 }
 
-/** Runs `attribution-check` from the repo root containing the working directory: one stdout line per fix or hint, warnings on stderr, exit 0. */
+/** Runs `attribution-check [-- <settings file>...]` from the repo root containing the working directory: the files after `--` are skipped; one stdout line per fix or hint, warnings on stderr, exit 0. */
 function attributionCheckCommand(args) {
-  if (args.length > 0) fail('attribution-check takes no flags');
-  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()));
+  const skipped = args.slice(1);
+  if ((args.length > 0 && args[0] !== '--') || skipped.some((file) => !ATTRIBUTION_SETTINGS_FILES.includes(file))) fail(`attribution-check takes no flags, only -- followed by ${ATTRIBUTION_SETTINGS_FILES.join(' ')}`);
+  const { lines, warnings } = attributionCheck(require('./sync.js').findRepoRoot(process.cwd()), skipped);
   warnings.forEach((warning) => process.stderr.write(`${warning}\n`));
   lines.forEach((line) => process.stdout.write(`${line}\n`));
   return 0;
