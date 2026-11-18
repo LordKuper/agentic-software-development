@@ -822,9 +822,14 @@ function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
       try { val = JSON.parse(elText); } catch (_) { val = null; }
       if (!(val && val._asd === true)) foreignTexts.push(elText);
     }
-    const ownedTexts = renderedOwnedEntries.map((e) => indentContinuationLines(JSON.stringify(e, null, 2), '  '));
+    // Nest the rebuilt array by the indent of the line it opens on, so a
+    // re-render of an array at depth N keeps JSON.stringify(_, null, 2) layout.
+    const lineStart = scanText.lastIndexOf('\n', span.valueStart) + 1;
+    const pad = /^[ \t]*/.exec(scanText.slice(lineStart, span.valueStart))[0];
+    const inner = pad + '  ';
+    const ownedTexts = renderedOwnedEntries.map((e) => indentContinuationLines(JSON.stringify(e, null, 2), inner));
     const allTexts = foreignTexts.concat(ownedTexts);
-    const arrayText = allTexts.length === 0 ? '[]' : '[\n  ' + allTexts.join(',\n  ') + '\n]';
+    const arrayText = allTexts.length === 0 ? '[]' : '[\n' + inner + allTexts.join(',\n' + inner) + '\n' + pad + ']';
     return bomPrefix + scanText.slice(0, span.valueStart) + arrayText + scanText.slice(span.valueEnd);
   }
 
