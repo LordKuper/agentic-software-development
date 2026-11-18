@@ -1,7 +1,7 @@
 {
   "sprint_id": "036-codex-sol-6-2",
   "branch": "sprint/036-codex-sol-6-2",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -80,7 +80,11 @@
     "Task 6": { "execution": "agent", "tier": "standard", "reason": "risk:plan acceptance preconditions", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 7": { "execution": "agent", "tier": "standard", "reason": "risk:op id convention across recovery and re-dispatch", "raise_effort": false, "resolved_model": "sonnet" },
     "Task 8": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
-    "D-1": { "execution": "agent", "tier": "standard", "reason": "risk:json-merge render of a user-co-owned settings file", "raise_effort": false, "resolved_model": "sonnet" }
+    "D-1": { "execution": "agent", "tier": "standard", "reason": "risk:json-merge render of a user-co-owned settings file", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 A": { "execution": "agent", "tier": "standard", "reason": "risk:commit contract every agent commits under", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 B": { "execution": "agent", "tier": "standard", "reason": "risk:security", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 C": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "sonnet" },
+    "review-fix wave-1/iter-01 D": { "execution": "agent", "tier": "standard", "reason": "risk:reviewer return validation", "raise_effort": false, "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
