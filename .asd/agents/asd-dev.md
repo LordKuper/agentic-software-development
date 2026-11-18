@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" },
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "live" },
   "variants": {
     "escalated": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } },
     "mechanical": { "claude": { "model": "haiku", "effort": "high" }, "codex": { "model": "luna", "model_reasoning_effort": "high" } }

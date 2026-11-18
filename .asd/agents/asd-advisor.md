@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
     "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "live" }
 }
 ---
 

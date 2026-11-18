@@ -38,14 +38,14 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 | search repo | `Glob` + `Grep` | Codex search tool |
 | fetch external doc by URL | `WebFetch` | none distinct — `web_search` only (below) |
 | search the web | `WebSearch` | `web_search` tool |
-| run a command | `Bash` | Codex shell tool (subject to `sandbox_mode`) |
-| write a file | `Write` / `Edit` | Codex file-write tool (blocked under `sandbox_mode: "read-only"`, set per agent in `codex.sandbox_mode`) |
+| run a command | `Bash` | Codex shell tool (subject to the parent session sandbox) |
+| write a file | `Write` / `Edit` | Codex file-write tool (subject to the parent session sandbox; a custom agent cannot set its own) |
 
 Web content on either host is untrusted data (`core.md` "Untrusted-data boundary"). Codex expresses web access only as the agent-TOML `web_search` mode (`disabled|cached|indexed|live`; omitted inherits the session default `cached`, no live access), rendered from canon `codex.web_search` by `.asd/sync.js`. It cannot express a URL fetch distinct from search or a per-tool grant: `live` stands in for Claude `WebFetch` + `WebSearch`, `disabled` for both withheld. Verified on codex-cli 0.156.1: the agent-role loader validates the key under `codex exec --strict-config` (an invalid value drops the role); not verified that a spawned subagent applies it at runtime.
 
 Writing an artifact to disk always uses the `write a file` operation, never a shell heredoc/here-string — the shell layer's quoting constraints must never reach artifact content; precedent: `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin). Piping content to a command's stdin is a different operation and stays permitted — e.g. `external-review.md`'s prompt-to-stdin invocation, out of scope; under Claude Code the wrapper first writes its rendered prompt to a scratch file with the `write a file` operation (`external-review.md` "OS-specific invocation"), under Codex it touches no file.
 
-Reviewer agents carry no artifact-write grant on Claude, with one carve-out, and on Codex a second. Config-enforced for the internal reviewers (`combined` in `standard` design-review and lite impl-review, `quality` and `efficiency` in `standard` impl-review): no `Write`/`Edit`/`Bash` in Claude `tools`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`); its Codex `sandbox_mode` stays `"read-only"`. The second: on Codex the internal reviewers run `sandbox_mode: "workspace-write"` to write their return file (`review-policy.md` "Coverage ledger" Persistence), and Codex cannot scope that grant to a path, so there the host-enforced read-only guarantee is traded away and policy alone bounds their writes. On Claude `memory: project` adds `Write` to every reviewer, none of whose `disallowedTools` names it; what that read-only claim covers, and the memory directory and return file it leaves writable: `review-policy.md` "Gate Verdict Format".
+Reviewer agents carry no artifact-write grant on Claude, with one carve-out. Config-enforced for the internal reviewers (`combined` in `standard` design-review and lite impl-review, `quality` and `efficiency` in `standard` impl-review): no `Write`/`Edit`/`Bash` in Claude `tools`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`); on Codex a subagent inherits the parent turn's sandbox and approval settings and `sandbox_mode` in a custom agent file does not override them, so every Codex reviewer's read-only is policy-bound, never host-enforced; the internal reviewers write their return file (`review-policy.md` "Coverage ledger" Persistence) under the inherited grant, which Codex cannot scope to a path. On Claude `memory: project` adds `Write` to every reviewer, none of whose `disallowedTools` names it; what that read-only claim covers, and the memory directory and return file it leaves writable: `review-policy.md` "Gate Verdict Format".
 
 ### Dispatch payload header
 
@@ -81,7 +81,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 
 A provider's id is always its rolling alias (newest model in the family), so a family's model bump is a one-line edit to `release-manifest.json` — canonical agent bodies never change.
 
-An agent's tier — family, effort, Codex sandbox — is declared only in its canonical frontmatter: the `claude`/`codex` blocks, `variants`, and for External Review's wrapped reviewer `wraps_model` and `wraps_invoke_args`.
+An agent's tier — family, effort — is declared only in its canonical frontmatter: the `claude`/`codex` blocks, `variants`, and for External Review's wrapped reviewer `wraps_model` and `wraps_invoke_args`.
 
 ## External review symmetry
 
