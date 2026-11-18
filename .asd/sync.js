@@ -749,13 +749,11 @@ function writtenKeys(before, previous, ownedKeys) {
 // so a later release finds them. Touches only `owned_keys` of an existing entry:
 // the digest stays the owned array's alone, which that write leaves as it was.
 // With no entry the file was never applied, so its value reads as the user's.
-// Returns whether it saved. A ledger or `.asd` directory that is a symlink or
-// junction is refused (thrown) before the ledger is read, so no text of a linked
-// file reaches a parse error; the save goes through a sibling temp file
-// renamed over the ledger so a failure never leaves it half-written.
+// Returns whether it saved. A linked ledger or `.asd` directory is refused by
+// `loadSyncState`; the save goes through a sibling temp file renamed over the
+// ledger so a failure never leaves it half-written.
 function recordOwnedKeys(repoRoot, relKey, before, ownedKeys) {
   const ledger = path.join(repoRoot, '.asd', 'sync-state.json');
-  if (isSymlink(ledger) || isSymlink(path.dirname(ledger))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
   const syncState = loadSyncState(repoRoot);
   const entry = syncState.entries[relKey];
   if (!entry) return false;
@@ -1060,8 +1058,13 @@ function loadReleaseManifest(repoRoot) {
   return manifest;
 }
 
+// Reads the ledger, refusing (thrown, before any read or parse) a ledger or
+// `.asd` directory that is a symlink or junction, so no text of a linked file
+// reaches a parse error and every caller shares the one guard. A missing ledger
+// reads as the empty state.
 function loadSyncState(repoRoot) {
   const p = path.join(repoRoot, '.asd', 'sync-state.json');
+  if (isSymlink(p) || isSymlink(path.dirname(p))) throw new Error('.asd/sync-state.json or .asd is a symlink or junction');
   if (!fs.existsSync(p)) return { schema_version: SCHEMA_VERSION, entries: {} };
   const state = JSON.parse(readNormalized(p));
   if (state.schema_version !== SCHEMA_VERSION) {
@@ -1698,7 +1701,12 @@ function main(argv) {
 }
 
 if (require.main === module) {
-  process.exitCode = main(process.argv);
+  try {
+    process.exitCode = main(process.argv);
+  } catch (error) {
+    process.stderr.write(`sync: ${error.message}\n`);
+    process.exitCode = 1;
+  }
 }
 
 module.exports = {
