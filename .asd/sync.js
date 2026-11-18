@@ -726,14 +726,23 @@ function insertKeyIntoObject(text, objStart, key, valueText) {
 // under `git.ai_attribution: disabled`: Claude Code's own attribution off.
 const ATTRIBUTION_OFF = { commit: '', pr: '' };
 
+// The keys of `releasedKeys` the sync-state entry of `relKey` records as written
+// by sync (`owned_keys`); a key sync never wrote is the user's own, whatever its
+// value, so it is never released.
+function recordedKeys(syncState, relKey, releasedKeys) {
+  const recorded = (syncState.entries && syncState.entries[relKey] && syncState.entries[relKey].owned_keys) || [];
+  return Object.fromEntries(Object.entries(releasedKeys).filter(([key]) => recorded.includes(key)));
+}
+
 // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
-// (key -> value) must hold that value, `releasedKeys` (key -> owned value)
-// must not hold it, a different value there being the user's own. Both empty
-// for an item that owns none. Never part of the sync-state digest: that stays
-// the owned array's alone, so adding or dropping a key never reads as a hand
-// edit of the hooks.
-function ownedKeysMatch(parsed, ownedKeys, releasedKeys) {
-  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
+// (key -> value) must hold that value and be recorded in `recorded` (the entry's
+// `owned_keys`, so a key sync owns but never recorded reads stale and is
+// seeded by the next apply), `releasedKeys` (key -> owned value) must not hold
+// it, a different value there being the user's own. Both empty for an item that
+// owns none. Never part of the sync-state digest: that stays the owned array's
+// alone, so adding or dropping a key never reads as a hand edit of the hooks.
+function ownedKeysMatch(parsed, ownedKeys, releasedKeys, recorded = []) {
+  return Object.keys(ownedKeys).every((key) => recorded.includes(key) && stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
     && Object.keys(releasedKeys).every((key) => stableStringify(parsed[key]) !== stableStringify(releasedKeys[key]));
 }
 
@@ -757,7 +766,7 @@ function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries,
   }
   if (stateEntry.content_digest !== digestTag(stableStringify(ownedEntries))) return 'modified-foreign';
   const expectedDigest = sha256Hex(stableStringify(renderedOwnedEntries));
-  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, releasedKeys) ? 'current' : 'stale';
+  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, recordedKeys(syncState, relKey, releasedKeys), stateEntry.owned_keys) ? 'current' : 'stale';
 }
 
 // Indents every line after the first by `pad`, so a multi-line
@@ -905,13 +914,18 @@ function renderOwnedArray(targetPath, ownedPathArr, renderedOwnedEntries) {
 // preflight pass call renderJsonMerge() early (so an invalid target throws
 // before any write in the whole --apply batch) and pass 2 just write the
 // result, without a second render/throw opportunity mid-write-pass.
-function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntries, syncState) {
+function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntries, syncState, ownedKeys = {}) {
   // Raw write, deliberately not writeNormalized: normalizing here would
   // re-launder the foreign bytes the render step just preserved.
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, nextRaw, 'utf8');
   syncState.entries = syncState.entries || {};
-  syncState.entries[relKey] = { kind: 'json-merge', content_digest: digestTag(stableStringify(renderedOwnedEntries)) };
+  const written = Object.keys(ownedKeys);
+  syncState.entries[relKey] = {
+    kind: 'json-merge',
+    content_digest: digestTag(stableStringify(renderedOwnedEntries)),
+    ...(written.length > 0 ? { owned_keys: written } : {}),
+  };
 }
 
 function applyJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, syncState) {
@@ -1528,8 +1542,8 @@ function runApply(repoRoot, requestedFiles, options) {
       // case, which is exactly what a plain statusJsonMerge status check
       // (safe, try/catch) would not catch on its own.
       const willWrite = status === 'missing' || status === 'stale' || (status === 'modified-foreign' && forceSet.has(rel));
-      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys, releasedKeys) : null;
-      resolved.push({ rel, item, status, entries, nextRaw });
+      const nextRaw = willWrite ? renderJsonMerge(item.targetPath, item.ownedPathArr, entries, ownedKeys, recordedKeys(syncState, item.relKey, releasedKeys)) : null;
+      resolved.push({ rel, item, status, entries, ownedKeys, nextRaw });
     }
   }
 
@@ -1562,7 +1576,7 @@ function runApply(repoRoot, requestedFiles, options) {
       applyManagedBlock(r.item.targetPath, r.item.relKey, r.body, syncState);
       stateChanged = true;
     } else if (r.item.class === 'json-merge') {
-      writeJsonMergeRendered(r.item.targetPath, r.item.relKey, r.nextRaw, r.entries, syncState);
+      writeJsonMergeRendered(r.item.targetPath, r.item.relKey, r.nextRaw, r.entries, syncState, r.ownedKeys);
       stateChanged = true;
     }
     results.push({ target: r.rel, status: r.status, applied: true, forced: r.status === 'modified-foreign' });

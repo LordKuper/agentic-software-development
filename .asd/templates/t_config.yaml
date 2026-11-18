@@ -92,6 +92,6 @@ git:
 
   # AI attribution in commits and PRs. Absent field = enabled.
   # disabled: sync keeps Claude Code's project `attribution` off and `commit-check` rejects Claude/Codex `Co-authored-by:` trailers.
-  # enabled: sync drops its own empty `attribution` from `.claude/settings.json`; a value set there by hand stays.
+  # enabled: sync drops the `attribution` it wrote to `.claude/settings.json` (recorded in `.asd/sync-state.json`); one set there by hand stays.
   # Values: enabled | disabled
   ai_attribution: enabled
