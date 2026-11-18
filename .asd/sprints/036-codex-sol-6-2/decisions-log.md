@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-18 — PR #128 opened
+
+- **Decision**: DoD met (430/430 reused at 46da53fe and re-run green after the bump; wave-1/iter-09 combined and External APPROVE; retrospective present). `asd_version` 14.7.0 → 14.8.0 (feat → MINOR), CHANGELOG v14.8.0. PR #128 opened, adaptive publication.
+- **Rationale**: Scope authority recorded at the scope gate and both scope amendments; the user's standing rule merges the sprint PR in the same run.
+- **Affected docs**: CHANGELOG.md, .asd/release-manifest.json

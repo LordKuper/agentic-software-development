@@ -237,3 +237,4 @@
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-18T06:37:08.492Z","attrs":{}}
 {"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-18T06:37:08.492Z","end":"2026-11-18T06:42:04.520Z","outcome":"done","attrs":{}}
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-18T06:42:15.613Z","attrs":{}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-18T06:42:15.613Z","end":"2026-11-18T06:44:40.254Z","outcome":"done","attrs":{}}
