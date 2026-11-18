@@ -893,17 +893,25 @@ function memoryCheck(flags, paths = []) {
   return memoryViolations(diff, names).filter(isNamed);
 }
 
-/** The `ASD-Task:` lines of a commit message lying outside its last paragraph (the text after the last blank line), trailing blank lines ignored. */
+/** The `ASD-Task:` lines of a commit message lying outside its last paragraph (the text after the last blank line), trailing blank lines ignored. A message with no blank line is all subject paragraph, so a trailer glued to the subject is misplaced. */
 function misplacedTrailers(message) {
   const lines = message.replace(/\r\n?/g, '\n').replace(/\s+$/, '').split('\n');
   let lastParagraph = lines.length;
   while (lastParagraph > 0 && lines[lastParagraph - 1].trim() !== '') lastParagraph -= 1;
-  return lines.slice(0, lastParagraph).filter((line) => /^ASD-Task:/.test(line));
+  return lines.slice(0, lastParagraph === 0 ? lines.length : lastParagraph).filter((line) => /^ASD-Task:/.test(line));
 }
 
-/** The `Co-authored-by:` lines of a commit message naming Claude or Codex, the key matched case-insensitively. */
+/** The author name an AI `Co-authored-by:` identity starts with. */
+const AI_COAUTHOR_NAME = /^(?:openai\s+)?(?:claude|codex)\b/i;
+/** The addresses the Claude and Codex co-author trailers carry. */
+const AI_COAUTHOR_ADDRESSES = ['noreply@anthropic.com', 'noreply@openai.com'];
+
+/** The `Co-authored-by:` lines of a commit message whose parsed identity is Claude or Codex, by author name or known bot address; the key is matched case-insensitively and a human whose address merely contains the word passes. */
 function aiCoAuthorTrailers(message) {
-  return message.split(/\r?\n/).filter((line) => /^co-authored-by:.*\b(claude|codex)\b/i.test(line));
+  return message.split(/\r?\n/).filter((line) => {
+    const identity = /^co-authored-by:\s*([^<]*?)\s*(?:<([^>]*)>)?\s*$/i.exec(line);
+    return identity !== null && (AI_COAUTHOR_NAME.test(identity[1]) || AI_COAUTHOR_ADDRESSES.includes((identity[2] || '').toLowerCase()));
+  });
 }
 
 /** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph, and, under `git.ai_attribution: disabled`, `ai_attribution`, its Claude or Codex `Co-authored-by:` lines. `ok` only when the header fits and there is no hit, no misplaced trailer and no AI trailer. */
