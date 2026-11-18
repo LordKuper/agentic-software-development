@@ -11059,6 +11059,30 @@ test('sprint-036 AC-16 (external 1, iter-07): sync --check over an unlinked ledg
   assert.deepStrictEqual([ran.status, ran.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(ran.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
 });
 
+test('sprint-036 AC-16 (external 1, iter-08): sync --check and --apply over a linked .asd directory or symlinked ledger whose release manifest is malformed JSON exit 1 with one "sync: " link-refusal line carrying no fragment of that manifest, and leave manifest and ledger byte-identical', () => {
+  const MARKER = 'LINKED-MANIFEST-SECRET-MARKER';
+  const FRAGMENT = MARKER.slice(0, 8);
+  const invalid = `{ "schema_version": ${MARKER} `;
+  const outcomes = [];
+  for (const [label, { repo, behind }] of linkedLedgerCases()) {
+    const manifestPath = path.join(repo.root, '.asd', 'release-manifest.json');
+    fs.writeFileSync(manifestPath, invalid, 'utf8');
+    const ledgerBefore = fs.readFileSync(behind, 'utf8');
+    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
+      const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: repo.root, encoding: 'utf8' });
+      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(manifestPath, 'utf8') === invalid, fs.readFileSync(behind, 'utf8') === ledgerBefore]);
+    }
+  }
+  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true, true]), 'AC-16: the link guard runs before the release manifest is read - one sync: line, exit 1, no manifest text, no byte changed');
+});
+
+test('sprint-036 AC-16 (external 2, iter-08): sync --check over an unlinked ledger whose schema_version value spans CR and LF lines exits 1 with exactly one stderr line - the CLI catch-all folds the message to one line', () => {
+  const repo = disabledAttributionRepo();
+  fs.writeFileSync(path.join(repo.root, '.asd', 'sync-state.json'), JSON.stringify({ schema_version: 'first\r\nsecond\nthird', entries: {} }), 'utf8');
+  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
+  assert.deepStrictEqual([ran.status, ran.stdout, ran.stderr.split('\n').length, /^sync: [^\n\r]*first second third[^\n\r]*\n$/.test(ran.stderr)], [1, '', 2, true], 'AC-16: a multi-line thrown message ends as one stderr line');
+});
+
 test('sprint-036 AC-16 (external 3): recordOwnedKeys saves the ledger atomically - it returns true and leaves no temp file after a save, never deletes a foreign file at the temp name, and a failing rename leaves the original ledger intact with its own temp file removed', () => {
   const settingsRel = '.claude/settings.json';
   const repo = disabledAttributionRepo();
