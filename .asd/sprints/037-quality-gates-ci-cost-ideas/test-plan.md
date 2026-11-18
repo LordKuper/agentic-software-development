@@ -43,6 +43,19 @@ Pre-strategy run (step 3) at `13292f6a`: `node tests/run.js` 416/430, 14 failure
 | tests/run.js: `read-only agents (every workflow reviewer + asd-advisor)…`, the per-agent `codex.sandbox_mode` assertion | redundant: survivor tests/run.js:`canonical agent -> Codex .toml matches fixture`, branch as above; the Claude tool-allowlist and return-file-policy halves stay | yes |
 | tests/run.js: `sprint-033 AC-1/AC-2/AC-3/AC-8: the runner variant renders…`, assertion `scout.codex.sandbox_mode` | redundant: survivor tests/run.js:`canonical agent -> Codex .toml matches fixture`, branch as above; the scout's Claude read-only tool list stays | yes |
 | tests/run.js: `AC-15/sprint-019 AC-14: review-policy.md is sole SSoT…`, the `providers.md` `sandbox_mode: "workspace-write"` sentence assertion | implementation-coupled: a five-conjunct sentence-shape pin of prose AC-21 rewrote, which no machine parses (code-style.md §17 content-contract bullet); the surviving assertions in the test still pin the host grant and the citation | yes |
+| tests/sweeps.test.js: `sprint-021 AC-13: no canon, README, AGENTS.md, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed…` | temporary: sprint 021 | yes |
+| tests/sweeps.test.js: `sprint-022 … leftover-term check: …` | temporary: sprint 022 | yes |
+| tests/sweeps.test.js: `sprint-023 … leftover-term check: …` | temporary: sprint 023 | yes |
+| tests/sweeps.test.js: `sprint-027 … leftover-term check: …` | temporary: sprint 027 | yes |
+| tests/sweeps.test.js: `sprint-028 … leftover-term check: …` | temporary: sprint 028 | yes |
+| tests/sweeps.test.js: `sprint-029 … leftover-term check: …` | temporary: sprint 029 | yes |
+| tests/sweeps.test.js: `sprint-030 … leftover-term check: …` | temporary: sprint 030 | yes |
+| tests/sweeps.test.js: `sprint-031 … leftover-term check: …` | temporary: sprint 031 | yes |
+| tests/sweeps.test.js: `sprint-032 … leftover-term check: …` | temporary: sprint 032 | yes |
+| tests/sweeps.test.js: `sprint-033 … leftover-term check: …` | temporary: sprint 033 | yes |
+| tests/sweeps.test.js: `sprint-034 … leftover-term check: …` | temporary: sprint 034 | yes |
+| tests/sweeps.test.js: `sprint-035 … leftover-term check: …` | temporary: sprint 035 | yes |
+| tests/sweeps.test.js: `sprint-036 … leftover-term check: …` | temporary: sprint 036 | yes |
 
 ## Added tests
 
@@ -100,7 +113,7 @@ Only when the sprint's accepted scope asks for one (`.asd/agents/asd-tester.md` 
 | runtime-timing | pending | 21 → | |
 | hooks | pending | 14 → | |
 | sync-cli | pending | 14 → | |
-| sweeps | pending | 13 → | |
+| sweeps | done | 13 → 0 | no survivor: the 13 one-time removal sweeps of sprints 021-036 go wholesale (AC-19); nothing to seed |
 | contract-rules | pending | 31 → | |
 | contract-workflows | pending | 63 → | |
 | contract-agents | pending | 25 → | |
