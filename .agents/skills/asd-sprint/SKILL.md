@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:154e8528ac01c911907361bcce228e06d1ddcf7a9f6a00cb78dcb03dcb5433ef content_digest=sha256:7e1c62a6efa25ac0afdbc309394af37eb58e628cc18faa55b33ba2f251eaff3e asd_version=14.5.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:8226d20aedb6f26189e07efd9d9bca14a768c24c8d987213f29dfaf8a00549dd content_digest=sha256:4fb888a52b73d7b879a981573cffd1f8f7786878e59b9e437cc6e19e74150790 asd_version=14.7.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -15,13 +15,13 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user $asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check)", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user $asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); node .asd/runtime.js attribution-check (Step 0, edits only attribution keys of .claude/settings.json and settings.local.json)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
 
 ## Steps
 
 ### Step 0: fast-forward the base branch
-Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
+Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy. Then run `node .asd/runtime.js attribution-check` on every invocation: silent unless `git.ai_attribution: disabled`, else it resets any re-enabling Claude Code project setting and prints one line per fix or Codex hint, which you relay to the user; a stderr warning never blocks.
 
 ### Step 1: detect active sprint
 - A sprint is active while `state.json.phase != "done"`, its folder at `.asd/sprints/<NNN-slug>/` or, legacy, `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"`
