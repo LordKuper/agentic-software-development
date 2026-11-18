@@ -59,41 +59,24 @@ test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate,
   assert.throws(() => runtime.validateCoverageLedger(duplicateManifest, duplicateLedger, ['F-1']), /duplicates/);
 });
 
-test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on valid fixtures', () => {
-  const root = mkTempDir();
-  const { manifest, ledger } = validCoverageFixture();
-  const manifestPath = path.join(root, 'manifest.json');
-  const ledgerPath = path.join(root, 'ledger.json');
-  const findingsPath = path.join(root, 'findings.json');
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
-  fs.writeFileSync(ledgerPath, JSON.stringify(ledger), 'utf8');
-  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
-
-  const out = runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
-  assert.deepStrictEqual(JSON.parse(out), { ok: true });
-});
-
-test('runtime.js CLI: validate-ledger on a tampered ledger exits non-zero and prints no "ok" to stdout', () => {
+test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on a valid ledger, and exits non-zero without an "ok" payload on a tampered one', async () => {
   const root = mkTempDir();
   const { manifest, ledger } = validCoverageFixture();
   const tampered = structuredClone(ledger);
   tampered.findings = ['F-1', 'F-2'];
-  const manifestPath = path.join(root, 'manifest.json');
-  const ledgerPath = path.join(root, 'ledger.json');
-  const findingsPath = path.join(root, 'findings.json');
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
-  fs.writeFileSync(ledgerPath, JSON.stringify(tampered), 'utf8');
-  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
+  const write = (name, value) => {
+    const file = path.join(root, name);
+    fs.writeFileSync(file, JSON.stringify(value), 'utf8');
+    return file;
+  };
+  const manifestPath = write('manifest.json', manifest);
+  const findingsPath = write('findings.json', ['F-1']);
+  const validate = (ledgerPath) => runtimeSpawnAsync(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
 
-  let error = null;
-  try {
-    runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
-  } catch (e) {
-    error = e;
-  }
-  assert.ok(error, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
-  assert.notStrictEqual(error.status, 0);
-  assert.ok(!(error.stdout || '').includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
+  const [valid, rejected] = await Promise.all([validate(write('ledger.json', ledger)), validate(write('tampered.json', tampered))]);
+  assert.deepStrictEqual([valid.status, JSON.parse(valid.stdout)], [0, { ok: true }]);
+  assert.notStrictEqual(rejected.status, 0, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
+  assert.ok(!rejected.stdout.includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
 });
 
 test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {

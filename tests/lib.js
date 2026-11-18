@@ -108,13 +108,15 @@ function runtimeCliResult(args, options) {
   }
 }
 
-/** Binds git to `repo`, isolated from the host's config - no signing, no autocrlf, a throwaway identity - so a git fixture's line endings and commits never depend on the machine running it (EFF-4). */
+/** Binds git to `repo` (`git` blocks, `gitAsync` overlaps independent runs), isolated from the host's config - no signing, no autocrlf, a throwaway identity - so a git fixture's line endings and commits never depend on the machine running it (EFF-4). */
 function sandboxGit(repo) {
   const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
   fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
   const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
-  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, env, encoding: 'utf8' });
-  return { repo, env, git };
+  const identity = ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false'];
+  const git = (...args) => execFileSync('git', [...identity, ...args], { cwd: repo, env, encoding: 'utf8' });
+  const gitAsync = async (...args) => (await execFileAsync('git', [...identity, ...args], { cwd: repo, env, encoding: 'utf8' })).stdout;
+  return { repo, env, git, gitAsync };
 }
 
 const sandboxTemplates = new Map();

@@ -2,7 +2,7 @@
 
 // runtime.js gate commands: commit and attribution checks, memory-check, retro intake, stubs, checks-wait, scratch-dir, design-tokens
 
-const { assert, fs, path, execFileSync, spawnSync, sync, update, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, loadManifest, makeMiniRepo, writeFile, runtimeCli, runtimeCliResult, sandboxGitRepo, readRepoFile, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, scriptedWait, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync, disabledAttributionRepo, OFF_VALUE, linkedLedgerCases, recordedOwnedKeys } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, update, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, loadManifest, makeMiniRepo, writeFile, runtimeCli, runtimeCliResult, runtimeCliResultAsync, sandboxGitRepo, sandboxGitRepoFrom, importCommits, execFileAsync, readRepoFile, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, scriptedWait, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync, disabledAttributionRepo, OFF_VALUE, linkedLedgerCases, recordedOwnedKeys } = require('./lib.js');
 
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {
   const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
@@ -297,62 +297,83 @@ test('sprint-019 AC-4: the live retro backlog parses, each row resolves to its a
   assert.deepStrictEqual(backlog.filter((entry) => (entry.disposition === 'deferred') !== live.includes(entry.row)).map((entry) => `${entry.row} (${entry.disposition})`), [], 'AC-1/AC-3: live intake offers every deferred row again and never one the backlog records as included, rejected or closed');
 });
 
-test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit before review" gives a dispatched agent, run as written with its message file (sprint-036 AC-12), commits exactly its own paths - a never-tracked file and both sides of a rename included - never checks or sweeps a sibling\'s staged file, and after a failed check its reset leaves none of its paths staged', () => {
+test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit before review" gives a dispatched agent, run as written with its message file (sprint-036 AC-12), commits exactly its own paths - a never-tracked file and both sides of a rename included - never checks or sweeps a sibling\'s staged file, and after a failed check its reset leaves none of its paths staged', async () => {
   const section = sectionOf('.asd/rules/git-strategy.md', 'Commit before review');
   const compound = /`(git add -- <paths> && [^`]+)`/.exec(section);
   const reset = /if the command fails, `(git [^`]+)`/.exec(section);
   assert.ok(compound && reset, 'git-strategy.md must state the compound command and the reset it runs on failure as literal commands');
-  const { repo, git } = sandboxGitRepo();
-  const put = (rel, text) => fs.writeFileSync(path.join(repo, rel), text, 'utf8');
   const RUNTIME = path.join(REPO_ROOT, '.asd', 'runtime.js');
-  const messageFile = path.join(mkTempDir(), 'agent.commit-msg');
-  const argsOf = (command, paths) => command.split(/\s+/).slice(1).flatMap((token) => (token === '<paths>' ? paths : [token === '<file>' ? messageFile : token === '.asd/runtime.js' ? RUNTIME : token]));
   const AGENT_MESSAGE = 'chore(test): agent work\n\nWhy the change.\n\nASD-Task: Task 1\nCo-Authored-By: Pair <pair@example.invalid>\n';
-  const commitAs = (paths, message = AGENT_MESSAGE) => {
-    fs.writeFileSync(messageFile, message, 'utf8');
-    for (const part of compound[1].split(' && ')) {
-      const args = argsOf(part, paths);
-      try {
-        if (part.startsWith('node ')) execFileSync(process.execPath, args, { cwd: repo, env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(repo) }, stdio: 'pipe' });
-        else git(...args);
-      } catch {
-        git(...argsOf(reset[1], paths));
-        return `failed at: ${part}`;
-      }
-    }
-    return 'committed';
-  };
-  put('tracked.txt', 'one\n');
-  put('old.txt', 'moved\n');
-  put('sibling.txt', 'base\n');
-  git('add', '.');
-  git('commit', '-q', '-m', 'base');
-  put('sibling.txt', 'sibling edit with a trailing space \n');
-  git('add', '--', 'sibling.txt');
-
-  put('tracked.txt', 'two\n');
-  put('fresh.txt', 'new\n');
-  fs.renameSync(path.join(repo, 'old.txt'), path.join(repo, 'new.txt'));
-  assert.strictEqual(commitAs(['tracked.txt', 'fresh.txt', 'old.txt', 'new.txt']), 'committed', 'the check is path-scoped, so a sibling\'s staged whitespace error must not fail this agent\'s commit');
-  assert.deepStrictEqual(git('show', '--no-renames', '--name-status', '--format=', 'HEAD').trim().split('\n').sort(), ['A\tfresh.txt', 'A\tnew.txt', 'D\told.txt', 'M\ttracked.txt'], 'the commit carries exactly the agent\'s paths - the never-tracked file and both sides of the rename in, the sibling\'s staged file out');
-  assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: the sibling\'s staged file stays staged for its own commit, and none of the agent\'s paths is left staged');
-  assert.strictEqual(git('log', '-1', '--format=%B').trim(), AGENT_MESSAGE.trim(), 'sprint-036 AC-12: the commit carries the message file whole - body and the final trailer paragraph with its ASD-Task and Co-Authored-By lines');
-
-  const head = git('rev-parse', 'HEAD').trim();
-  put('bad.txt', 'trailing space \n');
-  assert.strictEqual(commitAs(['bad.txt']), 'failed at: git diff --cached --check -- <paths>', 'a whitespace error in the agent\'s own path must stop the commit at the check');
-  assert.strictEqual(git('rev-parse', 'HEAD').trim(), head, 'nothing is committed after a failed check');
-  assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: after the reset the failed path is unstaged - left staged, the next sibling commit would sweep it under the wrong ASD-Task trailer (018 F-1)');
-
-  put('long.txt', 'fine\n');
   const checkStep = 'node .asd/runtime.js commit-check --message-file <file> -- <paths>';
-  const longHeader = `chore(test): ${'x'.repeat(40)}\n\nASD-Task: Task 1\n`;
-  assert.strictEqual(commitAs(['long.txt'], longHeader), `failed at: ${checkStep}`, 'sprint-033 AC-12: a header over 50 characters stops the commit at commit-check');
-  assert.strictEqual(git('rev-parse', 'HEAD').trim(), head, 'nothing is committed after a failed header check');
-  assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'the reset after a failed commit-check leaves none of the agent\'s paths staged');
-  assert.strictEqual(commitAs(['long.txt'], 'chore(test): misplaced\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n'), `failed at: ${checkStep}`, 'sprint-036 AC-12: an ASD-Task line outside the last paragraph stops the commit at commit-check');
-  assert.deepStrictEqual([git('rev-parse', 'HEAD').trim(), git('diff', '--cached', '--name-only').trim()], [head, 'sibling.txt'], 'sprint-036 AC-12: a misplaced trailer commits nothing and the reset leaves the path unstaged');
-  assert.strictEqual(commitAs(['long.txt']), 'committed', 'the same path commits once its header fits and its trailer sits in the last paragraph');
+  const scenario = () => {
+    const sandbox = sandboxGitRepoFrom('commit-form', (template) => {
+      writeFile(template.repo, 'tracked.txt', 'one\n');
+      writeFile(template.repo, 'old.txt', 'moved\n');
+      writeFile(template.repo, 'sibling.txt', 'base\n');
+      template.git('add', '.');
+      template.git('commit', '-q', '-m', 'base');
+      writeFile(template.repo, 'sibling.txt', 'sibling edit with a trailing space \n');
+      template.git('add', '--', 'sibling.txt');
+      return template.git('rev-parse', 'HEAD').trim();
+    });
+    const { repo, gitAsync } = sandbox;
+    const messageFile = path.join(mkTempDir(), 'agent.commit-msg');
+    const argsOf = (command, paths) => command.split(/\s+/).slice(1).flatMap((token) => (token === '<paths>' ? paths : [token === '<file>' ? messageFile : token === '.asd/runtime.js' ? RUNTIME : token]));
+    const commitAs = async (paths, message = AGENT_MESSAGE) => {
+      fs.writeFileSync(messageFile, message, 'utf8');
+      for (const part of compound[1].split(' && ')) {
+        try {
+          if (part.startsWith('node ')) await execFileAsync(process.execPath, argsOf(part, paths), { cwd: repo, env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(repo) } });
+          else await gitAsync(...argsOf(part, paths));
+        } catch {
+          await gitAsync(...argsOf(reset[1], paths));
+          return `failed at: ${part}`;
+        }
+      }
+      return 'committed';
+    };
+    const stagedNow = async () => (await gitAsync('diff', '--cached', '--name-only')).trim();
+    const headNow = async () => (await gitAsync('rev-parse', 'HEAD')).trim();
+    return { sandbox, put: (rel, text) => fs.writeFileSync(path.join(repo, rel), text, 'utf8'), commitAs, stagedNow, headNow, gitAsync, head: sandbox.shared, repo };
+  };
+
+  const happy = async () => {
+    const { put, commitAs, stagedNow, gitAsync, repo } = scenario();
+    put('tracked.txt', 'two\n');
+    put('fresh.txt', 'new\n');
+    fs.renameSync(path.join(repo, 'old.txt'), path.join(repo, 'new.txt'));
+    const outcome = await commitAs(['tracked.txt', 'fresh.txt', 'old.txt', 'new.txt']);
+    return { outcome, files: (await gitAsync('show', '--no-renames', '--name-status', '--format=', 'HEAD')).trim().split('\n').sort(), staged: await stagedNow(), message: (await gitAsync('log', '-1', '--format=%B')).trim() };
+  };
+  const failedCheck = async () => {
+    const { put, commitAs, stagedNow, headNow, head } = scenario();
+    put('bad.txt', 'trailing space \n');
+    return { outcome: await commitAs(['bad.txt']), head: await headNow(), staged: await stagedNow(), expectedHead: head };
+  };
+  const failedMessage = async () => {
+    const { put, commitAs, stagedNow, headNow, head } = scenario();
+    put('long.txt', 'fine\n');
+    const longHeader = `chore(test): ${'x'.repeat(40)}\n\nASD-Task: Task 1\n`;
+    const long = { outcome: await commitAs(['long.txt'], longHeader), head: await headNow(), staged: await stagedNow() };
+    const misplaced = { outcome: await commitAs(['long.txt'], 'chore(test): misplaced\n\nASD-Task: Task 1\n\nA body paragraph after the trailer.\n'), head: await headNow(), staged: await stagedNow() };
+    return { long, misplaced, fitting: await commitAs(['long.txt']), expectedHead: head };
+  };
+  const [committed, check, message] = await Promise.all([happy(), failedCheck(), failedMessage()]);
+
+  assert.strictEqual(committed.outcome, 'committed', 'the check is path-scoped, so a sibling\'s staged whitespace error must not fail this agent\'s commit');
+  assert.deepStrictEqual(committed.files, ['A\tfresh.txt', 'A\tnew.txt', 'D\told.txt', 'M\ttracked.txt'], 'the commit carries exactly the agent\'s paths - the never-tracked file and both sides of the rename in, the sibling\'s staged file out');
+  assert.strictEqual(committed.staged, 'sibling.txt', 'AC-8: the sibling\'s staged file stays staged for its own commit, and none of the agent\'s paths is left staged');
+  assert.strictEqual(committed.message, AGENT_MESSAGE.trim(), 'sprint-036 AC-12: the commit carries the message file whole - body and the final trailer paragraph with its ASD-Task and Co-Authored-By lines');
+
+  assert.strictEqual(check.outcome, 'failed at: git diff --cached --check -- <paths>', 'a whitespace error in the agent\'s own path must stop the commit at the check');
+  assert.strictEqual(check.head, check.expectedHead, 'nothing is committed after a failed check');
+  assert.strictEqual(check.staged, 'sibling.txt', 'AC-8: after the reset the failed path is unstaged - left staged, the next sibling commit would sweep it under the wrong ASD-Task trailer (018 F-1)');
+
+  assert.strictEqual(message.long.outcome, `failed at: ${checkStep}`, 'sprint-033 AC-12: a header over 50 characters stops the commit at commit-check');
+  assert.deepStrictEqual([message.long.head, message.long.staged], [message.expectedHead, 'sibling.txt'], 'nothing is committed after a failed header check, and the reset leaves none of the agent\'s paths staged');
+  assert.strictEqual(message.misplaced.outcome, `failed at: ${checkStep}`, 'sprint-036 AC-12: an ASD-Task line outside the last paragraph stops the commit at commit-check');
+  assert.deepStrictEqual([message.misplaced.head, message.misplaced.staged], [message.expectedHead, 'sibling.txt'], 'sprint-036 AC-12: a misplaced trailer commits nothing and the reset leaves the path unstaged');
+  assert.strictEqual(message.fitting, 'committed', 'the same path commits once its header fits and its trailer sits in the last paragraph');
   assert.ok(section.includes('`--subject "<header>"`'), 'sprint-036 AC-12: a trailer-less commit keeps the --subject form beside the message file');
 });
 
@@ -370,50 +391,61 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-023 AC-4: memory-check rejects a staged agent-memory write that records a sprint id, Task, wave, iteration or review verdict, passes placeholders and bare verdict words, and reads only the added lines of staged files under .claude/agent-memory - exit 1 with the hits, 0 clean, 2 on bad input', () => {
+test('sprint-023 AC-4: memory-check rejects a staged agent-memory write that records a sprint id, Task, wave, iteration or review verdict, passes placeholders and bare verdict words, and reads only the added lines of staged files under .claude/agent-memory - exit 1 with the hits, 0 clean, 2 on bad input', async () => {
   const memory = '.claude/agent-memory/asd-x';
   const fresh = () => {
-    const sandbox = sandboxGitRepo();
-    writeFile(sandbox.repo, `${memory}/legacy.md`, 'recorded in sprint 019\nalso wave 7 noted\nkept line\n');
-    writeFile(sandbox.repo, 'docs/notes.md', 'plain\n');
-    sandbox.git('add', '-A');
-    sandbox.git('commit', '-q', '-m', 'base');
-    const check = (args = [], cwd = sandbox.repo) => {
-      try {
-        return { status: 0, hits: JSON.parse(runtimeCli(['memory-check', ...args], { cwd, env: sandbox.env, stdio: 'pipe' })) };
-      } catch (error) {
-        return { status: error.status, hits: error.stdout ? JSON.parse(error.stdout) : null };
-      }
+    const sandbox = sandboxGitRepoFrom('memory-check', (template) => {
+      writeFile(template.repo, `${memory}/legacy.md`, 'recorded in sprint 019\nalso wave 7 noted\nkept line\n');
+      writeFile(template.repo, 'docs/notes.md', 'plain\n');
+      template.git('add', '-A');
+      template.git('commit', '-q', '-m', 'base');
+    });
+    const check = async (args = [], cwd = sandbox.repo) => {
+      const ran = await runtimeSpawnAsync(['memory-check', ...args], { cwd, env: sandbox.env });
+      return { status: ran.status, hits: ran.stdout ? JSON.parse(ran.stdout) : null };
     };
     return { ...sandbox, check };
   };
-  const { repo, git, check } = fresh();
-  writeFile(repo, `${memory}/method.md`, 'placeholders: iter-NN, Task <N>, wave <K>, sprint <NNN-slug>\nbare verdict words: APPROVE, CONCERNS, FAIL\nformat: [REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL\n');
-  git('add', '--', `${memory}/method.md`);
-  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'placeholders carry no digits and a bare verdict word is no recorded verdict - both must pass, or the check rejects the method notes the rule asks for');
-  fs.appendFileSync(path.join(repo, memory, 'method.md'), 'unstaged: Task 9\n');
-  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'only the staged diff is read - the orchestrator commits what it staged, and an unstaged edit is no part of that commit');
-  git('checkout', '--', `${memory}/method.md`);
-  writeFile(repo, `${memory}/legacy.md`, 'also wave 7 noted\nkept line\nmethod only\n');
-  writeFile(repo, 'docs/notes.md', 'plain\nrecorded in sprint 023\n');
-  git('add', '--', `${memory}/legacy.md`, 'docs/notes.md');
-  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'a violation on a line this commit does not add - a legacy line it keeps, one it deletes - is not the write being checked, and a violation outside the memory tree is not memory');
-
+  const placeholders = async () => {
+    const { repo, gitAsync, check } = fresh();
+    writeFile(repo, `${memory}/method.md`, 'placeholders: iter-NN, Task <N>, wave <K>, sprint <NNN-slug>\nbare verdict words: APPROVE, CONCERNS, FAIL\nformat: [REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL\n');
+    await gitAsync('add', '--', `${memory}/method.md`);
+    const bare = await check();
+    fs.appendFileSync(path.join(repo, memory, 'method.md'), 'unstaged: Task 9\n');
+    const unstaged = await check();
+    await gitAsync('checkout', '--', `${memory}/method.md`);
+    writeFile(repo, `${memory}/legacy.md`, 'also wave 7 noted\nkept line\nmethod only\n');
+    writeFile(repo, 'docs/notes.md', 'plain\nrecorded in sprint 023\n');
+    await gitAsync('add', '--', `${memory}/legacy.md`, 'docs/notes.md');
+    return { bare, unstaged, legacy: await check() };
+  };
   const violations = [
     ['sprint 023', 'seen in sprint 023 once'], ['023-retro-glings-008-remediation', 'the 023-retro-glings-008-remediation work'], ['Task 3', 'fixed under Task 3'],
     ['wave 2', 'during wave 2'], ['iter-02', 'at iter-02'], ['iteration 4', 'iteration 4 returned'], ['[REVIEW-impl-testing]: APPROVE', '[REVIEW-impl-testing]: APPROVE'],
   ];
-  writeFile(repo, `${memory}/bad.md`, `neutral\n${violations.map(([, line]) => line).join('\n')}\n`);
-  git('add', '--', `${memory}/bad.md`);
-  const expected = violations.map(([token], index) => ({ path: `${memory}/bad.md`, line: index + 2, token }));
-  assert.deepStrictEqual(check(), { status: 1, hits: expected }, 'each concrete ordinal form is a hit at its line of the added file - the sprint id in both spellings, Task, wave, iteration in both spellings, a recorded verdict token - and the exit is 1 with the JSON still printed');
-  assert.deepStrictEqual(check([], path.join(repo, 'docs')), { status: 1, hits: expected }, 'the memory tree is addressed from the repo top, so a check run from any directory scans the same files - a relative pathspec would pass a violating write from a subdirectory');
-  assert.deepStrictEqual(check(['--files', 'x']), { status: 2, hits: null }, 'bad input exits 2 with no hit list, never 0');
+  const recorded = async () => {
+    const { repo, gitAsync, check } = fresh();
+    writeFile(repo, `${memory}/bad.md`, `neutral\n${violations.map(([, line]) => line).join('\n')}\n`);
+    await gitAsync('add', '--', `${memory}/bad.md`);
+    const [top, subdirectory, badInput] = await Promise.all([check(), check([], path.join(repo, 'docs')), check(['--files', 'x'])]);
+    return { top, subdirectory, badInput };
+  };
+  const named = async () => {
+    const { repo, gitAsync, check } = fresh();
+    writeFile(repo, `${memory}/project_023-memory-note.md`, 'method only\n');
+    await gitAsync('add', '--', `${memory}/project_023-memory-note.md`);
+    return check();
+  };
+  const [clean, flagged, byName] = await Promise.all([placeholders(), recorded(), named()]);
 
-  const named = fresh();
-  writeFile(named.repo, `${memory}/project_023-memory-note.md`, 'method only\n');
-  named.git('add', '--', `${memory}/project_023-memory-note.md`);
-  assert.deepStrictEqual(named.check(), { status: 1, hits: [{ path: `${memory}/project_023-memory-note.md`, line: null, token: '023-memory-note' }] }, 'a newly added file whose name carries a sprint id is a hit with a null line - the underscore after the prefix is a word break, or project_<id>-topic.md slips through');
+  assert.deepStrictEqual(clean.bare, { status: 0, hits: [] }, 'placeholders carry no digits and a bare verdict word is no recorded verdict - both must pass, or the check rejects the method notes the rule asks for');
+  assert.deepStrictEqual(clean.unstaged, { status: 0, hits: [] }, 'only the staged diff is read - the orchestrator commits what it staged, and an unstaged edit is no part of that commit');
+  assert.deepStrictEqual(clean.legacy, { status: 0, hits: [] }, 'a violation on a line this commit does not add - a legacy line it keeps, one it deletes - is not the write being checked, and a violation outside the memory tree is not memory');
+  const expected = violations.map(([token], index) => ({ path: `${memory}/bad.md`, line: index + 2, token }));
+  assert.deepStrictEqual(flagged.top, { status: 1, hits: expected }, 'each concrete ordinal form is a hit at its line of the added file - the sprint id in both spellings, Task, wave, iteration in both spellings, a recorded verdict token - and the exit is 1 with the JSON still printed');
+  assert.deepStrictEqual(flagged.subdirectory, { status: 1, hits: expected }, 'the memory tree is addressed from the repo top, so a check run from any directory scans the same files - a relative pathspec would pass a violating write from a subdirectory');
+  assert.deepStrictEqual(flagged.badInput, { status: 2, hits: null }, 'bad input exits 2 with no hit list, never 0');
+  assert.deepStrictEqual(byName, { status: 1, hits: [{ path: `${memory}/project_023-memory-note.md`, line: null, token: '023-memory-note' }] }, 'a newly added file whose name carries a sprint id is a hit with a null line - the underscore after the prefix is a word break, or project_<id>-topic.md slips through');
 });
 
 /** A sprint directory at `phase` whose live decisions log is the shipped template plus `entryLines` (none = a log with no entry). */
@@ -622,49 +654,52 @@ test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 charact
   assert.ok(missing.status === 2 && /commit-check takes --subject/.test(missing.stderr), `a missing subject is refused (got ${JSON.stringify(missing)})`);
 });
 
-test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed of the named entry with the short HEAD and appends the decisions-log line, touching no other row, and writes neither file when its input is invalid', () => {
+test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed of the named entry with the short HEAD and appends the decisions-log line, touching no other row, and writes neither file when its input is invalid', async () => {
   const { repo, env, git } = sandboxGitRepo();
   git('commit', '-q', '--allow-empty', '-m', 'base');
   const head = git('rev-parse', '--short=8', 'HEAD').trim();
   const work = mkTempDir();
   const entryRow = (entry, analysed, scope) => `| ${entry} | ${analysed} | ${scope} |`;
   const plan = ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', entryRow(1, 'abc12345', 'full change surface'), entryRow(2, '', 'delta since entry 1'), '', '## Defects', ''].join('\n');
-  const planFile = path.join(work, 'test-plan.md');
-  const logFile = path.join(work, 'decisions-log.md');
-  const reset = (log) => {
-    fs.writeFileSync(planFile, plan, 'utf8');
+  let runs = 0;
+  const close = async (log, overrides = {}, planText = plan) => {
+    runs += 1;
+    const planFile = path.join(work, `test-plan-${runs}.md`);
+    const logFile = path.join(work, `decisions-log-${runs}.md`);
+    fs.writeFileSync(planFile, planText, 'utf8');
     fs.writeFileSync(logFile, log, 'utf8');
+    const flags = { 'test-plan': planFile, entry: '2', decisions: logFile, line: 'impl-test: impacted set green', ...overrides };
+    const outcome = await runtimeCliResultAsync(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
+    return { ...outcome, files: () => [fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')] };
   };
-  const close = (...overrides) => {
-    const flags = { 'test-plan': planFile, entry: '2', decisions: logFile, line: 'impl-test: impacted set green', ...Object.fromEntries(overrides) };
-    return runtimeCliResult(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
-  };
+  const refusals = [
+    ['an entry with no row', { entry: '3' }, /holds 0 Entry log rows for entry 3, expected 1/],
+    ['a non-integer entry', { entry: 'two' }, /--entry <positive integer> required/],
+    ['an empty line', { line: '  ' }, /--line must be one non-empty line/],
+    ['a multi-line line', { line: 'a\nb' }, /--line must be one non-empty line/],
+  ];
 
-  reset('- 2026-01-01 — earlier line\n');
-  assert.deepStrictEqual(close(), { status: 0, result: { entry: 2, head } }, 'the command reports the entry and the HEAD it recorded');
-  assert.strictEqual(fs.readFileSync(planFile, 'utf8'), plan.replace(entryRow(2, '', 'delta since entry 1'), entryRow(2, head, 'delta since entry 1')), 'only the named entry\'s HEAD analysed cell changes');
-  assert.ok(/^- 2026-01-01 — earlier line\n- \d{4}-\d{2}-\d{2} — impl-test: impacted set green\n$/.test(fs.readFileSync(logFile, 'utf8')), 'the line is appended after the existing log, dated');
+  const [filled, noNewline, refused, ambiguous, absent] = await Promise.all([
+    close('- 2026-01-01 — earlier line\n'),
+    close('- 2026-01-01 — no trailing newline', { entry: '1' }),
+    Promise.all(refusals.map(([, overrides]) => close('- 2026-01-01 — kept\n', overrides))),
+    close('', {}, `${plan}\n${entryRow(2, '', 'again')}\n`),
+    runtimeCliResultAsync(['impl-test-close', '--test-plan', path.join(work, 'test-plan-1.md')], { cwd: repo, env }),
+  ]);
+  const [filledPlan, filledLog] = filled.files();
+  assert.deepStrictEqual([filled.status, filled.result], [0, { entry: 2, head }], 'the command reports the entry and the HEAD it recorded');
+  assert.strictEqual(filledPlan, plan.replace(entryRow(2, '', 'delta since entry 1'), entryRow(2, head, 'delta since entry 1')), 'only the named entry\'s HEAD analysed cell changes');
+  assert.ok(/^- 2026-01-01 — earlier line\n- \d{4}-\d{2}-\d{2} — impl-test: impacted set green\n$/.test(filledLog), 'the line is appended after the existing log, dated');
 
-  reset('- 2026-01-01 — no trailing newline');
-  close(['entry', '1']);
-  assert.ok(fs.readFileSync(logFile, 'utf8').startsWith('- 2026-01-01 — no trailing newline\n- '), 'a log without a final newline still gets the line on its own line');
-  assert.ok(fs.readFileSync(planFile, 'utf8').includes(entryRow(1, head, 'full change surface')), 'a row already holding a sha is refilled with the current HEAD');
+  const [noNewlinePlan, noNewlineLog] = noNewline.files();
+  assert.ok(noNewlineLog.startsWith('- 2026-01-01 — no trailing newline\n- '), 'a log without a final newline still gets the line on its own line');
+  assert.ok(noNewlinePlan.includes(entryRow(1, head, 'full change surface')), 'a row already holding a sha is refilled with the current HEAD');
 
-  for (const [label, overrides, pattern] of [
-    ['an entry with no row', [['entry', '3']], /holds 0 Entry log rows for entry 3, expected 1/],
-    ['a non-integer entry', [['entry', 'two']], /--entry <positive integer> required/],
-    ['an empty line', [['line', '  ']], /--line must be one non-empty line/],
-    ['a multi-line line', [['line', 'a\nb']], /--line must be one non-empty line/],
-  ]) {
-    reset('- 2026-01-01 — kept\n');
-    const refused = close(...overrides);
-    assert.ok(refused.status === 2 && pattern.test(refused.stderr), `${label} is refused (got ${JSON.stringify(refused)})`);
-    assert.deepStrictEqual([fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')], [plan, '- 2026-01-01 — kept\n'], `${label}: neither file is written`);
-  }
-  reset('');
-  fs.writeFileSync(planFile, `${plan}\n${entryRow(2, '', 'again')}\n`, 'utf8');
-  assert.ok(/holds 2 Entry log rows for entry 2/.test(close().stderr), 'two rows for one entry are ambiguous and refused');
-  const absent = runtimeCliResult(['impl-test-close', '--test-plan', planFile], { cwd: repo, env });
+  refusals.forEach(([label, , pattern], index) => {
+    assert.ok(refused[index].status === 2 && pattern.test(refused[index].stderr), `${label} is refused (got ${JSON.stringify(refused[index])})`);
+    assert.deepStrictEqual(refused[index].files(), [plan, '- 2026-01-01 — kept\n'], `${label}: neither file is written`);
+  });
+  assert.ok(/holds 2 Entry log rows for entry 2/.test(ambiguous.stderr), 'two rows for one entry are ambiguous and refused');
   assert.ok(absent.status === 2 && /requires --entry, --decisions, --line/.test(absent.stderr), 'a missing flag names every flag still required');
 });
 
@@ -1080,46 +1115,58 @@ test('sprint-036 AC-16 (external 4): attribution-check whose read of one setting
   assert.deepStrictEqual([outcome.status, /^runtime: \.claude\/settings\.json could not be read \(.+\), left untouched\n$/.test(outcome.stderr), fixLine, /^codex: /.test(hintLine), rest], [0, true, 'attribution: .claude/settings.local.json: includeCoAuthoredBy set to false', true, []], 'AC-16: the unreadable first file is a warning, the second file is cleaned and the Codex hint still prints');
 });
 
-test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths rule and requires an allowance past 200 net test lines above the other net, and impl-test-close refuses an Added tests row with no Gap proof and, at the green exit, an unallowanced required delta, recording Line delta otherwise', () => {
-  const { repo, env, git } = sandboxGitRepo();
+test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths rule and requires an allowance past 200 net test lines above the other net, and impl-test-close refuses an Added tests row with no Gap proof and, at the green exit, an unallowanced required delta, recording Line delta otherwise', async () => {
+  const sandbox = sandboxGitRepo();
+  const { repo, env } = sandbox;
   const numbered = (count) => `${Array.from({ length: count }, (unused, index) => `line ${index}`).join('\n')}\n`;
-  git('commit', '-q', '--allow-empty', '-m', 'base');
-  git('branch', 'base-ref');
-  writeFile(repo, 'tests/big_test.js', numbered(250));
-  writeFile(repo, 'src/a.js', numbered(5));
-  git('add', '-A');
-  git('commit', '-q', '-m', 'change');
+  const [base] = await importCommits(sandbox, [{}, { 'tests/big_test.js': numbered(250), 'src/a.js': numbered(5) }]);
   const work = mkTempDir();
   const commands = path.join(work, 'commands.yaml');
   fs.writeFileSync(commands, 'test_paths: "tests/**"\n', 'utf8');
-  const delta = (base) => runtimeCliResult(['test-delta', '--base', base, '--commands', commands], { cwd: repo, env });
-  assert.deepStrictEqual(delta('base-ref'), { status: 0, result: { test: { added: 250, removed: 0, net: 250 }, other: { added: 5, removed: 0, net: 5 }, allowance_required: true } });
-  assert.strictEqual(delta('HEAD').result.allowance_required, false, 'an empty diff needs no allowance');
+  const delta = (ref) => runtimeCliResultAsync(['test-delta', '--base', ref, '--commands', commands], { cwd: repo, env });
 
-  const planFile = path.join(work, 'test-plan.md');
-  const logFile = path.join(work, 'decisions-log.md');
   const gapRow = (gap) => ['| Test | Gap proof | Regression proof |', '|---|---|---|', `| a.js:t | ${gap} | n/a |`];
   const plan = (added, suiteRun = ['- Command: node tests/run.js']) => ['# Test plan', '', '## Entry log', '', '| Entry | HEAD analysed | Scope |', '|---|---|---|', '| 1 |  | full change surface |', '', '## Added tests', '', ...added, '', '## Suite run', '', ...suiteRun, ''].join('\n');
-  const close = (text, ...extra) => {
+  let runs = 0;
+  const close = async (text, ...extra) => {
+    runs += 1;
+    const planFile = path.join(work, `test-plan-${runs}.md`);
+    const logFile = path.join(work, `decisions-log-${runs}.md`);
     fs.writeFileSync(planFile, text, 'utf8');
     fs.writeFileSync(logFile, '', 'utf8');
-    return runtimeCliResult(['impl-test-close', '--test-plan', planFile, '--entry', '1', '--decisions', logFile, '--line', 'impl-test: closed', ...extra], { cwd: repo, env });
+    const outcome = await runtimeCliResultAsync(['impl-test-close', '--test-plan', planFile, '--entry', '1', '--decisions', logFile, '--line', 'impl-test: closed', ...extra], { cwd: repo, env });
+    return { ...outcome, plan: () => fs.readFileSync(planFile, 'utf8') };
   };
+  const green = (text, ref) => close(text, '--green', '--base', ref, '--commands', commands);
+  const proven = gapRow('seeded x: node tests/run.js -> exit 0');
+  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen] = await Promise.all([
+    delta(base),
+    delta('HEAD'),
+    close(plan(gapRow(''))),
+    close(plan(['| Test | Regression proof |', '|---|---|', '| a.js:t | n/a |'])),
+    close(plan(gapRow('search x in tests: no test of the unit'))),
+    close(plan(['| Test | Gap proof | Regression proof |', '|---|---|---|'])),
+    green(plan(proven), base),
+    green(plan(proven, ['- Allowance: covers the AC-3 risk']), base),
+    green(plan(proven), 'HEAD'),
+    close(plan(gapRow('seeded x')), '--green'),
+    close(plan(gapRow('seeded x')), '--base', base),
+  ]);
   const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
 
-  refused(close(plan(gapRow(''))), /empty Gap proof cell/, 'a row with an empty Gap proof is refused');
-  refused(close(plan(['| Test | Regression proof |', '|---|---|', '| a.js:t | n/a |'])), /no Gap proof column/, 'a table with rows and no Gap proof column is refused');
-  assert.strictEqual(close(plan(gapRow('search x in tests: no test of the unit'))).status, 0, 'a filled Gap proof closes');
-  assert.strictEqual(close(plan(['| Test | Gap proof | Regression proof |', '|---|---|---|'])).status, 0, 'a table with no row needs no proof');
-
-  const green = (text, base) => close(text, '--green', '--base', base, '--commands', commands);
-  refused(green(plan(gapRow('seeded x: node tests/run.js -> exit 0')), 'base-ref'), /needs a non-empty "- Allowance:" line/, 'a required allowance missing refuses the green exit');
-  assert.ok(!fs.readFileSync(planFile, 'utf8').includes('Line delta'), 'the refused close recorded no delta');
-  assert.strictEqual(green(plan(gapRow('seeded x: node tests/run.js -> exit 0'), ['- Allowance: covers the AC-3 risk']), 'base-ref').status, 0, 'an allowance line lets the green exit through');
-  assert.ok(fs.readFileSync(planFile, 'utf8').includes('- Line delta: tests +250/−0 (net 250); other +5/−0 (net 5)'), 'the delta is recorded in Suite run');
-  assert.strictEqual(green(plan(gapRow('seeded x: node tests/run.js -> exit 0')), 'HEAD').status, 0, 'no allowance is needed when none is required');
-  refused(close(plan(gapRow('seeded x')), '--green'), /--green requires --base/, '--green without --base is refused');
-  refused(close(plan(gapRow('seeded x')), '--base', 'base-ref'), /apply with --green only/, '--base without --green is refused');
+  assert.deepStrictEqual(measured, { status: 0, result: { test: { added: 250, removed: 0, net: 250 }, other: { added: 5, removed: 0, net: 5 }, allowance_required: true } });
+  assert.strictEqual(empty.result.allowance_required, false, 'an empty diff needs no allowance');
+  refused(emptyGap, /empty Gap proof cell/, 'a row with an empty Gap proof is refused');
+  refused(noGapColumn, /no Gap proof column/, 'a table with rows and no Gap proof column is refused');
+  assert.strictEqual(filled.status, 0, 'a filled Gap proof closes');
+  assert.strictEqual(noRow.status, 0, 'a table with no row needs no proof');
+  refused(noAllowance, /needs a non-empty "- Allowance:" line/, 'a required allowance missing refuses the green exit');
+  assert.ok(!noAllowance.plan().includes('Line delta'), 'the refused close recorded no delta');
+  assert.strictEqual(allowed.status, 0, 'an allowance line lets the green exit through');
+  assert.ok(allowed.plan().includes('- Line delta: tests +250/−0 (net 250); other +5/−0 (net 5)'), 'the delta is recorded in Suite run');
+  assert.strictEqual(notRequired.status, 0, 'no allowance is needed when none is required');
+  refused(noBase, /--green requires --base/, '--green without --base is refused');
+  refused(noGreen, /apply with --green only/, '--base without --green is refused');
 });
 
 test('sprint-037 AC-5: stubs-due lists an accepted-debt row with no review date, an impossible calendar date or a date before today, and no row dated today or later, no plain stub and no row of another reason', () => {
