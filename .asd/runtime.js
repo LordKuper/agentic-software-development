@@ -2347,7 +2347,7 @@ function checkGapProof(lines, source = 'test-plan') {
   const column = header.indexOf('Gap proof');
   if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
   if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-  if (rows.some((cells) => /^\{\{.*\}\}$/.test(cells[column]))) fail(`${source} Added tests row has an unreplaced {{…}} Gap proof template cell`);
+  if (rows.some((cells) => /^\{\{.*\}\}$/.test(cells[column]))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
