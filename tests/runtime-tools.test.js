@@ -1151,7 +1151,7 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   };
   const green = (text, ref) => close(text, '--green', '--base', ref, '--commands', commands);
   const proven = gapRow('seeded x: node tests/run.js -> exit 0');
-  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator, trailingPlaceholder, noLeadingPipe, oneCell, proseAfterBlank] = await Promise.all([
+  const [measured, empty, emptyGap, noGapColumn, filled, noRow, noAllowance, allowed, notRequired, noBase, noGreen, noSection, placeholder, midPlaceholder, noSeparator, trailingPlaceholder, noLeadingPipe, oneCell, proseAfterBlank, secondTableEmpty, proseBetweenTables] = await Promise.all([
     delta(base),
     delta('HEAD'),
     close(plan(gapRow(''))),
@@ -1171,6 +1171,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
     close(plan([...gapRow('seeded x: node tests/run.js -> exit 1'), 'b.js:t | seeded y | n/a |'])),
     close(plan([...proven, '| b.js:t |'])),
     close(plan([...proven, '', 'A note: a | b is prose outside the table.'])),
+    close(plan([...proven, '', ...gapRow('')])),
+    close(plan([...proven, '', 'Second table follows.', '', ...gapRow('seeded y: node tests/run.js -> exit 1')])),
   ]);
   const refused = (result, pattern, label) => assert.ok(result.status === 2 && pattern.test(result.stderr), `${label} (got ${JSON.stringify(result)})`);
 
@@ -1185,6 +1187,8 @@ test('sprint-037 AC-3/AC-13: test-delta splits the sprint diff by the test_paths
   refused(noLeadingPipe, /row lacks a leading pipe/, 'a row after a well-formed table with no leading pipe is refused, not dropped');
   refused(oneCell, /row cell count differs from the header's 3/, 'a one-cell row after a well-formed table is refused, not read as a proof');
   assert.strictEqual(proseAfterBlank.status, 0, 'a pipe in prose after the blank line ending the table is outside the table and closes');
+  refused(secondTableEmpty, /empty Gap proof cell/, 'a second table after a blank line is checked like the first');
+  assert.strictEqual(proseBetweenTables.status, 0, 'prose between two proven tables is free and closes');
   refused(noSeparator, /table separator malformed/, 'a header followed directly by a data row is refused');
   assert.strictEqual(filled.status, 0, 'a filled Gap proof closes');
   assert.strictEqual(noRow.status, 0, 'a table with no row needs no proof');

@@ -2336,25 +2336,25 @@ function planSection(lines, name) {
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
-/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose table, the run of lines from its header row to the next blank line, when it has a data row, has a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside that run is free. */
+/** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose every table, a run of lines from a line opening with a pipe to the next blank line, has a header and a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and, when it has a data row, a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside a table is free. */
 function checkGapProof(lines, source = 'test-plan') {
   const section = planSection(lines, 'Added tests');
   if (section === null) fail(`${source} has no ## Added tests section`);
-  const body = lines.slice(section.start, section.end);
-  const start = body.findIndex((line) => line.trim().startsWith('|'));
-  if (start === -1) return;
-  const blank = body.findIndex((line, index) => index > start && line.trim() === '');
-  const run = body.slice(start, blank === -1 ? undefined : blank);
-  if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
-  const [header, separator, ...rows] = run.map(tableCells);
-  if (separator === undefined) return;
-  if (separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
-  if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
-  if (rows.length === 0) return;
-  const column = header.indexOf('Gap proof');
-  if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
-  if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-  if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+  lines.slice(section.start, section.end).join('\n').split(/\n[ \t]*\n/).forEach((paragraph) => {
+    const paragraphLines = paragraph.trim().split('\n');
+    const start = paragraphLines.findIndex((line) => line.trim().startsWith('|'));
+    if (start === -1) return;
+    const run = paragraphLines.slice(start);
+    if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+    const [header, separator, ...rows] = run.map(tableCells);
+    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
+    if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
+    if (rows.length === 0) return;
+    const column = header.indexOf('Gap proof');
+    if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
+    if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
+    if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+  });
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
