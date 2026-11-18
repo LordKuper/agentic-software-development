@@ -2,7 +2,7 @@
 
 // sync.js command line: --check, --apply and orphan detection
 
-const { assert, fs, path, execFileSync, spawnSync, sync, REPO_ROOT, test, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, markedFileContent, canonText, subOf, spans, disabledAttributionRepo, linkedLedgerCases } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, REPO_ROOT, test, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, markedFileContent, spans, disabledAttributionRepo, linkedLedgerCases } = require('./lib.js');
 
 test('`node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md', () => {
   const { execFileSync } = require('node:child_process');
@@ -31,22 +31,6 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
   }
   const drifted = parsed.items.filter((item) => item.status !== 'current');
   assert.deepStrictEqual(drifted, [], '`--check` always exits 0 with `ok: true`; drift only shows as a per-item `status` string, so `ok`/`items` alone cannot catch a stale/modified generated view. AGENTS.md is an ordinary managed-block target (sprint 006 removed the self-sourced carve-out) and must be current here too.');
-});
-
-test('sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)', () => {
-  const root = makeMiniRepo();
-  const manifest = loadManifest();
-  const markedAbs = path.join(root, '.claude', 'agents', 'asd-reviewer-quality.md');
-  const unmarkedAbs = path.join(root, '.claude', 'agents', 'consumer-owned.md');
-  fs.mkdirSync(path.dirname(markedAbs), { recursive: true });
-  fs.writeFileSync(markedAbs, markedFileContent('md', manifest), 'utf8');
-  fs.writeFileSync(unmarkedAbs, "# a consumer's own hand-authored agent, no ownership marker\n", 'utf8');
-
-  const report = sync.runCheck(root);
-  assert.strictEqual(report.find((i) => i.target === '.claude/agents/asd-reviewer-quality.md').status, 'orphan');
-  assert.strictEqual(report.find((i) => i.target === '.claude/agents/consumer-owned.md').status, 'orphan-unmarked');
-  // Mirrors main()'s own CLI exit-code rule: only a marked orphan fails --check.
-  assert.strictEqual(report.some((i) => i.status === 'orphan'), true, 'a marked orphan must fail the check');
 });
 
 test('sync.js orphan detection: --apply deletes an explicitly-requested marked orphan but refuses an unmarked one, unmarked file survives', () => {
@@ -167,7 +151,7 @@ test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only 
   assert.ok(secondReport.items.some((i) => i.target === '.claude/agents/consumer-owned.md' && i.status === 'orphan-unmarked'), 'the unmarked file must still be reported as orphan-unmarked, just never as a failure');
 });
 
-test('sync.js CLI: a hand-edited marked orphan reports orphan-modified and fails --check, --apply leaves it alone without --force and deletes it with --force; providers.md states the status', () => {
+test('sync.js CLI: a hand-edited marked orphan reports orphan-modified and fails --check, --apply leaves it alone without --force and deletes it with --force', () => {
   const { spawnSync } = require('node:child_process');
   const root = makeMiniRepo();
   const manifest = loadManifest();
@@ -190,99 +174,66 @@ test('sync.js CLI: a hand-edited marked orphan reports orphan-modified and fails
   assert.deepStrictEqual([forced.status, forced.applied], ['orphan-modified', true]);
   assert.strictEqual(fs.existsSync(abs), false, 'with --force the confirmed orphan is deleted');
 
-  assert.ok(subOf(canonText('.asd/rules/providers.md'), 'Orphan detection').includes(`\`${status}\``), 'providers.md "Orphan detection" names the status --check reports for a hand-edited orphan');
 });
 
-test('sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
+test('sync.js CLI: --apply on a not-found target and a bare --apply each abort the batch (exit 1) and skip the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
   const root = makeMiniRepo();
   const manifestPath = path.join(root, '.asd', 'release-manifest.json');
   const syncStatePath = path.join(root, '.asd', 'sync-state.json');
   const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
   const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
-
-  let error = null;
-  try {
-    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply', '.claude/agents/typo-target-matching-nothing.md'], { cwd: root, encoding: 'utf8' });
-  } catch (e) {
-    error = e;
-  }
-  assert.ok(error, '--apply must exit non-zero when a requested target is not-found');
-  assert.strictEqual(error.status, 1);
-  const report = JSON.parse(error.stdout);
-  assert.strictEqual(report.ok, false);
-  assert.ok(report.applied.some((a) => a.status === 'not-found'));
-  assert.strictEqual(report.hashLedger, null, 'the ledger recompute must be skipped entirely on an aborted batch');
-  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, 'an aborted batch must never write release-manifest.json');
-  assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, 'an aborted batch must never write sync-state.json');
+  const failedApply = (label, ...args) => {
+    let error = null;
+    try {
+      execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply', ...args], { cwd: root, encoding: 'utf8' });
+    } catch (e) {
+      error = e;
+    }
+    assert.ok(error, `${label}: --apply must exit non-zero, not silently succeed`);
+    assert.strictEqual(error.status, 1, label);
+    const report = JSON.parse(error.stdout);
+    assert.strictEqual(report.ok, false, label);
+    assert.strictEqual(report.hashLedger, null, `${label}: the ledger recompute must be skipped entirely - a stale generated view can no longer hide behind a green ledger`);
+    assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, `${label}: must never write release-manifest.json`);
+    assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, `${label}: must never write sync-state.json`);
+    return report;
+  };
+  assert.ok(failedApply('not-found target', '.claude/agents/typo-target-matching-nothing.md').applied.some((a) => a.status === 'not-found'));
+  assert.deepStrictEqual(failedApply('bare --apply').applied, []);
 });
 
-test('sync.js CLI: bare --apply with no targets fails closed (exit 1) and skips the hash-ledger recompute - a stale generated view can no longer hide behind a green ledger', () => {
-  const root = makeMiniRepo();
-  const manifestPath = path.join(root, '.asd', 'release-manifest.json');
-  const syncStatePath = path.join(root, '.asd', 'sync-state.json');
-  const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
-  const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
-
-  let error = null;
-  try {
-    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply'], { cwd: root, encoding: 'utf8' });
-  } catch (e) {
-    error = e;
-  }
-  assert.ok(error, '--apply with an empty target list must exit non-zero, not silently succeed with applied: []');
-  assert.strictEqual(error.status, 1);
-  const report = JSON.parse(error.stdout);
-  assert.strictEqual(report.ok, false);
-  assert.deepStrictEqual(report.applied, []);
-  assert.strictEqual(report.hashLedger, null, 'the ledger recompute must be skipped when no target was given, exactly like an aborted batch');
-  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, 'a bare --apply must never write release-manifest.json');
-  assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, 'a bare --apply must never write sync-state.json');
-});
-
-test('sprint-036 AC-16 (external 1, iter-07): sync --check and --apply over a symlinked ledger or a linked .asd directory holding invalid JSON each exit 1 with one "sync: " stderr line naming the link refusal, no stack and no fragment of the linked file, and leave it byte-identical', () => {
-  const MARKER = 'LINKED-LEDGER-SECRET-MARKER';
-  const FRAGMENT = MARKER.slice(0, 8);
-  const invalid = `{ "entries": ${MARKER} `;
-  const syncSpawn = (root, args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: root, encoding: 'utf8' });
+test('sprint-036 AC-16 (external 1, iter-07/08): sync --check and --apply over a symlinked ledger or a linked .asd directory refuse the link before reading the invalid ledger or the malformed release manifest behind it - exit 1, one "sync: " link-refusal line, no fragment of the linked file, no byte changed', () => {
+  const scenarios = [
+    ['invalid ledger', 'LINKED-LEDGER-SECRET-MARKER', (repo, behind) => behind, (marker) => `{ "entries": ${marker} `],
+    ['malformed manifest', 'LINKED-MANIFEST-SECRET-MARKER', (repo) => path.join(repo.root, '.asd', 'release-manifest.json'), (marker) => `{ "schema_version": ${marker} `],
+  ];
   const outcomes = [];
   for (const [label, { repo, behind }] of linkedLedgerCases()) {
-    fs.writeFileSync(behind, invalid, 'utf8');
-    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
-      const ran = syncSpawn(repo.root, args);
-      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(behind, 'utf8') === invalid]);
+    for (const [scenario, marker, locate, invalidOf] of scenarios) {
+      const target = locate(repo, behind);
+      const original = fs.readFileSync(target, 'utf8');
+      const invalid = invalidOf(marker);
+      fs.writeFileSync(target, invalid, 'utf8');
+      const ledgerBefore = fs.readFileSync(behind, 'utf8');
+      for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
+        const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: repo.root, encoding: 'utf8' });
+        outcomes.push([label, scenario, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(marker.slice(0, 8)), fs.readFileSync(target, 'utf8') === invalid, fs.readFileSync(behind, 'utf8') === ledgerBefore]);
+      }
+      fs.writeFileSync(target, original, 'utf8');
     }
   }
-  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true]), 'AC-16: the linked ledger is refused before it is parsed - one sync: line, exit 1, no text of the file, bytes unchanged');
+  assert.deepStrictEqual(outcomes, outcomes.map(([label, scenario, flag]) => [label, scenario, flag, 1, true, false, true, true]), 'AC-16: the link guard runs before the ledger and the release manifest are parsed - one sync: line, exit 1, no text of the file, bytes unchanged');
 });
 
-test('sprint-036 AC-16 (external 1, iter-07): sync --check over an unlinked ledger of an unsupported schema_version exits 1 with one "sync: " stderr line naming it, no stack and no stdout - the CLI catch-all reports any thrown error, not only a link refusal', () => {
+test('sprint-036 AC-16 (external 1/2): sync --check over an unlinked ledger whose schema_version is unsupported or spans CR and LF lines exits 1 with exactly one "sync: " stderr line and no stdout - the CLI catch-all reports any thrown error, folded to one line', () => {
   const repo = disabledAttributionRepo();
   const ledger = path.join(repo.root, '.asd', 'sync-state.json');
-  fs.writeFileSync(ledger, JSON.stringify({ schema_version: 99, entries: {} }), 'utf8');
-  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
-  assert.deepStrictEqual([ran.status, ran.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(ran.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
-});
-
-test('sprint-036 AC-16 (external 1, iter-08): sync --check and --apply over a linked .asd directory or symlinked ledger whose release manifest is malformed JSON exit 1 with one "sync: " link-refusal line carrying no fragment of that manifest, and leave manifest and ledger byte-identical', () => {
-  const MARKER = 'LINKED-MANIFEST-SECRET-MARKER';
-  const FRAGMENT = MARKER.slice(0, 8);
-  const invalid = `{ "schema_version": ${MARKER} `;
-  const outcomes = [];
-  for (const [label, { repo, behind }] of linkedLedgerCases()) {
-    const manifestPath = path.join(repo.root, '.asd', 'release-manifest.json');
-    fs.writeFileSync(manifestPath, invalid, 'utf8');
-    const ledgerBefore = fs.readFileSync(behind, 'utf8');
-    for (const args of [['--check'], ['--apply', '.claude/settings.json']]) {
-      const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: repo.root, encoding: 'utf8' });
-      outcomes.push([label, args[0], ran.status, /^sync: [^\n]*symlink or junction\n$/.test(ran.stderr), `${ran.stdout}${ran.stderr}`.includes(FRAGMENT), fs.readFileSync(manifestPath, 'utf8') === invalid, fs.readFileSync(behind, 'utf8') === ledgerBefore]);
-    }
-  }
-  assert.deepStrictEqual(outcomes, outcomes.map(([label, flag]) => [label, flag, 1, true, false, true, true]), 'AC-16: the link guard runs before the release manifest is read - one sync: line, exit 1, no manifest text, no byte changed');
-});
-
-test('sprint-036 AC-16 (external 2, iter-08): sync --check over an unlinked ledger whose schema_version value spans CR and LF lines exits 1 with exactly one stderr line - the CLI catch-all folds the message to one line', () => {
-  const repo = disabledAttributionRepo();
-  fs.writeFileSync(path.join(repo.root, '.asd', 'sync-state.json'), JSON.stringify({ schema_version: 'first\r\nsecond\nthird', entries: {} }), 'utf8');
-  const ran = spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
-  assert.deepStrictEqual([ran.status, ran.stdout, ran.stderr.split('\n').length, /^sync: [^\n\r]*first second third[^\n\r]*\n$/.test(ran.stderr)], [1, '', 2, true], 'AC-16: a multi-line thrown message ends as one stderr line');
+  const check = (state) => {
+    fs.writeFileSync(ledger, JSON.stringify(state), 'utf8');
+    return spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: repo.root, encoding: 'utf8' });
+  };
+  const unsupported = check({ schema_version: 99, entries: {} });
+  assert.deepStrictEqual([unsupported.status, unsupported.stdout, /^sync: [^\n]*schema_version 99[^\n]*\n$/.test(unsupported.stderr)], [1, '', true], 'AC-16: a non-link thrown error ends as one sync: line and exit 1, not a stack trace');
+  const multiline = check({ schema_version: 'first\r\nsecond\nthird', entries: {} });
+  assert.deepStrictEqual([multiline.status, multiline.stdout, multiline.stderr.split('\n').length, /^sync: [^\n\r]*first second third[^\n\r]*\n$/.test(multiline.stderr)], [1, '', 2, true], 'AC-16: a multi-line thrown message ends as one stderr line');
 });

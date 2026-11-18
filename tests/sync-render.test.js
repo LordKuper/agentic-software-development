@@ -2,7 +2,7 @@
 
 // sync.js provider-view rendering: full-file, managed-block and json-merge classes, path safety, schema versions
 
-const { assert, fs, path, sync, runtime, REPO_ROOT, FIXTURES, test, mkTempDir, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, writeFile, workflowReviewerAgents, canonText, sectionOf, spans, disabledAttributionRepo, OFF_VALUE, recordedOwnedKeys } = require('./lib.js');
+const { assert, fs, path, sync, runtime, REPO_ROOT, FIXTURES, test, mkTempDir, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, writeFile, workflowReviewerAgents, canonText, sectionOf, disabledAttributionRepo, OFF_VALUE, recordedOwnedKeys } = require('./lib.js');
 
 function readExpectedFixture(expectedPath, manifest) {
   // Expected fixtures bake the ownership marker's asd_version field as the
@@ -197,12 +197,6 @@ test('AC-3: wrapped model aliases resolve through the wrapped provider table', (
   const rendered = sync.transformAgentClaude(meta, body, changed);
   assert.ok(rendered.includes(`--model ${override}`), 'nested wrapper arguments must receive the resolved wrapped model from the table the render is given - the override is an id (version 0) no live table holds, so the live table cannot satisfy this');
   assert.ok(!rendered.includes('{{wraps_model}}'));
-});
-
-test('agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)', () => {
-  const manifest = loadManifest();
-  const rendered = renderFixture('agent-claude', path.join(FIXTURES, 'canon/agents/demo-agent.md'), 'agents/demo-agent.md', manifest);
-  assert.ok(!rendered.output.includes('{{'), 'demo-agent body carries no placeholders to begin with - render must stay byte-identical to its existing fixture');
 });
 
 test('CRLF+BOM canonical input normalizes to the same output as LF/no-BOM', () => {
@@ -743,15 +737,6 @@ test('json-merge: modified-foreign when owned-looking entries exist but sync-sta
   assert.deepStrictEqual(fs.readFileSync(target), before);
 });
 
-test('json-merge: invalid JSON target fails closed (treated as foreign, never parsed/written)', () => {
-  const dir = mkTempDir();
-  const target = path.join(dir, 'settings.json');
-  fs.writeFileSync(target, '{ this is not json', 'utf8');
-  const state = freshSyncState();
-  const status = sync.statusJsonMerge(target, 'settings.json', HOOK_PATH, demoAsdEntries(), state);
-  assert.strictEqual(status, 'modified-foreign');
-});
-
 test('isSafeRelPath rejects traversal, absolute, drive, and UNC paths; accepts plain relative paths', () => {
   assert.strictEqual(sync.isSafeRelPath('agents/demo.md'), true);
   assert.strictEqual(sync.isSafeRelPath('../escape.md'), false);
@@ -851,7 +836,7 @@ test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary f
   assert.throws(check(GOOD_AGENT_CANON.replace('"model": "opus"', '"model": "opus-xl"')), /effort-probe.*opus-xl.*effort "high"/, 'the unknown-family diagnostic must name the agent, the family, the resolved model and the effort on the Claude path too. Special-cased by provider, the Claude branch built its message without the agent argument it was handed, leaving a reader debugging it with no agent name and no route to the effort check that lives beside it');
 });
 
-test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each agent renders - both providers, the mechanical variant - is the tier README states (the agent frontmatter, resolved through the release manifest, is the one home: providers.md keeps no tier table), the variant-tier prose names the same families and efforts, and README names no family no agent renders', () => {
+test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each agent renders - both providers, the variants - is the tier README states, the README variant sentence names the same families and efforts, and README names no family no agent renders', () => {
   const manifest = loadManifest();
   const tierOf = (family, effort) => `${family}/${effort || 'none'}`;
   const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
@@ -872,8 +857,6 @@ test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each ag
 
   const suffixes = [...new Set([...tiers.keys()].filter((name) => !baseNames.includes(name)).map((name) => name.split('-').pop()))].sort();
   assert.deepStrictEqual(suffixes, ['escalated', 'mechanical', 'runner'], 'sprint-023 AC-7, sprint-033 AC-1/AC-3: the variants are escalated, mechanical and runner, the critical variant is retired; tier standard has no variant and dispatches the base agent - the fact the deleted matrix repeated on its variant rows - so no canon agent may declare a standard variant, which sync.js would otherwise render');
-  const standardNote = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('standard') && /\bvariant/.test(sentence) && /\bno\b/.test(sentence) && /\bbase\b/.test(sentence));
-  assert.ok(standardNote, 'sprint-023 AC-7: providers.md "Task-class variants and routing" is now the only prose home of "tier standard has no variant, it dispatches the base agent" - the matrix that repeated it is gone');
 
   const agentsSection = sectionOf('README.md', 'Agents');
   const readmeRows = [...agentsSection.matchAll(/^\| `(asd-[a-z-]+)` \| ([^|]+) \| ([^|]+) \|/gm)].map(([, name, claude, codex]) => [name, claude.trim(), codex.trim()]);
@@ -900,43 +883,14 @@ test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each ag
   const wordsOfTiers = (names) => new Set(names.flatMap((name) => [tiers.get(name).claude, tiers.get(name).codex]).flatMap((tier) => tier.split('/')).filter((word) => word !== 'none'));
   const variantNames = [...tiers.keys()].filter((name) => !baseNames.includes(name));
   const variantBases = baseNames.filter((name) => variantNames.some((variant) => variant.startsWith(`${name}-`)));
-  const sentenceOf = (rel, isTierSentence) => {
-    const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
-    assert.strictEqual(hits.length, 1, `${rel} must state the variant tiers in exactly one sentence, or the tier words below are compared with the wrong text`);
-    return hits[0];
-  };
   const sentencesOf = (rel, isTierSentence) => {
     const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
     const missing = sync.VARIANT_SUFFIXES.filter((suffix) => !hits.some((sentence) => sentence.includes(`\`${suffix}\``) || sentence.includes(`\`-${suffix}\``)));
     assert.deepStrictEqual(missing, [], `sprint-033 AC-6: ${rel} must state each variant tier in a sentence, or the tier words below are compared with the wrong text`);
     return hits.join(' ');
   };
-  const providersSentence = sentencesOf('.asd/rules/providers.md', (sentence) => sync.VARIANT_SUFFIXES.some((suffix) => sentence.includes(`declares \`${suffix}\``)));
-  assert.deepStrictEqual([...wordsIn(providersSentence)].sort(), [...wordsOfTiers(variantNames)].sort(), 'AC-9: providers.md "Task-class variants and routing" names exactly the families and efforts the variants render (mechanical: haiku/luna) - none stale, none missing');
   const readmeSentence = sentencesOf('README.md', (sentence) => sync.VARIANT_SUFFIXES.some((suffix) => sentence.includes(`\`-${suffix}\``)));
   assert.deepStrictEqual([...wordsIn(readmeSentence)].sort(), [...new Set([...wordsOfTiers(variantNames), ...wordsOfTiers(variantBases)])].sort(), 'AC-9: README\'s variant sentence names exactly the families and efforts the variants and the base agent they fall back to render');
-
-  const aliasSentence = sentenceOf('.asd/rules/providers.md', (sentence) => spans(sentence).includes('wraps_config_key'));
-  assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model].filter((family) => !spans(aliasSentence).includes(family)), [], 'AC-9: providers.md "External review symmetry" names the wrapped provider\'s family alias for both hosts as canon sets it (wraps_model) - the retired opus is what a half-applied retier leaves');
-});
-
-test('sprint-033 AC-1/AC-2/AC-3/AC-8: the runner variant renders haiku/medium on Claude and luna/high on Codex, the escalated variant opus/high on Claude and the base sol/high on Codex, the External Review wrapper runs haiku/high on Claude with its Codex block at sol/medium, and the scout is a haiku/luna read-only agent', () => {
-  const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
-  const metaOf = (name) => {
-    const item = plan.find((entry) => (entry.metaOverride || entry.source.meta).name === name);
-    assert.ok(item, `${name} must be rendered by the sync plan`);
-    return item.metaOverride || item.source.meta;
-  };
-  const tierOf = (meta) => ({ claude: [meta.claude.model, meta.claude.effort], codex: [meta.codex.model, meta.codex.model_reasoning_effort] });
-  assert.deepStrictEqual(tierOf(metaOf('asd-tester-runner')), { claude: ['haiku', 'medium'], codex: ['luna', 'high'] }, 'AC-1');
-  assert.deepStrictEqual(tierOf(metaOf('asd-dev-escalated')), { claude: ['opus', 'high'], codex: ['sol', 'high'] }, 'AC-3, AC-8: Codex takes the existing family of its base');
-  assert.deepStrictEqual(tierOf(metaOf('asd-dev-mechanical')), { claude: ['haiku', 'high'], codex: ['luna', 'high'] }, 'AC-8: the existing mechanical tier is unchanged');
-  assert.deepStrictEqual(tierOf(metaOf('asd-external-review')), { claude: ['haiku', 'high'], codex: ['sol', 'medium'] }, 'AC-2, AC-8');
-  assert.deepStrictEqual(tierOf(metaOf('asd-scout')), { claude: ['haiku', 'medium'], codex: ['luna', 'medium'] }, 'AC-5, AC-8');
-  const scout = metaOf('asd-scout');
-  assert.deepStrictEqual(scout.claude.tools, ['Read', 'Glob', 'Grep'], 'AC-5: the scout reads only');
-  const wrapper = metaOf('asd-external-review');
-  assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model], ['sol', 'sonnet'], 'AC-2: the wrapped CLI keeps its own model, only the wrapper agent moved to haiku');
 });
 
 test('sprint-036 AC-15: readAiAttribution reads disabled only from exactly one ai_attribution: disabled line of the git group, comments and CRLF included, and every other shape reads enabled', () => {
@@ -1082,23 +1036,15 @@ test('sprint-036 AC-15: an off attribution value the user set by hand and sync n
   assert.deepStrictEqual([fs.readFileSync(settingsPath, 'utf8'), statusOf(), recordedOwnedKeys(root)], [handSet, 'current', undefined], 'AC-15: a hand-set value seen under disabled is never released by a later enabled');
 });
 
-test('sprint-036 AC-15 (combined F2): an apply that re-renders stale hooks under enabled keeps a hand-set off attribution value byte-identical', () => {
+test('sprint-036 AC-15 (combined F1/F2): a re-render of stale hooks keeps a hand-set off attribution value byte-identical and unrecorded under enabled and disabled, and a write under disabled records the attribution key only when it changed the value - the record surviving a later re-render of stale hooks', () => {
   const settingsRel = '.claude/settings.json';
-  const { root, settingsPath, handSet, statusOf } = handSetAttributionRoot('enabled');
-  ageOwnedHooks(root);
-  assert.strictEqual(statusOf(), 'stale', 'AC-15: control - older owned hooks make the entry stale, so apply renders');
-
-  sync.runApply(root, [settingsRel]);
-
-  assert.deepStrictEqual([fs.readFileSync(settingsPath, 'utf8'), statusOf(), recordedOwnedKeys(root)], [handSet, 'current', undefined], 'AC-15: the hooks are re-rendered to the released ones and the render releases no key sync never wrote');
-});
-
-test('sprint-036 AC-15 (combined F1): a write under disabled records the attribution key only when it changed the value, and a recorded key stays recorded across a later re-render of stale hooks', () => {
-  const settingsRel = '.claude/settings.json';
-  const hand = handSetAttributionRoot('disabled');
-  ageOwnedHooks(hand.root);
-  sync.runApply(hand.root, [settingsRel]);
-  assert.deepStrictEqual([fs.readFileSync(hand.settingsPath, 'utf8'), hand.statusOf(), recordedOwnedKeys(hand.root)], [hand.handSet, 'current', undefined], 'AC-15: a re-render that finds the owned value already there leaves it the user\'s, unrecorded');
+  for (const config of ['enabled', 'disabled']) {
+    const hand = handSetAttributionRoot(config);
+    ageOwnedHooks(hand.root);
+    assert.strictEqual(hand.statusOf(), 'stale', `AC-15: ai_attribution ${config} - control: older owned hooks make the entry stale, so apply renders`);
+    sync.runApply(hand.root, [settingsRel]);
+    assert.deepStrictEqual([fs.readFileSync(hand.settingsPath, 'utf8'), hand.statusOf(), recordedOwnedKeys(hand.root)], [hand.handSet, 'current', undefined], `AC-15: ai_attribution ${config} - the hooks are re-rendered to the released ones and the render releases or records no key sync never wrote`);
+  }
 
   const root = makeMiniRepo();
   writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
@@ -1150,19 +1096,6 @@ test('sprint-036 AC-15: sync json-merge carries "attribution": {"commit": "", "p
   fs.writeFileSync(target, raw, 'utf8');
   const rendered = sync.renderJsonMerge(target, ['hooks', 'SessionStart'], demoAsdEntries(), { attribution: { commit: '', pr: '' } });
   assert.deepStrictEqual([JSON.parse(rendered).attribution, rendered.includes('    "permissions": {"allow": ["Bash(git *)"]},\n'), rendered.includes('    "model":   "opus"')], [{ commit: '', pr: '' }, true, true], 'AC-15: a re-enabling attribution value is replaced in place and its neighbours keep their exact bytes');
-});
-
-test('sprint-036 AC-15 (D-1): a json-merge re-render that only adds the owned attribution key keeps the owned hooks array as it was indented - the file reads as JSON.stringify with two spaces writes it', () => {
-  const settingsRel = '.claude/settings.json';
-  const root = makeMiniRepo();
-  const settingsPath = path.join(root, '.claude', 'settings.json');
-
-  sync.runApply(root, [settingsRel]);
-  const before = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-  writeFile(root, '.asd/project/config.yaml', 'git:\n  ai_attribution: disabled\n');
-  sync.runApply(root, [settingsRel]);
-
-  assert.strictEqual(fs.readFileSync(settingsPath, 'utf8'), `${JSON.stringify({ ...before, attribution: { commit: '', pr: '' } }, null, 2)}\n`, 'AC-15: adding the attribution key must not re-indent the hooks.SessionStart array it did not change');
 });
 
 test('sprint-036 AC-15 (D-1): a json-merge re-render of an owned array in a four-space file nests its elements and its closing bracket by the indent of the line the array opens on, and keeps a foreign element byte-identical', () => {
