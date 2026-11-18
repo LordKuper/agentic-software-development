@@ -1,7 +1,7 @@
 {
   "sprint_id": "036-codex-sol-6-2",
   "branch": "sprint/036-codex-sol-6-2",
-  "phase": "impl",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -93,9 +93,9 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 0,
+          "iteration": 1,
           "verdicts": {},
-          "iteration_heads": {},
+          "iteration_heads": { "iter-01": "c44e2d1a4ea825c0d10f64f70e91d28bfdf1d38e" },
           "latched": {}
         }
       ]

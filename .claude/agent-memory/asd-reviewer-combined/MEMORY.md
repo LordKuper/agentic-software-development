@@ -32,3 +32,6 @@
 - [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
 - [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
 - [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it
+- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — rule making an agent write a new file (scratch commit-msg): check its Tools write list and "deny" entries
+- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — setting that makes sync add an owned key: does flipping it back ever remove the key already written?
+- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification

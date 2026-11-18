@@ -19,6 +19,7 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | impl | `agent-liveness` reports STALL for dev agents that already returned COMPLETED | — |
+| F-2 | impl-review | combined manifest emitted without `--self-hosting`, so Framework mode was marked n/a | reviews/impl/wave-1/iter-01/combined |
 
 ## F-1 — `agent-liveness` reports STALL for dev agents that already returned COMPLETED
 
@@ -27,3 +28,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: Task 1 and all five wave-2 `asd-dev` dispatches returned COMPLETED via a subagent hand-back within minutes; each Monitor-run `agent-liveness --interval 300` later printed `STALL <id> no-progress` for every one of them. The transcript of a finished agent stops growing, and `transcriptProgress` did not mark it done.
 - **Impact**: six false stall events; the orchestrator had to recognise them as benign by hand. A stall acted on literally would `TaskStop` a finished agent and trigger a needless failed-dispatch reconstruction. AC-14 covers reviewers with a return file only; creator dispatches that return in chat are still exposed.
 - **Refs**: —
+
+## F-2 — combined manifest emitted without `--self-hosting`, so Framework mode was marked n/a
+
+- **Phase**: impl-review
+- **Surface**: phase — `.asd/workflows/asd-phase-impl-review.md` steps 1/6 (`emit-manifest --self-hosting`)
+- **What happened**: The orchestrator ran step 6's `emit-manifest` for `combined` without the `--self-hosting` flag that step 1 requires in this repo. The manifest marked "Framework mode" as `n/a: self_hosting not enabled`, and the reviewer flagged the discrepancy in its report. The `--self-hosting` flag is stated only in step 1 prose, away from the step 6 command template the orchestrator copies.
+- **Impact**: One full combined review was discarded. The manifest was re-emitted and the reviewer re-dispatched fresh, adding about 10 minutes and one reviewer run of tokens.
+- **Refs**: reviews/impl/wave-1/iter-01/combined
