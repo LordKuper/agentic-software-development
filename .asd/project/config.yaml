@@ -71,3 +71,8 @@ git:
   # {n}    — sprint number, zero-padded to 3 digits (e.g. 001).
   # {slug} — kebab-case slug derived from sprint scope.
   branch_pattern: "sprint/{n}-{slug}"
+
+  # AI attribution in commits and PRs. Absent field = enabled.
+  # disabled: sync keeps Claude Code's project `attribution` off and `commit-check` rejects Claude/Codex `Co-authored-by:` trailers.
+  # Values: enabled | disabled
+  ai_attribution: disabled
