@@ -20,7 +20,7 @@ responsibility:
 | 7 | 6e04da1e | delta since cdc1a55b: review-fix wave-1/iter-05 commit 01497426 (`rewriteInPlace` non-truncating write with descriptor restore; `recordOwnedKeys` link guard, atomic ledger save, boolean return; the check's ledger line; asd-sprint ledger clause removed); views eb63010f; tester e59544ce |
 | 8 | 39145211 | delta since 6e04da1e: review-fix wave-1/iter-06 commits ff7b49e0 (`recordOwnedKeys` link guard before `loadSyncState`), hash ledger 2e0e50d3; tester f844ba86 |
 | 9 | 77db90cd | delta since 39145211: review-fix wave-1/iter-07 commits 26c3f66e (link guard in `loadSyncState`, `recordOwnedKeys` duplicate removed, sync.js CLI catch-all -> one `sync: <message>` line, exit 1), hash ledger 69e01d42; tester 1f34644c |
-| 10 | 5c50a536 | delta since 77db90cd: review-fix wave-1/iter-08 commits 64b9f1e3 (`runCheck`/`runApply` load the guarded ledger before the release manifest; CLI catch-all folds CR/LF to one line), hash ledger 17705f04; tester 46da53fe |
+| 10 | 6cd9f00b | delta since 77db90cd: review-fix wave-1/iter-08 commits 64b9f1e3 (`runCheck`/`runApply` load the guarded ledger before the release manifest; CLI catch-all folds CR/LF to one line), hash ledger 17705f04; tester 46da53fe |
 
 ## Risk → check decisions
 

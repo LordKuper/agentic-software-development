@@ -118,3 +118,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — route review-fix tester wave-1/iter-08 (test parts of external 1, 2): standard, dispatch HEAD 17705f04
 - 2026-11-18 — impl fix for wave-1/iter-08: findings resolved (dev 64b9f1e3; hash ledger 17705f04; tester 46da53fe, full suite 430/430).
 - 2026-11-18 — route impl-test entry 10: standard, dispatch HEAD 46da53fe
+- 2026-11-18 — impl-test: impacted set green (430/430), 0/0 tests
