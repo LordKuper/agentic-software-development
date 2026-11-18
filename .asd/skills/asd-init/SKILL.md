@@ -94,7 +94,7 @@ Fresh and re-init only.
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
-6. Apply diff; write config. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's `attribution-check` also inserts the owned `attribution` key
+6. Apply diff; write config. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also runs that sync for `.claude/settings.json`
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ### Sprint-mediated

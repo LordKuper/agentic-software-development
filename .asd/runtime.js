@@ -938,26 +938,21 @@ function aiAttribution(startDir) {
   return sync.readAiAttribution(sync.findRepoRoot(startDir));
 }
 
-/** Claude Code project settings files the attribution check cleans, never the user-level file; the first is the sync-managed one, which must also carry the owned `attribution` value. */
+/** Claude Code project settings files the attribution check cleans, never the user-level file. */
 const ATTRIBUTION_SETTINGS_FILES = ['.claude/settings.json', '.claude/settings.local.json'];
 /** The top-level keys the attribution check may change. */
 const ATTRIBUTION_KEYS = ['attribution', 'includeCoAuthoredBy'];
 /** The attribution check's one line for a Codex view, whose attribution has no local key. */
 const CODEX_ATTRIBUTION_HINT = 'codex: attribution is the ChatGPT workspace setting commit_attribution_enabled, switch it off there';
 
-/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on; for the sync-managed file (`ownsAttribution`) `attribution` ends as exactly the value sync renders, an absent key inserted. */
-function disableAttribution(settings, ownsAttribution) {
-  const sync = require('./sync.js');
+/** Turns every re-enabling entry of parsed Claude Code settings off in place, returning one report fragment per entry: a non-empty `attribution.commit`/`attribution.pr` becomes `""`, `includeCoAuthoredBy: true` becomes `false`. Reset rather than deleted, because an absent key leaves Claude Code's default attribution on, which is why a missing `attribution` is inserted by sync, never here. */
+function disableAttribution(settings) {
   const attribution = settings.attribution;
   const hasParts = attribution !== null && typeof attribution === 'object' && !Array.isArray(attribution);
   const fixes = (hasParts ? ['commit', 'pr'] : []).filter((part) => Object.hasOwn(attribution, part) && attribution[part] !== '').map((part) => {
     attribution[part] = '';
     return `attribution.${part} reset to ""`;
   });
-  if (ownsAttribution && sync.stableStringify(settings.attribution) !== sync.stableStringify(sync.ATTRIBUTION_OFF)) {
-    settings.attribution = { ...sync.ATTRIBUTION_OFF };
-    fixes.push('attribution set to {"commit":"","pr":""}');
-  }
   if (settings.includeCoAuthoredBy === true) {
     settings.includeCoAuthoredBy = false;
     fixes.push('includeCoAuthoredBy set to false');
@@ -988,7 +983,7 @@ function cleanSettingsFile(repoRoot, relative) {
   if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) return { lines: [], warning: `runtime: ${relative} is not a JSON object, left untouched` };
   const sync = require('./sync.js');
   const original = JSON.parse(raw.slice(bom.length));
-  const fixes = disableAttribution(settings, relative === ATTRIBUTION_SETTINGS_FILES[0]);
+  const fixes = disableAttribution(settings);
   if (fixes.length === 0) return { lines: [], warning: null };
   const changed = ATTRIBUTION_KEYS.filter((key) => sync.stableStringify(settings[key]) !== sync.stableStringify(original[key]));
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';

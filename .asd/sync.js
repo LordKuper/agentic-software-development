@@ -734,15 +734,24 @@ function recordedKeys(syncState, relKey, releasedKeys) {
   return Object.fromEntries(Object.entries(releasedKeys).filter(([key]) => recorded.includes(key)));
 }
 
+// The keys of `ownedKeys` (key -> value) a write over `targetPath` leaves
+// recorded as sync's: one sync changes to the owned value in that write, or one
+// `previous` (the entry's prior `owned_keys`) already records, which the write
+// keeps. A pre-existing value already equal to the owned one is the user's own,
+// so it is never recorded and a later release leaves it alone.
+function writtenKeys(targetPath, previous, ownedKeys) {
+  const before = fs.existsSync(targetPath) ? JSON.parse(readNormalized(targetPath)) || {} : {};
+  return Object.keys(ownedKeys).filter((key) => previous.includes(key) || stableStringify(before[key]) !== stableStringify(ownedKeys[key]));
+}
+
 // Top-level keys a json-merge item owns beside its owned array: `ownedKeys`
-// (key -> value) must hold that value and be recorded in `recorded` (the entry's
-// `owned_keys`, so a key sync owns but never recorded reads stale and is
-// seeded by the next apply), `releasedKeys` (key -> owned value) must not hold
-// it, a different value there being the user's own. Both empty for an item that
-// owns none. Never part of the sync-state digest: that stays the owned array's
-// alone, so adding or dropping a key never reads as a hand edit of the hooks.
-function ownedKeysMatch(parsed, ownedKeys, releasedKeys, recorded = []) {
-  return Object.keys(ownedKeys).every((key) => recorded.includes(key) && stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
+// (key -> value) must hold that value, `releasedKeys` (key -> owned value) must
+// not hold it, a different value there being the user's own. Both empty for an
+// item that owns none. Never part of the sync-state digest: that stays the
+// owned array's alone, so adding or dropping a key never reads as a hand edit
+// of the hooks.
+function ownedKeysMatch(parsed, ownedKeys, releasedKeys) {
+  return Object.keys(ownedKeys).every((key) => stableStringify(parsed[key]) === stableStringify(ownedKeys[key]))
     && Object.keys(releasedKeys).every((key) => stableStringify(parsed[key]) !== stableStringify(releasedKeys[key]));
 }
 
@@ -766,7 +775,7 @@ function statusJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries,
   }
   if (stateEntry.content_digest !== digestTag(stableStringify(ownedEntries))) return 'modified-foreign';
   const expectedDigest = sha256Hex(stableStringify(renderedOwnedEntries));
-  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, recordedKeys(syncState, relKey, releasedKeys), stateEntry.owned_keys) ? 'current' : 'stale';
+  return currentDigest === expectedDigest && ownedKeysMatch(parsed, ownedKeys, recordedKeys(syncState, relKey, releasedKeys)) ? 'current' : 'stale';
 }
 
 // Indents every line after the first by `pad`, so a multi-line
@@ -918,9 +927,10 @@ function writeJsonMergeRendered(targetPath, relKey, nextRaw, renderedOwnedEntrie
   // Raw write, deliberately not writeNormalized: normalizing here would
   // re-launder the foreign bytes the render step just preserved.
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-  fs.writeFileSync(targetPath, nextRaw, 'utf8');
   syncState.entries = syncState.entries || {};
-  const written = Object.keys(ownedKeys);
+  const previous = (syncState.entries[relKey] && syncState.entries[relKey].owned_keys) || [];
+  const written = writtenKeys(targetPath, previous, ownedKeys);
+  fs.writeFileSync(targetPath, nextRaw, 'utf8');
   syncState.entries[relKey] = {
     kind: 'json-merge',
     content_digest: digestTag(stableStringify(renderedOwnedEntries)),
