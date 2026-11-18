@@ -22,7 +22,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 6 | 46f1b75d | delta since entry 5 (review-fix `wave-1/iter-03`, iter-03 memory fixes) |
 | 7 | 08cde94f | delta since entry 6 (review-fix `wave-1/iter-04`) |
 | 8 | b00f83b9 | delta since entry 7 (review-fix `wave-1/iter-05`) |
-| 9 |  | delta since entry 8 (review-fix `wave-1/iter-06`) |
+| 9 | c0648345 | delta since entry 8 (review-fix `wave-1/iter-06`) |
 
 ## Risk → check decisions
 
