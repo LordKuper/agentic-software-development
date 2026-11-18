@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "impl-test",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -160,6 +160,13 @@
       "execution": "agent",
       "tier": "standard",
       "reason": "artifact-risk:mirror edits verified by tests/run.js README mirror tests and git grep",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "D-1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:mirror wording of the per-area suite",
       "raise_effort": false,
       "resolved_model": "sonnet"
     }
