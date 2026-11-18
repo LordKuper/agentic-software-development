@@ -2,9 +2,9 @@
 
 // runtime.js operation timing, agent liveness, context bundles and ceilings
 
-const { assert, fs, path, spawnSync, sync, runtime, REPO_ROOT, test, mkTempDir, runtimeCli, runtimeCliResult, readWorkflowDefinitions, readRepoFile, grantRows, sectionOf, RUNTIME_JS, runtimeSpawn } = require('./lib.js');
+const { assert, fs, path, spawnSync, sync, runtime, REPO_ROOT, test, mkTempDir, runtimeCli, runtimeCliResult, readWorkflowDefinitions, readRepoFile, grantRows, sectionOf, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync } = require('./lib.js');
 
-test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into running, done or a stall with its reason, and agent-liveness prints one STALL line per stalled agent and fails when it finds no transcript', () => {
+test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into running, done or a stall with its reason, and agent-liveness prints one STALL line per stalled agent and fails when it finds no transcript', async () => {
   const minute = (n) => Date.UTC(2026, 8, 29, 12, n);
   const entry = (type, at, content, stopReason) => JSON.stringify({ type, timestamp: new Date(minute(at)).toISOString(), message: { role: type, content, ...(stopReason === undefined ? {} : { stop_reason: stopReason }) } });
   const toolUse = (id) => ({ type: 'tool_use', id, name: 'Bash', input: {} });
@@ -46,15 +46,12 @@ test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into runni
   fs.writeFileSync(path.join(subagents, 'agent-a1.jsonl'), idle.text, 'utf8');
   fs.writeFileSync(path.join(subagents, 'agent-b2.jsonl'), done.text, 'utf8');
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
-  const watch = (agents) => {
-    try {
-      return { status: 0, stdout: runtimeCli(['agent-liveness', '--agents', agents, '--interval', '1'], { env, stdio: 'pipe' }) };
-    } catch (error) {
-      return { status: error.status, stderr: String(error.stderr) };
-    }
+  const watch = async (agents) => {
+    const { status, stdout, stderr } = await runtimeSpawnAsync(['agent-liveness', '--agents', agents, '--interval', '1'], { env });
+    return status === 0 ? { status, stdout } : { status, stderr };
   };
-  assert.deepStrictEqual(watch('a1,b2'), { status: 0, stdout: 'STALL a1 no-progress\n' }, 'the command resolves each transcript under $CLAUDE_CONFIG_DIR/projects/<project>/<session>/subagents/, drops a finished agent silently, prints one STALL line for an agent whose transcript did not move between two checks, and returns once none is left running');
-  const missing = watch('zz9');
+  const [observed, missing] = await Promise.all([watch('a1,b2'), watch('zz9')]);
+  assert.deepStrictEqual(observed, { status: 0, stdout: 'STALL a1 no-progress\n' }, 'the command resolves each transcript under $CLAUDE_CONFIG_DIR/projects/<project>/<session>/subagents/, drops a finished agent silently, prints one STALL line for an agent whose transcript did not move between two checks, and returns once none is left running');
   assert.ok(missing.status === 2 && /no transcript/.test(missing.stderr), `a transcript missing on two checks fails the command instead of printing a stall - a host whose transcripts it cannot find never gets a healthy agent stopped (providers.md "Agent liveness per host"); got ${JSON.stringify(missing)}`);
 });
 
@@ -510,7 +507,7 @@ test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, 
   assert.ok(!/more than once/.test(once.stderr), 'AC-7: a flag given once warns of nothing');
 });
 
-test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return file passes the persist-review checks as done, without a transcript and silently, and leaves an agent whose return file is missing, interrupted or checked against a missing manifest, or whose returns file is unparseable, to the transcript verdict', () => {
+test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return file passes the persist-review checks as done, without a transcript and silently, and leaves an agent whose return file is missing, interrupted or checked against a missing manifest, or whose returns file is unparseable, to the transcript verdict', async () => {
   const root = mkTempDir();
   const scope = path.join(root, 'scope.txt');
   fs.writeFileSync(scope, 'src/a.md\n', 'utf8');
@@ -555,14 +552,13 @@ test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return f
   const idle = `${JSON.stringify({ type: 'user', timestamp: '2026-09-29T12:00:00.000Z', message: { role: 'user', content: [{ type: 'text', text: 'task' }] } })}\n`;
   ['b2', 'c3', 'd4', 'e5', 'h8'].forEach((id) => fs.writeFileSync(path.join(subagents, `agent-${id}.jsonl`), idle, 'utf8'));
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
-  const watch = (agents, returnsFile) => runtimeSpawn(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
-
-  const withReturns = watch('a1,b2,c3,d4,e5,g7,h8', returns);
-  assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\nSTALL e5 no-progress\nSTALL h8 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - and so is g7, an External Review return against its scope manifest, while an interrupted, missing or manifest-less return, and a return whose verdict line names another reviewer (e5) or another phase (h8, against a scope manifest, which expects External Review) than its manifest change nothing');
+  const watch = (agents, returnsFile) => runtimeSpawnAsync(['agent-liveness', '--agents', agents, '--interval', '1', '--returns', returnsFile], { env });
 
   const unparseable = path.join(root, 'unparseable.json');
   fs.writeFileSync(unparseable, '{ not json', 'utf8');
-  const ignored = watch('b2', unparseable);
+  const [withReturns, ignored] = await Promise.all([watch('a1,b2,c3,d4,e5,g7,h8', returns), watch('b2', unparseable)]);
+  assert.deepStrictEqual([withReturns.status, withReturns.stdout], [0, 'STALL b2 no-progress\nSTALL c3 no-progress\nSTALL d4 no-progress\nSTALL e5 no-progress\nSTALL h8 no-progress\n'], 'AC-14: a1 is done by its valid return file though no transcript exists - without --returns it would fail for want of one - and so is g7, an External Review return against its scope manifest, while an interrupted, missing or manifest-less return, and a return whose verdict line names another reviewer (e5) or another phase (h8, against a scope manifest, which expects External Review) than its manifest change nothing');
+
   assert.deepStrictEqual([ignored.status, ignored.stdout], [0, 'STALL b2 no-progress\n'], 'AC-14: an unparseable returns file changes nothing');
 });
 
@@ -570,20 +566,21 @@ const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
 
 const BUNDLE_KEY = /@/;
 
-test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 1 naming the one bundle whose ceiling a seeded edit lowered below its size, and --seed --bundles writes a ceiling for the same role-phase keys the committed file holds, which a clean check then passes', () => {
+test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 1 naming the one bundle whose ceiling a seeded edit lowered below its size, and --seed --bundles writes a ceiling for the same role-phase keys the committed file holds, which a clean check then passes', async () => {
   const committed = JSON.parse(readRepoFile(CONTEXT_CEILINGS_FILE));
-  const clean = runtimeSpawn(['context-check']);
-  assert.deepStrictEqual([clean.status, JSON.parse(clean.stdout)], [0, { over: [] }], 'every committed ceiling holds its bundle');
-
   const [lowered] = Object.keys(committed).filter((key) => BUNDLE_KEY.test(key));
   const loweredFile = path.join(mkTempDir(), 'ceilings.json');
   fs.writeFileSync(loweredFile, JSON.stringify({ ...committed, [lowered]: 1 }), 'utf8');
-  const violated = runtimeSpawn(['context-check', '--ceilings', loweredFile]);
+  const seededFile = path.join(mkTempDir(), 'seeded.json');
+  const [clean, violated, seeding] = await Promise.all([
+    runtimeSpawnAsync(['context-check']),
+    runtimeSpawnAsync(['context-check', '--ceilings', loweredFile]),
+    runtimeSpawnAsync(['context-check', '--seed', '--bundles', '--ceilings', seededFile]),
+  ]);
+  assert.deepStrictEqual([clean.status, JSON.parse(clean.stdout)], [0, { over: [] }], 'every committed ceiling holds its bundle');
   assert.strictEqual(violated.status, 1, 'a bundle over its ceiling fails the check');
   assert.deepStrictEqual(JSON.parse(violated.stdout).over.map((entry) => entry.key), [lowered], 'only the lowered key is reported');
-
-  const seededFile = path.join(mkTempDir(), 'seeded.json');
-  assert.strictEqual(runtimeSpawn(['context-check', '--seed', '--bundles', '--ceilings', seededFile]).status, 0, '--seed writes the file');
+  assert.strictEqual(seeding.status, 0, '--seed writes the file');
   const seeded = JSON.parse(fs.readFileSync(seededFile, 'utf8'));
   assert.deepStrictEqual(Object.keys(seeded), Object.keys(committed), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
   assert.strictEqual(runtimeSpawn(['context-check', '--ceilings', seededFile]).status, 0, 'a seeded file passes the check it was seeded for');
