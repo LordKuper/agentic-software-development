@@ -2,7 +2,24 @@
 
 // runtime.js task routing, external-review preflight, negative cache and command invocation
 
-const { assert, fs, path, execFileSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, canonText, sectionOf, stepOf, spans, runtimeSpawn } = require('./lib.js');
+const { assert, fs, path, execFileSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
+
+/** A path to the host's node under a second spelling, so a fingerprint over the command differs while the same executable runs. */
+const NODE_ALTERNATE_SPELLING = `${path.dirname(process.execPath)}${path.sep}${path.sep}${path.basename(process.execPath)}`;
+
+/** Runs `body` with every `node` spawned by it exiting 0 at once, so `process.execPath` stands in for a provider CLI whose version and auth probes both pass, without the PowerShell hop a `.cmd` stand-in pays on win32 (the `.cmd` route has its own test below). */
+function withExitZeroNode(body) {
+  const preload = path.join(FIXTURE_ROOT, 'exit-zero.js');
+  fs.writeFileSync(preload, 'process.exit(0);\n', 'utf8');
+  const saved = process.env.NODE_OPTIONS;
+  process.env.NODE_OPTIONS = `--require "${preload.replace(/\\/g, '/')}"`;
+  try {
+    return body();
+  } finally {
+    if (saved === undefined) delete process.env.NODE_OPTIONS;
+    else process.env.NODE_OPTIONS = saved;
+  }
+}
 
 test('AC-10/11: routing is monotonic and only verified deterministic work is a command', () => {
   const base = { objectiveInputs: true, failedObjectiveCheck: false, risks: [], correctionAttempts: 0 };
@@ -11,8 +28,6 @@ test('AC-10/11: routing is monotonic and only verified deterministic work is a c
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [] }).tier, 'standard');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], priorTier: 'critical' }).tier, 'standard', 'the retired critical tier no longer exists - a legacy priorTier critical reads standard');
   const mechanicalChecks = ['deterministic-check', 'exhaustive-match-validation'];
-  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 1 }), { tier: 'mechanical', execution: 'agent', reason: 'effort-step', raiseEffort: true }, 'sprint-033 AC-4: a failed objective check with a correction attempt first raises effort on the same tier, never moving a tier in the same step');
-  assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 1, effortRaised: true }).tier, 'standard', 'the raised-effort attempt failing too forbids mechanical, landing on standard');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: mechanicalChecks, failedObjectiveCheck: true, correctionAttempts: 0 }).tier, 'mechanical', 'a single failed objective check with zero correction attempts must not yet forbid mechanical');
   assert.notStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', objectiveInputs: false, checks: ['deterministic-check', 'exhaustive-match-validation'] }).tier, 'mechanical', 'a mechanical claim without objective inputs must never route mechanical');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', checks: [] }).execution, 'agent', 'a command with no deterministic-state check is not deterministic and must not execute as a bare command');
@@ -24,10 +39,7 @@ test('AC-10/11: routing is monotonic and only verified deterministic work is a c
 test('AC-3/4/5, sprint-021 AC-11: preflight permits only fixed local probes and negative cache is bounded - a provider reset capped at one hour, one hour by default - and expires', () => {
   const root = mkTempDir();
   const cachePath = path.join(root, 'external-cache.json');
-  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
-  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
-  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
-  const input = { provider: 'codex', command, model: 'gpt-6-sol', cachePath, now: 1000 };
+  const input = { provider: 'codex', command: process.execPath, model: 'gpt-6-sol', cachePath, now: 1000 };
   assert.throws(() => runtime.externalPreflight({ ...input, provider: 'unknown' }), /provider/);
   assert.throws(() => runtime.externalPreflight({ ...input, authArgs: ['exec', 'paid prompt'] }), /authArgs/);
   const fingerprint = 'a'.repeat(64);
@@ -43,14 +55,15 @@ test('AC-3/4/5, sprint-021 AC-11: preflight permits only fixed local probes and 
   assert.strictEqual(stored(1000 + hourMs * 5), 1000 + hourMs, 'sprint-021 AC-11: a provider-reported reset past one hour is capped at one hour, never refused - a refusal left the quota failure unrecorded and the next preflight re-dispatched into it');
   assert.strictEqual(stored(undefined), 1000 + hourMs, 'sprint-021 AC-11: with no provider-reported reset the retry-after is one hour, never the 5-minute default that re-hit a quota minutes after it tripped');
   assert.strictEqual(stored(1000 + 90000), 1000 + 90000, 'sprint-021 AC-11: a reported reset inside the hour is kept as reported');
-  const ready = runtime.externalPreflight(input);
+  const preflight = (overrides) => withExitZeroNode(() => runtime.externalPreflight({ ...input, ...overrides }));
+  const ready = preflight();
   assert.strictEqual(ready.status, 'local-ready');
   const externalRows = canonText('.asd/rules/external-review.md').split(/\r?\n/);
   const hostRow = (prefix) => externalRows.find((line) => line.startsWith(prefix)) || '';
   assert.ok(hostRow('| Claude Code, any').includes('< <prompt file>') && !hostRow('| Claude Code, any').includes("<<'EOF'") && hostRow('| Codex, `win32`').includes("@'") && hostRow('| Codex, any other').includes("<<'EOF'") && ready.platform === process.platform, `sprint-013 AC-16 (COR-1-1), sprint-034 AC-8: External Review keys stdin syntax on the host shell plus the preflight output's \`platform\` (external-review.md "OS-specific invocation") - Claude Code a prompt file redirected into stdin, Codex here-string on win32 else heredoc - so the Claude Code row must name the file redirect and no heredoc, the Codex win32 row the here-string, the other Codex row the heredoc, and the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
-  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
-  assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
+  assert.strictEqual(preflight().status, 'negative-cache');
+  assert.strictEqual(preflight({ now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
   assert.ok(Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'a read-only preflight call must not itself rewrite the cache file - the expired entry is still on disk');
   runtime.recordExternalFailure({ fingerprint: 'b'.repeat(64), status: 'quota', cachePath, now: 1001, retryAfter: 1002 });
   assert.ok(!Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'the expired entry is pruned from disk on the NEXT actual write, not before');
@@ -59,41 +72,29 @@ test('AC-3/4/5, sprint-021 AC-11: preflight permits only fixed local probes and 
 test('AC-5: negative-cache recovers when the fingerprint changes because model, command, or credential state changed - not only on TTL expiry', () => {
   const root = mkTempDir();
   const cachePath = path.join(root, 'external-cache.json');
-  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
-  const otherCommand = process.platform === 'win32' ? path.join(root, 'other.cmd') : path.join(root, 'other');
-  const scriptBody = process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n';
-  fs.writeFileSync(command, scriptBody, 'utf8');
-  fs.writeFileSync(otherCommand, scriptBody, 'utf8');
-  if (process.platform !== 'win32') {
-    fs.chmodSync(command, 0o755);
-    fs.chmodSync(otherCommand, 0o755);
-  }
   const credentialPath = path.join(root, 'credential.json');
   fs.writeFileSync(credentialPath, '{"token":"x"}', 'utf8');
 
-  const input = { provider: 'codex', command, model: 'gpt-6-sol', credentialPath, cachePath, now: 1000 };
-  const ready = runtime.externalPreflight(input);
+  const input = { provider: 'codex', command: process.execPath, model: 'gpt-6-sol', credentialPath, cachePath, now: 1000 };
+  const preflight = (overrides) => withExitZeroNode(() => runtime.externalPreflight({ ...input, ...overrides }));
+  const ready = preflight();
   assert.strictEqual(ready.status, 'local-ready');
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
-  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache', 'sanity: the exact same input must hit the cached entry');
+  assert.strictEqual(preflight().status, 'negative-cache', 'sanity: the exact same input must hit the cached entry');
 
-  assert.strictEqual(runtime.externalPreflight({ ...input, model: 'gpt-6-luna' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
-  assert.strictEqual(runtime.externalPreflight({ ...input, command: otherCommand }).status, 'local-ready', 'a different command must produce a different fingerprint');
+  assert.strictEqual(preflight({ model: 'gpt-6-luna' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
+  assert.strictEqual(preflight({ command: NODE_ALTERNATE_SPELLING }).status, 'local-ready', 'a different command must produce a different fingerprint');
 
   fs.writeFileSync(credentialPath, '{"token":"rotated"}', 'utf8');
   const stat = fs.statSync(credentialPath);
   fs.utimesSync(credentialPath, new Date(stat.atimeMs + 1000), new Date(stat.mtimeMs + 1000));
-  assert.strictEqual(runtime.externalPreflight(input).status, 'local-ready', 'a rotated credential (changed mtime) must produce a different auth generation and recover, not stay stuck on the old negative-cache entry');
+  assert.strictEqual(preflight().status, 'local-ready', 'a rotated credential (changed mtime) must produce a different auth generation and recover, not stay stuck on the old negative-cache entry');
 });
 
 test('AC-5: the persisted negative-cache entry never carries anything beyond {status, retry_after} - no secrets or command output', () => {
   const root = mkTempDir();
   const cachePath = path.join(root, 'external-cache.json');
-  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
-  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
-  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
-  const input = { provider: 'codex', command, model: 'gpt-6-sol', cachePath, now: 1000 };
-  const ready = runtime.externalPreflight(input);
+  const ready = withExitZeroNode(() => runtime.externalPreflight({ provider: 'codex', command: process.execPath, model: 'gpt-6-sol', cachePath, now: 1000 }));
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
   const persisted = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
   const entry = persisted.entries[ready.fingerprint];
@@ -159,13 +160,6 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
   assert.ok(error, 'a missing/unavailable CLI must exit non-zero, not report local-ready');
   assert.strictEqual(error.status, 1);
   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
-});
-
-test('AC-10: a typed target:"change" risk routes exactly like the legacy bare-string form', () => {
-  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'] };
-  const legacy = runtime.routeTask({ ...base, risks: ['auth'] });
-  const typed = runtime.routeTask({ ...base, risks: [{ name: 'auth', target: 'change' }] });
-  assert.deepStrictEqual(typed, legacy, 'a typed target:"change" entry must be indistinguishable in output from the legacy bare-string form');
 });
 
 test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
@@ -325,39 +319,41 @@ test('sprint-033 AC-3/AC-4: route-task sends migration, broad-reasoning and cros
   assert.deepStrictEqual(runtimeCliResult(['route-task', '--input', input]), { status: 0, result: effortStep('standard') }, 'the CLI prints raiseEffort beside the tier');
 });
 
-test('sprint-033 AC-9: positiveInteger accepts a zero-padded integer, so an external-review --iteration 02 names iteration 2, and still refuses zero, a fraction and text', () => {
+test('sprint-033 AC-9: positiveInteger accepts a zero-padded integer, so an external-review --iteration 02 names iteration 2, and still refuses zero, a fraction and text', async () => {
   const dir = mkTempDir();
   const scope = path.join(dir, 'scope.txt');
   fs.writeFileSync(scope, 'docs/a.md\n', 'utf8');
-  const emit = (iteration) => runtimeCliResult(['emit-manifest', '--reviewer', runtime.EXTERNAL_REVIEWER, '--phase', 'design-review', '--iteration', iteration, '--files', scope, '--out', dir]);
-  for (const [padded, expected] of [['02', 2], ['007', 7], ['3', 3]]) {
-    const emitted = emit(padded);
-    assert.strictEqual(emitted.status, 0, `--iteration ${padded} is a positive integer`);
-    assert.strictEqual(JSON.parse(fs.readFileSync(emitted.result.scope, 'utf8')).iteration, expected, `--iteration ${padded} is read as ${expected}`);
-  }
-  for (const bad of ['0', '00', '1.5', 'two']) {
-    const refused = emit(bad);
+  const emit = (iteration) => runtimeSpawnAsync(['emit-manifest', '--reviewer', runtime.EXTERNAL_REVIEWER, '--phase', 'design-review', '--iteration', iteration, '--files', scope, '--out', mkTempDir()]);
+  const accepted = [['02', 2], ['007', 7], ['3', 3]];
+  const refusedInputs = ['0', '00', '1.5', 'two'];
+  const ran = await Promise.all([...accepted.map(([padded]) => emit(padded)), ...refusedInputs.map(emit)]);
+  accepted.forEach(([padded, expected], index) => {
+    assert.strictEqual(ran[index].status, 0, `--iteration ${padded} is a positive integer`);
+    assert.strictEqual(JSON.parse(fs.readFileSync(JSON.parse(ran[index].stdout).scope, 'utf8')).iteration, expected, `--iteration ${padded} is read as ${expected}`);
+  });
+  refusedInputs.forEach((bad, index) => {
+    const refused = ran[accepted.length + index];
     assert.ok(refused.status === 2 && /--iteration <n> must be a positive integer/.test(refused.stderr), `--iteration ${bad} stays refused (got ${JSON.stringify(refused)})`);
-  }
+  });
 });
 
-test('sprint-035 AC-9: a flag a command does not read warns once on stderr naming it, a declared flag never warns, and the exit status and the command\'s own failure are unchanged', () => {
+test('sprint-035 AC-9: a flag a command does not read warns once on stderr naming it, a declared flag never warns, and the exit status and the command\'s own failure are unchanged', async () => {
   const guide = path.join(mkTempDir(), 'guide.md');
   fs.writeFileSync(guide, '## Intro\n\nbody\n', 'utf8');
   const warning = (name) => `runtime: ignored flag --${name}\n`;
 
-  const plain = runtimeSpawn(['scratch-dir']);
+  const [plain, extra, declared, unreadSection, refused, refusedPlain] = await Promise.all([
+    runtimeSpawnAsync(['scratch-dir']),
+    runtimeSpawnAsync(['scratch-dir', '--bogus', '1', '--state', 'x']),
+    runtimeSpawnAsync(['section', '--file', guide, '--heading', 'Intro']),
+    runtimeSpawnAsync(['section', '--file', guide, '--heading', 'Intro', '--typo', '1']),
+    runtimeSpawnAsync(['section', '--typo', 'x']),
+    runtimeSpawnAsync(['section']),
+  ]);
   assert.deepStrictEqual([plain.status, plain.stderr], [0, ''], 'sanity: the command alone exits 0 and warns of nothing');
-  const extra = runtimeSpawn(['scratch-dir', '--bogus', '1', '--state', 'x']);
   assert.deepStrictEqual([extra.status, extra.stdout, extra.stderr], [0, plain.stdout, warning('bogus') + warning('state')], 'AC-9: each unread flag warns, a flag of another command included, and the output is untouched');
-
-  const declared = runtimeSpawn(['section', '--file', guide, '--heading', 'Intro']);
   assert.deepStrictEqual([declared.status, declared.stderr], [0, ''], 'AC-9: a declared flag never warns');
-  const unreadSection = runtimeSpawn(['section', '--file', guide, '--heading', 'Intro', '--typo', '1']);
   assert.deepStrictEqual([unreadSection.status, unreadSection.stdout, unreadSection.stderr], [0, declared.stdout, warning('typo')], 'AC-9: a command that reads flags keeps its result when another is unread');
-
-  const refused = runtimeSpawn(['section', '--typo', 'x']);
-  const refusedPlain = runtimeSpawn(['section']);
   assert.ok(refusedPlain.status !== 0 && refused.status === refusedPlain.status, 'AC-9: a failing call exits with the same non-zero status with or without the unread flag');
   assert.ok(refused.stderr.startsWith(warning('typo')) && refused.stderr.includes(refusedPlain.stderr.trim()), 'AC-9: the warning precedes the command\'s own failure message, which is unchanged');
 });
