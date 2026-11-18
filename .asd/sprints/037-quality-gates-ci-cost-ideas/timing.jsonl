@@ -230,3 +230,5 @@
 {"op":"close","id":"asd-tester-runner impl-review","kind":"dispatch","parent":"impl-review#8","start":"2026-11-18T14:00:48.375Z","end":"2026-11-18T14:02:21.001Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"haiku"}}
 {"op":"close","id":"impl-review wave-1/iter-08","kind":"review-iteration","parent":"impl-review#8","start":"2026-11-18T13:53:43.876Z","end":"2026-11-18T14:02:21.069Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl-review#8","kind":"phase","parent":null,"start":"2026-11-18T13:53:43.173Z","end":"2026-11-18T14:02:21.298Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T14:02:36.491Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-18T14:02:36.491Z","end":"2026-11-18T14:02:36.747Z","outcome":"done","attrs":{}}

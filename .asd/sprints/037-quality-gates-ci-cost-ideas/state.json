@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": {
     "audit": true,
