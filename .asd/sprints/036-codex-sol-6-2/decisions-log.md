@@ -100,3 +100,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-18 — latch-refresh wave-1/iter-06: combined cleared (.asd/runtime.js, .asd/sync.js)
 - 2026-11-18 — impl-review wave-1/iter-06 (floor critical): combined APPROVE (latched 6), external CONCERNS (1 kept critical, 2-4 below floor; no stalemate; the "in-place is not atomic" tripwire did not fire); no pre-existing, memory or question items; cap not reached (next iter-07, floor critical) → impl review-fix (review_fixes_pending=wave-1/iter-06).
 - 2026-11-18 — route review-fix wave-1/iter-06 (A: external 1): standard, dispatch HEAD d4fbaabce7b1b26ba57be1e1296a0ae87acfb526; risk change: security
+- 2026-11-18 — route review-fix tester wave-1/iter-06 (test part of external 1): standard, dispatch HEAD ff7b49e04ce9fd39982ac7c78be8503ff2e607cb
+- 2026-11-18 — impl fix for wave-1/iter-06: findings resolved (dev ff7b49e0; tester f844ba86; hash ledger 2e0e50d3, the dev's sync.js edit left `upstream_hashes` stale; full suite 426/426).
+- 2026-11-18 — route impl-test entry 8: standard, dispatch HEAD 2e0e50d3
