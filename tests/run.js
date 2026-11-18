@@ -11520,6 +11520,14 @@ test('sprint-036 leftover-term check: no canon, README, AGENTS.md, runtime, hook
 // Runner
 // ===========================================================================
 
+const SLOWEST_COUNT = 10;
+
+/** Renders the slowest tests of a run, longest first, for the duration summary after the pass count. */
+function slowestSummary(timings) {
+  const slowest = [...timings].sort((a, b) => b.elapsedMs - a.elapsedMs).slice(0, SLOWEST_COUNT);
+  return [`slowest ${slowest.length} tests:`, ...slowest.map((t) => `  ${t.elapsedMs} ms - ${t.name}`)].join('\n');
+}
+
 // Test bodies may be sync or async (`update.applyPlan`/migration-runner tests
 // need to `await` real async production functions) - `await`ing a plain
 // (non-Promise) return value is a no-op, so this loop stays correct for
@@ -11537,18 +11545,28 @@ async function runAll() {
     }
   }
   let failures = 0;
+  const timings = [];
   for (const t of selected) {
+    const started = performance.now();
+    let failure = null;
     try {
       await t.fn();
-      console.log(`ok - ${t.name}`);
     } catch (err) {
-      failures++;
-      console.error(`FAIL - ${t.name}`);
-      console.error('   ' + (err && err.stack ? err.stack.split('\n').join('\n   ') : String(err)));
+      failure = err;
     }
+    const elapsedMs = Math.round(performance.now() - started);
+    timings.push({ name: t.name, elapsedMs });
+    if (failure === null) {
+      console.log(`ok - ${t.name} (${elapsedMs} ms)`);
+      continue;
+    }
+    failures++;
+    console.error(`FAIL - ${t.name} (${elapsedMs} ms)`);
+    console.error('   ' + (failure && failure.stack ? failure.stack.split('\n').join('\n   ') : String(failure)));
   }
 
   console.log(`\n${selected.length - failures}/${selected.length} passed`);
+  console.log(slowestSummary(timings));
   process.exitCode = failures > 0 ? 1 : 0;
 }
 
