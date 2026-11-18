@@ -106,6 +106,41 @@
       "reason": "risk:wording of the stub date and test-plan shape rules",
       "raise_effort": false,
       "resolved_model": "sonnet"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:numstat edge cases (renames, binary files) and the allowance refusal order in `impl-test-close`",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the open-PR gate and the retro Home order",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the suite-revision procedure and the green-exit order",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:wording of the invalid-finding condition",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:diff-mode detection scope",
+      "raise_effort": false,
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],

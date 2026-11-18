@@ -33,3 +33,8 @@
 {"op":"close","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:40:07.746Z","end":"2026-11-18T09:42:11.090Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:40:07.448Z","end":"2026-11-18T09:42:19.441Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:40:07.316Z","end":"2026-11-18T09:46:26.422Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:46:57.519Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92465}}
+{"op":"open","id":"Task 7","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:46:57.640Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92465}}
+{"op":"open","id":"Task 8","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:46:57.761Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92465}}
+{"op":"open","id":"Task 9","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:46:57.879Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92465}}
+{"op":"open","id":"Task 10","kind":"dispatch","parent":"impl#1","start":"2026-11-18T09:46:57.994Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet","context_bytes":92465}}
