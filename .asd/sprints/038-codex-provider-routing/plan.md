@@ -47,7 +47,7 @@ Material risk: change: migration
 Reachability: impl applies the explicit settings via asd-init before Task 5 activates the sprint entry check; subsequent entries read a complete project config.
 Settings change: cleanup=enabled, upstream_issues=enabled, safety_valve=enabled, documents.design_system=disabled, project.claude_design=disabled, review.codex_profile=""
 
-- [ ] AC-2. Apply only the declared pairs through sprint-mediated init. The four existing omissions retain their effective behavior. The project currently disables UX docs and uses the existing external CLI route. Confirm every schema field is explicit before proceeding.
+- [x] AC-2. Apply only the declared pairs through sprint-mediated init. The four existing omissions retain their effective behavior. The project currently disables UX docs and uses the existing external CLI route. Confirm every schema field is explicit before proceeding.
 
 ### Task 5: Require complete config at sprint entry
 Material risk: change: workflow gate
