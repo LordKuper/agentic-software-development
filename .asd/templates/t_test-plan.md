@@ -16,9 +16,14 @@ itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2 (full on e
 since the prior entry's `HEAD analysed` on re-entry).
 Rules: .asd/workflows/asd-phase-impl-test.md "Rules", .asd/rules/code-style.md §17.
 English machine literals, never translated (`impl-test-close` and `defect-stalemate` parse them): the
-`## Added tests`, `## Suite run` and `## Defects` headings, the `Gap proof` column header, the
+`## Entry log`, `## Added tests`, `## Suite run` and `## Defects` headings, the `Entry`, `HEAD analysed`
+and `Scope` headers of `Entry log`, the `Gap proof` column header, the
 `Entry`, `Location`, `Symptom` and `Failing test` column headers of `Defects`, and the `- Line delta:`
 and `- Allowance:` labels.
+Escape every literal pipe in a table cell as `\|`, including inside code spans. Preserve the escape
+when rotating rows to a segment. A migration introducing a required column backfills the live plan
+and all existing rotated segments, or explicitly exempts pre-migration rows by version. Current
+rows still require the column.
 -->
 
 ## Entry log
@@ -55,8 +60,8 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
 its run lines with the cycle's one **full-suite** run once the last review wave's reviewers are
-APPROVE/latched, keeping `Line delta` and `Allowance`. The review-fix tester also records here the check a finding requires; `impl-test`
-step 8 reuses it per "Impacted test set". The `pr` gate always reads whatever is recorded here last — the full-suite
+APPROVE/latched, keeping `Line delta` and `Allowance`. The review-fix tester records the check a finding
+requires with its verified commit per `asd-tester.md` "Rules". The `pr` gate reads the last record — the full-suite
 record, by the time `pr` runs. Each per-entry record measures only the tree that entry
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
@@ -69,7 +74,7 @@ analysed, not any tree produced later
 - Line delta: {{written by `impl-test-close --green`: tests +A/−R (net N); other +A/−R (net N)}}
 - Allowance: {{risks the added test lines cover, when `test-delta` requires it \| line omitted}}
 - Slowest tests: {{ten, name and ms, from the `test_durations` run \| line omitted when the key is absent}}
-- HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
+- HEAD: {{sha}} — commit this run was verified at. Leave empty if the run cannot be tied to a committed revision. Reuse rules: `.asd/rules/sprint-lifecycle.md` "Impacted test set".
 
 ## Defects
 

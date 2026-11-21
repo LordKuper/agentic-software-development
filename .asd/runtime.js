@@ -626,7 +626,7 @@ function ledgerFromText(text) {
 
 /** Splits one markdown table row into trimmed cells, honouring `\|` escapes and dropping one enclosing backtick pair. */
 function tableCells(line) {
-  return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
+  return line.trim().replace(/^\||(?<!\\)\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
 /** The routing markers a finding's Description carries: `pre_existing` when it opens with `pre-existing:`, `checklist` as the distinct `CL-N` ids it cites; a marker it does not carry is absent. */
@@ -2513,41 +2513,41 @@ function testDelta(base, commandsFile) {
 }
 
 /** `{start, end}` line range of the one `## <name>` section of a test plan's `lines`, its body after the heading up to the next `## ` heading; null when absent, several fail. */
-function planSection(lines, name) {
+function planSection(lines, name, refuse = fail) {
   const starts = lines.flatMap((line, index) => (new RegExp(`^## ${name}\\b`).test(line) ? [index + 1] : []));
-  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
+  if (starts.length > 1) refuse(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
   if (starts.length === 0) return null;
   const next = lines.findIndex((line, index) => index >= starts[0] && /^## /.test(line));
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
 /** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose every table, a run of lines from a line opening with a pipe to the next blank line, has a header and a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and, when it has a data row, a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside a table is free. */
-function checkGapProof(lines, source = 'test-plan') {
-  const section = planSection(lines, 'Added tests');
-  if (section === null) fail(`${source} has no ## Added tests section`);
+function checkGapProof(lines, source, refuse) {
+  const section = planSection(lines, 'Added tests', refuse);
+  if (section === null) refuse(`${source} has no ## Added tests section`);
   lines.slice(section.start, section.end).join('\n').split(/\n[ \t]*\n/).forEach((paragraph) => {
     const paragraphLines = paragraph.trim().split('\n');
     const start = paragraphLines.findIndex((line) => line.trim().startsWith('|'));
     if (start === -1) return;
     const run = paragraphLines.slice(start);
-    if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+    if (run.some((line) => !line.trim().startsWith('|'))) refuse(`${source} Added tests table row lacks a leading pipe`);
     const [header, separator, ...rows] = run.map(tableCells);
-    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
-    if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
+    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) refuse(`${source} Added tests table separator malformed`);
+    if (rows.some((cells) => cells.length !== header.length)) refuse(`${source} Added tests row cell count differs from the header's ${header.length}`);
     if (rows.length === 0) return;
     const column = header.indexOf('Gap proof');
-    if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
-    if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-    if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+    if (column === -1) refuse(`${source} Added tests table has rows and no Gap proof column`);
+    if (rows.some((cells) => !cells[column])) refuse(`${source} Added tests row has an empty Gap proof cell`);
+    if (rows.some((cells) => cells[column].startsWith('{{'))) refuse(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
   });
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
-function setLineDelta(lines, delta) {
-  const section = planSection(lines, 'Suite run');
-  if (section === null) fail('test-plan has no ## Suite run section');
+function setLineDelta(lines, delta, refuse) {
+  const section = planSection(lines, 'Suite run', refuse);
+  if (section === null) refuse('test-plan has no ## Suite run section');
   const body = lines.slice(section.start, section.end);
-  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) fail(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
+  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) refuse(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
   const side = (counts) => `+${counts.added}/\u2212${counts.removed} (net ${counts.net})`;
   const line = `- Line delta: tests ${side(delta.test)}; other ${side(delta.other)}`;
   const existing = body.findIndex((candidate) => /^[ \t]*-[ \t]+Line delta:/.test(candidate));
@@ -2583,12 +2583,29 @@ function stubsDueCommand(flags) {
   return { due: stubsDue(fs.readFileSync(flags.stubs, 'utf8'), today) };
 }
 
-/** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
-function fillHeadAnalysed(text, entry, head) {
-  const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
-  const rows = (text.match(row) || []).length;
-  if (rows !== 1) fail(`test plan holds ${rows} Entry log rows for entry ${entry}, expected 1`);
-  return text.replace(row, `$1 ${head} $2`);
+/** Fills the second cell of the requested row in the one Entry log section. */
+function fillHeadAnalysed(lines, entry, head, refuse) {
+  const section = planSection(lines, 'Entry log', refuse);
+  if (section === null) refuse('test-plan has no ## Entry log section');
+  const body = lines.slice(section.start, section.end);
+  const [header, separator] = body.filter((line) => line.trim().startsWith('|')).slice(0, 2).map(tableCells);
+  if (header?.[0] !== 'Entry' || header[1] !== 'HEAD analysed' || !header.includes('Scope') || !separator ||
+      separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) {
+    refuse('Entry log table header or separator malformed');
+  }
+  const row = new RegExp(`^(\\s*\\|[ \\t]*${entry}[ \\t]*\\|)[^|]*(\\|.*)$`);
+  const rows = body.flatMap((line, index) => (row.test(line) ? [index] : []));
+  if (rows.length !== 1) refuse(`test plan holds ${rows.length} Entry log rows for entry ${entry}, expected 1`);
+  const index = section.start + rows[0];
+  if (tableCells(lines[index]).length !== header.length) refuse(`Entry log row for entry ${entry} has the wrong cell count`);
+  return lines.map((line, at) => (at === index ? line.replace(row, `$1 ${head} $2`) : line));
+}
+
+/** Tags only record-validation failures with the repair target, leaving CLI and I/O failures on the normal error path. */
+function closeRefusal(file, check) {
+  return (cause) => {
+    throw Object.assign(new Error(cause), { refusal: { file, check, cause } });
+  };
 }
 
 /** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs of the live plan and of the `test-plan.entry-NN.md` segment its re-entry rotated (NN the prior entry), and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
@@ -2600,15 +2617,24 @@ function implTestClose(flags, now = new Date()) {
   if (flags.green === true && typeof flags.base !== 'string') fail('--green requires --base <ref>');
   if (flags.green !== true && (flags.base !== undefined || flags.commands !== undefined)) fail('--base and --commands apply with --green only');
   const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
-  const text = fs.readFileSync(flags['test-plan'], 'utf8');
-  const filled = fillHeadAnalysed(text, flags.entry, head);
-  const lines = filled.split(/\r?\n/);
-  checkGapProof(lines);
-  const segment = `${flags['test-plan'].replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
-  if (Number(flags.entry) > 1 && fs.existsSync(segment)) checkGapProof(fs.readFileSync(segment, 'utf8').split(/\r?\n/), path.basename(segment));
-  const plan = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands)).join(text.includes('\r\n') ? '\r\n' : '\n') : filled;
+  const file = flags['test-plan'];
+  const text = fs.readFileSync(file, 'utf8');
+  const lines = fillHeadAnalysed(text.split(/\r?\n/), flags.entry, head, closeRefusal(file, 'Entry log'));
+  checkGapProof(lines, path.basename(file), closeRefusal(file, 'Added tests'));
+  if (Number(flags.entry) > 1) {
+    const segment = `${file.replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
+    let previous;
+    try {
+      previous = fs.readFileSync(segment, 'utf8');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    if (previous !== undefined) checkGapProof(previous.split(/\r?\n/), path.basename(segment), closeRefusal(segment, 'Added tests'));
+  }
+  const updated = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands), closeRefusal(file, 'Suite run')) : lines;
+  const plan = updated.join(text.includes('\r\n') ? '\r\n' : '\n');
   const log = fs.readFileSync(flags.decisions, 'utf8');
-  fs.writeFileSync(flags['test-plan'], plan, 'utf8');
+  fs.writeFileSync(file, plan, 'utf8');
   fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
   return { entry: Number(flags.entry), head };
 }
@@ -2945,7 +2971,12 @@ async function main(argv) {
     return violations.length === 0 ? 0 : 1;
   }
   if (command === 'impl-test-close') {
-    process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    try {
+      process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    } catch (error) {
+      if (error.refusal) process.stdout.write(JSON.stringify({ refusal: error.refusal }) + '\n');
+      throw error;
+    }
     return 0;
   }
   if (command === 'test-delta') {
