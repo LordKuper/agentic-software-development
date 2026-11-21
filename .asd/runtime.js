@@ -2336,7 +2336,7 @@ const TEST_ALLOWANCE_LINES = 200;
 function commandsScalar(text, key) {
   const line = text.split(/\r?\n/).find((candidate) => candidate.startsWith(`${key}:`));
   if (line === undefined) return null;
-  const value = designScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
+  const value = yamlScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
   if (value === '') fail(`commands.yaml ${key} must be a non-empty scalar`);
   return value;
 }
@@ -2461,7 +2461,9 @@ function implTestClose(flags, now = new Date()) {
 }
 
 const DESIGN_KEY_LINE = /^([A-Za-z0-9_.-]+):(?: +(.*))?$/;
-const DESIGN_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
+const CONFIG_KEY_LINE = /^([A-Za-z0-9_.-]+|"(?:[^"\\]|\\.)*"|'(?:[^']|'')*'):(?: +(.*))?$/;
+const CONFIG_VALUES = / +# *([a-z][\w-]*(?: +\| +[a-z][\w-]*)+)(?: *;| *$)/;
+const YAML_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
 const DESIGN_CSS_UNSAFE = /[;{}<>]/;
 const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
 const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
@@ -2469,8 +2471,8 @@ const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
 /** Marker comment form per region: HTML in the token table, CSS inside the vars `<style>` (an HTML comment there breaks the `:root` selector). */
 const DESIGN_REGIONS = { tokens: (edge) => `<!-- asd:tokens:${edge} -->`, vars: (edge) => `/* asd:vars:${edge} */` };
 
-/** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
-function designScalar(rest, where) {
+/** Reads one quoted or plain YAML scalar and rejects unsupported constructs. */
+function yamlScalar(rest, where) {
   if (/^["']/.test(rest)) {
     const quoted = rest[0] === '"' ? /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/.exec(rest) : /^'((?:[^']|'')*)'\s*(?:#.*)?$/.exec(rest);
     if (!quoted) fail(`${where}: unterminated or trailing-text quoted scalar`);
@@ -2481,47 +2483,144 @@ function designScalar(rest, where) {
       return fail(`${where}: unsupported escape in quoted scalar`);
     }
   }
-  if (DESIGN_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
+  if (YAML_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
   return rest.replace(/\s+#.*$/, '').trim();
 }
 
-/** Leaf tokens `{path, value, line}` of a DESIGN.md front matter in document order; only nested maps of scalars parse, anything else fails naming its line. */
+function scalarMapSyntaxIssue(rawLine, match, indent, expectedIndent) {
+  if (/^ *\t/.test(rawLine)) return 'tab indentation is not valid YAML';
+  if (!match) return 'unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)';
+  if (indent > expectedIndent) return 'unexpected indentation (multi-line scalar or unsupported construct)';
+  if (indent !== expectedIndent) return 'inconsistent indentation';
+  return null;
+}
+
+/** Scans the block mappings and single-line scalars shared by project config and design tokens. */
+function scalarMap(lines, file, firstLine, keyLine, onIssue) {
+  const entries = [];
+  const stack = [{ indent: 0, path: [], keys: new Set() }];
+  let pending = null;
+  let skippedIndent = Infinity;
+  for (const [index, rawLine] of lines.entries()) {
+    const line = index + firstLine;
+    const where = `${file}:${line}`;
+    const trimmed = rawLine.trim();
+    if (trimmed === '' || trimmed.startsWith('#')) continue;
+    const indent = rawLine.length - rawLine.trimStart().length;
+    if (indent > skippedIndent) continue;
+    skippedIndent = Infinity;
+    if (pending && indent > pending.indent) {
+      pending.entry.kind = 'map';
+      stack.push({ indent, path: pending.entry.path, keys: new Set() });
+    }
+    pending = null;
+    while (indent < stack[stack.length - 1].indent) stack.pop();
+    const frame = stack[stack.length - 1];
+    const match = keyLine.exec(trimmed);
+    const issue = (parts, reason, duplicate = false) => onIssue({ path: parts.join('.') || '<root>', line, reason, duplicate });
+    const structuralError = scalarMapSyntaxIssue(rawLine, match, indent, frame.indent);
+    if (structuralError !== null) {
+      const key = /^([A-Za-z0-9_.-]+)(?=[:\s]|$)/.exec(trimmed);
+      issue(key ? [...frame.path, key[1]] : frame.path, structuralError);
+      skippedIndent = indent;
+      continue;
+    }
+    let key;
+    try {
+      key = yamlScalar(match[1], where);
+    } catch (error) {
+      issue(frame.path, error.message.slice(where.length + 2));
+      skippedIndent = indent;
+      continue;
+    }
+    const keyPath = [...frame.path, key];
+    if (frame.keys.has(key)) issue(keyPath, `duplicate key "${key}"`, true);
+    frame.keys.add(key);
+    const rest = (match[2] || '').trim();
+    const entry = { path: keyPath, line, raw: rest, kind: 'invalid' };
+    entries.push(entry);
+    if (rest === '' || rest.startsWith('#')) {
+      entry.kind = 'empty';
+      pending = { indent, entry };
+      continue;
+    }
+    try {
+      entry.value = yamlScalar(rest, where);
+      entry.kind = 'scalar';
+    } catch (error) {
+      issue(keyPath, error.message.slice(where.length + 2));
+    }
+  }
+  return entries;
+}
+
+/** Extracts design token values without relaxing the front-matter checks. */
 function designLeaves(text, file) {
   const lines = text.replace(/^﻿/, '').split(/\r?\n/);
   if (lines[0].trimEnd() !== '---') fail(`${file}:1: front matter must open with ---`);
   const close = lines.findIndex((line, index) => index > 0 && line.trimEnd() === '---');
   if (close === -1) fail(`${file}: front matter is not closed with ---`);
-  const leaves = [];
-  const stack = [{ indent: 0, path: [], keys: new Set() }];
-  let pending = null;
-  for (let index = 1; index < close; index += 1) {
-    const where = `${file}:${index + 1}`;
-    const line = lines[index];
-    if (/^\s*(?:#.*)?$/.test(line)) continue;
-    if (/^ *\t/.test(line)) fail(`${where}: tab indentation is not valid YAML`);
-    const indent = line.length - line.trimStart().length;
-    const match = DESIGN_KEY_LINE.exec(line.trim());
-    if (!match) fail(`${where}: unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)`);
-    if (pending && indent > pending.indent) {
-      stack.push({ indent, path: pending.path, keys: new Set() });
-    } else if (!pending && indent > stack[stack.length - 1].indent) {
-      fail(`${where}: unexpected indentation (multi-line scalar or unsupported construct)`);
-    }
-    pending = null;
-    while (indent < stack[stack.length - 1].indent) stack.pop();
-    const frame = stack[stack.length - 1];
-    if (indent !== frame.indent) fail(`${where}: inconsistent indentation`);
-    if (frame.keys.has(match[1])) fail(`${where}: duplicate key "${match[1]}"`);
-    frame.keys.add(match[1]);
-    const rest = (match[2] || '').trim();
-    const keyPath = [...frame.path, match[1]];
-    if (rest === '' || rest.startsWith('#')) {
-      pending = { indent, path: keyPath };
-      continue;
-    }
-    leaves.push({ path: keyPath.join('.'), value: designScalar(rest, where), line: index + 1 });
+  return scalarMap(lines.slice(1, close), file, 2, DESIGN_KEY_LINE, ({ line, reason }) => fail(`${file}:${line}: ${reason}`))
+    .filter((entry) => entry.kind === 'scalar')
+    .map((entry) => ({ path: entry.path.join('.'), value: entry.value, line: entry.line }));
+}
+
+function configEntries(text, file, onIssue) {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  const first = lines.findIndex((line) => !/^\s*(?:#.*)?$/.test(line));
+  let last = lines.length - 1;
+  while (last > first && /^\s*(?:#.*)?$/.test(lines[last])) last -= 1;
+  if (lines[first]?.trimEnd() === '---') lines[first] = '';
+  if (lines[last]?.trimEnd() === '...') lines[last] = '';
+  return scalarMap(lines, file, 1, CONFIG_KEY_LINE, onIssue);
+}
+
+function configValueIssue(field, entry) {
+  if (entry.kind === 'invalid') return null;
+  if (field.kind === 'map') return entry.kind === 'map' ? null : 'expected a mapping';
+  if (entry.kind !== 'scalar') return 'expected an explicit scalar value';
+  const options = CONFIG_VALUES.exec(field.raw);
+  if (options) {
+    const values = options[1].split(/ +\| +/);
+    return values.includes(entry.value) ? null : `expected one of: ${values.join(', ')}`;
   }
-  return leaves;
+  const quoted = /^["']/.test(entry.raw);
+  if (!/^["']/.test(field.raw) && /^\d+$/.test(field.value)) return !quoted && /^\+?\d+$/.test(entry.value) && Number.isSafeInteger(Number(entry.value)) ? null : 'expected a non-negative integer';
+  const plainNonString = /^(?:~|null|true|false|[+-]?(?:0x[\da-f]+|0o[0-7]+|(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|\.inf)|\.nan)$/i;
+  if (!quoted && (plainNonString.test(entry.value) || /:(?:\s|$)|^[-?:](?:\s|$)/.test(entry.value))) return 'expected a string scalar';
+  return entry.value === '' && field.value !== '' ? 'expected a non-empty string' : null;
+}
+
+/** Reports actionable config errors without printing setting values. */
+function configCheckCommand(flags) {
+  const template = path.join(__dirname, 'templates', 't_config.yaml');
+  const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
+  const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
+  const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
+  const seen = new Set();
+  const duplicates = new Set();
+  const invalid = [];
+  let source;
+  try {
+    source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
+  } catch (error) {
+    if (config === '-' || error.code !== 'ENOENT') throw error;
+    source = '';
+  }
+  for (const entry of configEntries(source, config, ({ path, line, reason, duplicate }) => {
+    if (duplicate) duplicates.add(path);
+    else invalid.push({ path, line, reason });
+  })) {
+    const identity = JSON.stringify(entry.path);
+    const field = required.get(identity);
+    if (!field) continue;
+    if (seen.has(identity)) duplicates.add(entry.path.join('.'));
+    seen.add(identity);
+    const reason = configValueIssue(field, entry);
+    if (reason !== null) invalid.push({ path: entry.path.join('.'), line: entry.line, reason });
+  }
+  const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
+  return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };
 }
 
 /** Token-reference `Type` chip for one leaf: reference, color, dimension, else typography (font family, weight, line height and other typographic scalars). */
@@ -2585,6 +2684,7 @@ const COMMAND_FLAGS = {
   'impl-test-close': ['test-plan', 'entry', 'decisions', 'line', 'green', 'base', 'commands'],
   'test-delta': ['base', 'commands'],
   'stubs-due': ['stubs', 'today'],
+  'config-check': ['config'],
   'design-tokens': ['design', 'html'],
   'draft-snapshot': ['files', 'out', 'previous'],
   'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
@@ -2637,6 +2737,11 @@ async function main(argv) {
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
+  if (command === 'config-check') {
+    const result = configCheckCommand(flags);
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.ok ? 0 : 1;
+  }
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -2759,7 +2864,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, config-check, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

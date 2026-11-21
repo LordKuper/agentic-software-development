@@ -36,12 +36,13 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
+8. After a real update, explain that the next `/asd-sprint` checks the installed config against the shipped template and directs incomplete projects to `/asd-init`.
 
 ### Sprint-mediated mode
 
 Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
 
-- That choice is the confirmation: skip step 1; steps 2-7 apply unchanged.
+- That choice is the confirmation: skip step 1; steps 2-8 apply unchanged.
 - Conflicts and `--force` still go to the user — never force without asking.
 - No commit here: the orchestrator commits the result, `asd-sync`'s writes included (left uncommitted with the rest). Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
 - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.

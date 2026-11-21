@@ -39,7 +39,7 @@ Fresh and re-init only.
 ### Fresh
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `cleanup` (`enabled` default or `disabled`), `safety_valve` (`enabled` default or `disabled`), `upstream_issues` (`enabled` default or `disabled`; asked only when self-hosting is not enabled, else omitted), and document settings. `documents.audit` is `auto|always|off` (`auto` default); `documents.design_system` gates the design-system gate and tokens, `documents.ux_spec` only the ux-spec docs (`sprint-lifecycle.md` "Optional documents"); other document flags keep their existing values. For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`.
+2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `cleanup` (`enabled` default or `disabled`), `safety_valve` (`enabled` default or `disabled`), `upstream_issues` (`enabled` default or `disabled`; propose its default under self-hosting), Claude Design and document settings. `documents.audit` is `auto|always|off` (`auto` default). `documents.design_system` gates design-system work and tokens and `documents.ux_spec` gates UX-spec docs (`sprint-lifecycle.md` "Optional documents"). For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`.
 3. If decomposition enabled → request user decision: diagram_tool (`none` | `likec4` | `mermaid`); disabled → `none`
 4. Detect OS via command execution (silent; no confirm yet) — selects step 12's OS-specific commands, never written to config
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
@@ -72,12 +72,12 @@ Fresh and re-init only.
      name each class in which detection found no script, config or tool
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, tools, review limits, git settings, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues` (consumer only), audit mode, `documents.design_system`, diagram_tool, detected build/test/lint/run commands and any affected-test selector, smoke command, `test_paths`, `test_durations`, plus the gate-class gaps note
+    - All project settings, including inactive fields and empty tool paths or profile names, plus OS, tool availability, detected commands and the gate-class gaps note
     Then request user decision: `accept-all` | `edit-section` | `abort`.
-    - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
+    - `edit-section` → request user decision on which settings section to edit, collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools → must resolve here: Node (if `documents.design_system: enabled`) → install or `documents.design_system: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; the wrapped external-review CLI (if external_review) → install, override path (`system.tools.codex_command`/`claude_command`) or `review.external_review: disabled`. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, `cleanup`, `safety_valve`, `upstream_issues` (omitted under self-hosting), audit mode, `documents.design_system`, diagram_tool and other fields.
+9. Validate the complete proposed YAML per "Config check", then write every leaf from `t_config.yaml` with its approved value.
 10. Request free-form user input: custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.design_system: enabled`); `test_affected`, `smoke`, `test_paths` and `test_durations` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition. Seed the context ceilings and add the check: `node .asd/runtime.js context-check --seed` (writes `.asd/project/context-ceilings.json`), then `checks.context: "node .asd/runtime.js context-check"`
@@ -98,11 +98,11 @@ Fresh and re-init only.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
-2a. List every field present in `t_config.yaml` but absent from the current config, each with its absent default (the template comment's, e.g. `self_hosting` → `disabled`; `safety_valve` → `enabled`; `upstream_issues` → `enabled`, skipped when `self_hosting` is enabled; `git.ai_attribution` → `enabled`), so a newly shipped field is editable
+2a. Run the Config check. Add every missing field to the pending diff with its prior effective default where known, else the template default. Use "Optional documents" in `sprint-lifecycle.md` for legacy document defaults, including inheriting `ux_spec` when `design_system` is absent from a present group. For a missing `project.claude_design` propose `enabled` to retain the prior host-capability selection. Show proposed values and require corrections for duplicate or invalid entries. Keep all valid existing values unless the user chooses an edit.
 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
-5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
+5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
@@ -111,9 +111,9 @@ Fresh and re-init only.
 Plan acceptance (scope invocation: the scope gate) is the approval of record: no config dump, no section prompt, no `accept-all`.
 
 1. Read current `.asd/project/config.yaml`
-2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
+2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` before any write. An earlier-wave template edit counts. Each dotted key names a leaf, and each value fits its inline enumeration or template type. Any failing pair → `FAILED` naming it.
 3. Set each declared `<key>=<value>` pair (dotted path); its line takes that key's inline comment from the template, when the template line has one; touch no other field. A pair whose value and comment already match is a no-op.
-4. Write config
+4. Validate the resulting complete config per "Config check" before writing it. If undeclared fields need repair, return `FAILED` with the paths and direct the user to standalone `/asd-init`.
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
 6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
 
@@ -135,6 +135,10 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 ```
 
 ## Reference
+
+### Config check
+
+Run `node .asd/runtime.js config-check` against the installed config. Validate proposed YAML by passing it on stdin with `--config -`. Proceed only on exit 0. Exit 1 reports `missing`, `duplicates` and `invalid` with dotted setting paths. Exit 2 reports a command, schema or read failure.
 
 ### AGENTS.md sync
 
