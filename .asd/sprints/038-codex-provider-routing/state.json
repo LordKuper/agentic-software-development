@@ -1,7 +1,7 @@
 {
   "sprint_id": "038-codex-provider-routing",
   "branch": "sprint/038-codex-provider-routing",
-  "phase": "plan",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -50,7 +50,9 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },

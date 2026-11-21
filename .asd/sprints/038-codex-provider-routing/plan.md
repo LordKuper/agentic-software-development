@@ -22,8 +22,8 @@ Verify both provider views and consumer/self-hosting compatibility. Check the re
 ### Task 1: Guard named commit paths
 Material risk: change: public contract
 
-- [ ] AC-25. Update `.asd/runtime.js` `commit-check` and `.asd/rules/git-strategy.md` to reject any named tracked or new path with unstaged edits or no staged change. Count the old and new paths of a staged rename and stage the candidate paths before validation. Preserve the no-path form for already staged content.
-- [ ] Check callers in creator agents, cleanup, orchestrator commit rules and tests. Assign README wording to Task 13 and update affected existing tests in Task 14.
+- [x] AC-25. Update `.asd/runtime.js` `commit-check` and `.asd/rules/git-strategy.md` to reject any named tracked or new path with unstaged edits or no staged change. Count the old and new paths of a staged rename and stage the candidate paths before validation. Preserve the no-path form for already staged content.
+- [x] Check callers in creator agents, cleanup, orchestrator commit rules and tests. Assign README wording to Task 13 and update affected existing tests in Task 14.
 
 ### Task 2: Apply model selections and quota routing
 Material risk: change: broad-reasoning
