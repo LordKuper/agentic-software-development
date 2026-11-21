@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 5854ad90 | full change surface |
-| 2 | | delta since entry 1 |
+| 2 | eaa1003b | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -44,7 +44,7 @@ responsibility:
 - Scope evidence: use the full step-8 gate. `.asd/runtime.js` and `.asd/sync.js` are loaded through shared `tests/lib.js`; changed snapshot, config and release-manifest contracts cross the named areas, including hooks, migrations and update. An isolated area split is unsupported here.
 - Result: pass — 316/316 passed, 0 failed, 0 skipped.
 - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
-- Line delta: tests +170/−17 (net 153); other +877/−332 (net 545)
+- Line delta: tests +213/−19 (net 194); other +907/−340 (net 567)
 - HEAD: `8a3b8ad51289b430c1ae038bad040768107b49db` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
 
 ## Defects

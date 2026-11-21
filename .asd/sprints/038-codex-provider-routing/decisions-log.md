@@ -85,3 +85,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route review-fix wave-1/iter-01: standard, dispatch HEAD 72115d15252a810aacaa520acc639140ff917371; risk change: public-contract
 - 2026-11-22 — route 6 and 1–4 regression evidence: standard, dispatch HEAD 6e5b1597952a6a79c4eaaa655679877ef825d9e3
 - 2026-11-22 — impl fix for wave-1/iter-01: findings resolved. Runtime fix `148bc232`, regenerated release evidence `6e5b1597`, regression evidence `00996ea3` and verified suite record `984a3a80`. 240/240 impacted tests, nine fail-first cases, complete config, all 77 provider targets current, context, lint and agnix green. The literal-backslash patch assertion awaits native POSIX.
+- 2026-11-22 — route impl-test entry 2: standard, dispatch HEAD 03d03af52e61935886ccaa2111be894a1e77393a
+- 2026-11-22 — impl-test re-entry 2 pre-strategy: 314/314 at `03d03af5`; nine fail-first records preserved in test-plan.entry-01.md. No new test work or defects. Shared runtime and sync require the full suite gate.
+- 2026-11-22 — route impl-test entry 2 suite: runner, dispatch HEAD 8a3b8ad51289b430c1ae038bad040768107b49db
+- 2026-11-21 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test re-entry

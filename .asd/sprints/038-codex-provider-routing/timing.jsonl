@@ -116,3 +116,13 @@
 {"op":"close","id":"review-fix verify named areas","kind":"suite","parent":"asd-tester impl#2","start":"2026-11-21T23:43:06.418Z","end":"2026-11-21T23:43:34.458Z","outcome":"done","attrs":{"scope":"impacted"}}
 {"op":"close","id":"asd-tester impl#2","kind":"dispatch","parent":"impl#2","start":"2026-11-21T23:38:16.374Z","end":"2026-11-21T23:44:37.275Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol","context_bytes":"86232"}}
 {"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-21T23:34:21.089Z","end":"2026-11-21T23:44:37.275Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-21T23:45:00.737Z","attrs":{}}
+{"op":"open","id":"asd-tester impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-21T23:45:00.786Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol","context_bytes":"83941"}}
+{"op":"open","id":"suite impl-test#2 pre-strategy","kind":"suite","parent":"asd-tester impl-test#2","start":"2026-11-21T23:45:34.096Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2 pre-strategy","kind":"suite","parent":"asd-tester impl-test#2","start":"2026-11-21T23:45:34.096Z","end":"2026-11-21T23:46:03.743Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"asd-tester impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-21T23:45:00.786Z","end":"2026-11-21T23:47:13.573Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol","context_bytes":"83941"}}
+{"op":"open","id":"asd-tester-runner impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-21T23:47:13.573Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna","context_bytes":"83941"}}
+{"op":"open","id":"suite impl-test#2 gate","kind":"suite","parent":"asd-tester-runner impl-test#2","start":"2026-11-21T23:47:48.518Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#2 gate","kind":"suite","parent":"asd-tester-runner impl-test#2","start":"2026-11-21T23:47:48.518Z","end":"2026-11-21T23:48:19.777Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"asd-tester-runner impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-21T23:47:13.573Z","end":"2026-11-21T23:50:20.496Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna","context_bytes":"83941"}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-21T23:45:00.737Z","end":"2026-11-21T23:50:20.496Z","outcome":"done","attrs":{}}
