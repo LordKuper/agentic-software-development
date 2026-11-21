@@ -8,7 +8,7 @@ responsibility:
 # Test plan — sprint {{SPRINT_ID}}
 
 <!--
-Written in impl-test, after the implementation exists. First entry writes this file fresh;
+Written in impl-test, after the implementation exists. First entry writes this file, keeping any area-run shell;
 every re-entry AMENDS it (append/update rows) — never a full rewrite. Defects rows persist
 (resolved ones kept for the record). Narrative rows of prior entries rotate into
 test-plan.entry-NN.md: .asd/rules/artifact-layout.md "Test plan". Change surface is not restated here — it's the diff
@@ -68,6 +68,7 @@ analysed, not any tree produced later
 
 - Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}
 - Scope: {{impacted \| full \| named}} — `full` when every test file ran with no test-name filter, `named` for a named test or name-filtered run (never reused), else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set" **Scope.**)
+- Scope evidence: {{affected paths and safety-valve decision, when evaluating shared infrastructure}}
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
 - Smoke: {{`smoke` from commands.yaml}} — {{pass \| fail}}; line omitted when the key is absent
@@ -75,6 +76,14 @@ analysed, not any tree produced later
 - Allowance: {{risks the added test lines cover, when `test-delta` requires it \| line omitted}}
 - Slowest tests: {{ten, name and ms, from the `test_durations` run \| line omitted when the key is absent}}
 - HEAD: {{sha}} — commit this run was verified at. Leave empty if the run cannot be tied to a committed revision. Reuse rules: `.asd/rules/sprint-lifecycle.md` "Impacted test set".
+
+## Area runs (optional)
+
+For a split first entry only (`asd-phase-impl-test.md` steps 3 and 8). Commit each area result before the next dispatch. Only completed rows verified against the current relevant paths supply evidence for the aggregate. Keep this section as first-entry history on later entries.
+
+| Stage | Area | Command | Relevant paths | State | HEAD | Result |
+|---|---|---|---|---|---|---|
+| {{pre-strategy \| suite}} | {{area}} | {{exact named-area command}} | {{source, test, dependency and setup paths}} | {{pending \| done}} | {{checked sha}} | {{exit code, counts and first failure line if red}} |
 
 ## Defects
 
