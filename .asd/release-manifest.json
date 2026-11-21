@@ -24,7 +24,8 @@
     },
     "codex": {
       "sol": "gpt-6.2-sol",
-      "luna": "gpt-6-luna"
+      "luna": "gpt-6-luna",
+      "astra": "gpt-6.2-astra"
     }
   },
   "canon_hashes": {

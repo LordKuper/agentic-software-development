@@ -1822,7 +1822,10 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
   const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
   try {
-    if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
+    if (missing().length > 0 && lookups.routed) {
+      const routed = lookups.routed(id);
+      if (!routed?.agent || filled.agent === undefined || routed.agent === filled.agent) fillFrom(routed);
+    }
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
     const bytes = filled.context_bytes === undefined && lookups.contextBytes ? lookups.contextBytes(id) : undefined;
     if (bytes !== undefined) filled.context_bytes = bytes;
@@ -1910,16 +1913,22 @@ function timingLookups(ledger) {
       return routed && { agent, tier: routed.tier, model: routed.resolved_model };
     },
     agentAttrs: (agent) => {
-      const { VARIANT_SUFFIXES, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
-      const suffix = VARIANT_SUFFIXES.find((candidate) => agent.endsWith(`-${candidate}`));
-      const base = suffix === undefined ? agent : agent.slice(0, -(suffix.length + 1));
+      const { VARIANT_SUFFIXES, CODEX_QUOTA_SUFFIX, codexQuotaFallback, loadReleaseManifest, resolveModelFamily, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
+      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
+      const quota = host === 'codex' && agent.endsWith(CODEX_QUOTA_SUFFIX);
+      const role = quota ? agent.slice(0, -CODEX_QUOTA_SUFFIX.length) : agent;
+      const suffix = VARIANT_SUFFIXES.find((candidate) => role.endsWith(`-${candidate}`));
+      const base = suffix === undefined ? role : role.slice(0, -(suffix.length + 1));
       const file = path.join(__dirname, 'agents', `${base}.md`);
       if (!/^[a-z0-9-]+$/.test(base) || !fs.existsSync(file)) return undefined;
       const { meta } = parseCanonicalFrontmatter(normalizeText(fs.readFileSync(file, 'utf8')));
-      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
       const variant = suffix === undefined ? undefined : (meta.variants || {})[suffix];
       const model = [variant, meta].map((source) => source && source[host] && source[host].model).find((value) => value !== undefined);
-      return { tier: suffix === undefined ? 'standard' : suffix, model };
+      const tier = suffix === undefined ? 'standard' : suffix;
+      if (!quota) return { tier, model };
+      const manifest = loadReleaseManifest(path.dirname(__dirname));
+      const fallback = codexQuotaFallback({ model }, manifest);
+      return { tier, model: fallback ? resolveModelFamily(manifest, host, fallback.model) : undefined };
     },
   };
 }
@@ -2174,8 +2183,9 @@ function grantRows(tableText) {
 /** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
 function contextRefs(tableText, role, phase) {
   const rows = grantRows(tableText);
-  const { VARIANT_SUFFIXES } = require('./sync.js');
-  const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
+  const { CODEX_QUOTA_SUFFIX, VARIANT_SUFFIXES } = require('./sync.js');
+  const primary = role.endsWith(CODEX_QUOTA_SUFFIX) ? role.slice(0, -CODEX_QUOTA_SUFFIX.length) : role;
+  const base = primary.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
   if (matched.length === 0) fail(`no grant row for role "${role}" in phase "${phase}"`);
   return [...new Set(matched.flatMap((row) => stringArray(row.refs, `refs of ${row.role} ${row.phase}`)))];

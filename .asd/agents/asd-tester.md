@@ -7,9 +7,9 @@
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "live" },
+  "codex": { "model": "sol", "model_reasoning_effort": "medium", "web_search": "live" },
   "variants": {
-    "runner": { "claude": { "model": "haiku", "effort": "medium" }, "codex": { "model": "luna", "model_reasoning_effort": "high" } }
+    "runner": { "claude": { "model": "haiku", "effort": "medium" }, "codex": { "model": "luna", "model_reasoning_effort": "medium" } }
   }
 }
 ---

@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
     "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "live" }
+  "codex": { "model": "astra", "model_reasoning_effort": "medium", "web_search": "live" }
 }
 ---
 

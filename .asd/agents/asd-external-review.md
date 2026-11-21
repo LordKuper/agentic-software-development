@@ -10,7 +10,7 @@
     "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
   },
   "codex": {
-    "model": "sol", "model_reasoning_effort": "medium", "web_search": "disabled",
+    "model": "luna", "model_reasoning_effort": "high", "web_search": "disabled",
     "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "sonnet",
     "wraps_invoke_args": "-p \"Follow the review instructions provided via stdin above; read the scope manifest file they name first: its files list is your scope, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort xhigh --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
   }

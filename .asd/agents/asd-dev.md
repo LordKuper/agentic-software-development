@@ -9,7 +9,7 @@
   },
   "codex": { "model": "sol", "model_reasoning_effort": "high", "web_search": "live" },
   "variants": {
-    "escalated": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } },
+    "escalated": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "xhigh" } },
     "mechanical": { "claude": { "model": "haiku", "effort": "high" }, "codex": { "model": "luna", "model_reasoning_effort": "high" } }
   }
 }

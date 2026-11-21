@@ -172,7 +172,7 @@ function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
     throw new Error(diagnostic('unknown model family'));
   }
-  if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-\d+(\.\d+)?-(sol|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
+  if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-\d+(\.\d+)?-(sol|luna|astra)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
     throw new Error(diagnostic('unsupported ChatGPT-runtime model mapping'));
   }
   if (provider === 'codex' && agent.effort !== undefined && (!EFFORT_VOCABULARY.codex.test(agent.effort) || (resolvedModel.endsWith('-luna') && agent.effort === 'ultra'))) {
@@ -1132,6 +1132,19 @@ function variantMeta(baseMeta, suffix) {
 
 /** Tier-variant name suffixes an agent may declare; `runtime.js` `context` reads them to map a variant to its base agent. */
 const VARIANT_SUFFIXES = ['escalated', 'mechanical', 'runner'];
+const CODEX_QUOTA_SUFFIX = '-quota';
+const CODEX_QUOTA_MODELS = new Map([
+  ['sol', { model: 'astra', model_reasoning_effort: 'medium' }],
+  ['luna', { model: 'sol', model_reasoning_effort: 'medium' }],
+  ['astra', { model: 'sol', model_reasoning_effort: 'high' }],
+]);
+
+/** Codex-only model settings for a quota retry, preserving the primary role's permissions and wrapper. */
+function codexQuotaFallback(codex, manifest) {
+  const alternate = CODEX_QUOTA_MODELS.get(codex?.model);
+  const families = manifest.model_families?.codex;
+  return alternate && families && Object.hasOwn(families, alternate.model) ? { ...codex, ...alternate } : null;
+}
 
 function agentVariants(meta) {
   if (meta.variants === undefined) return [];
@@ -1385,7 +1398,7 @@ function readCanonSource(canonPath, parse) {
   return { canonRawNormalized, meta: parsed.meta, body: parsed.body };
 }
 
-function buildSyncPlan(repoRoot) {
+function buildSyncPlan(repoRoot, manifest = loadReleaseManifest(repoRoot)) {
   // Discovers full-file-generated sources under .asd/agents, .asd/skills, and
   // .asd/hooks, plus the fixed repo-root managed-block (AGENTS.md/CLAUDE.md)
   // and json-merge (.claude/settings.json/.codex/hooks.json) targets. A
@@ -1417,6 +1430,15 @@ function buildSyncPlan(repoRoot) {
       for (const item of rendered) {
         plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
         plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
+        const primary = item.meta || agent.meta;
+        const codex = codexQuotaFallback(primary.codex, manifest);
+        if (codex) {
+          const name = `${item.name}${CODEX_QUOTA_SUFFIX}`;
+          if (names.has(name)) throw new Error(`agent name collision: ${name}`);
+          names.add(name);
+          const metaOverride = { ...primary, name, codex, description: `${primary.description} Retry only on model quota.` };
+          plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, source: agent.source, metaOverride, targetPath: path.join(repoRoot, '.codex', 'agents', `${name}.toml`) });
+        }
       }
     }
   }
@@ -1530,7 +1552,7 @@ function orphanStatus(orphan) {
 function runCheck(repoRoot) {
   const syncState = loadSyncState(repoRoot);
   const manifest = loadReleaseManifest(repoRoot);
-  const plan = buildSyncPlan(repoRoot);
+  const plan = buildSyncPlan(repoRoot, manifest);
   const report = [];
   for (const item of plan) {
     const { status } = statusForPlanItem(item, repoRoot, manifest, syncState);
@@ -1566,7 +1588,7 @@ function runCheck(repoRoot) {
 function runApply(repoRoot, requestedFiles, options) {
   const syncState = loadSyncState(repoRoot);
   const manifest = loadReleaseManifest(repoRoot);
-  const plan = buildSyncPlan(repoRoot);
+  const plan = buildSyncPlan(repoRoot, manifest);
   const planByRel = new Map();
   for (const item of plan) {
     const rel = path.relative(repoRoot, item.targetPath).replace(/\\/g, '/');
@@ -1710,6 +1732,8 @@ if (require.main === module) {
 module.exports = {
   SCHEMA_VERSION,
   VARIANT_SUFFIXES,
+  CODEX_QUOTA_SUFFIX,
+  codexQuotaFallback,
   BLOCK_BEGIN,
   BLOCK_END,
   normalizeText,
