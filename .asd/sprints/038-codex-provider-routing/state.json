@@ -85,6 +85,13 @@
       "reason": "risk:workflow gate",
       "raise_effort": false,
       "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:authentication",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
     }
   },
   "skipped_phases": [],

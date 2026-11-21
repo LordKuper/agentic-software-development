@@ -30,7 +30,7 @@ Workflow settings: `.asd/project/config.yaml`.
 
 Deterministic routing, external readiness and coverage validation: `.asd/runtime.js`.
 
-External Review wraps the other provider's CLI. `system.tools.codex_command` (Claude Code) and `system.tools.claude_command` (Codex) override PATH lookup; an unavailable resolved command is recorded as an explicit review skip.
+External Review uses the other provider's CLI by default. With Codex as the main harness, `review.codex_profile` selects a separate Codex profile. The selected CLI's `system.tools` command override applies to both the probe and the review (`.asd/rules/external-review.md`).
 
 ### Folder structure
 

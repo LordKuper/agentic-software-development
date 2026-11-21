@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:0f55d76ffe71c97610e5721c83d3471df720b1ba91b4737329afc260c18c8741 content_digest=sha256:ebf964efef2a4aa72b5c0cd9713b6f3f896cc0cf35d92b977c58a34182bb4058 asd_version=14.9.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:0e83c183ff327ce70c983ee5d39970c29c2d093c1039d94071abdadb765a9ef8 content_digest=sha256:2bdf3e2c46edde3cfb72853df7a01d4ab6cc62814f66e2e70861290d7e4a0998 asd_version=14.9.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -38,13 +38,13 @@ Fresh and re-init only.
 ### Fresh
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `cleanup` (`enabled` default or `disabled`), `safety_valve` (`enabled` default or `disabled`), `upstream_issues` (`enabled` default or `disabled`; propose its default under self-hosting), Claude Design and document settings. `documents.audit` is `auto|always|off` (`auto` default). `documents.design_system` gates design-system work and tokens and `documents.ux_spec` gates UX-spec docs (`sprint-lifecycle.md` "Optional documents"). For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`.
+2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `cleanup` (`enabled` default or `disabled`), `safety_valve` (`enabled` default or `disabled`), `upstream_issues` (`enabled` default or `disabled`; propose its default under self-hosting), Claude Design and document settings. `documents.audit` is `auto|always|off` (`auto` default). `documents.design_system` gates design-system work and tokens and `documents.ux_spec` gates UX-spec docs (`sprint-lifecycle.md` "Optional documents"). For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`. When external review is enabled under Codex, ask for `review.codex_profile` (default empty). Write the explicit empty value if no profile is selected.
 3. If decomposition enabled → request user decision: diagram_tool (`none` | `likec4` | `mermaid`); disabled → `none`
 4. Detect OS via command execution (silent; no confirm yet) — selects step 12's OS-specific commands, never written to config
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - Node (only if `documents.design_system: enabled` — the design-system gate that needs it is skipped entirely otherwise): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.design_system: disabled`, skip detection and omit the `designmd-*` custom commands entirely.
-   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): resolve its configured command or default lookup, then probe it — `system.tools.codex_command` or `codex` under Claude Code; `system.tools.claude_command` or `claude` under Codex (`.asd/rules/providers.md` § External review symmetry). Never probe the running host's own CLI.
+   - External Review (if `review.external_review=enabled`): run `node .asd/runtime.js external-preflight --input <path>` with the host and proposed profile/command values per `external-review.md` "Detection and negative cache". Omit `cachePath` for the init probe.
    Record the resolved command and availability for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; `ai_attribution` `enabled`, or `disabled` to keep Claude/Codex attribution out of commits and PRs) — include in proposal; the `git` section edit changes any of them
@@ -73,8 +73,8 @@ Fresh and re-init only.
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
     - All project settings, including inactive fields and empty tool paths or profile names, plus OS, tool availability, detected commands and the gate-class gaps note
     Then request user decision: `accept-all` | `edit-section` | `abort`.
-    - `edit-section` → request user decision on which settings section to edit, collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools → must resolve here: Node (if `documents.design_system: enabled`) → install or `documents.design_system: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; the wrapped external-review CLI (if external_review) → install, override path (`system.tools.codex_command`/`claude_command`) or `review.external_review: disabled`. Do NOT silently proceed with missing required tools.
+    - `edit-section` → request user decision on which settings section to edit, collect new values, rerun affected tool probes, re-show proposal, loop until `accept-all`
+    - Missing required tools → must resolve here: Node (if `documents.design_system: enabled`) → install or `documents.design_system: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; an unavailable external-review route → resolve the reported status (CLI install/upgrade or command override, local auth on the default route, or named profile setup). The user can clear `review.codex_profile` to select the default route or disable external review. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Validate the complete proposed YAML per "Config check", then write every leaf from `t_config.yaml` with its approved value.
 10. Request free-form user input: custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
@@ -103,7 +103,7 @@ Fresh and re-init only.
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
-7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
+7. If `review.external_review=enabled`, probe the selected route from the final config exactly as fresh init does; report the selected command, profile when set, and the availability status. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ### Sprint-mediated
 
@@ -114,7 +114,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 3. Set each declared `<key>=<value>` pair (dotted path); its line takes that key's inline comment from the template, when the template line has one; touch no other field. A pair whose value and comment already match is a no-op.
 4. Validate the resulting complete config per "Config check" before writing it. If undeclared fields need repair, return `FAILED` with the paths and direct the user to standalone `/asd-init`.
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
-6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
+6. Re-init step 7 applies when a pair touches `review.external_review`, `review.codex_profile` or `system.tools`
 
 ## Rules
 
