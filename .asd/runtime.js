@@ -1922,7 +1922,7 @@ function timingIds(value, name) {
 
 function timingAttrs(value) {
   if (value === undefined) return {};
-  return Object.fromEntries(value.split(';').map((pair) => {
+  return Object.fromEntries(value.split(/[;,]/).map((pair) => {
     const at = pair.indexOf('=');
     if (at < 1) fail(`--attrs entry must be k=v: ${pair}`);
     return [pair.slice(0, at).trim(), pair.slice(at + 1).trim()];
@@ -2089,7 +2089,7 @@ function timingLookups(ledger) {
 /** Runs `timing` or `timing-recover` as one append to `--ledger`, a missing ledger a no-op unless `timing --create`. Any failure, a malformed command line included, prints one stderr warning and still exits 0, so recording never stops the workflow. */
 function timingCommand(command, args) {
   try {
-    const flags = parseFlagArgs(args, ['create']);
+    const flags = parseFlagArgs(args, ['create'], command === 'timing');
     warnIgnoredFlags(command, flags);
     if (typeof flags.ledger !== 'string') fail('--ledger <path> required');
     const exists = fs.existsSync(flags.ledger);
@@ -2864,16 +2864,18 @@ function warnIgnoredFlags(command, flags) {
   Object.keys(flags).filter((name) => !COMMAND_FLAGS[command].includes(name)).forEach((name) => process.stderr.write(`runtime: ignored flag --${name}\n`));
 }
 
-function parseFlagArgs(argv, booleanFlags) {
+function parseFlagArgs(argv, booleanFlags, mergeAttrs = false) {
   const bools = booleanFlags || [];
   const out = {};
   for (let i = 0; i < argv.length; i += 1) {
     if (!argv[i].startsWith('--')) fail('flags require values');
     const name = argv[i].slice(2);
-    if (Object.hasOwn(out, name)) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
+    const repeated = Object.hasOwn(out, name);
+    const merge = repeated && mergeAttrs && name === 'attrs';
+    if (repeated && !merge) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
     if (bools.includes(name)) { out[name] = true; continue; }
     if (argv[i + 1] === undefined) fail('flags require values');
-    out[name] = argv[i + 1];
+    out[name] = merge ? `${out[name]};${argv[i + 1]}` : argv[i + 1];
     i += 1;
   }
   return out;
