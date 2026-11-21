@@ -45,3 +45,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route Task 3: standard, dispatch HEAD b58d6e5232567fa6793dab1444e10bd05ba039a5; risk change: public contract
 - 2026-11-22 — Task 3 completed the shared AC-1/AC-2 validator, schema and init/update contracts at `1e084481`. The template passes. The old config reports the six approved Task 4 additions; seeded malformed and duplicate fields are rejected.
 - 2026-11-22 — Task 4 applied the six approved settings at `f36bb900`. Candidate and installed config both pass config-check with zero missing, duplicate or invalid settings.
+- 2026-11-22 — route Task 5: standard, dispatch HEAD 3df80e0d711e45b251a8242f4f981d181e162f8f; risk change: workflow gate
+- 2026-11-22 — route Task 6: standard, dispatch HEAD 3df80e0d711e45b251a8242f4f981d181e162f8f; risk change: workflow gate
+- 2026-11-22 — Tasks 5 and 6 landed at `f9e8e971` and `73bc03d7`. Complete project config is checked before Git changes or dispatch. The design paths cover explicit selection, local previews, deferred publication and safe promotion re-entry. Live Claude Design is unverified in this host.

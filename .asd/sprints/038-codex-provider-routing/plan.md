@@ -53,14 +53,14 @@ Settings change: cleanup=enabled, upstream_issues=enabled, safety_valve=enabled,
 Material risk: change: workflow gate
 Reachability: init writes a complete project config; asd-sprint verifies it on each entry before starting or resuming any phase.
 
-- [ ] AC-1. Call the shared check from `.asd/skills/asd-sprint/SKILL.md` on every invocation, including attempts to resume or finish a merged sprint. Report missing or malformed config and the exact remediation in the current host's init invocation form. A failed check leaves sprint state and Git refs untouched.
+- [x] AC-1. Call the shared check from `.asd/skills/asd-sprint/SKILL.md` on every invocation, including attempts to resume or finish a merged sprint. Report missing or malformed config and the exact remediation in the current host's init invocation form. A failed check leaves sprint state and Git refs untouched.
 
 ### Task 6: Select mockup authoring and retry publication
 Material risk: change: workflow gate
 Reachability: lite scope records the local mockup and deferred intent on a qualifying host failure; design-promote reads the marker and original source before copying mockups.
 
-- [ ] AC-3, AC-15. Make `project.claude_design` drive the existing artifact and local HTML paths in `.asd/rules/design-system.md` and scope/design/design-promote workflows. Keep capability and UX-spec preconditions and the publication gate.
-- [ ] In lite scope, retain the draft and record deferred publication when the canvas host is unreachable. The record identifies the local source and desired publication. Design-promote retries before copying or rewriting links, recognizes already completed publication by its recorded result and retains evidence if retry fails. Use existing draft and decision artifacts for re-entry.
+- [x] AC-3, AC-15. Make `project.claude_design` drive the existing artifact and local HTML paths in `.asd/rules/design-system.md` and scope/design/design-promote workflows. Keep capability and UX-spec preconditions and the publication gate.
+- [x] In lite scope, retain the draft and record deferred publication when the canvas host is unreachable. The record identifies the local source and desired publication. Design-promote retries before copying or rewriting links, recognizes already completed publication by its recorded result and retains evidence if retry fails. Use existing draft and decision artifacts for re-entry.
 
 ### Task 7: Run named Codex external review profiles
 Material risk: change: authentication
