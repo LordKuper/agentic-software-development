@@ -39,13 +39,13 @@ responsibility:
 - Pre-strategy command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render hooks migrations update` at `1a75a85d`. Exit 0, 314 passed, 0 failed, 0 skipped.
 - Entry 2 pre-strategy command: `node tests/run.js runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render contract-agents contract-rules contract-templates contract-workflows hooks migrations update` at `03d03af5`. Exit 0, 314 passed, 0 failed, 0 skipped. The full gate remains required because the delta changes shared runtime and sync code.
 - Scope evidence: use the full step-8 gate. `.asd/runtime.js` and `.asd/sync.js` are loaded through shared `tests/lib.js`; changed snapshot, config and release-manifest contracts cross the named areas, including hooks, migrations and update. An isolated area split is unsupported here.
-- Command: `node tests/run.js runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render contract-rules contract-templates contract-workflows`
-- Scope: impacted — nine named areas, each unfiltered.
-- Scope evidence: the review-fix run covers runtime and sync behavior plus the affected rule, template and workflow contracts.
-- Result: pass — 240/240 passed, 0 failed, 0 skipped.
+- Command: `node tests/run.js`
+- Scope: full — all 316 tests, unfiltered.
+- Scope evidence: use the full step-8 gate. `.asd/runtime.js` and `.asd/sync.js` are loaded through shared `tests/lib.js`; changed snapshot, config and release-manifest contracts cross the named areas, including hooks, migrations and update. An isolated area split is unsupported here.
+- Result: pass — 316/316 passed, 0 failed, 0 skipped.
 - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
 - Line delta: tests +170/−17 (net 153); other +877/−332 (net 545)
-- HEAD: `00996ea38e39a83de85f0fe8cce67f85b0143ea7` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
+- HEAD: `8a3b8ad51289b430c1ae038bad040768107b49db` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
 
 ## Defects
 
