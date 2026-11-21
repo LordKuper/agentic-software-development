@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-22 — Audit accepted
+
+- **Decision**: Advance to plan under the adaptive gate after checking deliverability and consistency of all 30 criteria.
+- **Rationale**: Existing contracts settle the observed gaps. Codex's custom-agent precedence constrains quota fallback, and RouterAI credentials are unavailable for the conditional authenticated smoke run. Baseline verification passed 311 tests and agnix reported no errors or warnings.
+- **Affected docs**: [audit.md](audit.md)

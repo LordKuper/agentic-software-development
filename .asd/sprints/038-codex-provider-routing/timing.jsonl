@@ -10,3 +10,5 @@
 {"op":"open","id":"user-wait-scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:03:35.138Z","attrs":{"gate":"scope and retro intake dispositions"}}
 {"op":"close","id":"user-wait-scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:03:35.138Z","end":"2026-11-21T21:43:21.056Z","outcome":"done","attrs":{"gate":"scope and retro intake dispositions"}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-21T20:41:57.634Z","end":"2026-11-21T21:43:21.056Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-21T21:43:46.700Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-21T21:43:46.700Z","end":"2026-11-21T21:46:48.492Z","outcome":"done","attrs":{}}
