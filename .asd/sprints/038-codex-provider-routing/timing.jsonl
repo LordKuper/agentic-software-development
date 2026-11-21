@@ -1,0 +1,12 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-21T20:41:57.634Z","attrs":{}}
+{"op":"open","id":"user-wait-scope-workflow","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:42:07.105Z","attrs":{}}
+{"op":"close","id":"user-wait-scope-workflow","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:42:07.105Z","end":"2026-11-21T20:42:45.003Z","outcome":"done","attrs":{}}
+{"op":"open","id":"user-wait-scope-requirements","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:43:02.385Z","attrs":{"gate":"requirements interview"}}
+{"op":"close","id":"user-wait-scope-requirements","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:43:02.385Z","end":"2026-11-21T20:45:03.976Z","outcome":"done","attrs":{"gate":"requirements interview"}}
+{"op":"open","id":"user-wait-scope-approach","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:45:46.115Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"user-wait-scope-approach","kind":"user-wait","parent":"scope#1","start":"2026-11-21T20:45:46.115Z","end":"2026-11-21T20:50:30.616Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"user-wait-scope-issue-triage","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:00:40.693Z","attrs":{"gate":"issue triage authorisation"}}
+{"op":"close","id":"user-wait-scope-issue-triage","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:00:40.693Z","end":"2026-11-21T21:01:07.219Z","outcome":"done","attrs":{"gate":"issue triage authorisation"}}
+{"op":"open","id":"user-wait-scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:03:35.138Z","attrs":{"gate":"scope and retro intake dispositions"}}
+{"op":"close","id":"user-wait-scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-21T21:03:35.138Z","end":"2026-11-21T21:43:21.056Z","outcome":"done","attrs":{"gate":"scope and retro intake dispositions"}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-21T20:41:57.634Z","end":"2026-11-21T21:43:21.056Z","outcome":"done","attrs":{}}
