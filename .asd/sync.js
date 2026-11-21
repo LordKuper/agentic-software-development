@@ -16,6 +16,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const SCHEMA_VERSION = 1;
+const RELEASE_MANIFEST_PATH = '.asd/release-manifest.json';
 const BLOCK_BEGIN = '<!-- asd:begin v=1 -->';
 const BLOCK_END = '<!-- asd:end -->';
 
@@ -1048,7 +1049,7 @@ function findRepoRoot(startDir) {
 }
 
 function loadReleaseManifest(repoRoot) {
-  const p = path.join(repoRoot, '.asd', 'release-manifest.json');
+  const p = path.join(repoRoot, RELEASE_MANIFEST_PATH);
   const manifest = JSON.parse(readNormalized(p));
   if (manifest.schema_version !== SCHEMA_VERSION) {
     throw new Error(`release-manifest.json schema_version ${manifest.schema_version} is not supported (expected ${SCHEMA_VERSION}) - fail-closed`);
@@ -1191,21 +1192,37 @@ function rebuildHashMap(oldMap, freshEntries) {
   return next;
 }
 
-// Recomputes both ledgers and writes release-manifest.json only if either
-// actually changed (order-independent comparison via stableStringify; the
-// written object itself stays order-preserving, see rebuildHashMap). Returns
-// which ledger(s) changed so callers can report it.
-function recomputeAndWriteHashLedgers(repoRoot) {
-  const manifest = loadReleaseManifest(repoRoot);
+// Compare independently of key order while preserving the order for apply.
+function compareHashLedgers(repoRoot, manifest) {
   const canon_hashes = rebuildHashMap(manifest.canon_hashes, computeCanonHashes(repoRoot));
   const upstream_hashes = rebuildHashMap(manifest.upstream_hashes, computeUpstreamHashes(repoRoot, manifest));
   const canonChanged = stableStringify(manifest.canon_hashes || {}) !== stableStringify(canon_hashes);
   const upstreamChanged = stableStringify(manifest.upstream_hashes || {}) !== stableStringify(upstream_hashes);
-  if (!canonChanged && !upstreamChanged) return { changed: false, canonChanged: false, upstreamChanged: false };
-  const next = Object.assign({}, manifest, { canon_hashes, upstream_hashes });
-  const p = path.join(repoRoot, '.asd', 'release-manifest.json');
-  writeNormalized(p, JSON.stringify(next, null, 2) + '\n');
-  return { changed: true, canonChanged, upstreamChanged };
+  return { canon_hashes, upstream_hashes, canonChanged, upstreamChanged };
+}
+
+function recomputeAndWriteHashLedgers(repoRoot) {
+  const manifest = loadReleaseManifest(repoRoot);
+  const { canon_hashes, upstream_hashes, canonChanged, upstreamChanged } = compareHashLedgers(repoRoot, manifest);
+  const changed = canonChanged || upstreamChanged;
+  if (changed) {
+    const next = { ...manifest, canon_hashes, upstream_hashes };
+    writeNormalized(path.join(repoRoot, RELEASE_MANIFEST_PATH), JSON.stringify(next, null, 2) + '\n');
+  }
+  return { changed, canonChanged, upstreamChanged };
+}
+
+// Only a self-hosting checkout compares release hashes to its working tree.
+// Consumer update hashes can legitimately retain an earlier upstream baseline.
+function isSelfHosting(repoRoot) {
+  let settings;
+  try {
+    settings = readNormalized(path.join(repoRoot, '.asd', 'project', 'config.yaml'))
+      .match(/^(?:self_hosting|"self_hosting"|'self_hosting')[ \t]*:.*$/gm);
+  } catch (_) {
+    return false;
+  }
+  return settings?.length === 1 && /:[ \t]*(?:enabled|"enabled"|'enabled')(?:[ \t]+#.*|[ \t]*)$/.test(settings[0]);
 }
 
 // ---------------------------------------------------------------------------
@@ -1544,8 +1561,8 @@ function orphanStatus(orphan) {
   return orphan.edited ? 'orphan-modified' : 'orphan';
 }
 
-// Every managed target's status, plus any orphaned generated view (a file
-// still on disk after its canonical source moved or was deleted). An
+// Every managed target's status, a stale release ledger, and any orphaned
+// generated view (a file still on disk after its source moved or was deleted). An
 // ownership-marked orphan reports as a real defect ('orphan', or
 // 'orphan-modified' once hand-edited); an unmarked one is informational only
 // ('orphan-unmarked') - a consumer's own file, not this tool's to flag.
@@ -1560,6 +1577,14 @@ function runCheck(repoRoot) {
   }
   for (const orphan of findOrphans(repoRoot, plan)) {
     report.push({ target: orphan.target, status: orphanStatus(orphan) });
+  }
+  const hasCanonLedger = Object.hasOwn(manifest, 'canon_hashes');
+  const hasUpstreamLedger = Object.hasOwn(manifest, 'upstream_hashes');
+  if ((hasCanonLedger || hasUpstreamLedger) && isSelfHosting(repoRoot)) {
+    const { canonChanged, upstreamChanged } = compareHashLedgers(repoRoot, manifest);
+    if ((hasCanonLedger && canonChanged) || (hasUpstreamLedger && upstreamChanged)) {
+      report.push({ target: RELEASE_MANIFEST_PATH, status: 'ledger-stale' });
+    }
   }
   return report;
 }

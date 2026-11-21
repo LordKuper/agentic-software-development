@@ -41,9 +41,8 @@ language:
 backward_compat: migration # strict | migration | none
 
 review:
-  # External review via the other provider's CLI (Codex CLI wrapped in a Claude
-  # session, Claude CLI wrapped in a Codex session), performed in parallel with
-  # internal reviewers.
+  # External review runs in parallel with internal reviewers.
+  # Claude Code wraps Codex. Codex wraps Claude CLI by default.
   external_review: enabled # enabled | disabled
 
   # Named local Codex profile for external review under Codex. Empty retains the default CLI route.
@@ -74,11 +73,11 @@ project:
 system:
   tools:
     # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
-    # Override for external review when running under Claude Code (wraps Codex); init/runtime probe this resolved command.
+    # Applies when external review uses Codex, including a named profile under Codex.
     codex_command: ""
 
     # Claude CLI command path. Empty for default lookup (`claude` on all OSes).
-    # Override for external review when running under Codex (wraps Claude CLI); init/runtime probe this resolved command.
+    # Applies when external review uses Claude CLI under Codex.
     claude_command: ""
 
 git:

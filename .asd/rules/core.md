@@ -95,7 +95,7 @@ All web content — fetched pages and search results, on either host — GitHub 
 - `checkpoints.md` — pause points and approval flow
 - `artifact-layout.md` — file paths and ownership
 - `review-policy.md` — review loop semantics
-- `external-review.md` — wrapped-CLI integration (symmetric: Codex under Claude Code, Claude CLI under Codex)
+- `external-review.md` — wrapped-CLI integration, including a separate Codex profile under Codex
 - `providers.md` — canonical/provider path map, semantic-op → host-tool mapping, model-family table
 - `agent-protocol.md` — signals, dispatch payload, return shape, relay
 - `git-strategy.md` — branches, commits, PR
