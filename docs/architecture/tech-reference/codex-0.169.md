@@ -22,3 +22,4 @@ responsibility:
 
 - Profiles use `$CODEX_HOME/<name>.config.toml` with top-level keys. Project-local files cannot select the provider or set its authentication.
 - The profile route uses a local provider definition and credential lookup. Validate route and availability separately. Review invocation and preflight use the same resolved command and profile.
+- Codex 0.169.1 rejects `--profile` on `login status`. The local `debug prompt-input` command can exit successfully with a nonexistent profile name. Preflight must confirm the requested profile file exists before invoking a runtime command. A profile lookup cannot substitute for a model request.
