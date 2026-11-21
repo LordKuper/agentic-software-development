@@ -513,9 +513,9 @@ test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, 
   const third = timing(['--open', 'Task 1#2', '--kind', 'dispatch']);
   assert.deepStrictEqual([ledgerText(), /next free id Task 1#3/.test(third.stderr)], [before, true], 'AC-7: with #2 held too the next free id is #3');
 
-  const twice = timing(['--open', 'Task 2', '--kind', 'user', '--kind', 'dispatch', '--attrs', 'agent=asd-dev,tier=standard', '--attrs', 'agent=asd-tester;scope=impacted']);
+  const twice = timing(['--open', 'Task 2', '--kind', 'user', '--kind', 'dispatch', '--attrs', 'gate=review, optional follow-up;agent=asd-dev,tier=standard', '--attrs', 'agent=asd-tester;scope=impacted']);
   const last = ledgerLines(ledgerText()).pop();
-  assert.deepStrictEqual([last.kind, last.attrs.agent, last.attrs.tier, last.attrs.scope], ['dispatch', 'asd-tester', 'standard', 'impacted'], 'Sprint 038 AC-17: repeated attrs merge both delimiters, keeping the last value for a duplicate key');
+  assert.deepStrictEqual([last.id, last.kind, last.attrs.gate, last.attrs.agent, last.attrs.tier, last.attrs.scope], ['Task 2', 'dispatch', 'review, optional follow-up', 'asd-tester', 'standard', 'impacted'], 'Sprint 038 AC-17: repeated attrs merge both delimiters, preserving literal commas in values and keeping the last duplicate key');
   assert.match(twice.stderr, /flag --kind given more than once/);
   assert.doesNotMatch(twice.stderr, /flag --attrs given more than once/);
 });

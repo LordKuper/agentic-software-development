@@ -130,6 +130,27 @@ test('Sprint 038 AC-18: external review matches its consumer scope and patch acr
   assert.match(patch, /\+added test/);
   assert.doesNotMatch(patch, /docs\/|updated docs|updated canon/);
   assert.deepStrictEqual(await run(['--scope-only', '--self-hosting']), { status: 0, result: { files: [...source, ...canonical] } });
+
+  const literal = 'src\\moved.js';
+  fs.writeFileSync(listed, literal);
+  if (process.platform === 'win32') {
+    const posix = path.join(work, 'posix.cjs');
+    fs.writeFileSync(posix, 'Object.defineProperty(process, "platform", { value: "linux" });\n');
+    const scope = execFileSync(process.execPath, ['--require', posix, RUNTIME_JS, ...args, '--scope-only'], { encoding: 'utf8' });
+    assert.deepStrictEqual(JSON.parse(scope).files, [literal]);
+    return;
+  }
+  const importedPath = JSON.stringify(literal);
+  const [posixBase, posixHead] = await importCommits(sandbox, [
+    { [importedPath]: 'old literal\n' },
+    { [importedPath]: 'updated literal\n', 'src/moved.js': 'updated slash path\n' },
+  ], { parent: head });
+  const posix = await run(['--out', work, '--base', posixBase, '--head', posixHead, '--iteration', '1', '--wave', '1']);
+  assert.strictEqual(posix.status, 0);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(posix.result.scope, 'utf8')).files, [literal]);
+  const posixPatch = fs.readFileSync(posix.result.diff, 'utf8');
+  assert.match(posixPatch, /\+updated literal/);
+  assert.doesNotMatch(posixPatch, /updated slash path/);
 });
 
 test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {
@@ -979,7 +1000,7 @@ test('sprint-015 AC-2 (EXT-1): draft-snapshot copies each design-review iteratio
   assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
 });
 
-test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapshot, and emit-manifest --snapshot diffs the listed drafts against the previous iteration\'s copies - no diff at iteration 1, none for a draft the snapshot lacks, refused outside design-review', () => {
+test('sprint-017 AC-8 (D9e), sprint-038 AC-20: draft-snapshot and emit-manifest patch changed drafts and additions against the prior snapshot', () => {
   const root = mkTempDir();
   const drafts = ['prd.html', 'adr.html'].map((name) => path.join(root, 'design', name));
   drafts.forEach((file, index) => writeFile(root, path.relative(root, file), `draft ${index} line 1\ndraft ${index} line 2\n`));
@@ -1017,10 +1038,15 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   const added = path.join(root, 'design', 'ux-spec.html');
   fs.writeFileSync(added, 'new draft\n', 'utf8');
   snapshot(2);
+  const onlyAdded = emit(runtime.COMBINED_REVIEWER, 2, [added], ['--snapshot', iterDir(1)]);
+  assert.ok(onlyAdded.diff, JSON.stringify(onlyAdded));
+  assert.match(fs.readFileSync(onlyAdded.diff, 'utf8'), /\+new draft/, 'a delta with no prior copy must produce a nonempty addition patch');
   const second = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
+  assert.ok(second.diff, JSON.stringify(second));
   const patch = fs.readFileSync(second.diff, 'utf8');
   assert.ok(patch.includes('-draft 0 line 2') && patch.includes('+draft 0 revised'), 'iteration 2+ diffs a changed draft against the previous iteration\'s copy');
-  assert.ok(!patch.includes('new draft') && !patch.includes('draft 1'), 'a draft the previous snapshot lacks gets no hunk - it is read whole - and an unlisted draft never appears');
+  assert.match(patch, /\+new draft/);
+  assert.doesNotMatch(patch, /draft 1/);
   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
 

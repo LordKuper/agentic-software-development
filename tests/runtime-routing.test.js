@@ -212,6 +212,21 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
   };
   const complete = await check(template);
   assert.deepStrictEqual([complete.status, JSON.parse(complete.stdout)], [0, { ok: true, missing: [], duplicates: [], invalid: [] }]);
+  const withAttribution = (setting) => template.replace(/^  ai_attribution:.*$/m, `  ${setting}`);
+  assert.strictEqual((await check(withAttribution('ai_attribution: disabled'))).status, 0);
+  for (const settings of [
+    withAttribution('ai_attribution: "disabled"'),
+    withAttribution('"ai_attribution": disabled'),
+    withAttribution('ai_attribution : disabled'),
+    withAttribution('ai_attribution: disabled').replace(/^git:$/m, '"git":'),
+  ]) {
+    const outcome = await check(settings);
+    assert.deepStrictEqual(
+      [outcome.status, JSON.parse(outcome.stdout).invalid.map(({ path: key }) => key)],
+      [1, ['git.ai_attribution']],
+      'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
+    );
+  }
   const incomplete = await check(template.replace(/^  codex_profile:.*$/m, '').replace(/^  claude_design:.*$/m, '  claude_design: [redacted-value]\n  claude_design: disabled'));
   const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
   assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.claude_design'], ['project.claude_design']]);
