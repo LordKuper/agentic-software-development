@@ -33,20 +33,19 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 Fresh and re-init only.
 
 0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs every fresh or re-init invocation, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table). Sprint-mediated mode skips it: `config.yaml` is its only write.
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** per "AGENTS.md sync" in both self-hosting and consumer projects before user choices or aborts. Sprint-mediated writes only `config.yaml`.
 0b. **Require `gh`**: run `gh --version`, then `gh auth status`. Either fails → stop before any further step, naming the fix: install gh (https://cli.github.com), or run `gh auth login`. `pr` opens and merges every sprint PR through it (`git-strategy.md` "PR creation").
 
 ### Fresh
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `cleanup` (`enabled` default or `disabled`), `safety_valve` (`enabled` default or `disabled`), `upstream_issues` (`enabled` default or `disabled`; propose its default under self-hosting), Claude Design and document settings. `documents.audit` is `auto|always|off` (`auto` default). `documents.design_system` gates design-system work and tokens and `documents.ux_spec` gates UX-spec docs (`sprint-lifecycle.md` "Optional documents"). For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`. When external review is enabled under Codex, ask for `review.codex_profile` (default empty). Write the explicit empty value if no profile is selected.
+2. Batch input on chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues`, Claude Design and `documents.*`, with defaults from `t_config.yaml`. Under self-hosting propose the default for `upstream_issues`, audit `auto`, other documents disabled and `diagram_tool: none`. For enabled External Review under Codex ask for `review.codex_profile`, defaulting explicitly to `""`.
 3. If decomposition enabled → request user decision: diagram_tool (`none` | `likec4` | `mermaid`); disabled → `none`
 4. Detect OS via command execution (silent; no confirm yet) — selects step 12's OS-specific commands, never written to config
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
-   - Node (only if `documents.design_system: enabled` — the design-system gate that needs it is skipped entirely otherwise): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.design_system: disabled`, skip detection and omit the `designmd-*` custom commands entirely.
-   - External Review (if `review.external_review=enabled`): run `node .asd/runtime.js external-preflight --input <path>` with the host and proposed profile/command values per `external-review.md` "Detection and negative cache". Omit `cachePath` for the init probe.
-   Record the resolved command and availability for the consolidated proposal
+   - `node --version` and `npm --version` only with `documents.design_system: enabled`. Use `commands.yaml` `designmd-*` entries without requiring a `designmd` binary on PATH. Omit those entries when disabled.
+   - With `review.external_review=enabled`, run `node .asd/runtime.js external-preflight --input <path>` with the host and proposed profile/command per `external-review.md` "Detection and negative cache". Omit `cachePath`. Include the resolved command and availability in the proposal.
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; `ai_attribution` `enabled`, or `disabled` to keep Claude/Codex attribution out of commits and PRs) — include in proposal; the `git` section edit changes any of them
 8. Auto-detect build commands from:
@@ -71,12 +70,7 @@ Fresh and re-init only.
    - gate classes with no command (`## Reference` "Gate-class gaps"): lint or format, type check —
      name each class in which detection found no script, config or tool
    Record into proposal; do not prompt per-command yet
-8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - All project settings, including inactive fields and empty tool paths or profile names, plus OS, tool availability, detected commands and the gate-class gaps note
-    Then request user decision: `accept-all` | `edit-section` | `abort`.
-    - `edit-section` → request user decision on which settings section to edit, collect new values, rerun affected tool probes, re-show proposal, loop until `accept-all`
-    - Missing required tools → must resolve here: Node (if `documents.design_system: enabled`) → install or `documents.design_system: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; an unavailable external-review route → resolve the reported status (CLI install/upgrade or command override, local auth on the default route, or named profile setup). The user can clear `review.codex_profile` to select the default route or disable external review. Do NOT silently proceed with missing required tools.
-    Only after `accept-all` proceed to write.
+8a. **Consolidated proposal & edit gate** — show all settings (inactive and empty values included), OS, tool availability, detected commands and gate-class gaps in one structured `language.chat` block. Request `accept-all` | `edit-section` | `abort`. For `edit-section`, select a section, collect values, rerun affected probes and repeat. Before `accept-all`, resolve required tools: install Node or disable design-system, install LikeC4 or change the diagram tool, and resolve an unavailable External Review route per `external-review.md`. The user can clear `review.codex_profile` for the default route or disable External Review. Write only after acceptance.
 9. Validate the complete proposed YAML per "Config check", then write every leaf from `t_config.yaml` with its approved value.
 10. Request free-form user input: custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
@@ -98,13 +92,13 @@ Fresh and re-init only.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
-2a. Run the Config check. Add every missing field to the pending diff with its prior effective default where known, else the template default. Use "Optional documents" in `sprint-lifecycle.md` for legacy document defaults, including inheriting `ux_spec` when `design_system` is absent from a present group. For a missing `project.claude_design` propose `enabled` to retain the prior host-capability selection. Show proposed values and require corrections for duplicate or invalid entries. Keep all valid existing values unless the user chooses an edit.
+2a. Run the Config check. Propose each missing field's prior effective value (including legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else its template default. For missing `project.claude_design`, propose `enabled` to retain host-based selection. Require repair of duplicate or invalid entries. Keep valid values unless the user edits them.
 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
-7. If `review.external_review=enabled`, probe the selected route from the final config exactly as fresh init does; report the selected command, profile when set, and the availability status. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
+7. With `review.external_review=enabled`, apply fresh step 5's probe to the final config. Report command, profile if set, and status. Keep the setting if unavailable and report its runtime skip reason.
 
 ### Sprint-mediated
 
@@ -138,7 +132,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 ### Config check
 
-Run `node .asd/runtime.js config-check` against the installed config. Validate proposed YAML by passing it on stdin with `--config -`. Proceed only on exit 0. Exit 1 reports `missing`, `duplicates` and `invalid` with dotted setting paths. Exit 2 reports a command, schema or read failure.
+Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
 
 ### AGENTS.md sync
 

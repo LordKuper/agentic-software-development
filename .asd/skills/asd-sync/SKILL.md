@@ -26,7 +26,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 4. Apply in two groups, skipping an empty one:
    - Unedited (`missing`/`stale`/`orphan`): `node "$SYNC" --apply <file...>` (no `--force`).
    - Confirmed `modified-foreign` and `orphan-modified`: `node "$SYNC" --apply <file...> --force` — without `--force` the CLI silently refuses and the file stays untouched.
-   - A valid apply refreshes release hashes. If `ledger-stale` was reported and neither group ran, apply one `current` generated target without `--force`. Pass a generated target path, never `.asd/release-manifest.json`. If no current target exists, report the stale ledger.
+   - A valid apply refreshes release hashes. For `ledger-stale` with no apply above, apply one `current` generated path without `--force`, never `.asd/release-manifest.json`. If none exists, report ledger drift.
 5. Report per-file outcome (applied / kept / still stale / left alone) from the apply result(s) plus a final `node "$SYNC" --check` summary.
 
 ## Rules

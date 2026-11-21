@@ -36,7 +36,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
-8. After a real update, explain that the next `/asd-sprint` checks the installed config against the shipped template and directs incomplete projects to `/asd-init`.
+8. After a real update, tell the user `/asd-sprint` checks against the shipped config template and directs incomplete projects to `/asd-init`.
 
 ### Sprint-mediated mode
 
