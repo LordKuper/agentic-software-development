@@ -74,9 +74,9 @@ Reachability: init and each review phase resolve the same review route; the phas
 Material risk: change: security
 Reachability: review orchestration supplies file lists, prior snapshot roots and reviewer identity; runtime uses these before writing its manifests, patches or persisted reviews.
 
-- [ ] AC-18. Enforce external impl-review consumer exclusions in `.asd/runtime.js` before producing both `files[]` and the diff, including carried-over and full-range inputs. Preserve self-hosting canonical paths and align skipped-review scope calculation with the same selector.
-- [ ] AC-19. Normalize numeric coverage IDs and their references to strings before duplicate and identity checks. AC-20. Use one guard for previous iteration root paths. Reject already-nested `snapshot/` arguments and an empty diff for a nonempty requested changed-file list. Preserve the legitimate first-iteration no-diff case.
-- [ ] AC-28. Apply the existing memory-token matcher before persisting reviewer-owned changed files. Bound the scan to additions made by that reviewer and the current dispatch. Keep other users' and reviewers' edits outside the gate, and prevent both output writes on a hit. Keep the existing reviewer repair flow.
+- [x] AC-18. Enforce external impl-review consumer exclusions in `.asd/runtime.js` before producing both `files[]` and the diff, including carried-over and full-range inputs. Preserve self-hosting canonical paths and align skipped-review scope calculation with the same selector.
+- [x] AC-19. Normalize numeric coverage IDs and their references to strings before duplicate and identity checks. AC-20. Use one guard for previous iteration root paths. Reject already-nested `snapshot/` arguments and an empty diff for a nonempty requested changed-file list. Preserve the legitimate first-iteration no-diff case.
+- [x] AC-28. Apply the existing memory-token matcher before persisting reviewer-owned changed files. Bound the scan to additions made by that reviewer and the current dispatch. Keep other users' and reviewers' edits outside the gate, and prevent both output writes on a hit. Keep the existing reviewer repair flow.
 
 ### Task 9: Merge timing attributes
 Material risk: change: public contract

@@ -50,3 +50,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Tasks 5 and 6 landed at `f9e8e971` and `73bc03d7`. Complete project config is checked before Git changes or dispatch. The design paths cover explicit selection, local previews, deferred publication and safe promotion re-entry. Live Claude Design is unverified in this host.
 - 2026-11-22 — route Task 7: standard, dispatch HEAD 93e3965ed0ab445e815c1646e72999323d31e6fd; risk change: authentication
 - 2026-11-22 — Task 7 landed profile routing at `203f4ed8`. Local checks cover missing and malformed profiles, existing routes and explicit command overrides. Codex profile resolution pins model, provider and effort in a separate read-only invocation. No RouterAI request was sent.
+- 2026-11-22 — route Task 8: standard, dispatch HEAD ee78b590ce40595591fafec1dd2cb7564bf94120; risk change: security
+- 2026-11-22 — Task 8 completed AC-18, AC-19, AC-20 and AC-28 at `197ff9e1`. Verified consumer and self-hosted scope, skipped-review parity, a rename across exclusions, atomic memory refusal, numeric coverage IDs and snapshot guards.
