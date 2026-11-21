@@ -910,7 +910,9 @@ function verifiedBaseRef(flags) {
 }
 
 function readFileList(file) {
-  return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const text = fs.readFileSync(file, 'utf8');
+  if (text.includes('\0')) return text.split('\0').filter(Boolean);
+  return text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
 /** Where an iteration directory keeps its snapshot copy of a draft: the draft's path mirrored under `snapshot/`, an absolute path with its root dropped; a path climbing out with `..` fails, so a copy never lands outside the snapshot. */
@@ -1621,12 +1623,13 @@ function waveFiles(division, k, head) {
   return stringArray(division.waves[k - 1], `wave ${k}`).map((file) => moved.get(file) || file);
 }
 
-/** Writes a review wave's iteration-1 list: its current-path `waves.json` list unioned with the `--files` list, one path per line. */
+/** Writes the wave's current paths and `--files` union, with `--nul` preserving paths for literal Git pathspecs. */
 function waveFilesCommand(flags) {
   if (typeof flags.waves !== 'string' || typeof flags.out !== 'string') fail('--waves <path> and --out <path> required');
   const listed = waveFiles(JSON.parse(fs.readFileSync(flags.waves, 'utf8')), positiveInteger(flags.wave, '--wave'), gitRef(flags.head, '--head'));
   const files = [...new Set(listed.concat(typeof flags.files === 'string' ? readFileList(flags.files) : []))];
-  fs.writeFileSync(flags.out, files.map((file) => `${file}\n`).join(''), 'utf8');
+  const delimiter = flags.nul === true ? '\0' : '\n';
+  fs.writeFileSync(flags.out, files.map((file) => file + delimiter).join(''), 'utf8');
   return { out: flags.out, files: files.length };
 }
 
@@ -2873,7 +2876,7 @@ const COMMAND_FLAGS = {
   'design-tokens': ['design', 'html'],
   'draft-snapshot': ['files', 'out', 'previous'],
   'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
-  'wave-files': ['waves', 'wave', 'head', 'files', 'out'],
+  'wave-files': ['waves', 'wave', 'head', 'files', 'out', 'nul'],
   'retro-candidates': ['sprints', 'backlog', 'self-hosting'],
   'scratch-dir': [],
   'rotate-decisions': ['sprint', 'to'],
@@ -2922,7 +2925,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only', 'nul']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'config-check') {
     const result = configCheckCommand(flags);

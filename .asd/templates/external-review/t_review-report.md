@@ -12,7 +12,7 @@ responsibility:
 - **Phase**: {{design-review | impl-review}}
 - **Iteration**: {{design-review: N | impl-review: wave-<K>/iter-NN}}
 - **Severity floor (this iter)**: {{low | medium | high | critical}}
-- **Unreviewed files**: {{skip record only — every `files[]` path it would have sent; external-review.md "Iteration semantics"}}
+- **Unreviewed files**: {{skip record only — `files[]` in the format from external-review.md "Iteration semantics"}}
 
 ## Kept findings
 

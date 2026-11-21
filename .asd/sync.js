@@ -1331,7 +1331,7 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
-/** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution` key among its direct children, its value `disabled`. A missing or unreadable file, a nested, duplicate (in any quoting) or otherwise-valued key reads as `enabled`, the default that writes and rejects nothing. */
+/** Reads the project's attribution setting, defaulting to enabled when its config is unavailable. */
 function readAiAttribution(repoRoot) {
   try {
     return aiAttributionFromConfig(fs.readFileSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'), 'utf8'));
@@ -1340,6 +1340,7 @@ function readAiAttribution(repoRoot) {
   }
 }
 
+/** Requires the same unambiguous attribution opt-out in project settings and config validation. */
 function aiAttributionFromConfig(text) {
   const lines = normalizeText(text).split('\n');
   const start = lines.findIndex((line) => /^git:\s*(#.*)?$/.test(line));
