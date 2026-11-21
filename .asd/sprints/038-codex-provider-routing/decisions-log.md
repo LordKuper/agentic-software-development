@@ -71,3 +71,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Advance to impl-test with all 14 Tasks accepted under the adaptive assessment gate.
 - **Rationale**: Plan checkboxes complete and every implementation path accounted for. Scope includes the authorised config write, Git and Codex evidence notes, generated views and sprint artifacts. Build checked 77 current targets, lint and context pass, agnix returned zero errors and warnings, project config is complete. No new stubs or unresolved agent flags.
 - **Affected docs**: [plan.md](plan.md), [state.json](state.json)
+- 2026-11-22 — route impl-test entry 1: standard, dispatch HEAD 1a75a85d0602094944d0111ea270c9b72b98db32
+- 2026-11-22 — route impl-test named-suite smoke: runner, dispatch HEAD 1a75a85d0602094944d0111ea270c9b72b98db32
+- 2026-11-22 — AC-7 named-suite smoke: an isolated failing test using byte-identical copies of the repository runner and library produced the named `FAIL` line, the synthetic error, `0/1 passed` and exit 1. Workflow defect routing is covered by the existing contract tests.
+- 2026-11-22 — impl-test pre-strategy: 314/314 across 13 named areas at `1a75a85d`. No added, removed or defective tests. Shared runtime and sync widen the suite gate to full.
+- 2026-11-22 — route impl-test entry 1 suite: runner, dispatch HEAD 21eccab7e95fdc8bc6468ed8f648cc5e70432be4
+- 2026-11-21 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test

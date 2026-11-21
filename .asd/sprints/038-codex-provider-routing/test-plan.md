@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | | full change surface |
+| 1 | 5854ad90 | full change surface |
 
 ## Risk → check decisions
 
@@ -44,7 +44,7 @@ responsibility:
 - Scope evidence: the safety valve widened the gate because `.asd/runtime.js` and `.asd/sync.js` are shared across the framework's test areas.
 - Result: pass — 316/316 passed, 0 failed, 0 skipped.
 - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
-- Line delta: tests +0/−0 (net 0); other +0/−0 (net 0)
+- Line delta: tests +170/−17 (net 153); other +877/−332 (net 545)
 - Slowest tests: `sprint-023 AC-2` 1512 ms; `sprint-019 AC-8` 1142 ms; `sprint-036 AC-14` 1107 ms; `sprint-021 AC-7` 1056 ms; `sprint-020 AC-9` 735 ms; `sprint-033 AC-24` 732 ms; `sprint-027 AC-9` 710 ms; `sprint-033 AC-12/AC-21` 707 ms; `sprint-015 AC-4/AC-5` 660 ms; `sprint-017 AC-4/AC-8` 634 ms.
 - HEAD: `21eccab7e95fdc8bc6468ed8f648cc5e70432be4` — HEAD and relevant code/test/stub paths were clean and unchanged before and after the run.
 
