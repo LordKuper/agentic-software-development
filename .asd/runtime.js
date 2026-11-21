@@ -240,7 +240,7 @@ function runLocal(command, args) {
       encoding: 'utf8', input: plan.input, shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
     });
   }
-  return { ok: !result.error && result.status === 0 };
+  return { ok: !result.error && result.status === 0, stdout: result.stdout };
 }
 
 function defaultAuthArgs(provider) {
@@ -283,30 +283,95 @@ function authGeneration(input) {
   }
 }
 
-function cacheKey(input, authReady) {
-  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
+function cacheKey(input, authReady, profileIdentity) {
+  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: profileIdentity ? [] : defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input), ...(profileIdentity && { profile: profileIdentity }) });
+}
+
+/** Selects from the host and config values for both init and review. Legacy preflight callers supply the resolved values. */
+function externalRoute(input) {
+  if (input.host === undefined) return { provider: input.provider, command: input.command, model: input.model };
+  defaultAuthArgs(input.host);
+  if (input.host === 'codex' && input.codexProfile !== undefined && input.codexProfile !== '') {
+    return { provider: 'codex', command: input.codexCommand || 'codex', profile: input.codexProfile };
+  }
+  const { loadReleaseManifest, parseCanonicalFrontmatter, resolveModelFamily } = require('./sync.js');
+  const { meta } = parseCanonicalFrontmatter(fs.readFileSync(path.join(__dirname, 'agents', 'asd-external-review.md'), 'utf8'));
+  const wrapped = meta[input.host];
+  const provider = wrapped.wraps_cli;
+  const command = (provider === 'codex' ? input.codexCommand : input.claudeCommand) || provider;
+  return { provider, command, model: resolveModelFamily(loadReleaseManifest(path.dirname(__dirname)), provider, wrapped.wraps_model) };
+}
+
+function codexProfileRoute(route) {
+  if (typeof route.profile !== 'string' || !/^[A-Za-z0-9_-]+$/.test(route.profile)) {
+    return { status: 'profile-invalid', identity: {} };
+  }
+  const codexDir = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
+  const profileFile = path.resolve(codexDir, `${route.profile}.config.toml`);
+  const identity = { file: profileFile, generation: authGeneration({ credentialPath: profileFile }), base: authGeneration({ credentialPath: path.join(codexDir, 'config.toml') }) };
+  let text;
+  try {
+    if (!fs.statSync(profileFile).isFile()) return { status: 'profile-unavailable', identity };
+    text = fs.readFileSync(profileFile, 'utf8');
+  } catch (_) {
+    return { status: 'profile-unavailable', identity };
+  }
+  const fields = new Map();
+  const keys = ['model', 'model_provider', 'model_reasoning_effort'];
+  // shortcut: read simple root assignments only until the first table or multiline value, use a TOML parser if profile route fields need broader syntax.
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    if (line.startsWith('[') || /^[A-Za-z0-9_-]+[ \t]*=[ \t]*(?:\[|\{|"""|'''|$)/.test(line)) break;
+    const entry = /^([A-Za-z0-9_-]+)[ \t]*=[ \t]*(["'])([A-Za-z0-9_~./:@+-]+)\2[ \t]*(?:#.*)?$/.exec(line);
+    if (!entry || !keys.includes(entry[1])) continue;
+    if (fields.has(entry[1])) return { status: 'profile-invalid', identity };
+    fields.set(entry[1], entry[3]);
+  }
+  const model = fields.get('model');
+  const provider = fields.get('model_provider') || '';
+  const effort = fields.get('model_reasoning_effort') || '';
+  if (!model || !/^[A-Za-z0-9_-]+$/.test(provider) || !/^(none|minimal|low|medium|high|xhigh|max|ultra)$/.test(effort)) {
+    return { status: 'profile-invalid', identity };
+  }
+  // Project config outranks a named profile. Pin its selected route for this process.
+  const args = ['exec', '--profile', route.profile, `--model=${model}`,
+    '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
+    '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
+  return { route: { ...route, model, args }, identity: { ...identity, provider, effort } };
 }
 
 /** Checks executable and authentication locally without making a model request; reports the host platform External Review combines with its host shell to pick stdin syntax. */
 function externalPreflight(input) {
-  return { ...localReadiness(input), platform: process.platform };
+  if (!input || typeof input !== 'object') fail('preflight input required');
+  if (input.authArgs !== undefined) fail('authArgs are not supported');
+  const route = externalRoute(input);
+  const profile = route.profile === undefined ? null : codexProfileRoute(route);
+  const resolved = profile?.route || route;
+  const result = localReadiness({ ...input, ...resolved }, profile);
+  return { ...result, ...(input.host !== undefined && { route: resolved }), platform: process.platform };
 }
 
-function localReadiness(input) {
-  if (!input || typeof input !== 'object') fail('preflight input required');
+function localReadiness(input, profile) {
   const provider = input.provider;
   const model = input.model;
-  if (provider !== 'codex' && provider !== 'claude') fail('provider must be codex or claude');
-  if (input.authArgs !== undefined) fail('authArgs are not supported');
-  if (typeof model !== 'string' || model.length === 0) fail('model required');
   const authArgs = defaultAuthArgs(provider);
+  if (profile?.status) return { status: profile.status, model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
+  if (typeof model !== 'string' || model.length === 0) fail('model required');
   const version = runLocal(input.command, ['--version']);
   if (!version.ok) {
-    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey(input, false) };
+    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey(input, false, profile?.identity) };
   }
-  const auth = runLocal(input.command, authArgs);
-  const key = cacheKey(input, auth.ok);
-  if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
+  if (profile) {
+    const match = /^codex(?:-cli)? (\d+)\.(\d+)\.(\d+)(?:[-+\s]|$)/.exec(version.stdout?.trim() || '');
+    if (!match || (Number(match[1]) === 0 && Number(match[2]) < 134)) {
+      return { status: 'profile-cli-unsupported', model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
+    }
+  }
+  // A custom profile may use its own credential helper or environment. Codex login status only checks OpenAI auth.
+  const authReady = profile ? null : runLocal(input.command, authArgs).ok;
+  const key = cacheKey(input, authReady, profile?.identity);
+  if (authReady === false) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
   const now = Number.isFinite(input.now) ? input.now : Date.now();
   const cached = readCache(input.cachePath, now).entries[key];
   if (cached) {
