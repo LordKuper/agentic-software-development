@@ -89,3 +89,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl-test re-entry 2 pre-strategy: 314/314 at `03d03af5`; nine fail-first records preserved in test-plan.entry-01.md. No new test work or defects. Shared runtime and sync require the full suite gate.
 - 2026-11-22 — route impl-test entry 2 suite: runner, dispatch HEAD 8a3b8ad51289b430c1ae038bad040768107b49db
 - 2026-11-21 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test re-entry
+- 2026-11-22 — external wave-1/iter-02: APPROVE (skipped: external review unavailable: negative-cache (authentication)); 52 files unreviewed, including all 50 carried over. Same cause as F-1. No APPROVE latch.
+- 2026-11-22 — impl-review wave-1/iter-02 routed combined findings 1–3 to impl review-fix. The real Git scope command still quoted unusual paths before the repaired selector could see them. No terminal gate on this iteration.
