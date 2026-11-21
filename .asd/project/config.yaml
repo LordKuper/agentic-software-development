@@ -6,6 +6,9 @@ user_gates: adaptive # adaptive | strict; hard gates always require user approva
 # ASD developing itself through its own workflow. Absent field = disabled.
 # Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Self-hosting".
 self_hosting: enabled
+cleanup: enabled # enabled | disabled
+upstream_issues: enabled # enabled | disabled
+safety_valve: enabled # enabled | disabled
 
 # Optional sprint documents and their persistent docs counterpart.
 # Absent group (old config) = every value enabled (current behavior unchanged).
@@ -16,6 +19,7 @@ documents:
   audit: auto          # auto | always | off
   prd: disabled         # design/prd.html + persistent requirements
   ux_spec: disabled     # ux-spec, design-system gate, design-md-delta
+  design_system: disabled # enabled | disabled; design-system gate, design-md-delta. Absent within an existing documents group = ux_spec value
   adr: disabled          # adr.html + persistent ADR
 
 # Language for user-facing interaction.
@@ -39,6 +43,7 @@ review:
   # internal reviewers. Values: enabled | disabled
   # Wrapped-CLI availability confirmed: codex-cli 0.150.1 on PATH.
   external_review: enabled
+  codex_profile: ""
 
   # Maximum number of review iterations per severity level.
   # On iteration N, only issues of severity X or higher are considered.
@@ -54,6 +59,7 @@ project:
   # Framework repo is one cohesive workflow tree, not multiple subsystems.
   subsystem_decomposition: disabled
   diagram_tool: none
+  claude_design: disabled # enabled | disabled
 
 system:
   tools:
