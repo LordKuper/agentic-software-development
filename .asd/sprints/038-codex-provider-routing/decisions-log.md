@@ -64,3 +64,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route Task 14: standard, dispatch HEAD 8f7d362ee4c8de4430cd3d34253098b287837815
 - 2026-11-22 — route Task 5 repair: standard, dispatch HEAD 8f7d362ee4c8de4430cd3d34253098b287837815; repair shared command inventory formatting and preserve the standalone skill byte cap.
 - 2026-11-22 — repaired the runtime/Git command inventory and condensed affected skills at `8299dbd6`. Standalone skill total 61,841 LF bytes against the 62,351-byte cap. Regenerated the eight provider views.
+- 2026-11-22 — Task 14 passed 249 named checks at `318511e9`. Profile routing was verified with a local CLI fixture. Runner and resume behavior are tested as declarative contracts; no authenticated provider call or terminal full suite ran.

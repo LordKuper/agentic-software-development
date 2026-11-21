@@ -116,8 +116,8 @@ Reachability: sync apply writes the release hash ledgers for canonical inputs; c
 Material risk: change: public contract
 Test-only: tests/**
 
-- [ ] Adapt only the existing tests whose assertions change under AC-1–AC-30, including repeated timing flags, approved model rendering, generated roles, workflow/README mirrors, and stricter named commit checks. Add focused coverage for missing keys, cross-provider routing, external scope and finding preservation, snapshot refusal, memory checks, and interrupted or failed test-area records where the existing tests cannot detect the regression.
-- [ ] Use a local fixture for the profile route and keep any live provider request outside the test suite.
+- [x] Adapt only the existing tests whose assertions change under AC-1–AC-30, including repeated timing flags, approved model rendering, generated roles, workflow/README mirrors, and stricter named commit checks. Add focused coverage for missing keys, cross-provider routing, external scope and finding preservation, snapshot refusal, memory checks, and interrupted or failed test-area records where the existing tests cannot detect the regression.
+- [x] Use a local fixture for the profile route and keep any live provider request outside the test suite.
 
 Orchestrator action after each wave touching canonical render inputs: run scoped provider sync and commit the generated views and ledgers with their canonical source evidence. For the stronger hash check, refresh release hashes before final build verification when changed canonical content causes the expected stale report.
 
