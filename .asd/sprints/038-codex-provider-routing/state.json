@@ -64,6 +64,13 @@
       "reason": "risk:broad-reasoning",
       "raise_effort": false,
       "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:public contract",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
     }
   },
   "skipped_phases": [],

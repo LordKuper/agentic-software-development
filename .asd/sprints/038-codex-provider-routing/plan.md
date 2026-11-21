@@ -38,9 +38,9 @@ Reachability: implementation writes the canonical model assignments and compatib
 Material risk: change: public contract
 Reachability: init writes explicit YAML values with template-defined keys; the sprint entry reads the same schema before any phase runs.
 
-- [ ] AC-1–AC-2. Use `.asd/templates/t_config.yaml` as the single inventory. Add `project.claude_design` with enabled/disabled values and `review.codex_profile` with an explicit empty string for the default route. Make a read-only config check in `.asd/runtime.js` report every missing, duplicated or invalid setting by path and keep legitimate explicit empty strings.
-- [ ] Update `.asd/skills/asd-init/SKILL.md` so fresh and diff modes write all fields. Carry forward valid effective values and expose proposed additions for confirmation. Keep sprint-mediated changes restricted to the approved pairs and verify the resulting config. Document the post-update path for incomplete installs in the update skill without changing consumer values during the release update.
-- [ ] Check field and omission references in `t_config.yaml`, init, update, the project config and README. Task 4 completes this project's config and Task 5 enables the sprint entry gate.
+- [x] AC-1–AC-2. Use `.asd/templates/t_config.yaml` as the single inventory. Add `project.claude_design` with enabled/disabled values and `review.codex_profile` with an explicit empty string for the default route. Make a read-only config check in `.asd/runtime.js` report every missing, duplicated or invalid setting by path and keep legitimate explicit empty strings.
+- [x] Update `.asd/skills/asd-init/SKILL.md` so fresh and diff modes write all fields. Carry forward valid effective values and expose proposed additions for confirmation. Keep sprint-mediated changes restricted to the approved pairs and verify the resulting config. Document the post-update path for incomplete installs in the update skill without changing consumer values during the release update.
+- [x] Check field and omission references in `t_config.yaml`, init, update, the project config and README. Task 4 completes this project's config and Task 5 enables the sprint entry gate.
 
 ### Task 4: Complete the framework project's config
 Material risk: change: migration
