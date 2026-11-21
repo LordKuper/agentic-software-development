@@ -91,3 +91,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-21 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test re-entry
 - 2026-11-22 — external wave-1/iter-02: APPROVE (skipped: external review unavailable: negative-cache (authentication)); 52 files unreviewed, including all 50 carried over. Same cause as F-1. No APPROVE latch.
 - 2026-11-22 — impl-review wave-1/iter-02 routed combined findings 1–3 to impl review-fix. The real Git scope command still quoted unusual paths before the repaired selector could see them. No terminal gate on this iteration.
+- 2026-11-22 — verified `git diff --name-only -z --output=<scratch>` on Git 2.56 and clarified Node API targets and preload effects in the review-fix references.
+- 2026-11-22 — route review-fix wave-1/iter-02: standard, dispatch HEAD 4064683e610163b485ccc90c5749aa0c17825ebb; risk change: public-contract
