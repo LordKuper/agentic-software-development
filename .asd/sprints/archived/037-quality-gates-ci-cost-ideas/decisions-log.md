@@ -38,3 +38,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-11-18 — pr: DoD met (all Tasks ticked; wave-1 roster met — combined APPROVE, external cap-accepted iter-08; suite 311/311 re-run at PR open, lint/build clean; retrospective written); PR #129 opened (adaptive: sprint scope authorises publication; version 14.8.0 → 14.9.0)
+- 2026-11-21 — sprint closure: PR #129 merged at dd0e6afd69a92d992fa90a22088aa8bf1b854cbc, v14.9.0 published, sprint archived at the start of sprint 038.
