@@ -429,6 +429,10 @@ function routeTask(input) {
   return { tier, execution, reason, raiseEffort };
 }
 
+function findingId(value) {
+  return Number.isFinite(value) ? String(value) : value;
+}
+
 function rowsById(rows, expected, allowedNa, findings, label) {
   if (!Array.isArray(rows)) fail(`${label} rows must be an array`);
   const allowedStatuses = new Set(LEDGER_VOCABULARY[label]);
@@ -440,7 +444,7 @@ function rowsById(rows, expected, allowedNa, findings, label) {
     if (!allowedStatuses.has(row.s)) fail(`${label} status invalid: ${row.s}`);
     if (row.s === naStatus && (typeof row.p !== 'string' || !allowedNa.get(row.i).has(row.p))) fail(`${label} n/a predicate invalid: ${row.i}`);
     if (row.s !== naStatus && row.p !== undefined) fail(`${label} predicate only allowed for n/a: ${row.i}`);
-    if (row.s === findingStatus && (typeof row.f !== 'string' || !findings.has(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
+    if (row.s === findingStatus && !findings.has(findingId(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
     if (row.s !== findingStatus && row.f !== undefined) fail(`${label} finding reference only allowed for finding: ${row.i}`);
     seen.add(row.i);
   }
@@ -486,7 +490,7 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
     for (const id of Object.keys(entries)) if (!expected.has(id)) fail(`manifest n_a.${label} unknown id: ${id}`);
     return out;
   };
-  const findingIds = Array.isArray(ledger.findings) ? ledger.findings : [];
+  const findingIds = Array.isArray(ledger.findings) ? ledger.findings.map(findingId) : [];
   if (!Array.isArray(actualFindings) || actualFindings.some((id) => typeof id !== 'string' || id.length === 0)) fail('actual findings invalid');
   if (findingIds.some((id) => typeof id !== 'string' || id.length === 0) || new Set(findingIds).size !== findingIds.length || stable(findingIds.slice().sort()) !== stable(actualFindings.slice().sort())) fail('ledger findings invalid');
   const findings = new Set(findingIds);
@@ -702,6 +706,7 @@ function persistReview(input) {
   const { body, verdict, findings } = checkReview(phase, reviewer, text, input.manifest || path.join(outDir, `${reviewer}.manifest.json`));
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
+  if (input.memoryBaseline !== undefined) checkReviewMemory(reviewer, input.memoryBaseline);
   if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
     fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
     fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
@@ -915,8 +920,14 @@ function snapshotCopyPath(iterationDir, file) {
   return path.join(iterationDir, 'snapshot', relative);
 }
 
+function validateSnapshotRoot(dir, flag) {
+  if (dir !== undefined && path.basename(path.resolve(dir)).toLowerCase() === 'snapshot') fail(`${flag} must name the iteration directory containing snapshot/, not snapshot/ itself`);
+}
+
 /** Copies each draft under the `snapshot/` directory of design-review iteration dir `out`, so the next iteration can diff against it, and returns the drafts whose content differs from their copy under the `previous` iteration dir; a missing copy counts as changed, so a missing snapshot widens scope rather than dropping a draft. */
 function draftSnapshot(files, out, previous) {
+  validateSnapshotRoot(out, '--out');
+  validateSnapshotRoot(previous, '--previous');
   const changed = files.filter((file) => {
     const before = previous === undefined ? null : snapshotCopyPath(previous, file);
     return before === null || !fs.existsSync(before) || !fs.readFileSync(before).equals(fs.readFileSync(file));
@@ -952,7 +963,50 @@ function addedLines(diff) {
 /** Work-history violations among the added lines of a staged agent-memory diff and the names of its newly added files, as `{path, line, token}`; `line` is null for a file name, whose `_` separators count as word breaks so `project_<ordinal>-topic.md` is caught. */
 function memoryViolations(diff, names) {
   const scanned = names.map((name) => ({ file: name, line: null, text: name.replace(/_/g, ' ') })).concat(addedLines(diff));
-  return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
+  return scanned.flatMap(({ file, line, text }) => memoryTokens(text).map((token) => ({ path: file, line, token })));
+}
+
+function memoryTokens(text) {
+  return MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => match[0]);
+}
+
+function reviewMemoryHits(reviewer) {
+  if (![...INTERNAL_REVIEWERS, EXTERNAL_REVIEWER].includes(reviewer)) fail('--reviewer must be a review key');
+  const root = require('./sync.js').findRepoRoot(process.cwd());
+  const owner = reviewer === EXTERNAL_REVIEWER ? 'asd-external-review' : `asd-reviewer-${reviewer}`;
+  const directory = `.claude/agent-memory/${owner}`;
+  for (const folder of ['.claude', '.claude/agent-memory', directory]) {
+    if (!fs.lstatSync(path.join(root, folder), { throwIfNoEntry: false })?.isDirectory()) return [];
+  }
+  const hits = [];
+  const scan = (file, line, text) => {
+    for (const token of memoryTokens(text)) hits.push({ path: file, line, token, id: fingerprint([file, line === null, text, token]) });
+  };
+  const visit = (folder) => {
+    for (const entry of fs.readdirSync(path.join(root, folder), { withFileTypes: true })) {
+      const file = `${folder}/${entry.name}`;
+      if (entry.isDirectory()) visit(file);
+      if (!entry.isFile()) continue;
+      scan(file, null, file.replace(/_/g, ' '));
+      fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/).forEach((line, i) => scan(file, i + 1, line));
+    }
+  };
+  visit(directory);
+  return hits;
+}
+
+function checkReviewMemory(reviewer, baselinePath) {
+  const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+  if (!baseline || baseline.reviewer !== reviewer || !Array.isArray(baseline.hits) || baseline.hits.some((id) => typeof id !== 'string' || !/^[0-9a-f]{64}$/.test(id))) fail('review memory baseline invalid');
+  const prior = new Map();
+  for (const id of baseline.hits) prior.set(id, (prior.get(id) || 0) + 1);
+  const added = [];
+  for (const { id, ...hit } of reviewMemoryHits(reviewer)) {
+    const count = prior.get(id) || 0;
+    if (count > 0) prior.set(id, count - 1);
+    else added.push(hit);
+  }
+  if (added.length > 0) fail(`review memory check failed: ${JSON.stringify(added)}`);
 }
 
 function pathCoversFile(target, file) {
@@ -1335,9 +1389,15 @@ function writeManifestDiff(dir, files, ranges, snapshot, renameMap = null) {
   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
   const diff = path.join(dir, `${fingerprint(renameMap === null ? invocations : { invocations, renameMap }).slice(0, 16)}.diff`);
   const partial = `${diff}.${process.pid}.tmp`;
-  if (ranges === null) writeGitOutput(partial, invocations);
-  else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
-  fs.renameSync(partial, diff);
+  try {
+    if (ranges === null) {
+      writeGitOutput(partial, invocations);
+      if (invocations.length > 0 && fs.statSync(partial).size === 0) fail('snapshot diff is empty for the requested drafts');
+    } else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
+    fs.renameSync(partial, diff);
+  } finally {
+    fs.rmSync(partial, { force: true });
+  }
   return diff;
 }
 
@@ -1437,16 +1497,38 @@ function positiveInteger(value, name) {
   return Number(value);
 }
 
+function externalScopeFiles(flags, files) {
+  const impl = flags.phase === 'impl-review';
+  const windows = process.platform === 'win32';
+  const asdExclusion = flags['self-hosting'] === true ? /^\.asd\/(?:project|sprints)(?:\/|$)/ : /^(?:\.asd|docs)(?:\/|$)/;
+  return [...new Set(files.flatMap((file) => {
+    const normalized = path.posix.normalize(file.replace(/\\/g, '/'));
+    const ambiguous = windows && normalized.split('/').some((segment) => /[. ]$|:/.test(segment));
+    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || path.win32.isAbsolute(file) || /^[a-z]:/i.test(file) || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
+    const checked = windows ? normalized.toLowerCase() : normalized;
+    if (/(?:^|\/)dist(?:\/|$)|(?:^|\/)design-system\.html$/.test(checked)) return [];
+    if (impl && (asdExclusion.test(checked) || /^(?:\.claude\/(?:agents|skills|hooks)|\.codex\/(?:agents|hooks)|\.agents\/skills)(?:\/|$)/.test(checked))) return [];
+    return [impl ? normalized : file];
+  }))];
+}
+
 /** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
 function emitExternalScope(flags, files, ranges, snapshot, renameMap) {
   const isImplReview = flags.phase === 'impl-review';
   if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
   if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
+  if (ranges !== null) {
+    ranges.fullFiles = new Set(externalScopeFiles(flags, [...ranges.fullFiles]));
+    for (const range of [ranges.scope, ranges.full].filter(Boolean)) {
+      range.renames = new Map([...range.renames].filter(([, { source }]) => externalScopeFiles(flags, [source]).includes(source)));
+    }
+  }
   const stem = path.join(flags.out, EXTERNAL_REVIEWER);
+  const scoped = externalScopeFiles(flags, files);
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot, renameMap) },
+    { files: scoped, diff: writeManifestDiff(flags.out, scoped, ranges, snapshot, renameMap) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
@@ -1479,16 +1561,22 @@ function emitInternalManifest(flags, files, ranges, snapshot, renameMap) {
     pureRenames: pureRenames(ranges, reviewed),
   });
   const stem = path.join(flags.out, flags.reviewer);
-  fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
   const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot, renameMap);
+  fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
 function emitManifestCommand(flags) {
-  if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
+  if (typeof flags.files !== 'string') fail('--files <path> required');
   if (!PHASES.includes(flags.phase)) fail('phase must be design-review or impl-review');
   const keys = reviewerKeys(flags.phase.replace(/-review$/, ''));
   if (!keys.includes(flags.reviewer)) fail(`--reviewer <name> required, one of ${keys.join(', ')}`);
+  validateSnapshotRoot(flags.snapshot, '--snapshot');
+  if (flags['scope-only'] === true) {
+    if (flags.reviewer !== EXTERNAL_REVIEWER) fail(`--scope-only applies to --reviewer ${EXTERNAL_REVIEWER} only`);
+    return { files: externalScopeFiles(flags, readFileList(flags.files).concat(flags['full-files'] === undefined ? [] : readFileList(flags['full-files']))) };
+  }
+  if (typeof flags.out !== 'string') fail('--out <dir> required');
   const snapshot = snapshotSource(flags);
   const ranges = manifestRanges(flags);
   const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
@@ -2739,9 +2827,10 @@ function designTokensCommand(flags) {
 /** The flags each command reads; `commit-check`, `attribution-check` and `memory-check` reject their own extras instead. */
 const COMMAND_FLAGS = {
   'manifest-digest': ['manifest'],
-  'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref'],
+  'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref', 'scope-only'],
   'validate-ledger': ['manifest', 'ledger', 'findings'],
-  'persist-review': ['in', 'out-dir', 'phase', 'reviewer', 'late', 'manifest', 'floor'],
+  'persist-review': ['in', 'out-dir', 'phase', 'reviewer', 'late', 'manifest', 'floor', 'memory-baseline'],
+  'review-memory-baseline': ['reviewer'],
   'external-preflight': ['input'],
   'external-record-failure': ['input'],
   'route-task': ['input'],
@@ -2800,7 +2889,7 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'config-check') {
     const result = configCheckCommand(flags);
@@ -2820,9 +2909,13 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
+  if (command === 'review-memory-baseline') {
+    process.stdout.write(JSON.stringify({ reviewer: flags.reviewer, hits: reviewMemoryHits(flags.reviewer).map(({ id }) => id) }) + '\n');
+    return 0;
+  }
   if (command === 'persist-review') {
     if (typeof flags.in !== 'string' || typeof flags['out-dir'] !== 'string') fail('--in <path> and --out-dir <iteration dir> required');
-    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor });
+    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor, memoryBaseline: flags['memory-baseline'] });
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }

@@ -58,7 +58,7 @@ External Review gets the hand-off every reviewer gets — list, diff file, whole
 
 Manifest fields: `phase`; `iteration`; `wave` (impl-review only); `files[]`; `diff` — the diff file's path, `null` at design-review iteration 1. The diff file sits under `<sprint>/reviews/`, outside every scope below, so the prompt names it as readable context — never a finding location.
 
-Pathspec exclusions per phase and mode, applied by the phase when it builds the list — never sent to the reviewer:
+The runtime applies these exclusions to the union of `--files` and `--full-files` before writing the list or building its patch, including rename sources. Pass `--self-hosting` in self-hosting impl-review. For an availability skip use the same phase, reviewer, mode and file inputs with `emit-manifest --scope-only`; its stdout supplies `files[]` without writing a manifest or patch.
 
 | Phase | scope (`files[]`) | exclusions |
 |---|---|---|
