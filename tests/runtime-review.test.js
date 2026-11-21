@@ -32,6 +32,9 @@ function validCoverageFixture() {
 test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate, and finding-reference fraud', () => {
   const { manifest, ledger } = validCoverageFixture();
   assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger, ['F-1']), { ok: true });
+  const numeric = { ...ledger, findings: [1], rules: [{ i: 'r-1', s: 'finding', f: 1 }] };
+  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, numeric, ['1']), { ok: true }, 'Sprint 038 AC-19: normalize numeric IDs and references');
+  assert.throws(() => runtime.validateCoverageLedger(manifest, { ...numeric, findings: [1, '1'] }, ['1']), /ledger findings invalid/, 'Sprint 038 AC-19: reject duplicates after normalization');
   const cases = [
     ['wrong digest', () => { const x = structuredClone(ledger); x.manifest_digest = '0'.repeat(64); return x; }, /identity/],
     ['missing row', () => { const x = structuredClone(ledger); x.files = []; return x; }, /incomplete/],
@@ -77,6 +80,56 @@ test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on a valid
   assert.deepStrictEqual([valid.status, JSON.parse(valid.stdout)], [0, { ok: true }]);
   assert.notStrictEqual(rejected.status, 0, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
   assert.ok(!rejected.stdout.includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
+});
+
+test('Sprint 038 AC-28: a new reviewer-memory hit prevents both review writes', async () => {
+  const { repo, env } = sandboxGitRepo();
+  fs.mkdirSync(path.join(repo, '.asd'));
+  const memory = '.claude/agent-memory/asd-external-review/note.md';
+  const legacy = 'Saved in sprint 019\n';
+  writeFile(repo, memory, legacy);
+  const work = mkTempDir();
+  const baseline = path.join(work, 'baseline.json');
+  const input = path.join(work, 'review.md');
+  const run = (args) => runtimeSpawnAsync(args, { cwd: repo, env });
+  const captured = await run(['review-memory-baseline', '--reviewer', 'external']);
+  assert.strictEqual(captured.status, 0);
+  assert.strictEqual(JSON.parse(captured.stdout).hits.length, 1);
+  fs.writeFileSync(baseline, captured.stdout);
+  fs.writeFileSync(input, '[REVIEW-impl-external]: APPROVE\n\n| # | Severity | Location | Description | Suggested fix |\n|---|---|---|---|---|\n');
+  const persist = () => run(['persist-review', '--phase', 'impl', '--reviewer', 'external', '--in', input, '--out-dir', work, '--memory-baseline', baseline]);
+  writeFile(repo, memory, `${legacy}Opened in sprint 038\n`);
+  const refused = await persist();
+  assert.strictEqual(refused.status, 2);
+  assert.match(refused.stderr, /review memory check failed:.*sprint 038/);
+  assert.deepStrictEqual(fs.readdirSync(work).sort(), ['baseline.json', 'review.md']);
+  writeFile(repo, memory, legacy);
+  assert.strictEqual((await persist()).status, 0, 'unchanged historical memory does not block persistence');
+});
+
+test('Sprint 038 AC-18: external review matches its consumer scope and patch across an excluded rename', async () => {
+  const sandbox = sandboxGitRepo();
+  const content = 'line of moved source\n'.repeat(20);
+  const [base, head] = await importCommits(sandbox, [
+    { 'docs/moved.md': content, 'docs/notes.md': 'draft\n', '.asd/rules/guide.md': 'old\n' },
+    { 'docs/moved.md': null, 'docs/notes.md': 'updated docs\n', 'src/moved.js': content, '.asd/rules/guide.md': 'updated canon\n', 'tests/sample.js': 'added test\n' },
+  ]);
+  const work = mkTempDir();
+  const listed = path.join(work, 'listed.txt');
+  const source = ['src/moved.js', 'tests/sample.js'];
+  const canonical = ['.asd/rules/guide.md', 'docs/notes.md'];
+  fs.writeFileSync(listed, [...source, ...canonical].join('\n'));
+  const args = ['emit-manifest', '--phase', 'impl-review', '--reviewer', 'external', '--files', listed];
+  const run = (more) => runtimeCliResultAsync([...args, ...more], { cwd: sandbox.repo, env: sandbox.env });
+  const range = ['--out', work, '--base', base, '--head', head, '--iteration', '1', '--wave', '1'];
+  assert.deepStrictEqual(await run(['--scope-only']), { status: 0, result: { files: source } });
+  const consumer = await run(range);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(consumer.result.scope, 'utf8')).files, source);
+  const patch = fs.readFileSync(consumer.result.diff, 'utf8');
+  assert.match(patch, /\+line of moved source/);
+  assert.match(patch, /\+added test/);
+  assert.doesNotMatch(patch, /docs\/|updated docs|updated canon/);
+  assert.deepStrictEqual(await run(['--scope-only', '--self-hosting']), { status: 0, result: { files: [...source, ...canonical] } });
 });
 
 test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {
@@ -949,6 +1002,11 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   };
 
   snapshot(1);
+  fs.mkdirSync(iterDir(2), { recursive: true });
+  const unchanged = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0]], ['--snapshot', iterDir(1)]);
+  assert.ok(unchanged.status === 2 && /snapshot diff is empty/.test(unchanged.stderr), 'Sprint 038 AC-20: a requested draft with a prior copy cannot yield an empty patch');
+  const nested = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0]], ['--snapshot', path.join(iterDir(1), 'snapshot')]);
+  assert.strictEqual(nested.status, 2, 'Sprint 038 AC-20: reject the snapshot subdirectory in place of its iteration root');
   const copies = drafts.map((file) => path.join(iterDir(1), 'snapshot', path.relative(path.parse(file).root, file)));
   assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
   const first = emit(runtime.COMBINED_REVIEWER, 1, drafts);
@@ -1438,7 +1496,7 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
     persist(external, 'external', 'urgent'),
     persist(external, 'external'),
   ]);
-  assert.deepStrictEqual(partial.result, { token: 'CONCERNS', findings: [{ id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }], dropped: 1 }, 'AC-25: the low row is dropped, the rest kept, and the count is reported');
+  assert.deepStrictEqual(partial.result, { token: 'CONCERNS', findings: [{ id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }], dropped: 1 }, 'Sprint 038 AC-7: the wrapped report keeps its verdict and material findings with their severities, dropping the minor row below the floor');
   const written = fs.readFileSync(path.join(partial.dir, 'external.md'), 'utf8');
   assert.ok(written.endsWith('dropped: 1\n') && !written.includes('a.md:1') && written.includes('b.md:2') && written.includes('c.md:3'), 'the persisted review lacks the dropped row and records the count');
   assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(partial.dir, 'external.findings.json'), 'utf8')), partial.result.findings, 'the findings JSON is the floored set the minor test-only route reads');

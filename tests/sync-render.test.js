@@ -181,7 +181,8 @@ test('asd-external-review: the wrapped CLI subprocess carries an explicit read-o
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
   const wrapper = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'))).meta;
   const wrappedModel = loadManifest().model_families.codex[wrapper.claude.wraps_model];
-  assert.ok(claudeAgent.includes(`codex exec --model ${wrappedModel} -c model_reasoning_effort="high" --sandbox read-only -`),'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  assert.ok(claudeAgent.includes(`exec --model ${wrappedModel} -c model_reasoning_effort="high" --sandbox read-only -`),'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  assert.match(claudeAgent, /Bash tool’s `timeout: 600000`/, 'Sprint 038 AC-21: Claude Code supplies the timeout on the foreground Bash call');
   assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
 });
 

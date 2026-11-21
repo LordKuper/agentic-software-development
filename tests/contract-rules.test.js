@@ -267,7 +267,7 @@ test('sprint-026 AC-12 (D4/D5/D8): phase workflow, standalone skill and protocol
   }
   const payload = jsonOf('.asd/rules/agent-protocol.md', 'Dispatch payload');
   assert.deepStrictEqual(Object.keys(payload), ['repo_root', 'sprint', 'phase', 'mode', 'task', 'inputs', 'write_scope', 'turn_budget', 'answers', 'advice', 'consults_left'], 'agent-protocol.md "Dispatch payload" is the one object whose keys are exactly the D8 set, in order');
-  assert.deepStrictEqual(headingsOf('.asd/rules/agent-protocol.md').filter(([level]) => level === 2).map(([, name]) => name), ['Signals', 'Dispatch payload', 'Return', 'Relay'], 'agent-protocol.md holds Signals, Dispatch payload, Return, Relay in that order');
+  assert.deepStrictEqual(headingsOf('.asd/rules/agent-protocol.md').filter(([level]) => level === 2).map(([, name]) => name), ['Signals', 'Dispatch payload', 'Model quota retry', 'Return', 'Relay']);
 });
 
 test('sprint-027 AC-7 (D7): providers.md "Task-class variants and routing" states every input key and enum routeTask reads, and route-task accepts the --input - stdin form', () => {

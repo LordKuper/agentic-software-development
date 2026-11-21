@@ -513,10 +513,11 @@ test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, 
   const third = timing(['--open', 'Task 1#2', '--kind', 'dispatch']);
   assert.deepStrictEqual([ledgerText(), /next free id Task 1#3/.test(third.stderr)], [before, true], 'AC-7: with #2 held too the next free id is #3');
 
-  const twice = timing(['--open', 'Task 2', '--kind', 'dispatch', '--attrs', 'agent=asd-dev', '--attrs', 'agent=asd-tester']);
-  assert.deepStrictEqual([/flag --attrs given more than once, the last value wins/.test(twice.stderr), ledgerLines(ledgerText()).pop().attrs.agent], [true, 'asd-tester'], 'AC-7: a repeated flag warns and the last value still wins');
-  const once = timing(['--open', 'Task 3', '--kind', 'dispatch', '--attrs', 'agent=asd-dev']);
-  assert.ok(!/more than once/.test(once.stderr), 'AC-7: a flag given once warns of nothing');
+  const twice = timing(['--open', 'Task 2', '--kind', 'user', '--kind', 'dispatch', '--attrs', 'agent=asd-dev,tier=standard', '--attrs', 'agent=asd-tester;scope=impacted']);
+  const last = ledgerLines(ledgerText()).pop();
+  assert.deepStrictEqual([last.kind, last.attrs.agent, last.attrs.tier, last.attrs.scope], ['dispatch', 'asd-tester', 'standard', 'impacted'], 'Sprint 038 AC-17: repeated attrs merge both delimiters, keeping the last value for a duplicate key');
+  assert.match(twice.stderr, /flag --kind given more than once/);
+  assert.doesNotMatch(twice.stderr, /flag --attrs given more than once/);
 });
 
 test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return file passes the persist-review checks as done, without a transcript and silently, and leaves an agent whose return file is missing, interrupted or checked against a missing manifest, or whose returns file is unparseable, to the transcript verdict', async () => {

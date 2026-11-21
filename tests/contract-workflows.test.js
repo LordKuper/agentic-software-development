@@ -9,7 +9,8 @@ test('AC-2/4/6/8: the External Review CLI command settings exist in the config t
   const config = fs.readFileSync(path.join(REPO_ROOT, '.asd', 'templates/t_config.yaml'), 'utf8');
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(init.includes('system.tools.codex_command') && init.includes('system.tools.claude_command'));
+  assert.match(init, /external-preflight --input <path>/);
+  assert.ok(init.includes('review.codex_profile') && init.includes('system.tools'));
   assert.ok(config.includes('codex_command: ""') && config.includes('claude_command: ""'));
   assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('external review unavailable: <specific status>'));
   assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('external review unavailable: <specific status>'));
@@ -516,6 +517,6 @@ test('sprint-031 AC-1/AC-2/AC-3: standard dispatches combined and External Revie
 });
 
 test('sprint-035 AC-14: the config template ships safety_valve enabled at top level, and the README config schema and asd-init name the key', () => {
-  assert.ok(/^safety_valve: enabled$/m.test(canonText('.asd/templates/t_config.yaml')), 'the config template carries the key at top level, enabled');
+  assert.ok(/^safety_valve: enabled(?: +#.*)?$/m.test(canonText('.asd/templates/t_config.yaml')), 'the config template carries the key at top level, enabled');
   assert.deepStrictEqual(['README.md', '.asd/skills/asd-init/SKILL.md'].filter((rel) => !canonText(rel).includes('safety_valve')), [], 'the config schema mirrors name the key');
 });

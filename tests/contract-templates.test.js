@@ -28,12 +28,10 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   assert.ok(specsMatch, 'README.md folder map must state "N canonical agent specs"');
   assert.strictEqual(Number(specsMatch[1]), actualCount, `README.md folder map claims ${specsMatch[1]} agent specs, .asd/agents/ has ${actualCount}`);
 
-  const generatedAgentCount = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude').length;
+  const plan = sync.buildSyncPlan(REPO_ROOT);
   const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
-  assert.strictEqual(definitionMatches.length, 2, `README.md folder map must state "N agent definitions" exactly twice (one per provider view), found ${definitionMatches.length}`);
-  for (const m of definitionMatches) {
-    assert.strictEqual(Number(m[1]), generatedAgentCount, `README.md folder map claims ${m[1]} agent definitions, generated provider roster has ${generatedAgentCount}`);
-  }
+  const providerCounts = ['agent-claude', 'agent-codex'].map((kind) => plan.filter((item) => item.kind === kind).length);
+  assert.deepStrictEqual(definitionMatches.map((match) => Number(match[1])), providerCounts, 'Sprint 038 AC-12: README counts both provider rosters, including the Codex-only quota alternatives');
 
   const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
   const agentsMdMatch = agentsMdText.match(/\*\*Agents\*\* \(`\.asd\/agents\/\*\.md`, canonical\) — (\d+):/);
