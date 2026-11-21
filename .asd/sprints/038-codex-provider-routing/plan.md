@@ -94,8 +94,8 @@ Reachability: plan records verified tech references and compile dependencies; im
 Material risk: change: public contract
 Reachability: the review-fix tester records the verified committed tree, and impl-test reads it for reuse or routes the close validator's evidence to the tester responsible for repair.
 
-- [ ] AC-9, AC-10, AC-13 and AC-27. Update `.asd/agents/asd-tester.md`, `.asd/workflows/asd-phase-impl-test.md`, `.asd/templates/t_test-plan.md` and the close-related section of `.asd/runtime.js`. Require committed revision evidence for reuse, declare the rule for introducing new required columns, and use escaped pipes consistently across live and rotated records.
-- [ ] Route runtime validation refusals from both close sites using the offending file and cause. Give the repair tester access only to the named plan records. Clear structural and Suite run refusals before retrying, preserving atomicity and the green/run evidence.
+- [x] AC-9, AC-10, AC-13 and AC-27. Update `.asd/agents/asd-tester.md`, `.asd/workflows/asd-phase-impl-test.md`, `.asd/templates/t_test-plan.md` and the close-related section of `.asd/runtime.js`. Require committed revision evidence for reuse, declare the rule for introducing new required columns, and use escaped pipes consistently across live and rotated records.
+- [x] Route runtime validation refusals from both close sites using the offending file and cause. Give the repair tester access only to the named plan records. Clear structural and Suite run refusals before retrying, preserving atomicity and the green/run evidence.
 
 ### Task 12: Scope area runs and prose-only review fixes
 Material risk: change: broad-reasoning

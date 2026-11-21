@@ -55,3 +55,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route Task 9: standard, dispatch HEAD b87a83bced206b1510de91cbd4c783338b49b5c4; risk change: public contract
 - 2026-11-22 — route Task 10: standard, dispatch HEAD b87a83bced206b1510de91cbd4c783338b49b5c4; risk change: workflow gate
 - 2026-11-22 — Tasks 9 and 10 landed at `0f468f17` and `a0e19d5a`. Timing preserves repeated attrs, and the planning, audit and fix workflows incorporate six scope criteria. Scoped build and lint passed.
+- 2026-11-22 — route Task 11: standard, dispatch HEAD c821422e494291cf847f31724fdcc05f604169cd; risk change: public contract
+- 2026-11-22 — Task 11 completed AC-9, AC-10, AC-13 and AC-27 at `1dbee1bb`. Focused probes verified scoped Entry log, escaped pipes, rotated Added tests, precise Suite run refusals and unchanged files on refusal.
