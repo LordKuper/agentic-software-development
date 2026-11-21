@@ -81,3 +81,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — external interrupted attempt 1 in wave-1/iter-01 (Claude reported account on hold after two invocations). Recorded authentication failure for the preflight fingerprint.
 - 2026-11-22 — external wave-1/iter-01: APPROVE (skipped: external review unavailable: negative-cache (authentication)); 50 files unreviewed, as listed in the report. No APPROVE latch.
 - 2026-11-22 — impl-review wave-1/iter-01 routed combined findings 1–6 to impl review-fix. Runtime findings 1–5 share one dev chain. The tester follows with finding 6 and executable regression checks. No terminal gate on this iteration.
+- 2026-11-22 — review-fix API references verified in `docs/architecture/tech-reference/git-2.56.md` and the new `node-24.15.md`. Git 2.56 on Windows emitted an addition diff against `/dev/null` and returned 1 as a difference.
+- 2026-11-22 — route review-fix wave-1/iter-01: standard, dispatch HEAD 72115d15252a810aacaa520acc639140ff917371; risk change: public-contract
