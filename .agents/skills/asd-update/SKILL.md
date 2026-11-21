@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:ad6dc83a7d4c53311cca0f761754dc47196f0223a3b5c5782fa229852579e540 content_digest=sha256:2be8038137190efab23b5bbbd277a70187c6ebc038d53bea92f2867e9a00b99d asd_version=14.9.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:5535878d29e38941ab4099e87e3d5b014355d2852bc5901e09462733054f65e3 content_digest=sha256:6a5b246e41e8a769bc88670f4c8ba9037d6cd1499f94dc65a6425bc9833e8a4d asd_version=14.9.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and a migration's rewrite of a changed shipped command in commands.yaml or removal of a retired agent's memory directory), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -37,7 +37,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
-8. After a real update, explain that the next `$asd-sprint` checks the installed config against the shipped template and directs incomplete projects to `$asd-init`.
+8. After a real update, tell the user `$asd-sprint` checks against the shipped config template and directs incomplete projects to `$asd-init`.
 
 ### Sprint-mediated mode
 

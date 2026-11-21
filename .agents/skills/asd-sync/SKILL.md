@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:df59c6f332b8013fd0121c5b45b7c62d83adc2e36ed86d21648514a64d6ec139 content_digest=sha256:37fd1c09a722dd4c3190ec5da213abd2eb40266ba8cd7e6a294fad004713aefd asd_version=14.9.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a content_digest=sha256:1c66a8a29e426f695d29b8325648dfe63039c20b69d9f20a75e4e09e99e4ac12 asd_version=14.9.0 schema=1
 name: asd-sync
 description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow: unedited files regenerate with no question, only a hand-edited (modified-foreign or orphan-modified) one is asked about (overwrite or delete, keep, or diff). Use when the user runs $asd-sync, asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources, or when asd-update delegates after a real run."
 ---
@@ -27,7 +27,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 4. Apply in two groups, skipping an empty one:
    - Unedited (`missing`/`stale`/`orphan`): `node "$SYNC" --apply <file...>` (no `--force`).
    - Confirmed `modified-foreign` and `orphan-modified`: `node "$SYNC" --apply <file...> --force` — without `--force` the CLI silently refuses and the file stays untouched.
-   - A valid apply refreshes release hashes. If `ledger-stale` was reported and neither group ran, apply one `current` generated target without `--force`. Pass a generated target path, never `.asd/release-manifest.json`. If no current target exists, report the stale ledger.
+   - A valid apply refreshes release hashes. For `ledger-stale` with no apply above, apply one `current` generated path without `--force`, never `.asd/release-manifest.json`. If none exists, report ledger drift.
 5. Report per-file outcome (applied / kept / still stale / left alone) from the apply result(s) plus a final `node "$SYNC" --check` summary.
 
 ## Rules

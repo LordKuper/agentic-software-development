@@ -61,3 +61,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Task 12 landed AC-22, AC-29 and AC-30 at `ac5112eb`. Area checkpoint recovery and the documented prose-only route preserve shared and terminal verification. Context, lint and generated view checks passed after sync.
 - 2026-11-22 — route Task 13: standard, dispatch HEAD f1e0c01495f345a4c0f23d458142846bfa7559ba; risk change: public contract
 - 2026-11-22 — Task 13 landed self-hosted stale-ledger detection and README/canonical mirrors at `b2265ee4`. Verified read-only reporting, consumer and legacy preservation, invalid-target diagnostics and regenerated sync skills.
+- 2026-11-22 — route Task 14: standard, dispatch HEAD 8f7d362ee4c8de4430cd3d34253098b287837815
+- 2026-11-22 — route Task 5 repair: standard, dispatch HEAD 8f7d362ee4c8de4430cd3d34253098b287837815; repair shared command inventory formatting and preserve the standalone skill byte cap.
+- 2026-11-22 — repaired the runtime/Git command inventory and condensed affected skills at `8299dbd6`. Standalone skill total 61,841 LF bytes against the 62,351-byte cap. Regenerated the eight provider views.
