@@ -40,3 +40,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-22 — route Task 1: standard, dispatch HEAD 90f3fe593b6dce7f6846fb8d3a3847f305797f70; risk change: public contract
 - 2026-11-22 — Task 1 completed AC-25 at `7cb6f6b0`. Build and staged lint passed. Verified staged additions, deletions, case-only renames and tracked, untracked and ignored replacements.
+- 2026-11-22 — route Task 2: escalated, dispatch HEAD 36ecc522cd8c2fcee5841c0e6bbc75443a1f063a; risk change: broad-reasoning
+- 2026-11-22 — Task 2 completed AC-6 and AC-12 at `cff3b4f4`. Verified the approved role settings, 11 Codex quota alternatives and equivalent role context and permissions with in-memory render checks.
