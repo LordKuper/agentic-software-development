@@ -101,9 +101,9 @@ Reachability: the review-fix tester records the verified committed tree, and imp
 Material risk: change: broad-reasoning
 Reachability: first impl-test writes per-area progress; resumed impl-test reads it before choosing the next area, and impl-review reads the consolidated suite evidence.
 
-- [ ] AC-22, AC-29 and AC-30. Update impl-test and its tester instructions for an area-by-area first entry only when large scope gives independent areas. Keep one writer per plan at a time and retain completed area evidence across a stalled dispatch. Preserve cross-area and terminal suite coverage. Make the shared-infrastructure widening test depend on actual affected paths, keeping framework-wide changes covered.
-- [ ] Implement the prose-only review-fix route with an explicit content-contract search. When an edit has no parsed content or executable effect, the orchestrator runs applicable named contract areas, records `none` and closes the entry. Uncertain cases take the regular tester route.
-- [ ] Own the consolidated `.asd/rules/sprint-lifecycle.md` changes for this sprint, including timing attrs, quota, plan and test contracts. Use the existing named test runner and append area results without a required column in pre-existing records.
+- [x] AC-22, AC-29 and AC-30. Update impl-test and its tester instructions for an area-by-area first entry only when large scope gives independent areas. Keep one writer per plan at a time and retain completed area evidence across a stalled dispatch. Preserve cross-area and terminal suite coverage. Make the shared-infrastructure widening test depend on actual affected paths, keeping framework-wide changes covered.
+- [x] Implement the prose-only review-fix route with an explicit content-contract search. When an edit has no parsed content or executable effect, the orchestrator runs applicable named contract areas, records `none` and closes the entry. Uncertain cases take the regular tester route.
+- [x] Own the consolidated `.asd/rules/sprint-lifecycle.md` changes for this sprint, including timing attrs, quota, plan and test contracts. Use the existing named test runner and append area results without a required column in pre-existing records.
 
 ### Task 13: Check release hashes and reconcile mirrors
 Material risk: change: public contract
