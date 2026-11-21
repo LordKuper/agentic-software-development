@@ -81,14 +81,14 @@ Reachability: review orchestration supplies file lists, prior snapshot roots and
 ### Task 9: Merge timing attributes
 Material risk: change: public contract
 
-- [ ] AC-17. Update `.asd/runtime.js` so timing combines repeated `--attrs` and comma- or semicolon-separated pairs. Preserve ordering and the last value when the same key repeats. Treat separators as pair boundaries, preserve unrelated flags and the existing warning contract for other repeated flags.
+- [x] AC-17. Update `.asd/runtime.js` so timing combines repeated `--attrs` and comma- or semicolon-separated pairs. Preserve ordering and the last value when the same key repeats. Treat separators as pair boundaries, preserve unrelated flags and the existing warning contract for other repeated flags.
 
 ### Task 10: Tighten planning and review-fix briefs
 Material risk: change: workflow gate
 Reachability: plan records verified tech references and compile dependencies; impl uses them before the relevant Task or review-fix dispatch.
 
-- [ ] AC-8, AC-11, AC-14, AC-16, AC-23 and AC-26. Update the dedicated phase workflows for audit, plan and impl and `.asd/templates/t_plan.md` where their authoring rules live. Add test searches before reporting audit gaps, compile-only caller scheduling, reference checks for deploy tools/registry tags and review-fix dependencies, alert-key behavior checks, and the critical mechanism's sibling sites in fix briefs.
-- [ ] Preserve test-only ownership and plan wave constraints when a contract change needs compile-only test adaptations. Verify registry references through the selected registry's canonical interface when a Task actually deploys an image. Record missing reference repairs before dispatching the related fix.
+- [x] AC-8, AC-11, AC-14, AC-16, AC-23 and AC-26. Update the dedicated phase workflows for audit, plan and impl and `.asd/templates/t_plan.md` where their authoring rules live. Add test searches before reporting audit gaps, compile-only caller scheduling, reference checks for deploy tools/registry tags and review-fix dependencies, alert-key behavior checks, and the critical mechanism's sibling sites in fix briefs.
+- [x] Preserve test-only ownership and plan wave constraints when a contract change needs compile-only test adaptations. Verify registry references through the selected registry's canonical interface when a Task actually deploys an image. Record missing reference repairs before dispatching the related fix.
 
 ### Task 11: Preserve test-plan revisions and route close refusals
 Material risk: change: public contract

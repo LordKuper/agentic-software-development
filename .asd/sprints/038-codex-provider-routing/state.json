@@ -99,6 +99,20 @@
       "reason": "risk:security",
       "raise_effort": false,
       "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:public contract",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 10": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "risk:workflow gate",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
     }
   },
   "skipped_phases": [],

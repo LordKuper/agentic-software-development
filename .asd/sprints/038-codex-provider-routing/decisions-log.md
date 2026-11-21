@@ -52,3 +52,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Task 7 landed profile routing at `203f4ed8`. Local checks cover missing and malformed profiles, existing routes and explicit command overrides. Codex profile resolution pins model, provider and effort in a separate read-only invocation. No RouterAI request was sent.
 - 2026-11-22 — route Task 8: standard, dispatch HEAD ee78b590ce40595591fafec1dd2cb7564bf94120; risk change: security
 - 2026-11-22 — Task 8 completed AC-18, AC-19, AC-20 and AC-28 at `197ff9e1`. Verified consumer and self-hosted scope, skipped-review parity, a rename across exclusions, atomic memory refusal, numeric coverage IDs and snapshot guards.
+- 2026-11-22 — route Task 9: standard, dispatch HEAD b87a83bced206b1510de91cbd4c783338b49b5c4; risk change: public contract
+- 2026-11-22 — route Task 10: standard, dispatch HEAD b87a83bced206b1510de91cbd4c783338b49b5c4; risk change: workflow gate
+- 2026-11-22 — Tasks 9 and 10 landed at `0f468f17` and `a0e19d5a`. Timing preserves repeated attrs, and the planning, audit and fix workflows incorporate six scope criteria. Scoped build and lint passed.
