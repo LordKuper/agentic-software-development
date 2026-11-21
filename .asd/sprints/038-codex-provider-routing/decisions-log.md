@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-22 — Plan accepted
+
+- **Decision**: User accepted the implementation plan and authorised implementation.
+- **Rationale**: The plan covers AC-1 through AC-30 in 14 tasks, preserves the configured review provider and includes the bounded quota fallback and six explicit project settings.
+- **Affected docs**: [plan.md](plan.md), [state.json](state.json)
