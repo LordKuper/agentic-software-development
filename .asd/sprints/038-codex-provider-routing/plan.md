@@ -109,8 +109,8 @@ Reachability: first impl-test writes per-area progress; resumed impl-test reads 
 Material risk: change: public contract
 Reachability: sync apply writes the release hash ledgers for canonical inputs; check reads and compares them without a write, and PR verification consumes the result.
 
-- [ ] AC-24. Reuse the two ledger computations in `.asd/sync.js`, report stale entries through the check result, and keep apply's invalid-target exit and path evidence. Treat absent pre-ledger fields according to the supported old release shape. Verify fresh and stale cases and effect-free checks. Activate the stronger check after the earlier waves that edit shared framework canon.
-- [ ] Update README for AC-1–AC-6, AC-8–AC-30 wherever corresponding contracts already appear. Cross-check model roster, schema, dispatcher settings, mockup selection, external review commands and the listed runtimes. Locate and update read-only rules or other mirrors in prior owning Tasks where a changed contract is still stated.
+- [x] AC-24. Reuse the two ledger computations in `.asd/sync.js`, report stale entries through the check result, and keep apply's invalid-target exit and path evidence. Treat absent pre-ledger fields according to the supported old release shape. Verify fresh and stale cases and effect-free checks. Activate the stronger check after the earlier waves that edit shared framework canon.
+- [x] Update README for AC-1–AC-6, AC-8–AC-30 wherever corresponding contracts already appear. Cross-check model roster, schema, dispatcher settings, mockup selection, external review commands and the listed runtimes. Locate and update read-only rules or other mirrors in prior owning Tasks where a changed contract is still stated.
 
 ### Task 14: Adapt impacted verification contracts
 Material risk: change: public contract

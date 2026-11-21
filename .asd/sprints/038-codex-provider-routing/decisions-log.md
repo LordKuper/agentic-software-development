@@ -59,3 +59,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Task 11 completed AC-9, AC-10, AC-13 and AC-27 at `1dbee1bb`. Focused probes verified scoped Entry log, escaped pipes, rotated Added tests, precise Suite run refusals and unchanged files on refusal.
 - 2026-11-22 — route Task 12: escalated, dispatch HEAD d6f79e3f8254c73f414b3649226e6838811deb10; risk change: broad-reasoning
 - 2026-11-22 — Task 12 landed AC-22, AC-29 and AC-30 at `ac5112eb`. Area checkpoint recovery and the documented prose-only route preserve shared and terminal verification. Context, lint and generated view checks passed after sync.
+- 2026-11-22 — route Task 13: standard, dispatch HEAD f1e0c01495f345a4c0f23d458142846bfa7559ba; risk change: public contract
+- 2026-11-22 — Task 13 landed self-hosted stale-ledger detection and README/canonical mirrors at `b2265ee4`. Verified read-only reporting, consumer and legacy preservation, invalid-target diagnostics and regenerated sync skills.
