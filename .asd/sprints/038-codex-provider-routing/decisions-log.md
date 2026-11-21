@@ -65,3 +65,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route Task 5 repair: standard, dispatch HEAD 8f7d362ee4c8de4430cd3d34253098b287837815; repair shared command inventory formatting and preserve the standalone skill byte cap.
 - 2026-11-22 — repaired the runtime/Git command inventory and condensed affected skills at `8299dbd6`. Standalone skill total 61,841 LF bytes against the 62,351-byte cap. Regenerated the eight provider views.
 - 2026-11-22 — Task 14 passed 249 named checks at `318511e9`. Profile routing was verified with a local CLI fixture. Runner and resume behavior are tested as declarative contracts; no authenticated provider call or terminal full suite ran.
+
+## 2026-11-22 — Implementation accepted
+
+- **Decision**: Advance to impl-test with all 14 Tasks accepted under the adaptive assessment gate.
+- **Rationale**: Plan checkboxes complete and every implementation path accounted for. Scope includes the authorised config write, Git and Codex evidence notes, generated views and sprint artifacts. Build checked 77 current targets, lint and context pass, agnix returned zero errors and warnings, project config is complete. No new stubs or unresolved agent flags.
+- **Affected docs**: [plan.md](plan.md), [state.json](state.json)
