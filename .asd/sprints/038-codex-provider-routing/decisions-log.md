@@ -77,3 +77,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl-test pre-strategy: 314/314 across 13 named areas at `1a75a85d`. No added, removed or defective tests. Shared runtime and sync widen the suite gate to full.
 - 2026-11-22 — route impl-test entry 1 suite: runner, dispatch HEAD 21eccab7e95fdc8bc6468ed8f648cc5e70432be4
 - 2026-11-21 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test
+- 2026-11-22 — AC-7 external wrapper smoke: the named Codex fixture selected RouterAI's model at medium with read-only and ephemeral flags. The wrapper mapped major, minor and info to high, medium and low, preserving all source IDs. At floor medium, persistence retained high and medium, recorded one drop and kept CONCERNS. No provider request was made. The live RouterAI smoke remains conditional on local credentials.
+- 2026-11-22 — external interrupted attempt 1 in wave-1/iter-01 (Claude reported account on hold after two invocations). Recorded authentication failure for the preflight fingerprint.
+- 2026-11-22 — external wave-1/iter-01: APPROVE (skipped: external review unavailable: negative-cache (authentication)); 50 files unreviewed, as listed in the report. No APPROVE latch.
+- 2026-11-22 — impl-review wave-1/iter-01 routed combined findings 1–6 to impl review-fix. Runtime findings 1–5 share one dev chain. The tester follows with finding 6 and executable regression checks. No terminal gate on this iteration.
