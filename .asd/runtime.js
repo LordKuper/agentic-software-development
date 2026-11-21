@@ -890,13 +890,16 @@ function memoryViolations(diff, names) {
   return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
 }
 
-/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (files or directories, repo-root relative) when any are given. */
+function pathCoversFile(target, file) {
+  return target === '' || file === target || file.startsWith(`${target}/`);
+}
+
+/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (normalized repo-relative paths) when any are given. */
 function memoryCheck(flags, paths = []) {
   if (Object.keys(flags).length > 0) fail('memory-check takes no flags');
   const diff = runGit(['diff', '--cached', '-U0', '--no-color', '--no-ext-diff', '--no-prefix', '--', AGENT_MEMORY_PATHSPEC]);
   const names = runGit(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACR', '--', AGENT_MEMORY_PATHSPEC]).split('\0').filter(Boolean);
-  const named = paths.map((entry) => entry.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, ''));
-  const isNamed = (violation) => named.length === 0 || named.some((target) => violation.path === target || violation.path.startsWith(`${target}/`));
+  const isNamed = (violation) => paths.length === 0 || paths.some((target) => pathCoversFile(target, violation.path));
   return memoryViolations(diff, names).filter(isNamed);
 }
 
@@ -921,7 +924,23 @@ function aiCoAuthorTrailers(message) {
   });
 }
 
-/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph, and, under `git.ai_attribution: disabled`, `ai_attribution`, its Claude or Codex `Co-authored-by:` lines. `ok` only when the header fits and there is no hit, no misplaced trailer and no AI trailer. */
+/** Checks literal named targets against the index and worktree without exposing file contents. */
+function commitPathErrors(paths, named) {
+  if (paths.length === 0) return [];
+  const records = runGit(['--no-optional-locks', '--literal-pathspecs', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--ignored=traditional', '--ignore-submodules=none', '--', ...paths]).split('\0').filter(Boolean);
+  // With renames disabled, Git lists the source deletion and destination addition separately.
+  const staged = new Set(records.filter((record) => /^[MADT]/.test(record)).map((record) => record.slice(3)));
+  // An ignored file can still diverge from the index when it reappears at a staged deletion.
+  const unstaged = records.filter((record) => record[1] !== ' ' && (record[0] !== '!' || staged.has(record.slice(3)))).map((record) => record.slice(3));
+  const stagedFiles = [...staged];
+  return named.flatMap((target, index) => {
+    const hasUnstaged = unstaged.some((file) => pathCoversFile(target, file));
+    const missingStaged = !stagedFiles.some((file) => pathCoversFile(target, file));
+    return hasUnstaged || missingStaged ? [{ path: paths[index], unstaged: hasUnstaged, missing_staged: missingStaged }] : [];
+  });
+}
+
+/** Reports header length, named path errors and memory hits. A message file also checks trailer placement and AI attribution. */
 function commitCheck(flags, paths) {
   const unknown = Object.keys(flags).filter((name) => name !== 'subject' && name !== 'message-file');
   const given = ['subject', 'message-file'].filter((name) => name in flags);
@@ -929,8 +948,11 @@ function commitCheck(flags, paths) {
   const message = given[0] === 'subject' ? null : fs.readFileSync(flags['message-file'], 'utf8');
   const header = message === null ? flags.subject : message.split(/\r?\n/)[0];
   const headerLength = Array.from(header).length;
-  const memory = memoryCheck({}, paths);
-  const report = { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  const named = paths.map((file) => path.relative('.', path.resolve(file)).split(path.sep).join('/'));
+  const pathErrors = commitPathErrors(paths, named);
+  const memory = memoryCheck({}, named);
+  const report = { ok: headerLength <= COMMIT_HEADER_MAX && pathErrors.length === 0 && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  if (pathErrors.length > 0) report.path_errors = pathErrors;
   if (message === null) return report;
   const misplaced = misplacedTrailers(message);
   const withMisplaced = { ...report, ok: report.ok && misplaced.length === 0, misplaced };
