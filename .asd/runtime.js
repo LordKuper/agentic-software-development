@@ -302,6 +302,9 @@ function externalRoute(input) {
   return { provider, command, model: resolveModelFamily(loadReleaseManifest(path.dirname(__dirname)), provider, wrapped.wraps_model) };
 }
 
+/** Pins the named profile's inference route against overriding project config.
+ * shortcut: read simple root TOML assignments up to the first table or multiline value. Use a TOML parser if route fields need broader syntax.
+ */
 function codexProfileRoute(route) {
   if (typeof route.profile !== 'string' || !/^[A-Za-z0-9_-]+$/.test(route.profile)) {
     return { status: 'profile-invalid', identity: {} };
@@ -318,7 +321,6 @@ function codexProfileRoute(route) {
   }
   const fields = new Map();
   const keys = ['model', 'model_provider', 'model_reasoning_effort'];
-  // shortcut: read simple root assignments only until the first table or multiline value, use a TOML parser if profile route fields need broader syntax.
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
@@ -334,7 +336,6 @@ function codexProfileRoute(route) {
   if (!model || !/^[A-Za-z0-9_-]+$/.test(provider) || !/^(none|minimal|low|medium|high|xhigh|max|ultra)$/.test(effort)) {
     return { status: 'profile-invalid', identity };
   }
-  // Project config outranks a named profile. Pin its selected route for this process.
   const args = ['exec', '--profile', route.profile, `--model=${model}`,
     '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
     '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
@@ -352,6 +353,7 @@ function externalPreflight(input) {
   return { ...result, ...(input.host !== undefined && { route: resolved }), platform: process.platform };
 }
 
+/** Probes local readiness. Codex login status covers only OpenAI auth, so named profiles use the version probe alone. */
 function localReadiness(input, profile) {
   const provider = input.provider;
   const model = input.model;
@@ -368,7 +370,6 @@ function localReadiness(input, profile) {
       return { status: 'profile-cli-unsupported', model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
     }
   }
-  // A custom profile may use its own credential helper or environment. Codex login status only checks OpenAI auth.
   const authReady = profile ? null : runLocal(input.command, authArgs).ok;
   const key = cacheKey(input, authReady, profile?.identity);
   if (authReady === false) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
@@ -1043,13 +1044,11 @@ function aiCoAuthorTrailers(message) {
   });
 }
 
-/** Checks literal named targets against the index and worktree without exposing file contents. */
+/** Checks literal named targets without exposing file contents. Rename sides are separate records, and an ignored file can reappear at a staged deletion. */
 function commitPathErrors(paths, named) {
   if (paths.length === 0) return [];
   const records = runGit(['--no-optional-locks', '--literal-pathspecs', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--ignored=traditional', '--ignore-submodules=none', '--', ...paths]).split('\0').filter(Boolean);
-  // With renames disabled, Git lists the source deletion and destination addition separately.
   const staged = new Set(records.filter((record) => /^[MADT]/.test(record)).map((record) => record.slice(3)));
-  // An ignored file can still diverge from the index when it reappears at a staged deletion.
   const unstaged = records.filter((record) => record[1] !== ' ' && (record[0] !== '!' || staged.has(record.slice(3)))).map((record) => record.slice(3));
   const stagedFiles = [...staged];
   return named.flatMap((target, index) => {
@@ -1365,11 +1364,12 @@ function rangePatchInvocations(ranges, files) {
   });
 }
 
-/** Git invocations diffing each draft against its copy in the previous iteration's snapshot; a draft that snapshot lacks gets none. */
+/** Diffs each draft against its previous snapshot copy, using an addition patch when the copy is absent. */
 function snapshotPatchInvocations(previousDir, files) {
-  return files.flatMap((file) => {
+  return files.map((file) => {
     const copy = snapshotCopyPath(previousDir, file);
-    return fs.existsSync(copy) ? [{ args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', copy, file], okStatuses: [0, 1] }] : [];
+    const before = fs.existsSync(copy) ? copy : '/dev/null';
+    return { args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', before, file], okStatuses: [0, 1] };
   });
 }
 
@@ -1502,9 +1502,10 @@ function externalScopeFiles(flags, files) {
   const windows = process.platform === 'win32';
   const asdExclusion = flags['self-hosting'] === true ? /^\.asd\/(?:project|sprints)(?:\/|$)/ : /^(?:\.asd|docs)(?:\/|$)/;
   return [...new Set(files.flatMap((file) => {
-    const normalized = path.posix.normalize(file.replace(/\\/g, '/'));
+    const normalized = path.posix.normalize(windows ? file.replace(/\\/g, '/') : file);
+    const absolute = windows ? path.win32.isAbsolute(file) : path.posix.isAbsolute(file);
     const ambiguous = windows && normalized.split('/').some((segment) => /[. ]$|:/.test(segment));
-    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || path.win32.isAbsolute(file) || /^[a-z]:/i.test(file) || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
+    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || absolute || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
     const checked = windows ? normalized.toLowerCase() : normalized;
     if (/(?:^|\/)dist(?:\/|$)|(?:^|\/)design-system\.html$/.test(checked)) return [];
     if (impl && (asdExclusion.test(checked) || /^(?:\.claude\/(?:agents|skills|hooks)|\.codex\/(?:agents|hooks)|\.agents\/skills)(?:\/|$)/.test(checked))) return [];
@@ -1922,7 +1923,7 @@ function timingIds(value, name) {
 
 function timingAttrs(value) {
   if (value === undefined) return {};
-  return Object.fromEntries(value.split(/[;,]/).map((pair) => {
+  return Object.fromEntries(value.split(/;|,(?=\s*[^=;,\s]+\s*=)/).map((pair) => {
     const at = pair.indexOf('=');
     if (at < 1) fail(`--attrs entry must be k=v: ${pair}`);
     return [pair.slice(0, at).trim(), pair.slice(at + 1).trim()];
@@ -2793,10 +2794,14 @@ function configCheckCommand(flags) {
     const identity = JSON.stringify(entry.path);
     const field = required.get(identity);
     if (!field) continue;
-    if (seen.has(identity)) duplicates.add(entry.path.join('.'));
+    const key = entry.path.join('.');
+    if (seen.has(identity)) duplicates.add(key);
     seen.add(identity);
     const reason = configValueIssue(field, entry);
-    if (reason !== null) invalid.push({ path: entry.path.join('.'), line: entry.line, reason });
+    if (reason !== null) invalid.push({ path: key, line: entry.line, reason });
+    else if (key === 'git.ai_attribution' && entry.value === 'disabled' && require('./sync.js').aiAttributionFromConfig(source) !== 'disabled') {
+      invalid.push({ path: key, line: entry.line, reason: 'use unquoted ai_attribution: disabled under the plain git: mapping' });
+    }
   }
   const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
   return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };

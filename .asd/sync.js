@@ -1333,12 +1333,15 @@ function readClaudeMdBlockBody(repoRoot) {
 
 /** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution` key among its direct children, its value `disabled`. A missing or unreadable file, a nested, duplicate (in any quoting) or otherwise-valued key reads as `enabled`, the default that writes and rejects nothing. */
 function readAiAttribution(repoRoot) {
-  let lines;
   try {
-    lines = readNormalized(path.join(repoRoot, '.asd', 'project', 'config.yaml')).split('\n');
+    return aiAttributionFromConfig(fs.readFileSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'), 'utf8'));
   } catch (_) {
     return 'enabled';
   }
+}
+
+function aiAttributionFromConfig(text) {
+  const lines = normalizeText(text).split('\n');
   const start = lines.findIndex((line) => /^git:\s*(#.*)?$/.test(line));
   if (start === -1) return 'enabled';
   const end = lines.findIndex((line, i) => i > start && /^[^\s#]/.test(line));
@@ -1810,6 +1813,7 @@ module.exports = {
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
   readAiAttribution,
+  aiAttributionFromConfig,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
