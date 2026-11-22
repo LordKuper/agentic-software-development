@@ -47,3 +47,11 @@
 - **What happened**: Iteration 4 preflight returned the same cached authentication failure.
 - **Impact**: The carried scope and latest changes remained unreviewed by the external provider.
 - **Refs**: reviews/impl/wave-1/iter-04/external.md.
+
+## F-7 — External review remained unavailable for the review-order change
+
+- **Phase**: impl-review
+- **Surface**: external-review provider availability
+- **What happened**: Iteration 5 preflight retained the cached authentication failure.
+- **Impact**: The carried scope and review-order changes remained externally unreviewed.
+- **Refs**: reviews/impl/wave-1/iter-05/external.md.
