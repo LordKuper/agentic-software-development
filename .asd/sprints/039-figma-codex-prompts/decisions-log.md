@@ -61,5 +61,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — wave-1/iter-01 external first dispatch did not invoke the CLI. The wrapper misapplied the Claude Code Bash requirement on the Codex/PowerShell host. Corrected the host invocation and dispatched fresh.
 - 2026-11-22 — wave-1/iter-01 external real invocation failed authentication twice because the Claude account was on hold. Recorded the failure by fingerprint. Rechecking preflight returned negative-cache (authentication), so external review used the configured availability skip.
 - 2026-11-22 — wave-1/iter-01 Combined returned CONCERNS 1–5. Route production and documentation findings 1, 2, 3, 5 to impl review-fix, then test finding 4 to the tester chain.
+- 2026-11-22 — Review-fix references verified: Figma native write and read-back in figma-mcp-remote.md, existing design-review snapshot command in runtime.js and runtime review tests, and Node/PowerShell stream capture through the existing tester invocation.
+- 2026-11-22 — route combined.md F-1, combined.md F-2, combined.md F-3: escalated, dispatch HEAD 385f8c50f5e4916e3985de1a9304f3d4eb283856; risk change: workflow gate, change: cross-domain, change: runner evidence
+- 2026-11-22 — Figma revision check passed: changed padding in the existing authorized test frame, then read back the changed value and the same frame ID. In a local index fixture, increasing only the verified revision with the same URL made draft-snapshot include the index and emit-manifest produce the revision diff.
+- 2026-11-22 — route combined.md F-4: standard, dispatch HEAD 8afe21b55bf9ddff82fdc509b6fa953d0a7f8d07
+- 2026-11-22 — impl fix for wave-1/iter-01: findings resolved
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests

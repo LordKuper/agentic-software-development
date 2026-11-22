@@ -74,3 +74,11 @@
 {"op":"close","id":"review1-external-retry","kind":"external-review","parent":"wave-1-iter-01","start":"2026-11-22T11:25:54.131Z","end":"2026-11-22T11:29:22.499Z","outcome":"interrupted","attrs":{"agent":"asd-external-review","wave":"1","iteration":"1"}}
 {"op":"close","id":"wave-1-iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-22T11:23:44.603Z","end":"2026-11-22T11:29:48.652Z","outcome":"done","attrs":{"wave":"1","iteration":"1"}}
 {"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-22T11:23:13.918Z","end":"2026-11-22T11:29:48.684Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-22T11:30:05.790Z","attrs":{}}
+{"op":"open","id":"review-fix1-dev","kind":"dispatch","parent":"impl#3","start":"2026-11-22T11:30:20.265Z","attrs":{"agent":"asd-dev-escalated","tier":"escalated","task":"review fix iter 01","model":"sol"}}
+{"op":"close","id":"review-fix1-dev","kind":"dispatch","parent":"impl#3","start":"2026-11-22T11:30:20.265Z","end":"2026-11-22T11:35:18.643Z","outcome":"done","attrs":{"agent":"asd-dev-escalated","tier":"escalated","task":"review fix iter 01","model":"sol"}}
+{"op":"open","id":"review-fix1-tester","kind":"dispatch","parent":"impl#3","start":"2026-11-22T11:35:31.271Z","attrs":{"agent":"asd-tester","tier":"standard","task":"combined.md F-4","model":"sol"}}
+{"op":"open","id":"suite impl#2","kind":"suite","parent":"review-fix1-tester","start":"2026-11-22T11:37:02.604Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#2","kind":"suite","parent":"review-fix1-tester","start":"2026-11-22T11:37:02.604Z","end":"2026-11-22T11:37:03.383Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix1-tester","kind":"dispatch","parent":"impl#3","start":"2026-11-22T11:35:31.271Z","end":"2026-11-22T11:38:03.074Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","task":"combined.md F-4","model":"sol"}}
+{"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-22T11:30:05.790Z","end":"2026-11-22T11:38:03.106Z","outcome":"done","attrs":{}}
