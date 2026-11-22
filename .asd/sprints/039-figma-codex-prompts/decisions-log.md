@@ -50,3 +50,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Task 7 accepted at `876ee608dedf29513160d8d8b82374b8090b92e8`. The committed diff adapts the existing config fixture and assertions to the replacement key, with no new or extended behavioral regression coverage. The existing targeted check passed.
 - 2026-11-22 — route Task 3: escalated, dispatch HEAD 27249f911026bd6b991b3383977a33eecbd5220a; risk change: cross-domain, Task 3 change: workflow gate
 - 2026-11-22 — Implementation accepted under adaptive policy. All seven tasks are complete, the scope diff matches the assignments, and build, lint, context-check and agnix passed. No new stubs.
+- 2026-11-22 — route impl-test entry 1: standard, dispatch HEAD 5a7512c
+- 2026-11-22 — Figma smoke authorized through the Codex App widget: create one private Design draft named "ASD 039 — проверка Figma" and author one editable test screen in the connected plan.
+- 2026-11-22 — Figma smoke passed: remote MCP created the authorized Design draft, wrote one native 480×198 frame, and read back the frame with 1 nested FRAME, 3 editable TEXT layers, no image fills, and a bound background variable. Inspected the composition screenshot. The Codex App delivered the explicit authorization after the widget enqueue. Private file identifiers stay in chat.
+- 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)

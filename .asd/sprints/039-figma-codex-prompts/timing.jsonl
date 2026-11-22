@@ -36,3 +36,19 @@
 {"op":"open","id":"task-3","kind":"dispatch","parent":"impl#1","start":"2026-11-22T11:03:18.632Z","attrs":{"agent":"asd-dev-escalated","tier":"escalated","task":"Task 3","model":"sol"}}
 {"op":"close","id":"task-3","kind":"dispatch","parent":"impl#1","start":"2026-11-22T11:03:18.632Z","end":"2026-11-22T11:09:36.742Z","outcome":"done","attrs":{"agent":"asd-dev-escalated","tier":"escalated","task":"Task 3","model":"sol"}}
 {"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-22T10:53:07.205Z","end":"2026-11-22T11:10:02.922Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-22T11:10:16.533Z","attrs":{}}
+{"op":"open","id":"figma-smoke-target","kind":"user-wait","parent":"impl-test#1","start":"2026-11-22T11:10:16.573Z","attrs":{}}
+{"op":"open","id":"impl-test-entry-1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-22T11:10:27.945Z","attrs":{"agent":"asd-tester","tier":"standard","task":"impl-test entry 1","model":"sol"}}
+{"op":"close","id":"figma-smoke-target","kind":"user-wait","parent":"impl-test#1","start":"2026-11-22T11:10:16.573Z","end":"2026-11-22T11:11:20.035Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test-entry-1-pre","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:11:48.300Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test-entry-1-pre","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:11:48.300Z","end":"2026-11-22T11:12:16.851Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"impl-test-entry-1-pre-runner","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:12:38.386Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test-entry-1-pre-runner","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:12:38.386Z","end":"2026-11-22T11:12:39.270Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"impl-test-entry-1-gap","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:12:52.625Z","attrs":{"scope":"named"}}
+{"op":"close","id":"impl-test-entry-1-gap","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:12:52.625Z","end":"2026-11-22T11:12:53.079Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"impl-test-entry-1-fail-first","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:14:08.038Z","attrs":{"scope":"named"}}
+{"op":"close","id":"impl-test-entry-1-fail-first","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:14:08.038Z","end":"2026-11-22T11:14:08.682Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"impl-test-entry-1-suite","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:14:37.787Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test-entry-1-suite","kind":"suite","parent":"impl-test-entry-1","start":"2026-11-22T11:14:37.787Z","end":"2026-11-22T11:15:06.761Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test-entry-1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-22T11:10:27.945Z","end":"2026-11-22T11:16:23.266Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","task":"impl-test entry 1","model":"sol"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-22T11:10:16.533Z","end":"2026-11-22T11:16:33.625Z","outcome":"done","attrs":{}}

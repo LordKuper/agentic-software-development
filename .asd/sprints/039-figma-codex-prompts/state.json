@@ -1,7 +1,7 @@
 {
   "sprint_id": "039-figma-codex-prompts",
   "branch": "sprint/039-figma-codex-prompts",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -55,6 +55,13 @@
       "reason": "all seven tasks completed within the accepted plan",
       "evidence": "plan.md all boxes checked; build, lint, context and agnix passed",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "Figma verification draft",
+      "decision_actor": "user",
+      "reason": "user authorized one draft and one editable screen via Codex App widget",
+      "evidence": "decisions-log.md: Figma smoke authorization and read-back",
+      "artifact_revision": "plan.md@impl-test"
     }
   ],
   "task_routing": {
@@ -73,7 +80,7 @@
   "created_at": "2026-11-22T10:40:41.832Z",
   "updated_at": "2026-11-22T10:48:35Z",
   "review_fixes_pending": null,
-  "test_defects_pending": null,
+  "test_defects_pending": true,
   "pr": null,
   "archived_at": null
 }
