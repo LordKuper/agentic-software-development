@@ -34,6 +34,13 @@
       "reason": "user included all three retro candidates",
       "evidence": "decisions-log.md: Retro intake choices and scope acceptance",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all eight criteria deliverable and baseline checks green",
+      "evidence": "audit.md: Existing implementation found, Gaps and Risks; seven impacted test areas passed",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},

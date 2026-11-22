@@ -12,3 +12,5 @@
 {"op":"open","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:47:38.412Z","attrs":{}}
 {"op":"close","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:47:38.412Z","end":"2026-11-22T10:48:35.470Z","outcome":"done","attrs":{}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-22T10:40:41.832Z","end":"2026-11-22T10:48:35.502Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-22T10:49:07.055Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-22T10:49:07.055Z","end":"2026-11-22T10:50:23.071Z","outcome":"done","attrs":{}}
