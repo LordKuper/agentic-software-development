@@ -50,7 +50,9 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },

@@ -25,8 +25,8 @@ Reachability: Test-only Task tester returns the fail-first or mutation proof wit
 
 AC-7.
 
-- [ ] Define the completion check in `.asd/workflows/asd-phase-impl.md`. Reuse the proof fields and mutation allowance of `code-style.md` §17. Compile-only adaptations do not add a behavior regression test.
-- [ ] Have `.asd/agents/asd-tester.md` return that proof for a new or extended behavior regression test during a Test-only Task. Keep its existing write scope.
+- [x] Define the completion check in `.asd/workflows/asd-phase-impl.md`. Reuse the proof fields and mutation allowance of `code-style.md` §17. Compile-only adaptations do not add a behavior regression test.
+- [x] Have `.asd/agents/asd-tester.md` return that proof for a new or extended behavior regression test during a Test-only Task. Keep its existing write scope.
 
 ### Task 2: Select mockup format with legacy compatibility
 Material risk: change: public contract

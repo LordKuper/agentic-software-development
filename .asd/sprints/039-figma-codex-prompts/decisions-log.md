@@ -40,3 +40,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-22 — Requirements decisions from scope: editable Figma Design screens; existing destination by URL or creation after approval; offer temporary HTML or wait when Figma writes are unavailable; use the Codex App widget for every structured choice and wait for explicit chat replies where the widget is absent. See research.md Requirements.
 - 2026-11-22 — Plan accepted: the user selected "Accept plan and start implementation" for all seven tasks.
+- 2026-11-22 — route Task 1: standard, dispatch HEAD 04853137a0d6403ef1f3b6d9531bb6552887d0c7; risk change: workflow gate
