@@ -67,6 +67,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route combined.md F-4: standard, dispatch HEAD 8afe21b55bf9ddff82fdc509b6fa953d0a7f8d07
 - 2026-11-22 — impl fix for wave-1/iter-01: findings resolved
 - 2026-11-22 — route impl-test entry 3: standard, dispatch HEAD 4896ebd2f59bf1ae1ac078cbce5ea04b196d8c90
+- 2026-11-22 — wave-1/iter-02 external review skipped after preflight returned negative-cache (authentication). The skip retains the prior scope and the fix delta as unreviewed.
+- 2026-11-22 — wave-1/iter-02 Combined returned CONCERNS 1–2. Route both recovery ordering findings to impl review-fix.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests

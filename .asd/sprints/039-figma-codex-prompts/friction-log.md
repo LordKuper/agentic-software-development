@@ -23,3 +23,11 @@
 - **What happened**: Local preflight was ready, but both actual wrapped invocations exited before reporting a review because the Claude account was on hold.
 - **Impact**: External review was skipped after the configured negative cache was recorded.
 - **Refs**: reviews/impl/wave-1/iter-01/external.md.
+
+## F-4 — External review remained unavailable at the next iteration
+
+- **Phase**: impl-review
+- **Surface**: external-review provider availability
+- **What happened**: Preflight reused the current authentication failure record in iteration 2.
+- **Impact**: External review remained unavailable for the carried scope and the review-fix delta.
+- **Refs**: reviews/impl/wave-1/iter-02/external.md.
