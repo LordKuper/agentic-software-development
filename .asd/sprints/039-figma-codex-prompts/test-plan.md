@@ -44,6 +44,12 @@ No additions. The source trace covers the reordered workflow steps. Existing tes
 The entry 5, 4 and 3 impacted runs passed at `9457ed99`, `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 - Line delta: tests +28/−2 (net 26); other +141/−58 (net 83)
 
+**Terminal failure triage**
+
+- Named run `node tests/run.js migrations --filter "AC-14: PM migration"` reproduced `EPERM` from the Windows file symlink (0/1 passed, exit 1). The same command passed with the directory junction fixture (1/1, exit 0), including the `skippedUnsafe` and outside file preservation assertions. The POSIX fixture still uses a file symlink.
+- Impacted run `node tests/run.js contract-rules runtime-routing runtime-timing` passed (58/58, exit 0), including all three tests that failed on Git ownership. The invocation set `safe.directory` for this repository through the inherited Git environment. Both green runs checked clean relevant paths and matching HEAD `a846ba8d1408bd2c9251043eba218648e52e0413` before and after.
+- Entry 6's green impacted run included `contract-rules`. The migration, routing and timing failures were outside its area list.
+
 ## Defects
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
