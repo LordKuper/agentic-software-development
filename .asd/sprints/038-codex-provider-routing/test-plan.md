@@ -44,6 +44,12 @@ responsibility:
 - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
 - Line delta: tests +213/−19 (net 194); other +907/−340 (net 567)
 - HEAD: `4bf4a6ee74d85655cc7efe9affb145a24569dcea` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
+- Command: `node tests/run.js`
+- Scope: full — all test areas, unfiltered.
+- Scope evidence: full step-8 safety-valve gate required because the change alters shared `.asd/runtime.js` and `.asd/sync.js` behavior, consumed via `tests/lib.js`, plus cross-area configuration and generated-view contracts.
+- Result: pass — 316/316 passed, 0 failed, 0 skipped. Slowest test: sprint-023 AC-2 at 1540 ms.
+- Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
+- HEAD: `ac5a555ad23ab5d08da4e54b9c8819ae80ac4cf7` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
 
 ## Defects
 
