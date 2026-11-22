@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-11-22 — wrote retrospective.html. Analysed 2 friction entries, proposed 1 remediation and 2 systemic changes, and marked the external authentication failure covered by existing rules.

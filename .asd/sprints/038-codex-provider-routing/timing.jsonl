@@ -174,3 +174,5 @@
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-22T00:14:01.671Z","end":"2026-11-22T00:14:26.981Z","outcome":"done","attrs":{}}
 {"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-22T00:14:27.848Z","attrs":{}}
 {"op":"close","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-22T00:14:27.848Z","end":"2026-11-22T00:14:56.287Z","outcome":"done","attrs":{}}
+{"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-22T00:15:38.075Z","attrs":{}}
+{"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-22T00:15:38.075Z","end":"2026-11-22T00:17:22.891Z","outcome":"done","attrs":{}}
