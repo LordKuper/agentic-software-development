@@ -34,12 +34,12 @@ No additions. The source trace covers the reordered workflow steps. Existing tes
 
 ## Suite run
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review sync-cli sync-render update`
-- Scope: impacted
-- Scope evidence: Direct workflow references and canonical Markdown scans select the four contract areas. The existing step 7 check selects `runtime-review`. Release manifest readers and upstream hash validation select `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the delta is the design-review workflow and its upstream hash.
-- Result: pass — 207 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run. Eligible for the impacted gate while those paths remain unchanged.
-- Lint / build: pass
-- HEAD: ca3b97d880eeb6532388fc4725a7a13faf4c7608
+- Command: `node tests/run.js`
+- Scope: full
+- Result: fail — 312 passed, 4 failed, 0 skipped (exit 1). First failures: AC-7 `.gitattributes` check and sprint-024 Git attribute check could not run Git commands because child processes rejected this repository as dubious ownership; AC-14 PM migration could not create a symlink (`EPERM`); sprint-025 timing test failed on its Git-backed checks for the same dubious-ownership error. HEAD was `e50a3bfb21c9dcbaf8e01ee50e2216dd48e68193` before and after.
+- Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check`
+- HEAD: e50a3bfb21c9dcbaf8e01ee50e2216dd48e68193
+- Slowest tests: sprint-023 AC-2 commands git-strategy branch behavior — 1,391 ms; sprint-036 AC-14 agent-liveness return-file checks — 1,124 ms; sprint-021 AC-7 agentLiveness — 1,041 ms; sprint-019 AC-8 one-command commit form — 987 ms; sprint-037 AC-1 context-check — 878 ms.
 
 The entry 5, 4 and 3 impacted runs passed at `9457ed99`, `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 - Line delta: tests +28/−2 (net 26); other +141/−58 (net 83)
