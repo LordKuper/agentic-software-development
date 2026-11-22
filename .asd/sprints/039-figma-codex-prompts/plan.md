@@ -33,8 +33,8 @@ Material risk: change: public contract
 
 AC-1 and AC-5.
 
-- [ ] In `t_config.yaml` and `asd-init`, expose `project.mockup_format` with `html`, `claude_design`, and `figma`, defaulting new projects to `html`. Config validation accepts legacy-only `project.claude_design: enabled|disabled` as the corresponding Claude Design or HTML value. Validate both keys if present, with the explicit format taking precedence. A subsequent init edit can write the explicit format using the resolved selection. Keep the working self-hosted config valid through the same compatibility read.
-- [ ] Update `.asd/runtime.js` using the existing scalar-map validator. Avoid a new parser or a prerequisite consumer migration. Enable selection through fresh init and repair or diff mode. Coordinate the README config mirror and behavior in Task 3.
+- [x] In `t_config.yaml` and `asd-init`, expose `project.mockup_format` with `html`, `claude_design`, and `figma`, defaulting new projects to `html`. Config validation accepts legacy-only `project.claude_design: enabled|disabled` as the corresponding Claude Design or HTML value. Validate both keys if present, with the explicit format taking precedence. A subsequent init edit can write the explicit format using the resolved selection. Keep the working self-hosted config valid through the same compatibility read.
+- [x] Update `.asd/runtime.js` using the existing scalar-map validator. Avoid a new parser or a prerequisite consumer migration. Enable selection through fresh init and repair or diff mode. Coordinate the README config mirror and behavior in Task 3.
 
 ### Task 3: Author and hand off Figma mockups
 Material risk: change: cross-domain
@@ -52,22 +52,22 @@ Material risk: change: workflow gate
 
 AC-4 and AC-5.
 
-- [ ] Update the central `providers.md` decision mapping and any structured-decision callers that bypass it. Sweep `.asd/rules`, `.asd/workflows`, and `.asd/skills` for `request user decision`, `AskUserQuestion`, `ask in chat`, and explicit choice prompts. Reference the canonical mapping from the core interaction protocol where needed.
-- [ ] Use the exposed Codex choice tool for configured options, including phase decisions. With an asynchronous tool, wait for the actual reply. Preserve language, timing, existing approval semantics and open-ended chat prompts. When no widget is available or delivery definitively fails, carry the same options into chat and wait for the reply.
+- [x] Update the central `providers.md` decision mapping and any structured-decision callers that bypass it. Sweep `.asd/rules`, `.asd/workflows`, and `.asd/skills` for `request user decision`, `AskUserQuestion`, `ask in chat`, and explicit choice prompts. Reference the canonical mapping from the core interaction protocol where needed.
+- [x] Use the exposed Codex choice tool for configured options, including phase decisions. With an asynchronous tool, wait for the actual reply. Preserve language, timing, existing approval semantics and open-ended chat prompts. When no widget is available or delivery definitively fails, carry the same options into chat and wait for the reply.
 
 ### Task 5: Capture runner evidence before summary output
 Material risk: change: runner evidence
 
 AC-6.
 
-- [ ] Update `.asd/agents/asd-tester.md` to capture full runner output and its exit code in one invocation before emitting a bounded summary. Apply the rule to area, impacted and full suite runs. Keep the scope, reuse and existing failure classification.
+- [x] Update `.asd/agents/asd-tester.md` to capture full runner output and its exit code in one invocation before emitting a bounded summary. Apply the rule to area, impacted and full suite runs. Keep the scope, reuse and existing failure classification.
 
 ### Task 6: Test review paths with the Git-produced scope list
 Material risk: none
 
 AC-8.
 
-- [ ] In `.asd/rules/code-style.md` §17 require tests of review scope selection to exercise the same Git-generated list the workflow passes to the manifest. Reuse `tests/runtime-review.test.js`'s real Git list path as the repository example.
+- [x] In `.asd/rules/code-style.md` §17 require tests of review scope selection to exercise the same Git-generated list the workflow passes to the manifest. Reuse `tests/runtime-review.test.js`'s real Git list path as the repository example.
 
 ### Task 7: Adapt config validation test inputs
 Material risk: none

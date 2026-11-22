@@ -41,3 +41,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Requirements decisions from scope: editable Figma Design screens; existing destination by URL or creation after approval; offer temporary HTML or wait when Figma writes are unavailable; use the Codex App widget for every structured choice and wait for explicit chat replies where the widget is absent. See research.md Requirements.
 - 2026-11-22 — Plan accepted: the user selected "Accept plan and start implementation" for all seven tasks.
 - 2026-11-22 — route Task 1: standard, dispatch HEAD 04853137a0d6403ef1f3b6d9531bb6552887d0c7; risk change: workflow gate
+- 2026-11-22 — route Task 2: standard, dispatch HEAD 4043256c2f31d7bfefbf21a3d83f26728bb6211e; risk change: public contract
+- 2026-11-22 — route Task 4: standard, dispatch HEAD 4043256c2f31d7bfefbf21a3d83f26728bb6211e; risk change: workflow gate
+- 2026-11-22 — route Task 5: standard, dispatch HEAD 4043256c2f31d7bfefbf21a3d83f26728bb6211e; risk change: runner evidence
+- 2026-11-22 — Wave 2 operated within the host's three child-agent slots. Task 6 started as the first slot reopened.
+- 2026-11-22 — route Task 6: standard, dispatch HEAD ba9be28d7b2847ea0a4b4e96fbe1253f77e31ae8
