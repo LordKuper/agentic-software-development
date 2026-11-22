@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 5854ad90 | full change surface |
 | 2 | eaa1003b | delta since entry 1 |
-| 3 | | delta since entry 2 |
+| 3 | 7100bf0c | delta since entry 2 |
 
 ## Risk → check decisions
 
@@ -42,7 +42,7 @@ responsibility:
 - Scope evidence: `runtime-review` drives Git scope and patch generation. The workflow, rule, and template areas check the written handoff. The sync areas cover the shared export and release-ledger changes.
 - Result: pass — 162/162 passed, 0 failed, 0 skipped. Windows ran the native Unicode handoff and the POSIX path selector through a preload. The literal-backslash Git patch case runs on native POSIX.
 - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
-- Line delta: tests +213/−19 (net 194); other +907/−340 (net 567)
+- Line delta: tests +256/−33 (net 223); other +944/−349 (net 595)
 - HEAD: `4bf4a6ee74d85655cc7efe9affb145a24569dcea` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
 - Command: `node tests/run.js`
 - Scope: full — all test areas, unfiltered.

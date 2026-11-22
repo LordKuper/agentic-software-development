@@ -95,3 +95,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route review-fix wave-1/iter-02: standard, dispatch HEAD 4064683e610163b485ccc90c5749aa0c17825ebb; risk change: public-contract
 - 2026-11-22 — route iter-02 finding 1 regression: standard, dispatch HEAD a85c18e8dda79b86f82e2c17ed7c51f2bddd1115
 - 2026-11-22 — impl fix for wave-1/iter-02: findings resolved. Exact Git path handoff `eca760ee`, tech references and hashes `a85c18e8`, test proof `5ee9d8e1`/`4bf4a6ee`, and verified suite evidence `308236be`. All 162 affected tests, lint, context, config, sync and agnix passed. The literal-backslash Git patch test remains platform-conditional.
+- 2026-11-22 — route impl-test entry 3: standard, dispatch HEAD 4a1cbcfa3b2b9d4488a533fbed9bc504f71608fa
+- 2026-11-22 — impl-test re-entry 3 pre-strategy: 314/314 in 13 named areas at `4a1cbcfa`. All proof carried to test-plan.entry-02.md. No test changes or defects. Shared list parsing and sync require the full suite gate.
+- 2026-11-22 — route impl-test entry 3 suite: runner, dispatch HEAD ac5a555ad23ab5d08da4e54b9c8819ae80ac4cf7
+- 2026-11-22 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test re-entry 3
