@@ -37,5 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-- 2026-11-22 — Retro completed. Ten friction entries consolidated into two framework actions, three covered actions, two systemic proposals and one covered systemic item. No upstream issues published in self-hosting mode.
