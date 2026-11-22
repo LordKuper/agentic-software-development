@@ -107,6 +107,19 @@ test('Sprint 038 AC-28: a new reviewer-memory hit prevents both review writes', 
   assert.strictEqual((await persist()).status, 0, 'unchanged historical memory does not block persistence');
 });
 
+/** Writes a fixture scope with the Git command that impl-review uses for path handoffs. */
+function writeImplReviewScope(git, file, base, head, pathspec) {
+  const step = stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1);
+  const command = spans(step).find((span) => span.startsWith('git ') && span.includes('--name-only'));
+  assert.ok(command, 'impl-review step 1 must define the command that derives the scope list');
+  const args = command.slice('git '.length).split(/\s+/).map((arg) => arg
+    .replace('<scratch>', file)
+    .replace('<from>...HEAD', `${base}...${head}`)
+    .replace('<pathspec>', pathspec));
+  git(...args);
+  return step;
+}
+
 test('Sprint 038 AC-18: external review matches its consumer scope and patch across an excluded rename', async () => {
   const sandbox = sandboxGitRepo();
   const content = 'line of moved source\n'.repeat(20);
@@ -132,8 +145,8 @@ test('Sprint 038 AC-18: external review matches its consumer scope and patch acr
   assert.deepStrictEqual(await run(['--scope-only', '--self-hosting']), { status: 0, result: { files: [...source, ...canonical] } });
 
   const literal = 'src\\moved.js';
-  fs.writeFileSync(listed, literal);
   if (process.platform === 'win32') {
+    fs.writeFileSync(listed, literal);
     const posix = path.join(work, 'posix.cjs');
     fs.writeFileSync(posix, 'Object.defineProperty(process, "platform", { value: "linux" });\n');
     const scope = execFileSync(process.execPath, ['--require', posix, RUNTIME_JS, ...args, '--scope-only'], { encoding: 'utf8' });
@@ -145,6 +158,7 @@ test('Sprint 038 AC-18: external review matches its consumer scope and patch acr
     { [importedPath]: 'old literal\n' },
     { [importedPath]: 'updated literal\n', 'src/moved.js': 'updated slash path\n' },
   ], { parent: head });
+  writeImplReviewScope(sandbox.git, listed, posixBase, posixHead, `:(literal)${literal}`);
   const posix = await run(['--out', work, '--base', posixBase, '--head', posixHead, '--iteration', '1', '--wave', '1']);
   assert.strictEqual(posix.status, 0);
   assert.deepStrictEqual(JSON.parse(fs.readFileSync(posix.result.scope, 'utf8')).files, [literal]);
@@ -962,7 +976,7 @@ test('sprint-017 AC-1/AC-4 (COR-5): wave-files reads wave K\'s list at its curre
 
   const out1 = path.join(work, 'wave1.txt');
   const out1Union = path.join(work, 'wave1-union.txt');
-  const extra = write('extra.txt', 'lib/renamed.js\nsrc/new.js\n');
+  const extra = write('extra.txt', 'lib/renamed.js\r\nsrc/new.js\r\n');
   const [mapped, unioned, refused] = await Promise.all([
     runWaveFiles(['--wave', '1', '--out', out1]),
     runWaveFiles(['--wave', '1', '--files', extra, '--out', out1Union]),
@@ -1075,17 +1089,30 @@ test('sprint-017 AC-8 (D9e), sprint-038 AC-20: draft-snapshot and emit-manifest 
   assert.ok(climbed && climbed.status === 2 && /must not climb out/.test(climbed.stderr) && !fs.existsSync(path.join(iterDir(3), 'climb.html')), `a draft path climbing out with .. must fail before a copy lands outside the snapshot directory. Got: ${JSON.stringify(climbed)}`);
 });
 
-test('sprint-015 AC-4 (F-2): the impl-review scope-list command prints a non-ASCII path unquoted, so it still matches as a literal pathspec', () => {
+test('sprint-015 AC-4 (F-2), sprint-038 AC-18: Git scope paths reach the wave manifest and patch verbatim', () => {
   const { repo, env, git } = sandboxGitRepo();
-  writeFile(repo, 'README.md', 'base\n');
-  git('add', '.');
-  git('commit', '-q', '-m', 'base');
-  writeFile(repo, 'docs/résumé.md', 'new\n');
-  git('add', '.');
-  git('commit', '-q', '-m', 'add');
-  const command = /running the diff above as `git ([^`]+)`/.exec(stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1));
-  assert.ok(command, 'impl-review step 1 must still name the command that derives the scope file list');
-  assert.deepStrictEqual(git(...command[1].split(/\s+/), 'HEAD~1', 'HEAD').split('\n').filter(Boolean), ['docs/résumé.md'], 'the scope list must carry the raw path: a C-quoted one matches nothing as a pathspec and drops out of the reviewers\' .diff');
+  const file = 'src/résumé.js';
+  const content = 'unquoted path marker';
+  const [base, head] = importCommitsSync({ repo, env }, [{ 'README.md': 'base\n' }, { [file]: `${content}\n` }]);
+  const work = mkTempDir();
+  const scope = path.join(work, 'git-scope');
+  const division = path.join(work, 'division.json');
+  const waves = path.join(work, 'waves.json');
+  const waveScope = path.join(work, 'wave-scope');
+  const run = (args) => JSON.parse(runtimeCli(args, { cwd: repo, env }));
+
+  const step = writeImplReviewScope(git, scope, base, head, '.');
+  fs.writeFileSync(division, JSON.stringify([[file]]), 'utf8');
+  run(['review-waves', '--files', scope, '--base', base, '--head', head, '--division', division, '--out', waves]);
+  const waveCommand = spans(step).find((span) => span.startsWith('node .asd/runtime.js wave-files'));
+  const waveFlags = waveCommand?.split(' ').filter((token) => token === '--nul') ?? [];
+  run(['wave-files', '--waves', waves, '--wave', '1', '--head', head, '--files', scope, '--out', waveScope, ...waveFlags]);
+  const emitted = run(['emit-manifest', '--phase', 'impl-review', '--reviewer', 'external', '--files', waveScope,
+    '--out', work, '--base', base, '--head', head, '--iteration', '1', '--wave', '1']);
+
+  assert.strictEqual(fs.readFileSync(waveScope, 'utf8'), `${file}\0`);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(emitted.scope, 'utf8')).files, [file]);
+  assert.ok(fs.readFileSync(emitted.diff, 'utf8').includes(`+${content}`));
 });
 
 test('sprint-020 AC-9: persist-review validates a returned review and writes it with its findings JSON in one command - token, roster and ledger checked first, the preamble dropped, the late form beside, an existing review never overwritten, and any failure exits 2 writing nothing', () => {
