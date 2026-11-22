@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:c68952506f4df4ce534ce9d16a4afde9aae5ea24f127e10ce1979dd7b178fbcf content_digest=sha256:89df7262dd14c957421a7c67f7fbe26cf8f9ccd1df49505667c6168b4212aeed asd_version=14.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:e9d6c218a43f82931c5cb261bd6a2cda3fb60dcc242d624e572b3ac598c4c4c6 content_digest=sha256:376f690710c3dac295681d7dd35dca73e211165ee7ef2a0095990856b5e552a5 asd_version=14.10.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -90,10 +90,10 @@ Fresh and re-init only.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
-2a. Run the Config check. Propose each missing field's prior effective value (including legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else its template default. If both mockup keys are absent, propose `project.mockup_format: claude_design` to retain the prior host-based selection. Require repair of duplicate or invalid entries. Keep valid values unless the user edits them.
+2a. Run "Config check". For missing fields propose prior effective values (legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else template defaults. If both mockup keys are absent, propose `project.mockup_format: claude_design`. Require repair of invalid or duplicate entries. Keep valid values unless the user edits them.
 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
-4. Per section: ask new value → add to pending change-set (do not write yet). For mockup format, offer the template's options and propose the resolved value from "Config check" when available. Queue the selection as `project.mockup_format` and include removal of any invalid or duplicate legacy entries in the repair diff.
+4. Collect and queue new values by section. Offer the template's mockup formats and propose the value resolved per "Config check" when available. Queue the selection as `project.mockup_format` and remove invalid or duplicate legacy entries in the repair diff.
 5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `$asd-sync` brings it current under either value, and under `disabled` the next `$asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
 7. With `review.external_review=enabled`, apply fresh step 5's probe to the final config. Report command, profile if set, and status. Keep the setting if unavailable and report its runtime skip reason.
@@ -132,7 +132,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
 
-Validate both mockup keys when present. Resolve `project.mockup_format` first. Without it, legacy `project.claude_design: enabled` resolves to `claude_design`, and `disabled` resolves to `html`. A valid legacy-only config passes without an edit.
+Validate both mockup keys when present. Prefer `project.mockup_format`, else map `project.claude_design` from `enabled` to `claude_design` or `disabled` to `html`. Accept valid legacy-only configs as is.
 
 ### AGENTS.md sync
 

@@ -53,4 +53,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route impl-test entry 1: standard, dispatch HEAD 5a7512c
 - 2026-11-22 — Figma smoke authorized through the Codex App widget: create one private Design draft named "ASD 039 — проверка Figma" and author one editable test screen in the connected plan.
 - 2026-11-22 — Figma smoke passed: remote MCP created the authorized Design draft, wrote one native 480×198 frame, and read back the frame with 1 nested FRAME, 3 editable TEXT layers, no image fills, and a bound background variable. Inspected the composition screenshot. The Codex App delivered the explicit authorization after the widget enqueue. Private file identifiers stay in chat.
+- 2026-11-22 — route D-1: standard, dispatch HEAD 94428f22102dbc076ff2236a4770999bc63c5eda; risk artifact: skill byte budget via standalone skills total
+- 2026-11-22 — impl test-fix: defects D-1 resolved. The standalone skill set uses 62,226 of 62,351 bytes. Generated views were synchronized, and build, lint, context and agnix passed.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
