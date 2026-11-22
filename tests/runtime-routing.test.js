@@ -227,9 +227,11 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
       'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
     );
   }
-  const incomplete = await check(template.replace(/^  codex_profile:.*$/m, '').replace(/^  claude_design:.*$/m, '  claude_design: [redacted-value]\n  claude_design: disabled'));
+  const incomplete = await check(template
+    .replace(/^  codex_profile:.*$/m, '')
+    .replace(/^  mockup_format:.*$/m, '  mockup_format: [redacted-value]\n  mockup_format: html'));
   const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
-  assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.claude_design'], ['project.claude_design']]);
+  assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.mockup_format'], ['project.mockup_format']]);
   assert.doesNotMatch(incomplete.stdout + incomplete.stderr, /redacted-value/);
 });
 
