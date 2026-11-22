@@ -14,7 +14,7 @@ responsibility:
 | 1 | 71a70a21 | full change surface |
 | 2 | 6f4bbe3a | delta since entry 1 |
 | 3 | 30a0a48c | delta since entry 2 |
-| 4 | 5161f7af11f3599a62007287c9855325b8ce73be | delta since entry 3 |
+| 4 | 5b1a1ec7 | delta since entry 3 |
 
 ## Risk → check decisions
 
@@ -39,7 +39,7 @@ No additions. Existing tests cover snapshot selection, manifest diffs and failed
 - Result: pass — 264 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run.
 - Lint / build: pass
 - HEAD: 5161f7af11f3599a62007287c9855325b8ce73be
-- Line delta: tests +28/−2 (net 26); other +134/−54 (net 80)
+- Line delta: tests +28/−2 (net 26); other +139/−56 (net 83)
 
 The entry 3 impacted run passed at `4896ebd2` (264/264). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 

@@ -73,6 +73,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route combined.md F-1, combined.md F-2: standard, dispatch HEAD 87ccd280850265bc34f90a1d606eb72e59a34d8b; risk change: workflow gate
 - 2026-11-22 — Recovery check: reconstructed a missing mockup index in a scratch fixture before enumerating scope. The existing draft-snapshot command selected it and the combined review manifest diff contained its revision. Verified Test-only recovery reads the first authoring anchor before the dispatch graph handles unticked Tasks and sends committed test changes through step 7.
 - 2026-11-22 — impl fix for wave-1/iter-02: findings resolved
+- 2026-11-22 — route impl-test entry 4: standard, dispatch HEAD 5161f7af11f3599a62007287c9855325b8ce73be
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
+- 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
