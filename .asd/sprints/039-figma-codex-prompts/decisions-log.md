@@ -87,8 +87,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route combined.md F-1: standard, dispatch HEAD a6e73b4822714db14495d9e352740484a491ada1; risk change: workflow gate
 - 2026-11-22 — Source trace: the post-fix loop refreshes the recovered index before step 4 increments the counter; pending recovery leaves the old counter and snapshot unchanged. After recovery, step 7 uses the refreshed paths and the actual preceding review snapshot.
 - 2026-11-22 — impl fix for wave-1/iter-04: findings resolved
+- 2026-11-22 — route impl-test entry 6: standard, dispatch HEAD ca3b97d880eeb6532388fc4725a7a13faf4c7608
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
+- 2026-11-22 — impl-test: impacted set green (207/207), 0/0 tests

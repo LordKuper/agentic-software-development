@@ -16,7 +16,7 @@ responsibility:
 | 3 | 30a0a48c | delta since entry 2 |
 | 4 | 5b1a1ec7 | delta since entry 3 |
 | 5 | e2c58cd3 | delta since entry 4 |
-| 6 | | delta since entry 5 |
+| 6 | f81ab280 | delta since entry 5 |
 
 ## Risk → check decisions
 
@@ -42,7 +42,7 @@ No additions. The source trace covers the reordered workflow steps. Existing tes
 - HEAD: ca3b97d880eeb6532388fc4725a7a13faf4c7608
 
 The entry 5, 4 and 3 impacted runs passed at `9457ed99`, `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
-- Line delta: tests +28/−2 (net 26); other +139/−56 (net 83)
+- Line delta: tests +28/−2 (net 26); other +141/−58 (net 83)
 
 ## Defects
 
