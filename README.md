@@ -227,7 +227,7 @@ Eight specialized agents are canonically defined in `.asd/agents/` and generated
 
 **Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates 11 `-quota` definitions, one for each of the eight roles and three task variants. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
 
-Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/agent-protocol.md` "Relay", `.asd/rules/review-policy.md` "Gate Verdict Format").
+Only the main orchestrator and its inline skills prompt you for a discrete decision. Claude Code uses `AskUserQuestion`. Codex uses the native choice widget when available, with the same choices in chat as a fallback. Both wait for your explicit answer. Creators relay hard or unresolved decisions as `QUESTION`. Reviewers use their `Escalations` or `Stalemate` verdict sections. [Provider mapping](.asd/rules/providers.md#semantic-operations---host-convention), [agent relay](.asd/rules/agent-protocol.md#relay)
 
 ### Creators (2)
 
@@ -314,7 +314,7 @@ language:
 
 project:
   subsystem_decomposition: enabled    # enabled | disabled
-  claude_design: disabled             # enabled | disabled — use Claude Design for mockups where available
+  mockup_format: html                 # html | claude_design | figma
   diagram_tool: likec4                # none | likec4 | mermaid (any diagram also needs decomposition enabled)
 
 backward_compat: migration            # strict | migration | none
@@ -338,7 +338,9 @@ git:
   ai_attribution: enabled             # enabled | disabled; disabled keeps Claude/Codex attribution out of commits and PRs
 ```
 
-With `documents.ux_spec: enabled`, set `project.claude_design: enabled` to publish mockups through Claude Design where the host offers the tool. The disabled setting and hosts without the tool use local HTML. Publication follows the usual approval gate. In lite scope, an unreachable canvas host leaves local previews for review and logs a deferred publication. Design-promote retries once per accepted source revision after confirming no previous attempt published. A recorded link is reused. Local previews are promoted if publication remains unavailable or uncertain. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
+When `documents.ux_spec` is enabled, `project.mockup_format` selects local HTML, Claude Design, or Figma Design for Lite scope and Standard design. In existing configs without `mockup_format`, `project.claude_design: enabled` selects Claude Design and `disabled` selects HTML. Claude Design uses local previews when unavailable and can retry a deferred Lite publication at design-promote. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
+
+Figma needs a connected remote integration and edit access to a Design file you supply or approve creating. ASD records links to editable frames for review, implementation and promotion. If it cannot write, you choose temporary local HTML or wait for access. The project setting stays on Figma. [Figma setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
 
 ---
 

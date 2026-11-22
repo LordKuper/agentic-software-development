@@ -18,7 +18,7 @@ flowchart TD
 
 <section id="ui-mockups">
   <h2>UI mockups</h2>
-  <p class="lede">One article per implemented or modified screen, linking its mockup in the <code>mockups/</code> folder beside this file — never embedding it. Each mockup MUST reference DESIGN.md tokens only — no raw hex/px/rem/font (<code>design-system.md</code> §6).</p>
+  <p class="lede">One article per implemented or modified screen, with links to its local mockups or remote frames. Use DESIGN.md tokens in each mockup (<code>design-system.md</code> §12).</p>
 
   <article class="mockup">
     <h3>{{screen name}}</h3>
@@ -26,7 +26,7 @@ flowchart TD
       <dt><b>Purpose</b></dt><dd>{{what user does here}}</dd>
       <dt><b>Entry from</b></dt><dd>{{flow step or upstream screen}}</dd>
       <dt><b>Exit to</b></dt><dd>{{next screen or terminal state}}</dd>
-      <dt><b>Mockup</b></dt><dd><a href="{{mockup path relative to this file}}">{{mockup file}}</a></dd>
+      <dt><b>Mockup</b></dt><dd><a href="{{relative mockup path or stable remote URL}}">{{screen or state}}</a></dd>
     </dl>
     <p><b>Notes</b>: {{states, edge cases, empty/loading/error}}</p>
   </article>

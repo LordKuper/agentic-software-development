@@ -11,7 +11,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
 ## Inputs
 
 ```json
-[".asd/project/config.yaml (project.diagram_tool, project.claude_design, language.chat, language.docs)", "state.json frozen documents.prd, ux_spec, design_system, adr, c4", "<sprint>/sprint.md", "<sprint>/audit.md (when present)", "research (sprint-lifecycle.md 'Input sources')", "existing drafts in <sprint>/design/ (provenance flag)"]
+[".asd/project/config.yaml (project.diagram_tool, project.mockup_format, language.chat, language.docs)", "state.json frozen documents.prd, ux_spec, design_system, adr, c4", "<sprint>/sprint.md", "<sprint>/audit.md (when present)", "research (sprint-lifecycle.md 'Input sources')", "existing drafts in <sprint>/design/ (provenance flag)"]
 ```
 
 ## Steps
@@ -26,7 +26,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
    - if ANY missing → run skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → escalation consult, relay + halt phase
    - on `asd-design-system` COMPLETED → append decisions-log entry inline, one combined entry naming all three accepted paths ("`docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` accepted")
    - **token gate** [GATE adaptive: design token] — a missing, new or changed token found while authoring step 8, or with `ux_spec` disabled when the sprint touches UI, is proposed per `design-system.md` §12 "Token decisions"; each approved entry is appended to `<sprint>/design/design-md-delta.yaml` (created on first entry per `t_design-md-delta.yaml`) before a mockup uses it. Separate from the accept below (`checkpoints.md` "Gate mechanics")
-8. **Step UX-spec** — only if `ux_spec` enabled, on gate cleared: author the flows to `<sprint>/design/ux-spec.html` (`t_ux-spec.html`) and the UI mockups beside it in `<sprint>/design/mockups/`. Select the form and apply its publication gate per `design-system.md` §12 "Mockups". Link each mockup from the ux-spec, per "Authoring" in `## Rules` [GATE write-then-review-accept: UX-spec]
+8. **Step UX-spec** — only if `ux_spec` enabled, on gate cleared: author the flows to `<sprint>/design/ux-spec.html` (`t_ux-spec.html`) and the UI mockups in `<sprint>/design/mockups/` per `design-system.md` §12 "Mockups", including the selected format's publication and recovery. Link each mockup from the ux-spec, per "Authoring" in `## Rules` [GATE write-then-review-accept: UX-spec]
 9. **Step ADR** — only if `adr` enabled, after step 8: author one+ ADRs for sprint scope (repeated `<article>` blocks), sprint-local numbering (`ADR-1`, `ADR-2`, …), status `proposed`/`accepted` only; optionally name a candidate Fold target per decision; for any new tech, create/update `tech-reference/<tech>-<version>.md` per `artifact-layout.md` "Tech reference docs" and `t_tech-reference.md` (no gate of its own: folded into the gated ADR); to `<sprint>/design/adr.html` (`t_adr.html`), per "Authoring" in `## Rules`, one ADR per section — **one `accept` covers the whole sprint ADR set**, never per-decision, and only once every ADR is written [GATE write-then-review-accept: ADR]
 10. **Step c4-full** — only if frozen `documents.c4` (already effective) enabled, after step 9:
     - templates per `project.diagram_tool`: likec4 `t_c4-model.c4`, `t_c4-views.c4`, producing `<sprint>/design/c4-full/model/*.c4`, `views.c4` against `docs/architecture/c4/`; mermaid `t_subsystems.md`, producing `<sprint>/design/c4-full/subsystems.md` against the registry's diagram block
