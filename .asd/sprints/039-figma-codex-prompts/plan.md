@@ -75,7 +75,7 @@ Test-only: tests/runtime-routing.test.js
 
 AC-1 and AC-5.
 
-- [ ] Adapt the config-check test's template-derived fixture to the new primary setting while preserving its missing, invalid and duplicate assertions. Keep legacy compatibility coverage in impl-test as appropriate.
+- [x] Adapt the config-check test's template-derived fixture to the new primary setting while preserving its missing, invalid and duplicate assertions. Keep legacy compatibility coverage in impl-test as appropriate.
 
 Orchestrator at implementation wave exits: regenerate affected provider views from canonical sources once per wave and check the synchronized repository.
 
