@@ -39,3 +39,11 @@
 - **What happened**: Iteration 3 preflight returned the same cached authentication failure.
 - **Impact**: The recovery-fix delta and prior scope were carried as unreviewed by the external provider.
 - **Refs**: reviews/impl/wave-1/iter-03/external.md.
+
+## F-6 — External review remained unavailable after the partial-recovery fixes
+
+- **Phase**: impl-review
+- **Surface**: external-review provider availability
+- **What happened**: Iteration 4 preflight returned the same cached authentication failure.
+- **Impact**: The carried scope and latest changes remained unreviewed by the external provider.
+- **Refs**: reviews/impl/wave-1/iter-04/external.md.

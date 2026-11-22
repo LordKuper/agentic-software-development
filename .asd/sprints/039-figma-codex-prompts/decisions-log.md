@@ -81,6 +81,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Recovery proof: reconstructed a missing Figma index row from its verified journal entry. Its reviewer patch preserves frame revision, state, component and the unbound token reference. Source trace for mixed Test-only recovery routes a committed compile-only subtask through step 7 and dispatches the still-unfinished regression subtask against the same first anchor; no new test bypass.
 - 2026-11-22 — impl fix for wave-1/iter-03: findings resolved
 - 2026-11-22 — route impl-test entry 5: standard, dispatch HEAD 9457ed9947c285dc6c1e6011c9c72be51a209b63
+- 2026-11-22 — wave-1/iter-04 external review skipped after preflight returned negative-cache (authentication). Recorded the entire carried unreviewed scope.
+- 2026-11-22 — wave-1/iter-04 Combined returned CONCERNS F-1. Route the Figma reconciliation pause ahead of review iteration allocation.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
