@@ -1,0 +1,14 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-22T10:40:41.832Z","attrs":{}}
+{"op":"open","id":"workflow-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:40:45.525Z","attrs":{}}
+{"op":"close","id":"workflow-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:40:45.525Z","end":"2026-11-22T10:41:00.830Z","outcome":"done","attrs":{}}
+{"op":"open","id":"requirements","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:41:16.711Z","attrs":{}}
+{"op":"close","id":"requirements","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:41:16.711Z","end":"2026-11-22T10:42:46.682Z","outcome":"done","attrs":{}}
+{"op":"open","id":"refinement","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:43:08.431Z","attrs":{}}
+{"op":"close","id":"refinement","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:43:08.431Z","end":"2026-11-22T10:44:49.402Z","outcome":"done","attrs":{}}
+{"op":"open","id":"approach-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:44:49.436Z","attrs":{}}
+{"op":"close","id":"approach-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:44:49.436Z","end":"2026-11-22T10:45:47.166Z","outcome":"done","attrs":{}}
+{"op":"open","id":"retro-dispositions","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:45:47.199Z","attrs":{}}
+{"op":"close","id":"retro-dispositions","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:45:47.199Z","end":"2026-11-22T10:47:38.378Z","outcome":"done","attrs":{}}
+{"op":"open","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:47:38.412Z","attrs":{}}
+{"op":"close","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-22T10:47:38.412Z","end":"2026-11-22T10:48:35.470Z","outcome":"done","attrs":{}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-22T10:40:41.832Z","end":"2026-11-22T10:48:35.502Z","outcome":"done","attrs":{}}
