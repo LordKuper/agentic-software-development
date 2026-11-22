@@ -57,5 +57,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl test-fix: defects D-1 resolved. The standalone skill set uses 62,226 of 62,351 bytes. Generated views were synchronized, and build, lint, context and agnix passed.
 - 2026-11-22 — route impl-test entry 2: standard, dispatch HEAD 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84
 - 2026-11-22 — Manual integration checks passed through live Figma frame read-back and the explicit Codex App widget response. The unavailable-tool paths are rule and fixture checks.
+- 2026-11-22 — wave-1/iter-01 combined first dispatch interrupted. Its manifest omitted the framework flag, so it gated out the self-hosting consistency rubric. Re-emitted with `--self-hosting` and dispatched fresh.
+- 2026-11-22 — wave-1/iter-01 external first dispatch did not invoke the CLI. The wrapper misapplied the Claude Code Bash requirement on the Codex/PowerShell host. Corrected the host invocation and dispatched fresh.
+- 2026-11-22 — wave-1/iter-01 external real invocation failed authentication twice because the Claude account was on hold. Recorded the failure by fingerprint. Rechecking preflight returned negative-cache (authentication), so external review used the configured availability skip.
+- 2026-11-22 — wave-1/iter-01 Combined returned CONCERNS 1–5. Route production and documentation findings 1, 2, 3, 5 to impl review-fix, then test finding 4 to the tester chain.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
