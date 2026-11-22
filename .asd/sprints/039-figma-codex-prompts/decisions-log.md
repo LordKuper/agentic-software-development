@@ -76,6 +76,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route impl-test entry 4: standard, dispatch HEAD 5161f7af11f3599a62007287c9855325b8ce73be
 - 2026-11-22 — wave-1/iter-03 external review skipped after preflight returned negative-cache (authentication). The skip retains the prior scope and both fix deltas as unreviewed.
 - 2026-11-22 — wave-1/iter-03 Combined returned CONCERNS F-1 and F-2. Route partial Test-only completion and full Figma index reconstruction to impl review-fix.
+- 2026-11-22 — Review-fix references verified for iteration 3: Git recovery and Figma native read-back reuse the documented interfaces. Both findings correct the evidence read or written by existing steps.
+- 2026-11-22 — route combined.md F-1, combined.md F-2: standard, dispatch HEAD b72b25f9c4e567e93fc6db32d90d7184d38463db; risk change: workflow gate, change: persisted handoff
+- 2026-11-22 — Recovery proof: reconstructed a missing Figma index row from its verified journal entry. Its reviewer patch preserves frame revision, state, component and the unbound token reference. Source trace for mixed Test-only recovery routes a committed compile-only subtask through step 7 and dispatches the still-unfinished regression subtask against the same first anchor; no new test bypass.
+- 2026-11-22 — impl fix for wave-1/iter-03: findings resolved
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
