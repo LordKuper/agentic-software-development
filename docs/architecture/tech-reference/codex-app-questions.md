@@ -21,4 +21,4 @@ responsibility:
 
 ## Project conventions
 
-- Use localized options for structured decisions. Wait for the actual answer before mutating gate state. Where the tool is missing, use chat with the same options.
+- See [provider decision routing](../../../.asd/rules/providers.md) and [gate mechanics](../../../.asd/rules/checkpoints.md#gate-mechanics).

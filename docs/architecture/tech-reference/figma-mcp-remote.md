@@ -15,6 +15,7 @@ responsibility:
 
 - `use_figma` targets a Figma file key from the supplied Design URL. It can inspect or mutate native nodes through the Plugin API, depending on the script. Write access and the remote server are required.
 - `create_new_file` creates a blank Design file in drafts. Select the plan or team explicitly when there is a choice. The returned file identity is the target for authoring.
+- The Codex App Figma plugin exposes `create_session` for a specified file key. It returns a session ID for subsequent file tool calls and leaves the canvas unchanged. The live smoke used this setup.
 
 ## Version-specific notes
 
@@ -22,4 +23,4 @@ responsibility:
 
 ## Project conventions
 
-- Load the host's Figma authoring skills. Resolve and authorize the destination before writing. Retain node links and recover an uncertain write before repeating it.
+- See [provider operation mapping](../../../.asd/rules/providers.md) and [mockup publication and recovery](../../../.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival).
