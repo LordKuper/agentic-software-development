@@ -24,6 +24,7 @@ responsibility:
 | Review 4 · AC-18 | A POSIX backslash aliases a different path in external review | Component/contract | keep | `runtime-review` checks path selection on Windows through a POSIX preload and checks the emitted literal-backslash Git patch on native POSIX. |
 | Review 5–6 | Comment moves or evidence repairs are mistaken for untested behavior | Static | none | The comment moves preserve executable code. The focused failing commands, checked revisions, and gap proofs are recorded in `test-plan.entry-01.md`. |
 | Wave 1 iteration 2 finding 1 · AC-18 | Git quoting or the wave handoff changes a path before patch generation | Component/contract | keep | Extend the scope command contract through real Git output, wave files, and manifest emission. Exercise the production command with a literal backslash on POSIX and retain legacy LF and CRLF list coverage. |
+| Wave 1 iteration 2 finding 1 · AC-18 | The skip-record check rejects a valid wording change around the carried path field | Static | keep | The first impacted run passed 161/162 at `5ee9d8e1`. The existing interrupted and availability-skip contract failed because it extracted the field using obsolete prose. Check the stable field in the definition and report template. |
 
 ## Removed tests
 

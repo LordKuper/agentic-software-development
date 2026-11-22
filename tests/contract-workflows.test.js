@@ -245,9 +245,11 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: the External Review interrupted and 
   assert.ok(agentEscalation.some((row) => row.signal === interrupted[1]), `the agent's Escalation must carry the interrupted literal \`${interrupted[1]}\``);
   const report = canonText('.asd/templates/external-review/t_review-report.md');
   assert.ok(report.includes(SKIP), 't_review-report.md\'s first-line alternatives must admit the skip token');
-  const carried = /as its `([^`]+)` line/.exec(sectionOf('.asd/rules/external-review.md', 'Iteration semantics'));
-  assert.ok(carried, 'external-review.md "Iteration semantics" must name the line a skipped iteration records its unreviewed files on');
-  assert.ok(report.includes(`**${carried[1]}**`), `t_review-report.md must slot the \`${carried[1]}\` line the next iteration reads`);
+  const carried = 'Unreviewed files';
+  const iteration = sectionOf('.asd/rules/external-review.md', 'Iteration semantics');
+  const field = iteration.split('\n').find((line) => line.startsWith(`**${carried}.**`)) ?? '';
+  assert.ok(spans(field).includes(carried), 'external-review.md must define the Unreviewed files field');
+  assert.ok(report.includes(`**${carried}**`), 'the report must provide the Unreviewed files field the next iteration reads');
 });
 
 test('AC-15: the decisions-log tail checkpoints.md counts fix rounds by is the one asd-phase-impl.md emits', () => {
