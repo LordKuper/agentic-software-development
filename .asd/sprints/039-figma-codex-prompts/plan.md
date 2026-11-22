@@ -43,9 +43,9 @@ Reachability: Lite scope or Standard design records the authorized destination, 
 
 AC-1 through AC-3 and AC-5.
 
-- [ ] Define the provider operation in `providers.md` and route the selected format in `design-system.md` §12. Update the references in `asd-phase-scope.md`, `asd-phase-design.md`, `asd-phase-design-promote.md`, and README. Refresh mockup index and fidelity references in artifact-layout, reviewer and template paths only where the canonical grep shows a format-specific assumption.
-- [ ] Use the supported Figma integration to write editable frames to the supplied file or create a file after the user approves. Follow the external-action gate and the Figma author's applicable skills. Reuse existing tokens and linked components where available. Record stable frame links in `design/mockups/index.md`, and preserve links through review, implementation handoff and promotion.
-- [ ] When write access fails, offer temporary local HTML or wait. Record the choice and status before leaving the phase. Reuse a confirmed result and recover uncertain writes by destination and identity before retry. Keep Claude Design's existing deferred publish and HTML paths working.
+- [x] Define the provider operation in `providers.md` and route the selected format in `design-system.md` §12. Update the references in `asd-phase-scope.md`, `asd-phase-design.md`, `asd-phase-design-promote.md`, and README. Refresh mockup index and fidelity references in artifact-layout, reviewer and template paths only where the canonical grep shows a format-specific assumption.
+- [x] Use the supported Figma integration to write editable frames to the supplied file or create a file after the user approves. Follow the external-action gate and the Figma author's applicable skills. Reuse existing tokens and linked components where available. Record stable frame links in `design/mockups/index.md`, and preserve links through review, implementation handoff and promotion.
+- [x] When write access fails, offer temporary local HTML or wait. Record the choice and status before leaving the phase. Reuse a confirmed result and recover uncertain writes by destination and identity before retry. Keep Claude Design's existing deferred publish and HTML paths working.
 
 ### Task 4: Route Codex choices through the native widget
 Material risk: change: workflow gate

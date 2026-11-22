@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd content_digest=sha256:a12cd1a44abcd6f8db2a0d6d57b131f9bab2bdd05ca800586963700753798bcd asd_version=14.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:4b71de2cbec163c0f15848c7c4ae64e4c72cd7b49119dc517e8d4864081d010d content_digest=sha256:0e40a159a08237338bb64c8bc0900e41d74a066e9ac6cf54e2af296ec5e6e6b2 asd_version=14.10.0 schema=1
 name: asd-reviewer-quality
 description: "AC→code→test trace, bugs, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility; standard impl-review. Not: simplicity, perf, token cost → asd-reviewer-efficiency; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -148,9 +148,9 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - custom-common-rules.md domain glossary/naming and the phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review) respected
 
 ### UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]
-- **Token usage**: per `design-system.md` §6 — covers ux-spec mockup previews too; raw hex/px/rem/font in a mockup or UI = `high` finding
+- **Token usage**: per `design-system.md` §6 for local previews and UI, with raw hex/px/rem/font = `high` finding. For Figma frames, verify bindings and token references per §12.
 - **Token comment**: per `design-system.md` §4
-- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
+- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7. For Figma, use frame links and the mockup index. If frame access is unavailable, review the recorded structure, states and references from the index and report visual checks as unverified.
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
 - **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale is a finding
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`

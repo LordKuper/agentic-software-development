@@ -48,3 +48,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — route Task 6: standard, dispatch HEAD ba9be28d7b2847ea0a4b4e96fbe1253f77e31ae8
 - 2026-11-22 — route Task 7: standard, dispatch HEAD 980f98b44a9fa056ab919400603f92b3c0778f45
 - 2026-11-22 — Task 7 accepted at `876ee608dedf29513160d8d8b82374b8090b92e8`. The committed diff adapts the existing config fixture and assertions to the replacement key, with no new or extended behavioral regression coverage. The existing targeted check passed.
+- 2026-11-22 — route Task 3: escalated, dispatch HEAD 27249f911026bd6b991b3383977a33eecbd5220a; risk change: cross-domain, Task 3 change: workflow gate
