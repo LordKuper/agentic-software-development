@@ -2780,6 +2780,9 @@ function configCheckCommand(flags) {
   const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
   const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
   const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
+  const mockupFormatKey = JSON.stringify(['project', 'mockup_format']);
+  const legacyMockupKey = JSON.stringify(['project', 'claude_design']);
+  const legacyMockupField = { kind: 'scalar', raw: 'disabled # enabled | disabled' };
   const seen = new Set();
   const duplicates = new Set();
   const invalid = [];
@@ -2795,7 +2798,7 @@ function configCheckCommand(flags) {
     else invalid.push({ path, line, reason });
   })) {
     const identity = JSON.stringify(entry.path);
-    const field = required.get(identity);
+    const field = identity === legacyMockupKey ? legacyMockupField : required.get(identity);
     if (!field) continue;
     const key = entry.path.join('.');
     if (seen.has(identity)) duplicates.add(key);
@@ -2806,7 +2809,10 @@ function configCheckCommand(flags) {
       invalid.push({ path: key, line: entry.line, reason: 'use unquoted ai_attribution: disabled under the plain git: mapping' });
     }
   }
-  const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
+  const missing = [...required]
+    .filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)
+      && !(identity === mockupFormatKey && seen.has(legacyMockupKey)))
+    .map(([, field]) => field.path.join('.'));
   return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };
 }
 

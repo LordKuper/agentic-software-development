@@ -39,7 +39,7 @@ Fresh and re-init only.
 ### Fresh
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Batch input on chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues`, Claude Design and `documents.*`, with defaults from `t_config.yaml`. Under self-hosting propose the default for `upstream_issues`, audit `auto`, other documents disabled and `diagram_tool: none`. For enabled External Review under Codex ask for `review.codex_profile`, defaulting explicitly to `""`.
+2. Batch input on chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues`, `project.mockup_format` and `documents.*`, with options and defaults from `t_config.yaml`. Under self-hosting propose the default for `upstream_issues`, audit `auto`, other documents disabled and `diagram_tool: none`. For enabled External Review under Codex ask for `review.codex_profile`, defaulting explicitly to `""`.
 3. If decomposition enabled → request user decision: diagram_tool (`none` | `likec4` | `mermaid`); disabled → `none`
 4. Detect OS via command execution (silent; no confirm yet) — selects step 12's OS-specific commands, never written to config
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
@@ -92,10 +92,10 @@ Fresh and re-init only.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
-2a. Run the Config check. Propose each missing field's prior effective value (including legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else its template default. For missing `project.claude_design`, propose `enabled` to retain host-based selection. Require repair of duplicate or invalid entries. Keep valid values unless the user edits them.
+2a. Run the Config check. Propose each missing field's prior effective value (including legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else its template default. If both mockup keys are absent, propose `project.mockup_format: claude_design` to retain the prior host-based selection. Require repair of duplicate or invalid entries. Keep valid values unless the user edits them.
 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
-4. Per section: ask new value → add to pending change-set (do not write yet)
+4. Per section: ask new value → add to pending change-set (do not write yet). For mockup format, offer the template's options and propose the resolved value from "Config check" when available. Queue the selection as `project.mockup_format` and include removal of any invalid or duplicate legacy entries in the repair diff.
 5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
 7. With `review.external_review=enabled`, apply fresh step 5's probe to the final config. Report command, profile if set, and status. Keep the setting if unavailable and report its runtime skip reason.
@@ -133,6 +133,8 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 ### Config check
 
 Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
+
+Validate both mockup keys when present. Resolve `project.mockup_format` first. Without it, legacy `project.claude_design: enabled` resolves to `claude_design`, and `disabled` resolves to `html`. A valid legacy-only config passes without an edit.
 
 ### AGENTS.md sync
 
