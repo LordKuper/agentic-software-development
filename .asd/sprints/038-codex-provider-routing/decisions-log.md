@@ -93,3 +93,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl-review wave-1/iter-02 routed combined findings 1–3 to impl review-fix. The real Git scope command still quoted unusual paths before the repaired selector could see them. No terminal gate on this iteration.
 - 2026-11-22 — verified `git diff --name-only -z --output=<scratch>` on Git 2.56 and clarified Node API targets and preload effects in the review-fix references.
 - 2026-11-22 — route review-fix wave-1/iter-02: standard, dispatch HEAD 4064683e610163b485ccc90c5749aa0c17825ebb; risk change: public-contract
+- 2026-11-22 — route iter-02 finding 1 regression: standard, dispatch HEAD a85c18e8dda79b86f82e2c17ed7c51f2bddd1115
+- 2026-11-22 — impl fix for wave-1/iter-02: findings resolved. Exact Git path handoff `eca760ee`, tech references and hashes `a85c18e8`, test proof `5ee9d8e1`/`4bf4a6ee`, and verified suite evidence `308236be`. All 162 affected tests, lint, context, config, sync and agnix passed. The literal-backslash Git patch test remains platform-conditional.

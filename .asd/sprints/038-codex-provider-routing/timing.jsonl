@@ -135,3 +135,20 @@
 {"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-21T23:55:30.847Z","attrs":{}}
 {"op":"open","id":"review-fix wave-1/iter-02","kind":"dispatch","parent":"impl#3","start":"2026-11-21T23:55:30.950Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sol","context_bytes":"94297"}}
 {"op":"close","id":"review-fix wave-1/iter-02","kind":"dispatch","parent":"impl#3","start":"2026-11-21T23:55:30.950Z","end":"2026-11-21T23:59:06.601Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sol","context_bytes":"94297"}}
+{"op":"open","id":"asd-tester impl#3","kind":"dispatch","parent":"impl#3","start":"2026-11-21T23:59:16.165Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol","context_bytes":"86232"}}
+{"op":"open","id":"review-fix iter-02 path proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:00:55.741Z","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix iter-02 path proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:00:55.741Z","end":"2026-11-22T00:00:56.130Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"review-fix iter-02 scope command proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:12.901Z","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix iter-02 scope command proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:12.901Z","end":"2026-11-22T00:01:13.280Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"review-fix iter-02 wave flag proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:26.025Z","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix iter-02 wave flag proof","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:26.025Z","end":"2026-11-22T00:01:26.709Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"review-fix iter-02 wave reproduction","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:39.416Z","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix iter-02 wave reproduction","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:39.416Z","end":"2026-11-22T00:01:40.094Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"review-fix iter-02 reword control","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:40.497Z","attrs":{"scope":"named"}}
+{"op":"close","id":"review-fix iter-02 reword control","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:01:40.497Z","end":"2026-11-22T00:01:41.191Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"review-fix iter-02 impacted areas","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:02:17.124Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"review-fix iter-02 impacted areas","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:02:17.124Z","end":"2026-11-22T00:02:30.647Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"review-fix iter-02 final impacted areas","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:03:28.109Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"review-fix iter-02 final impacted areas","kind":"suite","parent":"asd-tester impl#3","start":"2026-11-22T00:03:28.109Z","end":"2026-11-22T00:03:41.830Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"asd-tester impl#3","kind":"dispatch","parent":"impl#3","start":"2026-11-21T23:59:16.165Z","end":"2026-11-22T00:04:39.522Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol","context_bytes":"86232"}}
+{"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-21T23:55:30.847Z","end":"2026-11-22T00:04:39.522Z","outcome":"done","attrs":{}}
