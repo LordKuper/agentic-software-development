@@ -108,3 +108,6 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 037-quality-gates-ci-cost-ideas#A-7 | asd | included | 038-codex-provider-routing | `persist-review` runs the memory content check over the reviewer's changed memory files and fails on a hit. |
 | 037-quality-gates-ci-cost-ideas#P-1 | asd | included | 038-codex-provider-routing | Scope a sprint that revises the test areas the shared-infrastructure safety valve forces to a full run. |
 | 037-quality-gates-ci-cost-ideas#P-2 | asd | included | 038-codex-provider-routing | A review-fix whose diff touches only prose no test parses skips the impl-test tester dispatch: the orchestrator runs the impacted contract areas and records decision `none` itself. |
+| 038-codex-provider-routing#A-2 | asd | included | 039-figma-codex-prompts | Capture the complete runner report and exit code in the same invocation before printing a bounded summary. |
+| 038-codex-provider-routing#P-1 | asd | included | 039-figma-codex-prompts | Require a recorded red run before accepting a Test-only Task that adds or extends a behavior regression. |
+| 038-codex-provider-routing#P-2 | asd | included | 039-figma-codex-prompts | Exercise the workflow's Git-produced scope list when testing a review-path change. |

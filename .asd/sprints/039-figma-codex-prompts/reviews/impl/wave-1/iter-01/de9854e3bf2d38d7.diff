@@ -1,0 +1,672 @@
+diff --git a/.asd/agents/asd-reviewer-quality.md b/.asd/agents/asd-reviewer-quality.md
+index fb41aa3..ca36f1b 100644
+--- a/.asd/agents/asd-reviewer-quality.md
++++ b/.asd/agents/asd-reviewer-quality.md
+@@ -149,9 +149,9 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
+ - custom-common-rules.md domain glossary/naming and the phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review) respected
+ 
+ ### UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]
+-- **Token usage**: per `design-system.md` §6 — covers ux-spec mockup previews too; raw hex/px/rem/font in a mockup or UI = `high` finding
++- **Token usage**: per `design-system.md` §6 for local previews and UI, with raw hex/px/rem/font = `high` finding. For Figma frames, verify bindings and token references per §12.
+ - **Token comment**: per `design-system.md` §4
+-- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
++- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7. For Figma, use frame links and the mockup index. If frame access is unavailable, review the recorded structure, states and references from the index and report visual checks as unverified.
+ - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
+ - **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale is a finding
+ - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index b78e7a1..21e546f 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -38,12 +38,14 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
+ - must: read the context (change surface, plan risks, ACs, flows, API contracts, existing tests and their patterns) before deciding anything.
+ - must: impl-test: run the pre-strategy check or consume its area results, decide (`test-plan.md`), prune, author and rerun impacted tests after each authoring batch. At step 8, run the single suite gate if this entry changed a test and the gate is unsplit. Otherwise return after step 7 for a runner or the area runs per `asd-phase-impl-test.md` steps 3 and 8. The safety valve applies to the suite gate per `sprint-lifecycle.md` "Impacted test set". Use a fresh instance for each entry and terminal full-suite run.
+ - must: bracket every suite run it makes with a `suite` op — `node .asd/runtime.js timing`, `--kind suite`, `--attrs scope=<Suite run Scope>`, `--parent` its dispatch id (`sprint-lifecycle.md` "Operation timing"); a repeat run opens a new op id, never reusing a closed one.
++- must: for each area, impacted or full test run, capture the complete runner report (stdout and stderr) and its exit code in the same invocation. Emit only a bounded summary with the required run evidence from that capture.
+ - must: the `runner` variant (`asd-tester-runner`, dispatched for impl-review's terminal full suite and an impacted re-run with no test change) runs the named suite scope, records `test-plan.md` `Suite run` and reports pass/fail with the runner's first failure lines; at impl-test's green exit it also runs `commands.yaml` `smoke` once when present, recording `Smoke: <command> — pass|fail`; it authors, prunes and triages nothing, and a red run, a smoke fail included, goes to the base `asd-tester` for triage. A new `Suite run` records `HEAD` and Scope (Scope per `sprint-lifecycle.md` "Impacted test set" **Scope.**), runner and base tester alike; an earlier green run at or above the needed scope is reused per `sprint-lifecycle.md` "Impacted test set".
+ - must: `area-run` runner: run only the supplied command, timing a whole area as `impacted`. Check `HEAD` and relevant path cleanliness (including untracked files) before and after. With matching `HEAD`, clean paths and a captured runner exit, record command, checked `HEAD`, exit code, counts and first failure line when present in that `Area runs` row, then mark it `done` and commit before returning. Otherwise leave the row pending and report the cause. Write no other plan section; report a valid red result for strategy or triage.
+ - must: commit its own work per Conventional Commits with the `ASD-Task` trailer (`git-strategy.md` "Commits") before phase `COMPLETED` (`sprint-lifecycle.md` "Impl-test commits its own output").
+ - must: review-fix: commit the fixes before verification. Run the check each finding requires (the impacted set or the named test), bracketed by a `suite` op. Before and after the check, read `git rev-parse HEAD` and check that the code, test and stub paths are clean in the index and worktree, including untracked files (`git --no-optional-locks status --porcelain=v1 -z --untracked-files=all` with the reuse pathspec). Write `Suite run` (Command, Scope, Result, HEAD) within `artifact-layout.md` "Test plan"'s grant. Record the checked commit as `HEAD` only when both reads match and both status checks are clean. Otherwise record the result without a reusable `HEAD`. Scope is `named` for a named test or name-filtered run; reuse follows `sprint-lifecycle.md` "Impacted test set".
+ - must: in-place test fix (impl-review, `review-policy.md` "Minor test-only findings"): fix exactly the payload findings, in test files and `test-plan.md`, within `artifact-layout.md` "Test plan"'s grant, with no impl-test entry; commit per `git-strategy.md` "Commits"; report each finding fixed or unfixed.
+ - must: Test-only Task (shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave with `test-plan.md`, `plan.md` and — when the wave holds more than one Task — a shared `MEMORY.md` untouched, returning the index line in `COMPLETED` (`asd-phase-impl.md` "Rules"); impl-test entry 1 owns strategy, pruning and the suite gate.
++- must: for each behavior regression test a Test-only Task adds or extends, run the fail-first or equivalent targeted mutation check per `code-style.md` §17, isolating any production changes from the shared worktree. Include its `Regression proof` in the `COMPLETED` body using the fields in `t_test-plan.md`. On an evidence-only re-dispatch, use the committed Task tests.
+ - must: cite the AC-N or risk each test covers in the test name or a comment; cover edge cases where they carry real risk (empty, single, many, boundary, invalid, concurrent); flag and refactor flaky patterns rather than retrying them.
+ - must: specify manual verification only when no automation can verify (visual UI, third-party live integration, ux feel), as the `test-plan.md` `Manual verification` table (AC-N, steps, expected observation) — its single home, consumed and never re-authored by reviewers.
+ - must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included; report each memory hit, never editing it (`review-policy.md` "Memory-fix dispatch").
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 91b53b8..8cb0e65 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,7 +32,7 @@
+     "agents/asd-external-review.md": "sha256:99501a02d619e3c98c6181002a32216095e4aeb63363ddf4c5e341ff15addafe",
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    "skills/asd-init/SKILL.md": "sha256:420f4a68f021ca681a2f6292dcf763e5ccf8fcd3f78efaf0f42c28d9043084b8",
++    "skills/asd-init/SKILL.md": "sha256:e9d6c218a43f82931c5cb261bd6a2cda3fb60dcc242d624e572b3ac598c4c4c6",
+     "skills/asd-sprint/SKILL.md": "sha256:407a21764b0ce97c466f251cf49599a33e8d159b76d711a2d6ab7b78eb9ed035",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+@@ -50,32 +50,32 @@
+     "agents/asd-advisor.md": "sha256:479b748bdcc8702aa607b7e9d6f7fc038672f44b27f3521a63baaa1b626f70dc",
+     "agents/asd-reviewer-efficiency.md": "sha256:8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776",
+     "agents/asd-dev.md": "sha256:586ba93ea32157c5c6d5eb5ef952dbf450848b64e45700c5c860bead191f4212",
+-    "agents/asd-tester.md": "sha256:081e0e00d198f43d942a4e287b90b11bcccbabdba1ed1bf44ff32e6d4305a66d",
++    "agents/asd-tester.md": "sha256:49b460e4c9b8a84fc80b0f51336b605931658d72909667d85dca3ae422b4b341",
+     "skills/asd-phase-retro/SKILL.md": "sha256:e8e8b03349b6b05b6170fb2d81cf092237e0b9f4f067a739b80d2f57491d2bfc",
+     "agents/asd-reviewer-combined.md": "sha256:446ecb7d5cf6974b1e4543159dfd697ddbb78a540ac62842c70664ec5757c65c",
+-    "agents/asd-reviewer-quality.md": "sha256:db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd",
++    "agents/asd-reviewer-quality.md": "sha256:4b71de2cbec163c0f15848c7c4ae64e4c72cd7b49119dc517e8d4864081d010d",
+     "skills/asd-phase-cleanup/SKILL.md": "sha256:67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+     "agents/asd-scout.md": "sha256:78589e30b959861873bdbc1c059d253b308eb6cb0115587d620333be3009860a"
+   },
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "99501a02d619e3c98c6181002a32216095e4aeb63363ddf4c5e341ff15addafe",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "4ffc06e60c20c2a63b4328df6fab9f155f7bac945f1d5bfe370b03403fc394ec",
+-    ".asd/rules/checkpoints.md": "bf399860b8b59e92b3b02e71188d2ee633527a46eba0ec1cbdc4c245b86c14dd",
+-    ".asd/rules/code-style.md": "97d5ba305edace4cca78d13f7bed70d01fa76eb6a1d3d31e36fc00298359d246",
+-    ".asd/rules/core.md": "979456e82d1350da8e3a5222c98c621fc1c8ed3d886ac3f3c5f3b48df0e05c9b",
++    ".asd/rules/artifact-layout.md": "52f039592dfc9f869e40410ebb4ee9f6c08048ffa132a934a3cfa89aeb898b52",
++    ".asd/rules/checkpoints.md": "f7bdac3b2dd925a4f0c159543548534ddda759fca45a5f3cb8c1d43bb42cdc36",
++    ".asd/rules/code-style.md": "aca9674ae465d353b67c9b12aa6c4913dbd635baec5bde71b1d53fd96a301c3d",
++    ".asd/rules/core.md": "c29ca1f4432856bdbef127546e9006603e1834427ccfbb3acdcc1ae30ea3568c",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+-    ".asd/rules/design-system.md": "16bc53c0d0d3a3c6478f90739119ee5f2e18e02ee4bae3026856fe98bef9fdf3",
++    ".asd/rules/design-system.md": "0e726144d27472f6002357e443b3fcddaff182acad9722a83970253acf79346f",
+     ".asd/rules/external-review.md": "7aaefb325e5b7556aa8071ad75ab375b939037c1d62e076415c38b2cc150793d",
+     ".asd/rules/git-strategy.md": "68ea23e0c74f2254733b4f2ed2a685e5dbb5c3b6a3717436c4c3ccf7db2551c8",
+     ".asd/rules/language-policy.md": "f2f53a9425f18a77aa6e71c63212e092f83bd4089cab03180668ae50e96beb75",
+-    ".asd/rules/providers.md": "e997619be09970ece8955a74ffae0ef5f21eb26e472fbfb2f5ea38a78c4ef609",
++    ".asd/rules/providers.md": "3194204b9a1198d5c4a5298727bbe337817be2469e4cf90314f1798e51cd5508",
+     ".asd/rules/review-policy.md": "dcaf634f8f84bcb0d681edd8774ae44a68b5a51bb3176a25b3cbb062af6fcadd",
+     ".asd/rules/sprint-lifecycle.md": "39c7a088d604470efcaa092f81fcd98a061f0cbd77c97a6ba4a7f6028251e362",
+     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    ".asd/skills/asd-init/SKILL.md": "420f4a68f021ca681a2f6292dcf763e5ccf8fcd3f78efaf0f42c28d9043084b8",
++    ".asd/skills/asd-init/SKILL.md": "e9d6c218a43f82931c5cb261bd6a2cda3fb60dcc242d624e572b3ac598c4c4c6",
+     ".asd/skills/asd-phase-audit/SKILL.md": "e08e4505589ca00b04730d2f3f271c02386a7c6de049f82b122409b9de2744c3",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "dbd1a637132f8453a24217bc8991d83584f5bf10ca4d3b40c713010c06fe1bc9",
+@@ -104,7 +104,7 @@
+     ".asd/templates/t_c4-views.c4": "83d96d2ff7a9cc585028d5f5995b5fd0d2fad796299d8cd1188e367479dd4710",
+     ".asd/templates/t_commands.yaml": "3de411fbb9a7ff8923de0858393cc597668ea261a0dbe8364fba51fdf0fd8dac",
+     ".asd/templates/t_concept.html": "352eebce830f9de3205e3f80c5037e25b9e554a0530bcc2ca3aa31edecea197f",
+-    ".asd/templates/t_config.yaml": "baef7918c1cb9e6d335c50ce162476d1a3b847c74df14decc81701948ac497da",
++    ".asd/templates/t_config.yaml": "2a6f5cd1869821003da98db19f569de914871de6d4c687ba49f90cc5b68c686b",
+     ".asd/templates/t_custom-coding-rules.md": "0d2b33b14599c4f60f3c6fb9a410e10eda94a96784ff46c6403ac720faabb209",
+     ".asd/templates/t_custom-common-rules.md": "a81363c75ae5af853cd6d49e265518e32a9a37ea06ba08d9afef7c48191ed96b",
+     ".asd/templates/t_custom-design-rules.md": "32bea20a1464f1170e4cb7aab64005992de81b24a954fa9a0e6765045841bb86",
+@@ -123,25 +123,25 @@
+     ".asd/templates/t_stubs.md": "6a2a288db8c4f7acb35fb23fa2fe43efbd8ab335a192a23982764865ee776098",
+     ".asd/templates/t_tech-reference.md": "e0b59a1f18d932a18d8677d7be1bc0392b553639b4cb8b588be9b1b664c229f5",
+     ".asd/templates/t_test-plan.md": "1ad857d002e3949eb9af0fea3d870a276bdde104a8447dc550ecbc03aaa11afa",
+-    ".asd/templates/t_ux-spec.html": "c9714c085778d576b1fa93dbc996fecb99a452a2b10faace97b310c6c2a520e8",
++    ".asd/templates/t_ux-spec.html": "6f5a93a432245795f052e09d21bb6b7bc68775819fef23760921f2343e2069f2",
+     ".asd/workflows/asd-phase-audit.md": "a4e0c0b38df51a5eb0335a88749c4adea5bafaf86e529200d7382e90aa0c8200",
+-    ".asd/workflows/asd-phase-design-promote.md": "aa27eed02864160ff00a6ae8b41e90ea57648382902816257acae5a6b06def75",
++    ".asd/workflows/asd-phase-design-promote.md": "409549d8c95463d7991feee0a54a7ede92fb5a9f8bab3418cfa48d67c4df5400",
+     ".asd/workflows/asd-phase-design-review.md": "00527f550d7e278819f16f89a4d41bb2bfc33e3f64f57491f021571755265b55",
+-    ".asd/workflows/asd-phase-design.md": "120db9822406ef7c79c458a03375424406c771026df73f18c96a4c0a6b92de84",
++    ".asd/workflows/asd-phase-design.md": "ce77efed550e0bd9d0b8650739a3db7890d9d4f8b0d8c845807d19a28cc7756b",
+     ".asd/workflows/asd-phase-impl-review.md": "d8f75514ee30ee10a7d0b77232925ef2403e896a04abb84cce1ab7d519425ae1",
+     ".asd/workflows/asd-phase-impl-test.md": "2c81522977ea5e8f2bccac0023e165ef42422ef9c407b2096194caa1f77ae0f4",
+-    ".asd/workflows/asd-phase-impl.md": "877f08d180ca32b6187eeedeb57fc77b244f85df5c9c6eba0d15885cac66a98e",
++    ".asd/workflows/asd-phase-impl.md": "e7c078dc96f67035c138dd011df2b5351af02fe577f61415c5df61e080429f54",
+     ".asd/workflows/asd-phase-plan.md": "0bd75fc53da868e60f28f85bd1cef8546b0b558f4e261969f157b9fb8eb90112",
+     ".asd/workflows/asd-phase-pr.md": "e95054ed20f3f74b0d159dcf804d9e425144d9b03996c59c55a64f11631afbbb",
+-    ".asd/workflows/asd-phase-scope.md": "f5d140c553b6c8e627dfa0428971774a6ac0cdf8b071dfa21a64bc02d2121507",
++    ".asd/workflows/asd-phase-scope.md": "260439aaa559051cf0ae24e65f29f755c68c1be967e329b043ad3bc7190c7f32",
+     ".asd/agents/asd-advisor.md": "479b748bdcc8702aa607b7e9d6f7fc038672f44b27f3521a63baaa1b626f70dc",
+     ".asd/agents/asd-reviewer-efficiency.md": "8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776",
+     ".asd/agents/asd-dev.md": "586ba93ea32157c5c6d5eb5ef952dbf450848b64e45700c5c860bead191f4212",
+-    ".asd/agents/asd-tester.md": "081e0e00d198f43d942a4e287b90b11bcccbabdba1ed1bf44ff32e6d4305a66d",
++    ".asd/agents/asd-tester.md": "49b460e4c9b8a84fc80b0f51336b605931658d72909667d85dca3ae422b4b341",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "520249de952dbb84831daa22043f0c16027653e15e4d3004ed18ebf242656ff3",
++    ".asd/runtime.js": "3c59c1ca01339343378940fdfdd4ea350daa5b948fd709509940064067752958",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+@@ -156,7 +156,7 @@
+     ".asd/workflows/standard.json": "9bb5fdf7d04029214ef892b59a4ff1ea6670fd614709e833d737a4a52460314c",
+     ".asd/rules/agent-protocol.md": "d3eee8f974c85a0f5baae3c547b1c4e6b412a640edb1c9e83de943e52ee2b64e",
+     ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4",
+-    ".asd/agents/asd-reviewer-quality.md": "db5aafbbe7984703cebe212649ca897a3aefec74df046d9ac3bb615f0129d0bd",
++    ".asd/agents/asd-reviewer-quality.md": "4b71de2cbec163c0f15848c7c4ae64e4c72cd7b49119dc517e8d4864081d010d",
+     ".asd/migrations/14.0.0.js": "5c0ad4a19f5ed993b37938cba305425e6078e4abad5c3cdc11235602b0c6958c",
+     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+     ".asd/workflows/asd-phase-cleanup.md": "757c518ab7c7925dd7f89eb39509da336996d85170138a5470505ce0005fb177",
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 0a0a5e9..a7ae93c 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -37,7 +37,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
+ │       │   ├── design/
+ │       │   │   ├── prd.html
+ │       │   │   ├── ux-spec.html
+-│       │   │   ├── mockups/                     # ux_spec enabled only; `lite`: made at scope; promoted to docs/ux/mockups/; shape: design-system.md "Mockups"
++│       │   │   ├── mockups/                     # ux_spec enabled only; local mockups or remote links in index.md; design-system.md "Mockups"
+ │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
+ │       │   │   ├── design-md-delta.yaml
+ │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
+diff --git a/.asd/rules/checkpoints.md b/.asd/rules/checkpoints.md
+index e7357e4..b19a60b 100644
+--- a/.asd/rules/checkpoints.md
++++ b/.asd/rules/checkpoints.md
+@@ -15,7 +15,7 @@ For a hard gate, or a routine gate that does not qualify adaptively:
+ - **approve-before-write**: request a decision before the gated mutation.
+ - **write-then-review-accept**: write the artifact, post its absolute path and short delta summary, then revise in place until explicit `accept`.
+ 
+-Record user decisions with `decision_actor=user`; silence and unrelated text are never approval. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
++Record an explicit user decision with `decision_actor=user` only after receiving the answer. Preselection, silence, incomplete answers, clarifications and unrelated text leave the gate pending. Apply the same gate rules to submitted free text and optional choices. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
+ 
+ ## Approval recording
+ 
+diff --git a/.asd/rules/code-style.md b/.asd/rules/code-style.md
+index ca05570..4a6b983 100644
+--- a/.asd/rules/code-style.md
++++ b/.asd/rules/code-style.md
+@@ -116,6 +116,7 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
+ - Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
+ - Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
+ - Tests verify observable behavior, not implementation detail.
++- For review scope selection changes, exercise the applicable path cases with the Git-generated file list the workflow supplies to manifest generation.
+ - **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists. Authoring is never the default: absent a qualifying risk, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
+ - Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
+ - Admission: a test is added only with a gap proof in its `Added tests` row — the seeded defect it targets leaves the unit's existing tests green, or a search found no test of the unit. When an existing test already fails on the seeded defect, the decision is `none`, citing that test. A new case for a contract an existing test owns extends that test; a new test function only for a contract no test owns.
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index 7095899..2c18381 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -39,7 +39,7 @@ For a hard or unresolved decision: **Question** → **Options** → **Decision**
+ 
+ ## Request user decision
+ 
+-Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Only the main orchestrator, and skills it runs inline, performs it — a dispatched agent never reaches the user on either host, so it returns `QUESTION` with the options instead (`agent-protocol.md` "Relay"; a reviewer's carrier: `review-policy.md` "Gate Verdict Format"). Use whenever a choice is needed; never for free-form input, which is collected as a plain chat message.
++Use this semantic operation for every question with predefined choices, including phase gates, interviews and inline skills. Resolve it through `providers.md` "Semantic operations -> host convention". Ask open-ended questions in chat. Only the main orchestrator and skills it runs inline may perform the operation. A dispatched agent returns `QUESTION` with the options (`agent-protocol.md` "Relay" and `review-policy.md` "Gate Verdict Format").
+ 
+ ## Autonomy and escalation
+ 
+diff --git a/.asd/rules/design-system.md b/.asd/rules/design-system.md
+index 0cab633..6307ead 100644
+--- a/.asd/rules/design-system.md
++++ b/.asd/rules/design-system.md
+@@ -48,7 +48,7 @@ Reject if: one-off decoration, experimental, near-duplicate of existing, illustr
+ 
+ ## 6. No Hardcoded Values
+ 
+-No raw hex / px / rem / font-family in UI code **or ux-spec mockup previews**. Always token reference. Exception: DESIGN.md primitive layer itself.
++No raw hex / px / rem / font-family in UI code or local ux-spec mockup previews. Always use token references. Exception: the DESIGN.md primitive layer. Figma bindings and token references follow §12.
+ 
+ **`self_hosting: enabled`, no DESIGN.md** (sole statement of this carve-out): `t_html-shell.html`'s whole `<style>` block is that template's own primitive layer, so §6 reaches only COLOR values outside its `:root`/`prefers-color-scheme` token blocks — consuming rules must use `var(--*)` for color, the token-block definitions themselves are never a finding. Raw px/rem/font-family in that block are exempt: the repo has no spacing/typography token layer for them to violate. Fragment templates (`t_adr.html` etc., no `<style>` of their own) stay fully subject to §6.
+ 
+@@ -93,8 +93,15 @@ Scope: the design-system gate, `design-md-delta.yaml`, DESIGN.md / design-system
+ - **Precondition**: any of `DESIGN.md`, `design-system.html`, `accessibility.html` missing → halt, run `/asd-design-system`; never author mockups against missing tokens.
+ - **Token decisions**: never use a missing, insufficient, new or changed token undecided. Put every such proposal into one decision under `checkpoints.md` (adaptive or strict), append each approved token to the sprint's `design-md-delta.yaml` before a mockup or code uses it. No separate unconditional token pause. Lite design-promote: a token the implementation added or changed passes the same decision before `DESIGN.md` is patched.
+ - **Delta prose**: `design-md-delta.yaml` carries a `prose` section of DESIGN.md Markdown text (Overview, Do's and Don'ts, …), applied at `design-promote` beside the token changes.
+-- **Mockups** (only with frozen `documents.ux_spec` enabled, made at scope in `lite`): each modified screen or state is an interactive HTML/CSS mockup using only tokens in `DESIGN.md` or the delta, with its states (empty, loading, error) where it has them. Home `<sprint>/design/mockups/`, promoted to `docs/ux/mockups/` (decomposition: `mockups/<subsystem>/`). With `project.claude_design: enabled` and Claude Code's Artifact tool available, save one subfolder per Design canvas holding `project/canvas.json` and `project/*.dc.html`, publish from those files and link each canvas from `mockups/index.md`. Publication is an external action under `checkpoints.md` "Gate inventory". Otherwise write one local `<screen>.html` per screen or state (`t_html-shell.html`). Dev and reviewers receive the folder as an input.
+-- **Lite publication and recovery.** Before each attempt, append the canvas source directory, source revision, phase and intended publication target to the sprint decisions log, including any known artifact identity. On success, record the returned artifact link before updating `mockups/index.md`. On canvas-host reachability failure at scope, record deferred publication and the failure evidence. Keep the source and link reviewable local previews in the index, using the local HTML form if needed. Scope can proceed to acceptance. On re-entry, check the live and rotated log for that source revision. Reuse a recorded successful link, including when rebuilding the index. If an attempt has an uncertain outcome, recover its link from the host or establish that it did not publish before sending another request. If the outcome remains uncertain, keep the local previews and record that result. At design-promote, retry a confirmed unpublished deferred canvas once per accepted source revision, with the setting enabled, the Artifact tool available and the publication gate satisfied. When a retry fails or cannot run, record the reason and promote the local previews.
++- **Mockups.** With frozen `documents.ux_spec` enabled, author the affected UI screens and applicable states (including empty, loading and error) at Lite scope or Standard design. Use `DESIGN.md` and approved delta tokens. Resolve `project.mockup_format` per `asd-init` "Config check". Give dev and reviewers `<sprint>/design/mockups/` as input. Promotion copies it to `docs/ux/mockups/` (decomposition: `mockups/<subsystem>/`), rewrites relative links as needed and preserves remote URLs.
++  - `html`: write an interactive local `<screen>.html` per screen or state (`t_html-shell.html`).
++  - `claude_design`: with Claude Code's Artifact tool available, save one subfolder per canvas with `project/canvas.json` and `project/*.dc.html`, publish from those files under `checkpoints.md` "Gate inventory" and link each canvas from `mockups/index.md`. Otherwise use local HTML. In Lite, follow "Claude Design Lite publication and recovery" below.
++  - `figma`: use "Figma publication and recovery" below. Link the Design file and each native frame from `mockups/index.md`, noting the screen/state, structure and component and token references for handoff. A successful Figma mockup needs only this local index.
++- **Figma publication and recovery.** Confirm the supplied Design file. When none is supplied, obtain explicit approval for a new named file and its plan. Apply the external-action gate (`checkpoints.md` "Gate inventory") to file creation and canvas writes. Use `author Figma Design mockups` (`providers.md` "Semantic operations -> host convention"). Create editable frames with the applicable design system. Reuse matching linked component instances and variable/style bindings. If a binding is missing, map the approved token to a local variable or style where supported. For properties without binding support, record the token reference in the index for the applied value.
++  - Before each external write, log the phase, mockup revision, authorized destination (plan and name for creation, file key and location for canvas writes), intended screen/state identities and known node IDs. Use identifiable sprint-scoped frame names for recovery. Verify the written frames by reading them back. Record the outcome and returned file and frame identities in the decisions log before updating the index.
++  - On re-entry, read the live and rotated decisions log before acting. Reuse a confirmed file and completed frames and rebuild missing links from recorded results. After an uncertain write, check the destination for the recorded identity and verify the resulting file or frames before marking them complete. Reuse recovered identities for any remaining work; create again only after confirming the previous creation did not take effect. An unresolved outcome stays uncertain.
++  - When writing is unavailable, fails or remains uncertain, record the evidence and use `request user decision` to offer temporary local HTML or wait for access. Log the choice and publication status before continuing with linked local HTML or pausing the current phase. Preserve `project.mockup_format`. Re-entry honors the recorded choice for that revision and checks the prior outcome before any retry.
++- **Claude Design Lite publication and recovery.** Before each attempt, append the canvas source directory, source revision, phase and intended publication target to the sprint decisions log, including any known artifact identity. On success, record the returned artifact link before updating `mockups/index.md`. On canvas-host reachability failure at scope, record deferred publication and the failure evidence. Keep the source and link reviewable local previews in the index, using the local HTML form if needed. Scope can proceed to acceptance. On re-entry, check the live and rotated log for that source revision. Reuse a recorded successful link, including when rebuilding the index. If an attempt has an uncertain outcome, recover its link from the host or establish that it did not publish before sending another request. If the outcome remains uncertain, keep the local previews and record that result. At design-promote, retry a confirmed unpublished deferred canvas once per accepted source revision, with `claude_design` selected, the Artifact tool available and the publication gate satisfied. When a retry fails or cannot run, record the reason and promote the local previews.
+ - **Accessibility**: a ux-spec never carries a11y rules; project-wide `accessibility.html` owns them.
+ - **DESIGN.md spec**: fetch the latest Google Labs spec before editing when the cached one is stale; the fetch failing twice halts the step. The web is limited to that spec.
+ - **Tool bounds**: `designmd-install` runs once per session as a no-save install (`npm install --no-save`), never changing `package.json` or the lockfile; `designmd-lint`, `-diff`, `-export` per §10-§11; the `design.md` binary never inline.
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index 1aa7074..5fb466c 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -33,13 +33,18 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use
+ | observe in-flight agent ("Agent liveness per host") | `Monitor` (maximum deadline) running `node .asd/runtime.js agent-liveness`; fallback `CronCreate` `*/5` | `wait_agent(timeout_ms ≤ 300000)`, elapsed budget only |
+ | stop in-flight agent | `TaskStop` | `close_agent` |
+ | dispatch a phase-specific skill | `Skill` tool | invoke `$skill` (or implicit trigger) against `.agents/skills/<name>/SKILL.md` |
+-| request user decision (options...) — main orchestrator only (`core.md` "Request user decision") | `AskUserQuestion` | ask in chat, block on reply |
++| request user decision (options...) — main orchestrator only (`core.md` "Request user decision") | `AskUserQuestion` | native choice widget when available (below) |
+ | read a file | `Read` | Codex file-read tool |
+ | search repo | `Glob` + `Grep` | Codex search tool |
+ | fetch external doc by URL | `WebFetch` | none distinct — `web_search` only (below) |
+ | search the web | `WebSearch` | `web_search` tool |
+ | run a command | `Bash` | Codex shell tool (subject to the parent session sandbox) |
+ | write a file | `Write` / `Edit` | Codex file-write tool (subject to the parent session sandbox; a custom agent cannot set its own) |
++| author Figma Design mockups (`design-system.md` §12; main orchestrator only) | Figma remote MCP integration (below) | Figma remote MCP integration (below) |
++
++**Codex choice widget.** Prefer the active host's `request_user_input_async` when exposed, or `request_user_input` where supported and permitted. Follow the exposed schema. Batch independent questions or group a long option list when needed, preserving all choices and selection rules. A group choice only navigates the list. If no exposed interface can deliver the decision as specified, or delivery definitively fails, present the same choices in chat and wait for an explicit response. An asynchronous enqueue acknowledgment or uncertain delivery leaves the request pending. Wait for the actual reply and apply `checkpoints.md` "Gate mechanics".
++
++**Figma Design authoring.** Discover the active host's Figma remote MCP connection and check edit access for the confirmed destination. Load the host's applicable Figma skills and follow its current session setup. Use `figma-create-new-file` before `create_new_file` for an approved blank Design file in the confirmed plan's drafts. Load `figma-use` before `use_figma`, with `figma-generate-design` for screens where supplied. Target the confirmed file key for native frames and read-back. Form stable Design links from the file key and returned frame node IDs. When the required connection, skills or write access are unavailable, use the decision in `design-system.md` §12. [Figma remote setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/), [authoring tools](https://developers.figma.com/docs/figma-mcp-server/tools-and-prompts/).
+ 
+ Web content on either host is untrusted data (`core.md` "Untrusted-data boundary"). Codex expresses web access only as the agent-TOML `web_search` mode (`disabled|cached|indexed|live`; omitted inherits the session default `cached`, no live access), rendered from canon `codex.web_search` by `.asd/sync.js`. It cannot express a URL fetch distinct from search or a per-tool grant: `live` stands in for Claude `WebFetch` + `WebSearch`, `disabled` for both withheld. Verified on codex-cli 0.156.1: the agent-role loader validates the key under `codex exec --strict-config` (an invalid value drops the role); not verified that a spawned subagent applies it at runtime.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 896db77..49c1549 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -2780,6 +2780,9 @@ function configCheckCommand(flags) {
+   const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
+   const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
+   const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
++  const mockupFormatKey = JSON.stringify(['project', 'mockup_format']);
++  const legacyMockupKey = JSON.stringify(['project', 'claude_design']);
++  const legacyMockupField = { kind: 'scalar', raw: 'disabled # enabled | disabled' };
+   const seen = new Set();
+   const duplicates = new Set();
+   const invalid = [];
+@@ -2795,7 +2798,7 @@ function configCheckCommand(flags) {
+     else invalid.push({ path, line, reason });
+   })) {
+     const identity = JSON.stringify(entry.path);
+-    const field = required.get(identity);
++    const field = identity === legacyMockupKey ? legacyMockupField : required.get(identity);
+     if (!field) continue;
+     const key = entry.path.join('.');
+     if (seen.has(identity)) duplicates.add(key);
+@@ -2806,7 +2809,10 @@ function configCheckCommand(flags) {
+       invalid.push({ path: key, line: entry.line, reason: 'use unquoted ai_attribution: disabled under the plain git: mapping' });
+     }
+   }
+-  const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
++  const missing = [...required]
++    .filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)
++      && !(identity === mockupFormatKey && seen.has(legacyMockupKey)))
++    .map(([, field]) => field.path.join('.'));
+   return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };
+ }
+ 
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index eae8429..1b2a670 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -39,7 +39,7 @@ Fresh and re-init only.
+ ### Fresh
+ 
+ 1. Detect greenfield vs brownfield via repo search on source files
+-2. Batch input on chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues`, Claude Design and `documents.*`, with defaults from `t_config.yaml`. Under self-hosting propose the default for `upstream_issues`, audit `auto`, other documents disabled and `diagram_tool: none`. For enabled External Review under Codex ask for `review.codex_profile`, defaulting explicitly to `""`.
++2. Batch input on chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates`, `cleanup`, `safety_valve`, `upstream_issues`, `project.mockup_format` and `documents.*`, with options and defaults from `t_config.yaml`. Under self-hosting propose the default for `upstream_issues`, audit `auto`, other documents disabled and `diagram_tool: none`. For enabled External Review under Codex ask for `review.codex_profile`, defaulting explicitly to `""`.
+ 3. If decomposition enabled → request user decision: diagram_tool (`none` | `likec4` | `mermaid`); disabled → `none`
+ 4. Detect OS via command execution (silent; no confirm yet) — selects step 12's OS-specific commands, never written to config
+ 5. Detect external tools (silent; record results, do not prompt per-tool yet):
+@@ -92,10 +92,10 @@ Fresh and re-init only.
+ 
+ 1. Read current `.asd/project/config.yaml`
+ 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
+-2a. Run the Config check. Propose each missing field's prior effective value (including legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else its template default. For missing `project.claude_design`, propose `enabled` to retain host-based selection. Require repair of duplicate or invalid entries. Keep valid values unless the user edits them.
++2a. Run "Config check". For missing fields propose prior effective values (legacy document defaults per `sprint-lifecycle.md` "Optional documents"), else template defaults. If both mockup keys are absent, propose `project.mockup_format: claude_design`. Require repair of invalid or duplicate entries. Keep valid values unless the user edits them.
+ 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
+ 3. Request user decision (multi-select) on which sections to edit, absent fields included
+-4. Per section: ask new value → add to pending change-set (do not write yet)
++4. Collect and queue new values by section. Offer the template's mockup formats and propose the value resolved per "Config check" when available. Queue the selection as `project.mockup_format` and remove invalid or duplicate legacy entries in the repair diff.
+ 5. Validate the proposed complete config per "Config check". Show the consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted.
+ 6. Apply diff; write config, and the accepted `commands.yaml` additions of step 2b. Writing config alone leaves `.claude/settings.json` as it was: after a changed `git.ai_attribution`, tell the user `/asd-sync` brings it current under either value, and under `disabled` the next `/asd-sprint` start's attribution check also inserts the owned `attribution` value into `.claude/settings.json` and records it
+ 7. With `review.external_review=enabled`, apply fresh step 5's probe to the final config. Report command, profile if set, and status. Keep the setting if unavailable and report its runtime skip reason.
+@@ -134,6 +134,8 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
+ 
+ Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
+ 
++Validate both mockup keys when present. Prefer `project.mockup_format`, else map `project.claude_design` from `enabled` to `claude_design` or `disabled` to `html`. Accept valid legacy-only configs as is.
++
+ ### AGENTS.md sync
+ 
+ Idempotent, ownership-class **managed block** (`.asd/rules/providers.md` ownership table). Uses the sync engine's managed-block functions (`.asd/sync.js`: `findManagedBlock`, `statusManagedBlock`, `applyManagedBlock`) — do not hand-roll marker parsing.
+diff --git a/.asd/sprints/039-figma-codex-prompts/test-plan.entry-01.md b/.asd/sprints/039-figma-codex-prompts/test-plan.entry-01.md
+new file mode 100644
+index 0000000..41ef8da
+--- /dev/null
++++ b/.asd/sprints/039-figma-codex-prompts/test-plan.entry-01.md
+@@ -0,0 +1,24 @@
++# Test plan — sprint 039-figma-codex-prompts, entry 1
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-1/AC-5, mockup configuration | A consumer update blocks a valid legacy config, or a mixed config bypasses validation | CLI contract in `runtime-routing` and trace the init, selection and README rules | add | Extend the existing config-check owner after its previous assertions passed against the old runtime. The extended case covers HTML, Claude Design, Figma, both legacy values, valid mixed keys, missing keys and invalid or duplicate values. The rule trace confirms explicit precedence, legacy mapping, and fresh and repair init entry points. |
++| AC-2/AC-5, Figma authoring and handoff | A write targets the wrong file or publishes twice, or handoff drops a frame link | Workflow-rule trace plus live Figma remote MCP authoring and read-back | none | Lite scope and Standard design reach the same mockup rule. It requires destination confirmation and write authorization, identity and revision logging before attempts, native frames, verification and link indexing. Recovery reads the live and rotated logs, checks uncertain outcomes before retry and reuses confirmed identities. Design-promote preserves remote URLs and the reviewer and dev receive the index. The live result is recorded below. |
++| AC-3/AC-5, unavailable Figma writes | Access loss stalls recovery or silently changes the configured format | Workflow-rule trace | none | The rule records access failure or uncertainty, offers temporary HTML or wait, preserves the format and records the decision and publication status before continuing or pausing. Re-entry honors that record. Existing Claude Design rules retain local previews and deferred publish. This is rule evidence for the unavailable-Figma branch. |
++| AC-4/AC-5, Codex choice delivery | An enqueue, default, clarification or unrelated reply is treated as approval | Provider and gate-rule trace plus live Codex App choice | none | Structured callers route to the provider mapping. An acknowledgment or uncertain delivery remains pending. The gate requires the actual explicit reply and retains optional and free-text handling. The same options move to chat if widget delivery is definitively unavailable, with an explicit reply still required. Open-ended prompts stay in chat and Claude Code keeps AskUserQuestion. The unavailable-widget, preselected option and free-text gate branches have rule evidence. The live answer is recorded below. |
++| AC-6, runner capture | Tool truncation loses failure evidence and forces a rerun | Observe the capture used for this entry | none | Both streams and the exit code were retained together before summary extraction. The captured red output preserved the exact test name, assertion and totals; only bounded output was returned. |
++| AC-7, Test-only Task completion | A test change is accepted without evidence of catching its claimed regression | Trace the tester return and impl workflow completion and recovery branches | none | Added or extended behavior regressions require proof before a Task is ticked, including reconstructed completion. Task 7 adapted the fixture only and did not extend behavior coverage. |
++| AC-8, review scope selection | Hand-authored fixture lists conceal path handling defects in the workflow's actual input | Existing Git-generated scope regression in `runtime-review` and trace code-style §17 | keep | The existing regression gets the file-list command from the review workflow and exercises its Git output and platform path cases. This sprint changes the test rule. |
++| Removed routing and mockup wording | Old instructions survive outside their canonical home | Search exact removed Codex chat wording, mockup heading and legacy template comment across the repo and agent memory | none | Exact hits in archived evidence are historical. No current source or agent-memory hits. The legacy key itself remains an intentional compatibility input. |
++
++## Removed tests
++
++No removals. Search found no prior sprint temporary test, and the impacted tests exercised distinct contracts.
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++| `tests/runtime-routing.test.js` — extended `Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys` | In an isolated checkout fixture with the sprint template and pre-sprint runtime `dac8b396e575ab7c1c647ee71c114b36f98e6e49`, `node tests/run.js runtime-routing --filter 'config-check requires explicit valid values'` matched 1 test and exited 0 before the extension. | With the extension, the same command against pre-sprint runtime matched 1 test and exited 1 in `Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys` because `claude_design: enabled` exited 1 where 0 was expected. The entry suite passed that test against the current runtime. Mutation runs: 1. |
+diff --git a/.asd/sprints/039-figma-codex-prompts/test-plan.md b/.asd/sprints/039-figma-codex-prompts/test-plan.md
+new file mode 100644
+index 0000000..a45574c
+--- /dev/null
++++ b/.asd/sprints/039-figma-codex-prompts/test-plan.md
+@@ -0,0 +1,57 @@
++---
++responsibility:
++  owns: test approach, runner evidence, defects and manual verification
++  excludes: requirements, production code and review verdicts
++  delegates_to: sprint.md, plan.md and impl-review
++---
++
++# Test plan — sprint 039-figma-codex-prompts
++
++## Entry log
++
++| Entry | HEAD analysed | Scope |
++|---|---|---|
++| 1 | 71a70a21 | full change surface |
++| 2 | 6f4bbe3a | delta since entry 1 |
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| D-1, AC-1/AC-5, `asd-init` prose and generated views | Standalone skills exceed the byte cap or the shorter instructions change mockup format selection or repair | Existing standalone skill cap, config validation, provider sync and release hash contracts, plus a trace of each changed instruction | none | The cap test exposed D-1 on entry 1. The revised prose retains prior-effective and template defaults, the Claude Design proposal when both keys are absent, explicit-key precedence, legacy mapping, validation of both keys and the repair sequence. Existing tests cover the executable validation and artifact integrity. |
++
++## Removed tests
++
++No removals. The affected existing checks cover separate contracts.
++
++## Added tests
++
++No additions. The existing standalone skill cap test already reproduces D-1.
++
++## Suite run
++
++- Command: `node tests/run.js contract-rules contract-workflows runtime-routing sync-cli update`
++- Scope: impacted
++- Scope evidence: From entry 1, the only non-sprint changes are `asd-init` prose, its Claude and Codex views, and their source hash entries in `.asd/release-manifest.json`. Searches for `asd-init`, `mockup_format`, `claude_design`, skill discovery globs, sync plan consumers and manifest hashes identified these five areas. They cover the cap, provider-tree exclusions and current views, config validation and source hashes. The runner and context inputs are unchanged. The enabled safety valve permits the named areas.
++- Result: pass — 106 passed, 0 failed, 0 skipped (exit 0). The pre-strategy run supplies the suite gate evidence. HEAD matched and relevant paths were clean before and after the run.
++- Lint / build: pass
++- HEAD: 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84
++
++Complete runner output and exit code are in `.asd/tmp/039-impl-test-entry-2-pre-strategy.log`. Entry 1's original red run remains in Git at `71a70a21`.
++- Line delta: tests +28/−2 (net 26); other +127/−49 (net 78)
++
++## Defects
++
++| ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
++|---|---|---|---|---|---|---|
++| D-1 | 1 | .asd/skills/asd-init/SKILL.md | AssertionError [ERR_ASSERTION]: standalone skills total 62390 B, cap 62351 | sprint-026 AC-15: the standalone skills total at most their baseline of 62,351 bytes (61,051 on main plus the asd-init adoption text of sprint 037) | fixed | 0b4d860258c72558979a65b06069ca776a84324b |
++
++## Manual verification
++
++| AC | Steps | Expected observation |
++|---|---|---|
++| AC-2/AC-5 | In an authorized Figma Design draft, use the remote MCP file session to create a native frame, read its node structure back and open the stable node link. | Live Figma remote MCP passed. An independently inspected 480 × 198 native frame had one child FRAME, three editable TEXT descendants, a bound background variable and zero image nodes. The stable link resolved and the frame was visually inspected. |
++| AC-4/AC-5 | Present a choice in the Codex App async widget, observe enqueue and wait for the explicit choice. | Live Codex App passed. The widget delivered the explicit draft-creation answer after enqueue. The orchestrator used that answer to run the authorized Figma check. |
++
++- result: pass — AC-2/AC-5, independent Figma canvas read-back and visual inspection.
++- result: pass — AC-4/AC-5, explicit authorization received through the live Codex App widget.
+diff --git a/.asd/templates/t_config.yaml b/.asd/templates/t_config.yaml
+index 0b60e02..644e69c 100644
+--- a/.asd/templates/t_config.yaml
++++ b/.asd/templates/t_config.yaml
+@@ -61,8 +61,8 @@ project:
+   # registered in docs/architecture/subsystems.md. When disabled, single project-wide docs.
+   subsystem_decomposition: enabled # enabled | disabled
+ 
+-  # Allow Claude Design where the host offers it. Disabled selects local HTML mockups.
+-  claude_design: disabled # enabled | disabled
++  # Format for UI mockups when they are enabled.
++  mockup_format: html # html | claude_design | figma
+ 
+   # Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.
+   # none — no diagram written; the subsystem registry is unaffected
+diff --git a/.asd/templates/t_ux-spec.html b/.asd/templates/t_ux-spec.html
+index e55b497..5fd123b 100644
+--- a/.asd/templates/t_ux-spec.html
++++ b/.asd/templates/t_ux-spec.html
+@@ -18,7 +18,7 @@ flowchart TD
+ 
+ <section id="ui-mockups">
+   <h2>UI mockups</h2>
+-  <p class="lede">One article per implemented or modified screen, linking its mockup in the <code>mockups/</code> folder beside this file — never embedding it. Each mockup MUST reference DESIGN.md tokens only — no raw hex/px/rem/font (<code>design-system.md</code> §6).</p>
++  <p class="lede">One article per implemented or modified screen, with links to its local mockups or remote frames. Use DESIGN.md tokens in each mockup (<code>design-system.md</code> §12).</p>
+ 
+   <article class="mockup">
+     <h3>{{screen name}}</h3>
+@@ -26,7 +26,7 @@ flowchart TD
+       <dt><b>Purpose</b></dt><dd>{{what user does here}}</dd>
+       <dt><b>Entry from</b></dt><dd>{{flow step or upstream screen}}</dd>
+       <dt><b>Exit to</b></dt><dd>{{next screen or terminal state}}</dd>
+-      <dt><b>Mockup</b></dt><dd><a href="{{mockup path relative to this file}}">{{mockup file}}</a></dd>
++      <dt><b>Mockup</b></dt><dd><a href="{{relative mockup path or stable remote URL}}">{{screen or state}}</a></dd>
+     </dl>
+     <p><b>Notes</b>: {{states, edge cases, empty/loading/error}}</p>
+   </article>
+diff --git a/.asd/workflows/asd-phase-design-promote.md b/.asd/workflows/asd-phase-design-promote.md
+index 325dcac..0c1b0ea 100644
+--- a/.asd/workflows/asd-phase-design-promote.md
++++ b/.asd/workflows/asd-phase-design-promote.md
+@@ -11,7 +11,7 @@ Owner: inline orchestrator; dispatches none.
+ ## Inputs
+ 
+ ```json
+-["state.json frozen workflow and documents.*", "standard: approved drafts, mockups included, in <sprint>/design/", "lite: sprint.md, plan.md, sprint diff (<base_branch>...HEAD), audit.md when present", "lite with ux_spec enabled: .asd/project/config.yaml (project.claude_design), <sprint>/design/mockups/, sprint decisions log and rotated segments", "audit.md"]
++["state.json frozen workflow and documents.*", "standard: approved drafts in <sprint>/design/", "lite: sprint.md, plan.md, sprint diff (<base_branch>...HEAD), audit.md when present", "with ux_spec enabled: <sprint>/design/mockups/, sprint decisions log and rotated segments", "lite with ux_spec enabled: .asd/project/config.yaml (project.mockup_format)", "audit.md"]
+ ```
+ 
+ ## Steps
+@@ -19,8 +19,8 @@ Owner: inline orchestrator; dispatches none.
+ 1. Read frozen `workflow`, documents, drafts and audit. Scope: `standard` — enabled documents intersected with existing drafts; `lite` — the enabled documents. Empty scope is a mechanical no-op: record skipped phase and advance per step 5.
+ 2. Compute decomposition and migration targets. Under `checkpoints.md`, execute an already approved/in-bounds decomposition adaptively with evidence [GATE adaptive: decomposition]; a new subsystem or material boundary is hard and waits for the user [GATE hard: new subsystem]. Record the decision before mutation.
+ 3. For an approved new or a changed subsystem, write it to `docs/architecture/subsystems.md` and its `<id>.md` and create its folders (`sprint-lifecycle.md` "Design-promote phase"; `artifact-layout.md` "Subsystem registry").
+-3a. **Lite mockup publication** — with frozen `documents.ux_spec` enabled, resolve any deferred Claude Design publication and update the sprint mockup index per `design-system.md` §12 "Lite publication and recovery". Do this before copying mockups or rewriting links in step 4.
+-4. Promote each in-scope document inline per "Design-promote phase" step 4: PRD; ADR, stack and tech references and, only with frozen `documents.c4` true, the diagram per `project.diagram_tool`; the ux-spec under frozen `ux_spec`, with `<sprint>/design/mockups/` copied to `docs/ux/mockups/` (decomposition: `mockups/<subsystem>/`) and its links rewritten; under frozen `design_system`, `DESIGN.md` patched from `design-md-delta.yaml` — token changes and its `prose` section — then `design-system.html` regenerated, its token rows and CSS variables rebuilt by `node .asd/runtime.js design-tokens --design docs/ux/DESIGN.md --html docs/ux/design-system.html` (`design-system.md` §12 "Regeneration"), and `accessibility.html` — on Windows, run command `designmd-install` once per session before patching `DESIGN.md`. A rename or deletion of a persistent doc needs the user's approval first [GATE hard: doc deletion] [GATE adaptive: doc rename]; then the orchestrator runs `git mv`/`git rm` inline and updates content and inbound links before step 5. `lite`: write each enabled persistent doc from the `lite` inputs in place of drafts, its mockups already made at scope (`asd-phase-scope.md` step 3b) and copied as above; with `design_system` enabled, run the design-system gate of `asd-phase-design.md` step 7 before the ux write. Its hard gates stay (`sprint-lifecycle.md` "Workflows"), each approved before its write.
++3a. **Mockup publication** — when promoting the ux-spec, read the mockup index and recorded publication status when present. Carry forward the approved Figma links or the chosen HTML fallback. For Lite, resolve deferred Claude Design publication per `design-system.md` §12 before copying the index.
++4. Promote each in-scope document inline per "Design-promote phase" step 4: PRD; ADR, stack and tech references and, only with frozen `documents.c4` true, the diagram per `project.diagram_tool`; the ux-spec under frozen `ux_spec`, with mockups and links promoted per `design-system.md` §12 "Mockups"; under frozen `design_system`, `DESIGN.md` patched from `design-md-delta.yaml` — token changes and its `prose` section — then `design-system.html` regenerated, its token rows and CSS variables rebuilt by `node .asd/runtime.js design-tokens --design docs/ux/DESIGN.md --html docs/ux/design-system.html` (`design-system.md` §12 "Regeneration"), and `accessibility.html` — on Windows, run command `designmd-install` once per session before patching `DESIGN.md`. A rename or deletion of a persistent doc needs the user's approval first [GATE hard: doc deletion] [GATE adaptive: doc rename]; then the orchestrator runs `git mv`/`git rm` inline and updates content and inbound links before step 5. `lite`: write each enabled persistent doc from the `lite` inputs in place of drafts, its mockups already made at scope (`asd-phase-scope.md` step 3b) and copied as above; with `design_system` enabled, run the design-system gate of `asd-phase-design.md` step 7 before the ux write. Its hard gates stay (`sprint-lifecycle.md` "Workflows"), each approved before its write.
+ 5. Append artifact records and update `state.json` inline. `lite`: commit the promoted docs (`git-strategy.md` "Commits"). Post a non-blocking summary; exit per `## Exit`.
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-design.md b/.asd/workflows/asd-phase-design.md
+index d70182b..cb75d4a 100644
+--- a/.asd/workflows/asd-phase-design.md
++++ b/.asd/workflows/asd-phase-design.md
+@@ -11,7 +11,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
+ ## Inputs
+ 
+ ```json
+-[".asd/project/config.yaml (project.diagram_tool, project.claude_design, language.chat, language.docs)", "state.json frozen documents.prd, ux_spec, design_system, adr, c4", "<sprint>/sprint.md", "<sprint>/audit.md (when present)", "research (sprint-lifecycle.md 'Input sources')", "existing drafts in <sprint>/design/ (provenance flag)"]
++[".asd/project/config.yaml (project.diagram_tool, project.mockup_format, language.chat, language.docs)", "state.json frozen documents.prd, ux_spec, design_system, adr, c4", "<sprint>/sprint.md", "<sprint>/audit.md (when present)", "research (sprint-lifecycle.md 'Input sources')", "existing drafts in <sprint>/design/ (provenance flag)"]
+ ```
+ 
+ ## Steps
+@@ -26,7 +26,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
+    - if ANY missing → run skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → escalation consult, relay + halt phase
+    - on `asd-design-system` COMPLETED → append decisions-log entry inline, one combined entry naming all three accepted paths ("`docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` accepted")
+    - **token gate** [GATE adaptive: design token] — a missing, new or changed token found while authoring step 8, or with `ux_spec` disabled when the sprint touches UI, is proposed per `design-system.md` §12 "Token decisions"; each approved entry is appended to `<sprint>/design/design-md-delta.yaml` (created on first entry per `t_design-md-delta.yaml`) before a mockup uses it. Separate from the accept below (`checkpoints.md` "Gate mechanics")
+-8. **Step UX-spec** — only if `ux_spec` enabled, on gate cleared: author the flows to `<sprint>/design/ux-spec.html` (`t_ux-spec.html`) and the UI mockups beside it in `<sprint>/design/mockups/`. Select the form and apply its publication gate per `design-system.md` §12 "Mockups". Link each mockup from the ux-spec, per "Authoring" in `## Rules` [GATE write-then-review-accept: UX-spec]
++8. **Step UX-spec** — only if `ux_spec` enabled, on gate cleared: author the flows to `<sprint>/design/ux-spec.html` (`t_ux-spec.html`) and the UI mockups in `<sprint>/design/mockups/` per `design-system.md` §12 "Mockups", including the selected format's publication and recovery. Link each mockup from the ux-spec, per "Authoring" in `## Rules` [GATE write-then-review-accept: UX-spec]
+ 9. **Step ADR** — only if `adr` enabled, after step 8: author one+ ADRs for sprint scope (repeated `<article>` blocks), sprint-local numbering (`ADR-1`, `ADR-2`, …), status `proposed`/`accepted` only; optionally name a candidate Fold target per decision; for any new tech, create/update `tech-reference/<tech>-<version>.md` per `artifact-layout.md` "Tech reference docs" and `t_tech-reference.md` (no gate of its own: folded into the gated ADR); to `<sprint>/design/adr.html` (`t_adr.html`), per "Authoring" in `## Rules`, one ADR per section — **one `accept` covers the whole sprint ADR set**, never per-decision, and only once every ADR is written [GATE write-then-review-accept: ADR]
+ 10. **Step c4-full** — only if frozen `documents.c4` (already effective) enabled, after step 9:
+     - templates per `project.diagram_tool`: likec4 `t_c4-model.c4`, `t_c4-views.c4`, producing `<sprint>/design/c4-full/model/*.c4`, `views.c4` against `docs/architecture/c4/`; mermaid `t_subsystems.md`, producing `<sprint>/design/c4-full/subsystems.md` against the registry's diagram block
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 65caedb..4805ce3 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -37,12 +37,13 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+    - initial mode: waves ascending, every task of a wave dispatched concurrently, the next wave opening only once all their signals are in; a fix mode: step 5's single ordered chain, dev chain before tester chain
+    - **Review-fix references.** Before each review-fix dev or tester chain, identify the commands and APIs its verified fixes require. Verify coverage per `artifact-layout.md` "Tech reference docs". Write missing entries, log their paths in `decisions-log.md` and pass the verified references in `inputs.tech_reference`. Use the existing `FAILED` route if verification fails.
+    - per task, or once per chain in a fix mode (5a): delegate to the agent `## Dispatch` names (`dev` in `## Rules` reads as that agent); payload per `agent-protocol.md` "Dispatch payload", `## Dispatch`'s role keys: `work` — initial: Task block excerpt (title + subtasks + dependencies); review-fix: grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description, brief per step 3 for critical findings, plus the user-approved change note for accepted FAIL findings); test-fix: grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the live `decisions-log.md` (`artifact-layout.md` "Decisions log" rotation), if any; `inputs` — "Input sources" keys plus `commands`, `tech_reference`, `custom_rules`, `mockups` when the folder exists ("Input sources" `ux`), review-fix `reviews` (`reviews/impl/<id>/`), test-fix `test_plan`; `language` — `language.chat`, `language.docs`; instruction: `## Rules`
+-7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: tick the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, append each returned `memory_index` line to its `MEMORY.md`, and commit; a `memory-check` hit on that commit goes to its owner's memory-fix dispatch here (`review-policy.md` "Memory-fix dispatch"). `self_hosting: enabled`: initial mode, once a wave's last canon-editing dispatch has signalled and before the next wave opens or step 9 runs; fix modes, once the dev chain has signalled and before the tester chain is dispatched (before step 9 when no tester chain follows) — run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
++7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: apply the Test-only check below, then tick the `plan.md` checkboxes of subtasks reported done by accepted completions, append each returned `memory_index` line to its `MEMORY.md`, and commit; a `memory-check` hit on that commit goes to its owner's memory-fix dispatch here (`review-policy.md` "Memory-fix dispatch"). `self_hosting: enabled`: initial mode, once a wave's last canon-editing dispatch has signalled and before the next wave opens or step 9 runs; fix modes, once the dev chain has signalled and before the tester chain is dispatched (before step 9 when no tester chain follows) — run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
++   - **Test-only completion.** Inspect the Task's committed test diff. For every new or extended behavior regression test, verify the returned `Regression proof` against the diff and `code-style.md` §17. Record verified proof with the Task ID and test commit(s) in `decisions-log.md` before ticking, reusing matching proof on re-entry. Compile-only or other adaptations that add or extend no behavior regression test need no proof. A Task reconstructed from trailers also passes this check before it counts as landed. If proof is missing or invalid, keep the Task unticked and its wave open, and re-dispatch `asd-tester` with the evidence gap and any existing Task commits.
+    - **Contract-wave build.** On a wave containing a public contract change or its compile-only test-caller repairs, confirm the applicable build is green on the combined wave tree after sync where required. Reuse build evidence from that tree or run the configured build. Keep the wave open on failure and route the failure to the owning dev or compile-only `Test-only` repair. Dispatch any build-dependent work only after the planned check confirms the affected callers compile.
+ 8. **Manual-steps validation + gate** [GATE hard: manual steps] — when any `BLOCKED_MANUAL` emitted:
+    - validate each new `MS-N` for necessity (`artifact-layout.md` "Manual steps"); reject any entry the agent could do with its own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; loop step 7
+    - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED: append a decisions-log entry; add an `F-N` citing the `MS-N` ids only when the halt itself was a malfunction — unexpected, unworkable or raised at the wrong point (`sprint-lifecycle.md` "Friction log"); present `manual-steps.md` to the user (`checkpoints.md` "Gate mechanics"); wait for an explicit continue command
+-   - on continue: re-dispatch each deferred task to its owning dev to verify its `MS-N` (`## Rules`); on COMPLETED tick its `plan.md` checkboxes as step 7 does; a repeated `BLOCKED_MANUAL` is relayed to the user
++   - on continue: re-dispatch each deferred task to its owning agent to verify its `MS-N` (`## Rules`); on COMPLETED apply step 7's acceptance checks before ticking its `plan.md` checkboxes; a repeated `BLOCKED_MANUAL` is relayed to the user
+    - loop until every `MS-N` is `done` and every deferred task COMPLETED
+ 9. **Impl completion gate** (all modes) — phase MUST NOT emit COMPLETED until the orchestrator verifies, via `commands.yaml`:
+    - `build` and `lint` each executed and finished with no errors and no warnings
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 4751062..9d16a52 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -26,7 +26,7 @@ Owner: inline orchestrator; dispatches `asd-advisor` for an escalation consult (
+ 
+    **Re-entry**: skip each sub-step already done — fast-forward, clean tree, branch, closure write, folder and ledger, workflow choice, state seed, Goal (it stands as the raw scope) — then continue at step 2.
+ 2. Seed state and decisions log; a carried ASD update choice takes a `gate_decisions` entry `gate: asd update`, `decision_actor: user`, and one decisions-log line. Then run staged solution design (`sprint-lifecycle.md` "Staged solution design") before any `AC-N` is written:
+-   - (a) Interview the user in chat, each question defining in one clause every framework term it uses; write the raw scope and the answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
++   - (a) Interview the user per `core.md` "Request user decision", defining every framework term each question uses in one clause. Write the raw scope and answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
+    - (b) Research inline, then write its Findings (each with its source URL) and Approaches to `research.md` at once. Unable to search → escalation consult, then request user decision: retry, skip (write Findings `no web research: <cause>` then, plus one decisions-log line) or abort [GATE hard: abort].
+    - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the refined requirements and the `Chosen` line to `research.md`, plus one decisions-log line.
+    - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line — each counting only with content and no `{{` placeholder.
+@@ -54,7 +54,7 @@ Owner: inline orchestrator; dispatches `asd-advisor` for an escalation consult (
+ 2b. **Scope-time settings change** — only when the drafted `sprint.md` carries a `Settings change: <key>=<value>[, …]` line (a key audit or design reads, e.g. `project.subsystem_decomposition`; `t_sprint.md`): before step 3a's freeze, record each key's current value, dispatch `asd-init` sprint-mediated mode with exactly the declared pairs (validated against the working-tree `t_config.yaml`) and commit `.asd/project/config.yaml` itself; `FAILED` → relay, halt. The pairs are shown at step 4's gate, which is their approval of record: a rejected or dropped line re-applies the recorded values the same way. A plan-declared settings change keeps its impl timing (`sprint-lifecycle.md` "Plan file format").
+ 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic). Reevaluate after an accepted scope expansion.
+ 3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_DESIGN_SYSTEM}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled; `design_system` absent from a present group -> the `ux_spec` value); `{{CLEANUP}}` from top-level `cleanup` (absent -> enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write. Before step 4, check each of those documents, and the audit as step 3 froze it, that would freeze `false` against the requirements the drafted `sprint.md` states (e.g. mockups need `ux_spec`, a decision record `adr`): a needed one is shown at step 4's gate with the choice of a `Settings change:` line enabling it (step 2b, then re-frozen here) or a narrowed scope, never frozen `false` silently. At the scope gate (step 4) the user may skip an enabled optional document (`prd`/`ux_spec`/`design_system`/`adr`/`c4`) for this sprint only [GATE hard: document skip] — narrow-only: overwrite its frozen value with `false` and log one decisions-log line "<doc> skipped this sprint by user" (`sprint-lifecycle.md` "Optional documents").
+-3b. **`lite` mockups** — with frozen `documents.ux_spec` enabled and the scope touching UI, author in `<sprint>/design/mockups/` using the configured form in `design-system.md` §12 "Mockups". Apply its design-system precondition and token decisions. For the Claude Design branch, follow "Lite publication and recovery". On reachability failure, preserve the reviewable local previews and record the deferred publication for design-promote. Show the available mockups at step 4's gate beside the scope. The design phase owns standard mockups.
++3b. **`lite` mockups** — with frozen `documents.ux_spec` enabled and the scope touching UI, author in `<sprint>/design/mockups/` per `design-system.md` §12 "Mockups", including its design-system precondition, token decisions and the selected format's publication and recovery. Show the resulting mockups at step 4's gate beside the scope. The design phase owns standard mockups.
+ 4. The initial scope is hard until it is explicitly accepted [GATE hard: scope], because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. It shows each disabled document step 3a found the scope needs, with that choice, and shows step 2a's `upstream: true` rows, its `closed` rows and its auto-closed issues (duplicate or resolved) with their evidence, no question, and puts its other rows and issues — project issues included, non-standard ones flagged [GATE hard: retro intake dispositions] — each open PR [GATE hard: open-PR disposition] and each due stub [GATE hard: accepted-debt renewal], as step 2a requires; it is not accepted while a row, issue, PR or stub put to the user lacks a choice. Afterwards record the accepted user decision and write step 2a's dispositions: rows to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write); issues to GitHub, `-R <repo>` for an `[asd-retro]` issue and `-R <project>` for a project issue — include → the `AC-N` text ends `(issue #N)`; reject → `gh issue close <n> -R <repo|project> -r "not planned" -c <reason>` and `gh issue edit <n> -R <repo|project> --add-label wontfix`, the reason in English for an `[asd-retro]` issue and for any issue under `self_hosting`, else in `language.docs` (`language-policy.md` "Matrix": issue-comment rows); defer → `--add-label deferred`, left open; each label a disposition writes is first ensured, ensured as in step 2a (the gate approval covers it) — plus one decisions-log line `issue dispositions: #N include AC-K; #M reject; …`; a PR's choice runs as step 2a lists it (a close's reason as an issue's), one line `PR dispositions: #N merge; #M include AC-K; …`; a renewed stub's new date lands in `.asd/project/stubs.md`. A fully specified already-authorized outcome is recorded without inventing another decision.
+ 5. Exit per `## Exit`.
+ 
+diff --git a/README.md b/README.md
+index aef746c..bea7e34 100644
+--- a/README.md
++++ b/README.md
+@@ -227,7 +227,7 @@ Eight specialized agents are canonically defined in `.asd/agents/` and generated
+ 
+ **Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates 11 `-quota` definitions, one for each of the eight roles and three task variants. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
+ 
+-Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/agent-protocol.md` "Relay", `.asd/rules/review-policy.md` "Gate Verdict Format").
++Only the main orchestrator and its inline skills prompt you for a discrete decision. Claude Code uses `AskUserQuestion`. Codex uses the native choice widget when available, with the same choices in chat as a fallback. Both wait for your explicit answer. Creators relay hard or unresolved decisions as `QUESTION`. Reviewers use their `Escalations` or `Stalemate` verdict sections. [Provider mapping](.asd/rules/providers.md#semantic-operations---host-convention), [agent relay](.asd/rules/agent-protocol.md#relay)
+ 
+ ### Creators (2)
+ 
+@@ -314,7 +314,7 @@ language:
+ 
+ project:
+   subsystem_decomposition: enabled    # enabled | disabled
+-  claude_design: disabled             # enabled | disabled — use Claude Design for mockups where available
++  mockup_format: html                 # html | claude_design | figma
+   diagram_tool: likec4                # none | likec4 | mermaid (any diagram also needs decomposition enabled)
+ 
+ backward_compat: migration            # strict | migration | none
+@@ -338,7 +338,9 @@ git:
+   ai_attribution: enabled             # enabled | disabled; disabled keeps Claude/Codex attribution out of commits and PRs
+ ```
+ 
+-With `documents.ux_spec: enabled`, set `project.claude_design: enabled` to publish mockups through Claude Design where the host offers the tool. The disabled setting and hosts without the tool use local HTML. Publication follows the usual approval gate. In lite scope, an unreachable canvas host leaves local previews for review and logs a deferred publication. Design-promote retries once per accepted source revision after confirming no previous attempt published. A recorded link is reused. Local previews are promoted if publication remains unavailable or uncertain. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
++When `documents.ux_spec` is enabled, `project.mockup_format` selects local HTML, Claude Design, or Figma Design for Lite scope and Standard design. In existing configs without `mockup_format`, `project.claude_design: enabled` selects Claude Design and `disabled` selects HTML. Claude Design uses local previews when unavailable and can retry a deferred Lite publication at design-promote. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
++
++Figma needs a connected remote integration and edit access to a Design file you supply or approve creating. ASD records links to editable frames for review, implementation and promotion. If it cannot write, you choose temporary local HTML or wait for access. The project setting stays on Figma. [Figma setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
+ 
+ ---
+ 
+diff --git a/docs/architecture/tech-reference/codex-app-questions.md b/docs/architecture/tech-reference/codex-app-questions.md
+new file mode 100644
+index 0000000..6227339
+--- /dev/null
++++ b/docs/architecture/tech-reference/codex-app-questions.md
+@@ -0,0 +1,24 @@
++---
++responsibility:
++  owns: verified Codex App choice-widget behavior for ASD decisions
++  excludes: agent routing, gate authority and CLI integration
++  delegates_to: .asd/rules/providers.md, .asd/rules/checkpoints.md
++---
++
++# Codex App choice widget
++
++## Canonical source
++
++- [Codex App Server](https://learn.chatgpt.com/docs/app-server). Verified 2026-11-22 with a live Codex App decision.
++
++## API surface used in project
++
++- The active Codex App session exposed an asynchronous structured input tool. It targets the current user in the current chat and creates an interactive prompt. A later reply carries selected labels or free text. An enqueue acknowledgment does not contain a decision.
++
++## Version-specific notes
++
++- The exposed model tool depends on the host and mode. ASD uses the available choice interface rather than calling App Server directly.
++
++## Project conventions
++
++- Use localized options for structured decisions. Wait for the actual answer before mutating gate state. Where the tool is missing, use chat with the same options.
+diff --git a/docs/architecture/tech-reference/figma-mcp-remote.md b/docs/architecture/tech-reference/figma-mcp-remote.md
+new file mode 100644
+index 0000000..f4f7578
+--- /dev/null
++++ b/docs/architecture/tech-reference/figma-mcp-remote.md
+@@ -0,0 +1,25 @@
++---
++responsibility:
++  owns: verified Figma remote MCP design authoring interfaces
++  excludes: credentials, project destination, authorization
++  delegates_to: .asd/rules/providers.md, .asd/rules/design-system.md
++---
++
++# Figma MCP remote
++
++## Canonical source
++
++- [Write to canvas](https://developers.figma.com/docs/figma-mcp-server/write-to-canvas/), [tools](https://developers.figma.com/docs/figma-mcp-server/tools-and-prompts/), and [host setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/). Verified 2026-11-22.
++
++## API surface used in project
++
++- `use_figma` targets a Figma file key from the supplied Design URL. It can inspect or mutate native nodes through the Plugin API, depending on the script. Write access and the remote server are required.
++- `create_new_file` creates a blank Design file in drafts. Select the plan or team explicitly when there is a choice. The returned file identity is the target for authoring.
++
++## Version-specific notes
++
++- The remote service is unversioned in ASD. Host tool availability, plan and edit rights govern writes.
++
++## Project conventions
++
++- Load the host's Figma authoring skills. Resolve and authorize the destination before writing. Retain node links and recover an uncertain write before repeating it.
+diff --git a/tests/runtime-routing.test.js b/tests/runtime-routing.test.js
+index 4120712..5405c17 100644
+--- a/tests/runtime-routing.test.js
++++ b/tests/runtime-routing.test.js
+@@ -227,10 +227,36 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
+       'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
+     );
+   }
+-  const incomplete = await check(template.replace(/^  codex_profile:.*$/m, '').replace(/^  claude_design:.*$/m, '  claude_design: [redacted-value]\n  claude_design: disabled'));
++  const incomplete = await check(template
++    .replace(/^  codex_profile:.*$/m, '')
++    .replace(/^  mockup_format:.*$/m, '  mockup_format: [redacted-value]\n  mockup_format: html'));
+   const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
+-  assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.claude_design'], ['project.claude_design']]);
++  assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.mockup_format'], ['project.mockup_format']]);
+   assert.doesNotMatch(incomplete.stdout + incomplete.stderr, /redacted-value/);
++
++  // Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
++  const withMockupSettings = (...settings) => template.replace(/^  mockup_format:.*$/m, settings.map((setting) => `  ${setting}`).join('\n'));
++  for (const settings of [
++    ['mockup_format: html'],
++    ['mockup_format: claude_design'],
++    ['mockup_format: figma'],
++    ['claude_design: enabled'],
++    ['claude_design: disabled'],
++    ['mockup_format: figma', 'claude_design: disabled'],
++  ]) {
++    assert.strictEqual((await check(withMockupSettings(...settings))).status, 0, settings.join(', '));
++  }
++
++  const absent = await check(withMockupSettings());
++  assert.deepStrictEqual([absent.status, JSON.parse(absent.stdout).missing], [1, ['project.mockup_format']]);
++  const mixed = await check(withMockupSettings('mockup_format: unknown', 'claude_design: disabled'));
++  assert.deepStrictEqual([mixed.status, JSON.parse(mixed.stdout).invalid.map(({ path: key }) => key)], [1, ['project.mockup_format']]);
++  const badLegacy = await check(withMockupSettings('mockup_format: figma', 'claude_design: unknown', 'claude_design: enabled'));
++  const legacyResult = JSON.parse(badLegacy.stdout);
++  assert.deepStrictEqual(
++    [badLegacy.status, legacyResult.duplicates, legacyResult.invalid.map(({ path: key }) => key)],
++    [1, ['project.claude_design'], ['project.claude_design']]
++  );
+ });
+ 
+ test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {

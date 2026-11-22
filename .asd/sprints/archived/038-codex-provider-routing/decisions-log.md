@@ -40,3 +40,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-22 — PR publication approved under adaptive policy for the user-invoked sprint and accepted scope. The final reviewer, reusable full-suite evidence, retrospective and host permission checks passed. External review's recorded availability skip is disclosed. Feature commits select v14.10.0.
 - 2026-11-22 — opened [PR #146](https://github.com/LordKuper/agentic-software-development/pull/146) for the accepted scope and recorded its number before the squash merge.
+- 2026-11-22 — archived at sprint 039 scope after verifying PR #146 merged at `dac8b396e575ab7c1c647ee71c114b36f98e6e49`, v14.10.0 was published, and all included issues were closed.

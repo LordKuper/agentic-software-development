@@ -2,6 +2,22 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.11.0
+
+### Added
+
+- **Figma Design mockups.** Choose `project.mockup_format: figma` to create editable frames in an authorized Design file, keep verified frame links and revisions in the mockup index, and carry them through review and promotion. Claude Design and local HTML remain available.
+- **Codex App decision widgets.** Structured ASD questions use the native choice widget where the host exposes it. Where the widget is unavailable, ASD presents the same choices in chat and waits for an explicit reply.
+
+### Changed
+
+- Existing `project.claude_design` settings retain their effective mockup format. Fresh configurations use the three-way selector.
+- Test-only Tasks require verified fail-first evidence for new or extended regression tests, including on recovery. Test runners capture the complete report and exit code before summarizing it. Review scope tests exercise the file list produced by Git.
+
+### Fixed
+
+- The migration test for an external symlink target also runs on Windows without file-symlink privileges.
+
 ## v14.10.0
 
 ### Added

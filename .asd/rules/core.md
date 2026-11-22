@@ -39,7 +39,7 @@ For a hard or unresolved decision: **Question** → **Options** → **Decision**
 
 ## Request user decision
 
-Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Only the main orchestrator, and skills it runs inline, performs it — a dispatched agent never reaches the user on either host, so it returns `QUESTION` with the options instead (`agent-protocol.md` "Relay"; a reviewer's carrier: `review-policy.md` "Gate Verdict Format"). Use whenever a choice is needed; never for free-form input, which is collected as a plain chat message.
+Use this semantic operation for every question with predefined choices, including phase gates, interviews and inline skills. Resolve it through `providers.md` "Semantic operations -> host convention". Ask open-ended questions in chat. Only the main orchestrator and skills it runs inline may perform the operation. A dispatched agent returns `QUESTION` with the options (`agent-protocol.md` "Relay" and `review-policy.md` "Gate Verdict Format").
 
 ## Autonomy and escalation
 

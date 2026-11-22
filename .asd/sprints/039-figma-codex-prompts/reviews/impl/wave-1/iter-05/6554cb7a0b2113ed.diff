@@ -1,0 +1,123 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 8b1605a..9ccb727 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -126,7 +126,7 @@
+     ".asd/templates/t_ux-spec.html": "6f5a93a432245795f052e09d21bb6b7bc68775819fef23760921f2343e2069f2",
+     ".asd/workflows/asd-phase-audit.md": "a4e0c0b38df51a5eb0335a88749c4adea5bafaf86e529200d7382e90aa0c8200",
+     ".asd/workflows/asd-phase-design-promote.md": "409549d8c95463d7991feee0a54a7ede92fb5a9f8bab3418cfa48d67c4df5400",
+-    ".asd/workflows/asd-phase-design-review.md": "7c5532b3eecd7ecd469ecfa5dd04a9f0f1cabf533a4ebad801754914e26c8883",
++    ".asd/workflows/asd-phase-design-review.md": "108c16227d644231d0fb181a467eed164a3c1a0124a806502d1eb88e5bca4b1c",
+     ".asd/workflows/asd-phase-design.md": "ce77efed550e0bd9d0b8650739a3db7890d9d4f8b0d8c845807d19a28cc7756b",
+     ".asd/workflows/asd-phase-impl-review.md": "d8f75514ee30ee10a7d0b77232925ef2403e896a04abb84cce1ab7d519425ae1",
+     ".asd/workflows/asd-phase-impl-test.md": "2c81522977ea5e8f2bccac0023e165ef42422ef9c407b2096194caa1f77ae0f4",
+diff --git a/.asd/sprints/039-figma-codex-prompts/test-plan.entry-05.md b/.asd/sprints/039-figma-codex-prompts/test-plan.entry-05.md
+new file mode 100644
+index 0000000..2e9177a
+--- /dev/null
++++ b/.asd/sprints/039-figma-codex-prompts/test-plan.entry-05.md
+@@ -0,0 +1,16 @@
++# Test plan — sprint 039-figma-codex-prompts, entry 5
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-2/AC-5, Figma handoff after interrupted index writes | A recovered link can reach the reviewer without the metadata needed for handoff | Trace the publication rule and review steps 1 and 7, inspect the recorded recovery fixture, and run snapshot and manifest tests | none | The restored row's reviewer patch retained the verified frame revision, screen state, component and unbound token reference. Review pauses if required metadata is pending, before initial enumeration or a later snapshot. [Decisions log](decisions-log.md) |
++| AC-7, partially completed Test-only Tasks | A commit for one subtask can conceal unfinished work or let a regression test bypass proof | Trace lifecycle recovery and impl steps 5 and 7 and run the existing failed-dispatch anchor check | none | In the recorded source trace, a completed compile-only subtask reaches step 7 and the unfinished regression subtask returns to authoring using the first dispatch anchor. The completion check compares the full Task diff to its proof and leaves affected subtasks unticked if proof is missing or invalid. [Decisions log](decisions-log.md) |
++
++## Removed tests
++
++No removals. The affected tests cover separate contracts.
++
++## Added tests
++
++No additions. Existing tests cover the snapshot, manifest and failed-dispatch anchor contracts. The recorded fixture and source trace cover the revised recovery instructions.
+diff --git a/.asd/sprints/039-figma-codex-prompts/test-plan.md b/.asd/sprints/039-figma-codex-prompts/test-plan.md
+index 6b041ea..0c3c04e 100644
+--- a/.asd/sprints/039-figma-codex-prompts/test-plan.md
++++ b/.asd/sprints/039-figma-codex-prompts/test-plan.md
+@@ -16,13 +16,13 @@ responsibility:
+ | 3 | 30a0a48c | delta since entry 2 |
+ | 4 | 5b1a1ec7 | delta since entry 3 |
+ | 5 | e2c58cd3 | delta since entry 4 |
++| 6 | f81ab280 | delta since entry 5 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-2/AC-5, Figma handoff after interrupted index writes | A recovered link can reach the reviewer without the metadata needed for handoff | Trace the publication rule and review steps 1 and 7, inspect the recorded recovery fixture, and run snapshot and manifest tests | none | The restored row's reviewer patch retained the verified frame revision, screen state, component and unbound token reference. Review pauses if required metadata is pending, before initial enumeration or a later snapshot. [Decisions log](decisions-log.md) |
+-| AC-7, partially completed Test-only Tasks | A commit for one subtask can conceal unfinished work or let a regression test bypass proof | Trace lifecycle recovery and impl steps 5 and 7 and run the existing failed-dispatch anchor check | none | In the recorded source trace, a completed compile-only subtask reaches step 7 and the unfinished regression subtask returns to authoring using the first dispatch anchor. The completion check compares the full Task diff to its proof and leaves affected subtasks unticked if proof is missing or invalid. [Decisions log](decisions-log.md) |
++| AC-2/AC-5, iteration allocation during Figma index recovery | A pause can consume an iteration, advance the severity floor and leave a missing prior snapshot | Trace design-review steps 1, 4, 5, 7 and 9 and run the existing workflow, snapshot and manifest contracts | none | Step 4 reconciles and refreshes the draft list before allocating the iteration. Recovery can pause before the counter and floor advance. Step 7 takes the refreshed list and uses the actual prior iteration snapshot. The existing CLI tests cover the unchanged snapshot arguments and delta behavior. [Decisions log](decisions-log.md) |
+ 
+ ## Removed tests
+ 
+@@ -30,19 +30,19 @@ No removals. The affected tests cover separate contracts.
+ 
+ ## Added tests
+ 
+-No additions. Existing tests cover the snapshot, manifest and failed-dispatch anchor contracts. The recorded fixture and source trace cover the revised recovery instructions.
++No additions. The source trace covers the reordered workflow steps. Existing tests cover the snapshot and manifest contracts.
+ 
+ ## Suite run
+ 
+-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-tools sync-cli sync-render update`
++- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review sync-cli sync-render update`
+ - Scope: impacted
+-- Scope evidence: Searches for the changed design-system and lifecycle rules, workflow paths, snapshot and manifest commands and failed-dispatch anchor bound the impact to the contract areas and `runtime-review`, `runtime-routing` and `runtime-tools`. The release hash changes reach `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the runner, shared test setup and executable runtime are outside the delta.
+-- Result: pass — 264 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run.
++- Scope evidence: Direct workflow references and canonical Markdown scans select the four contract areas. The existing step 7 check selects `runtime-review`. Release manifest readers and upstream hash validation select `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the delta is the design-review workflow and its upstream hash.
++- Result: pass — 207 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run. Eligible for the impacted gate while those paths remain unchanged.
+ - Lint / build: pass
+-- HEAD: 9457ed9947c285dc6c1e6011c9c72be51a209b63
++- HEAD: ca3b97d880eeb6532388fc4725a7a13faf4c7608
+ 
+-The entry 4 and 3 impacted runs passed at `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
+-- Line delta: tests +28/−2 (net 26); other +139/−56 (net 83)
++The entry 5, 4 and 3 impacted runs passed at `9457ed99`, `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
++- Line delta: tests +28/−2 (net 26); other +141/−58 (net 83)
+ 
+ ## Defects
+ 
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index d4121d8..47d4c9d 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -5,7 +5,7 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+ ## Entry
+ 
+ ```json
+-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "whichever of prd.html/ux-spec.html/adr.html the frozen documents.* enabled are present in <sprint>/design/ (checkpoints.md precondition chain)", "state.json phase advanced from design"], "ops": ["context: node .asd/runtime.js context --phase design-review --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context, each Conditional grant whose condition holds named in inputs; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a review-iteration op from step 4 to step 9's resolution (loop or exit); a dispatch op around each ## Dispatch delegation, External Review's of kind external-review (sprint-lifecycle.md 'Operation timing')"]}
++{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "whichever of prd.html/ux-spec.html/adr.html the frozen documents.* enabled are present in <sprint>/design/ (checkpoints.md precondition chain)", "state.json phase advanced from design"], "ops": ["context: node .asd/runtime.js context --phase design-review --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context, each Conditional grant whose condition holds named in inputs; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a review-iteration op from step 4's increment to step 9's resolution (loop or exit); a dispatch op around each ## Dispatch delegation, External Review's of kind external-review (sprint-lifecycle.md 'Operation timing')"]}
+ ```
+ 
+ ## Inputs
+@@ -16,15 +16,15 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+ 
+ ## Steps
+ 
+-1. Read frozen `documents.prd`/`ux_spec`/`adr`/`c4` from `<sprint>/state.json`. With `ux_spec` enabled, reconcile complete verified Figma entries into `design/mockups/index.md` per `design-system.md` §12 before enumerating scope. Pause if a required entry is still pending recovery. Then list the **intersection** of enabled documents and drafts that exist in `<sprint>/design/`. With `ux_spec` enabled, include every file under `<sprint>/design/mockups/`, at any depth.
++1. Read frozen `documents.prd`/`ux_spec`/`adr`/`c4` from `<sprint>/state.json`. With `ux_spec` enabled, reconcile complete verified Figma entries into `design/mockups/index.md` per `design-system.md` §12 and pause if a required entry is still pending recovery. Then list the **intersection** of enabled documents and drafts that exist in `<sprint>/design/`. With `ux_spec` enabled, include every file under `<sprint>/design/mockups/`, at any depth.
+ 2. **No-op path** — a design-block collapse (`sprint-lifecycle.md` "Design/design-review/design-promote collapse") never reaches this phase; this defensive fallback covers an empty intersected scope on a direct re-dispatch: write inline (mechanical, no gate, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)"; emit phase COMPLETED; skip remaining steps.
+ 3. Read `.asd/project/config.yaml`; `self_hosting: enabled` adds `--self-hosting` to step 7's `emit-manifest`.
+ 3a. When `review.external_review=enabled`, run `node .asd/runtime.js external-preflight --input <path>` before External Review dispatch or diff assembly. Supply the host, profile, command overrides and cache path per `external-review.md` "Detection and negative cache". Pass the ready result to the wrapper unchanged. On non-ready — only then — record the transparent availability skip (`external-review.md` "Outcome contract"), still computing step 7's scope-manifest `files[]` for its `Unreviewed files`; after a real authentication/quota/reachability/command failure call `external-record-failure` with the returned fingerprint, the same cache path, and bounded retry data.
+-4. **Inline** — set phase and increment the review iteration.
++4. **Inline** — Refresh the in-scope draft list using step 1's procedure. Once recovery and enumeration are complete, set phase and increment the review iteration.
+ 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`).
+ 6. Create folder `<sprint>/reviews/design/iter-NN/` if absent.
+ 7. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
+-   - **Draft list** — the sole home of the design-review iteration snapshot: re-enumerate current drafts using step 1's procedure before each snapshot. Run `node .asd/runtime.js draft-snapshot --files <current in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/`, adding `--previous <sprint>/reviews/design/iter-(NN-1)/` on iter 2+, and write its stdout to a scratch file. It copies each draft under `<sprint>/reviews/design/iter-NN/snapshot/`, and prints every draft on iter 1, and on iter 2+ only the drafts whose content differs from their previous copy (a missing copy counts as changed). Run it every iteration, latch-skipped reviewers or not.
++   - **Draft list** — the sole home of the design-review iteration snapshot: use the refreshed draft list from step 4. Run `node .asd/runtime.js draft-snapshot --files <current in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/`, adding `--previous <sprint>/reviews/design/iter-(NN-1)/` on iter 2+, and write its stdout to a scratch file. It copies each draft under `<sprint>/reviews/design/iter-NN/snapshot/`, and prints every draft on iter 1, and on iter 2+ only the drafts whose content differs from their previous copy (a missing copy counts as changed). Run it every iteration, latch-skipped reviewers or not.
+    - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <the draft list above> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`, adding `--snapshot <sprint>/reviews/design/iter-(NN-1)/` on iter 2+. It builds that reviewer's own file list (`review-policy.md` "Reviewer responsibility") and writes `<reviewer>.manifest.json`, plus on iter 2+ its list's `<fingerprint>.diff` against the previous iteration's snapshot copies (none at iter 1, `review-policy.md` "Scope hand-off").
+    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.design.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 8 for it. The one internal reviewer, `asd-reviewer-combined`, is dispatched when not latch-skipped, for any non-empty draft set, and counted toward DoD.
+    - if `review.external_review=enabled` AND not latch-skipped → set External Review's list inputs to `--files <the draft list above>` and, when carried over, `--full-files <the previous iteration's Unreviewed files>`. Step 3a ready → run `emit-manifest --reviewer external --phase design-review --iteration <N> --out <sprint>/reviews/design/iter-NN/` with those list inputs and the same `--snapshot` on iter 2+. Dispatch with its `external.scope.json` and, on iter 2+, its `<fingerprint>.diff`. Step 3a non-ready → use the same list inputs with `--scope-only` for the skip (`external-review.md` "Phase-scoped payload").
+@@ -71,7 +71,7 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a
+ ## Exit
+ 
+ ```json
+-{"writes": ["<sprint>/reviews/design/iter-NN/: <reviewer>.md and <reviewer>.findings.json (step 8), snapshot/, <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 7)", "<sprint>/reviews/design/iter-NN/<reviewer>.late.md (step 8a)", "<sprint>/design/ drafts (steps 1 and 7 Figma index recovery, step 9 fixes)", "resolved: lines in reviewer files and memory-fix commits by the owner or orchestrator (step 9)", "state.json phase, reviews.design (verdicts and latched through record-verdicts, steps 8a, 9)", "decisions-log.md"], "next": [{"if": "DoD met or cap accepted", "next": "design-promote"}]}
++{"writes": ["<sprint>/reviews/design/iter-NN/: <reviewer>.md and <reviewer>.findings.json (step 8), snapshot/, <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 7)", "<sprint>/reviews/design/iter-NN/<reviewer>.late.md (step 8a)", "<sprint>/design/ drafts (steps 1 and 4 Figma index recovery, step 9 fixes)", "resolved: lines in reviewer files and memory-fix commits by the owner or orchestrator (step 9)", "state.json phase, reviews.design (verdicts and latched through record-verdicts, steps 8a, 9)", "decisions-log.md"], "next": [{"if": "DoD met or cap accepted", "next": "design-promote"}]}
+ ```
+ 
+ ## Return

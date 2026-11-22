@@ -37,7 +37,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
-│       │   │   ├── mockups/                     # ux_spec enabled only; `lite`: made at scope; promoted to docs/ux/mockups/; shape: design-system.md "Mockups"
+│       │   │   ├── mockups/                     # ux_spec enabled only; local mockups or remote links in index.md; design-system.md "Mockups"
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here

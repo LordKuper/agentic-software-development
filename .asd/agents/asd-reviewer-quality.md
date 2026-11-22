@@ -149,9 +149,9 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - custom-common-rules.md domain glossary/naming and the phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review) respected
 
 ### UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]
-- **Token usage**: per `design-system.md` §6 — covers ux-spec mockup previews too; raw hex/px/rem/font in a mockup or UI = `high` finding
+- **Token usage**: per `design-system.md` §6 for local previews and UI, with raw hex/px/rem/font = `high` finding. For Figma frames, verify bindings and token references per §12.
 - **Token comment**: per `design-system.md` §4
-- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
+- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7. For Figma, use frame links and the mockup index. If frame access is unavailable, review the recorded structure, states and references from the index and report visual checks as unverified.
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
 - **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale is a finding
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`

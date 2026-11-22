@@ -1,0 +1,103 @@
+{
+  "sprint_id": "039-figma-codex-prompts",
+  "branch": "sprint/039-figma-codex-prompts",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user selected lite",
+      "evidence": "decisions-log.md: Workflow choice",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "user chose direct Figma authoring",
+      "evidence": "research.md: Approaches / Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "user accepted all eight criteria in one sprint",
+      "evidence": "decisions-log.md: Scope accepted; AC-1..AC-8 each 0 review iterations and 0 fix rounds",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "user included all three retro candidates",
+      "evidence": "decisions-log.md: Retro intake choices and scope acceptance",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all eight criteria deliverable and baseline checks green",
+      "evidence": "audit.md: Existing implementation found, Gaps and Risks; seven impacted test areas passed",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "user accepted plan and requested implementation",
+      "evidence": "decisions-log.md: Plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all seven tasks completed within the accepted plan",
+      "evidence": "plan.md all boxes checked; build, lint, context and agnix passed",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "Figma verification draft",
+      "decision_actor": "user",
+      "reason": "user authorized one draft and one editable screen via Codex App widget",
+      "evidence": "decisions-log.md: Figma smoke authorization and read-back",
+      "artifact_revision": "plan.md@impl-test"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "combined approved and full suite green after portable fixture repair",
+      "evidence": "wave-1/iter-05 combined APPROVE; external skip; 316/316 at 4ea1a103",
+      "artifact_revision": "reviews/impl/wave-1/iter-05"
+    }
+  ],
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 3": { "execution": "agent", "tier": "escalated", "reason": "risk:cross-domain", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:runner evidence", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 6": { "execution": "agent", "tier": "standard", "reason": "normal", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "D-1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:skill byte budget", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "review-fix wave-1/iter-01": { "execution": "agent", "tier": "escalated", "reason": "risk:cross-domain", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "review-fix wave-1/iter-02": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "review-fix wave-1/iter-03": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "review-fix wave-1/iter-04": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
+  },
+  "skipped_phases": ["design-promote"],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 5, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-04": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-05": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "7ec60b41a7c6b185679150dbeea51853d80a3bcc", "iter-02": "7e0bef6baaf0ed45844c4acda19329695321e283", "iter-03": "eb7a625fea6c3a58092123e718fe4bbbe8655280", "iter-04": "31b8cab698b550b1cc28302ca7307466af955ea0", "iter-05": "72c1714b031da2959635577e3e564820c42ac9c3" }, "latched": {} } ] }
+  },
+  "created_at": "2026-11-22T10:40:41.832Z",
+  "updated_at": "2026-11-22T12:26:50Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 147,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/147",
+    "state": "open",
+    "merge_commit": null
+  },
+  "archived_at": null
+}

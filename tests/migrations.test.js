@@ -215,9 +215,15 @@ test('AC-14: PM migration deletes only intact generated views and remains idempo
   const unsafeRoot = makeMigrationFixtureRepo();
   const outside = path.join(mkTempDir(), 'asd-pm.md');
   fs.writeFileSync(outside, makeView('agent-claude'), 'utf8');
-  const unsafe = path.join(unsafeRoot, '.claude', 'agents', 'asd-pm.md');
-  fs.mkdirSync(path.dirname(unsafe), { recursive: true });
-  fs.symlinkSync(outside, unsafe, 'file');
+  const unsafeAgents = path.join(unsafeRoot, '.claude', 'agents');
+  if (process.platform === 'win32') {
+    // A junction exercises the same resolved path without file symlink privileges.
+    fs.mkdirSync(path.dirname(unsafeAgents), { recursive: true });
+    fs.symlinkSync(path.dirname(outside), unsafeAgents, 'junction');
+  } else {
+    fs.mkdirSync(unsafeAgents, { recursive: true });
+    fs.symlinkSync(outside, path.join(unsafeAgents, 'asd-pm.md'), 'file');
+  }
   const unsafeReport = await migration500({ repoRoot: unsafeRoot });
   assert.ok(unsafeReport.skippedUnsafe.includes('.claude/agents/asd-pm.md'));
   assert.strictEqual(fs.existsSync(outside), true, 'migration must not follow or delete a target outside the consumer repo');
