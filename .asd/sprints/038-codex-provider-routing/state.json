@@ -1,7 +1,7 @@
 {
   "sprint_id": "038-codex-provider-routing",
   "branch": "sprint/038-codex-provider-routing",
-  "phase": "retro",
+  "phase": "pr",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -62,6 +62,13 @@
       "reason": "accepted Lite scope; required internal reviewer and verified full suite are green, with the configured availability skip recorded",
       "evidence": "wave-1/iter-03 combined APPROVE; external skip; 316/316 @ac5a555a",
       "artifact_revision": "reviews/impl/wave-1/iter-03"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "orchestrator",
+      "reason": "the user invoked the full ASD sprint workflow and accepted its complete Lite scope and implementation plan",
+      "evidence": "combined APPROVE; 316/316 @ac5a555a; retrospective complete; GitHub ADMIN",
+      "artifact_revision": "sprint.md@scope; plan.md@plan; reviews/impl/wave-1/iter-03"
     }
   ],
   "task_routing": {
@@ -170,7 +177,7 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "4517cfc6b60b31a40b20dece6ffca0cf800e87ac", "iter-02": "7c89c0b177a6fa8dba1e692f0a6e779087014339", "iter-03": "98084334e0818d4ed6692915917ea092ab6e22b7" }, "latched": { "combined": 3 } } ] }
   },
   "created_at": "2026-11-21T20:41:57.634Z",
-  "updated_at": "2026-11-22T00:16:54.000Z",
+  "updated_at": "2026-11-22T00:18:47.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
