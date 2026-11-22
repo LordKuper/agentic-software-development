@@ -74,6 +74,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Recovery check: reconstructed a missing mockup index in a scratch fixture before enumerating scope. The existing draft-snapshot command selected it and the combined review manifest diff contained its revision. Verified Test-only recovery reads the first authoring anchor before the dispatch graph handles unticked Tasks and sends committed test changes through step 7.
 - 2026-11-22 — impl fix for wave-1/iter-02: findings resolved
 - 2026-11-22 — route impl-test entry 4: standard, dispatch HEAD 5161f7af11f3599a62007287c9855325b8ce73be
+- 2026-11-22 — wave-1/iter-03 external review skipped after preflight returned negative-cache (authentication). The skip retains the prior scope and both fix deltas as unreviewed.
+- 2026-11-22 — wave-1/iter-03 Combined returned CONCERNS F-1 and F-2. Route partial Test-only completion and full Figma index reconstruction to impl review-fix.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests

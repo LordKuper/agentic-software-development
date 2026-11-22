@@ -31,3 +31,11 @@
 - **What happened**: Preflight reused the current authentication failure record in iteration 2.
 - **Impact**: External review remained unavailable for the carried scope and the review-fix delta.
 - **Refs**: reviews/impl/wave-1/iter-02/external.md.
+
+## F-5 — External review was unavailable for the recovery fixes
+
+- **Phase**: impl-review
+- **Surface**: external-review provider availability
+- **What happened**: Iteration 3 preflight returned the same cached authentication failure.
+- **Impact**: The recovery-fix delta and prior scope were carried as unreviewed by the external provider.
+- **Refs**: reviews/impl/wave-1/iter-03/external.md.

@@ -1,7 +1,7 @@
 {
   "sprint_id": "039-figma-codex-prompts",
   "branch": "sprint/039-figma-codex-prompts",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -78,11 +78,11 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "7ec60b41a7c6b185679150dbeea51853d80a3bcc", "iter-02": "7e0bef6baaf0ed45844c4acda19329695321e283" }, "latched": {} } ] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "7ec60b41a7c6b185679150dbeea51853d80a3bcc", "iter-02": "7e0bef6baaf0ed45844c4acda19329695321e283", "iter-03": "eb7a625fea6c3a58092123e718fe4bbbe8655280" }, "latched": {} } ] }
   },
   "created_at": "2026-11-22T10:40:41.832Z",
   "updated_at": "2026-11-22T10:48:35Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-03",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
