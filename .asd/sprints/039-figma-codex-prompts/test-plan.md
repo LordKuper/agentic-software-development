@@ -14,16 +14,14 @@ responsibility:
 | 1 | 71a70a21 | full change surface |
 | 2 | 6f4bbe3a | delta since entry 1 |
 | 3 | 30a0a48c | delta since entry 2 |
+| 4 | 5161f7af11f3599a62007287c9855325b8ce73be | delta since entry 3 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| AC-2/AC-5, Figma frame revisions in Standard design review | An in-place fix preserves the frame URL and can be omitted from rereview | Trace verified write, recovery and snapshot rules. Check the live Figma read-back and local CLI fixture recorded in [the decisions log](decisions-log.md) | none | Live Figma read-back confirmed changed padding with the same file key and node ID. In the local fixture, incrementing only the verified revision with the same URL included the index in `draft-snapshot` output and its diff in `emit-manifest`. Step 1 includes the mockup index and step 7 reconciles verified revisions before snapshotting. Both inline fix paths use the same publication rule. Existing runtime tests cover changed-file selection and snapshot diffs. |
-| AC-6, tester output capture | A bounded tool reply drops the failure detail needed for triage | Check the tester's scratch log grant and the capture used for this entry | none | The per-run scratch path is authorized. This entry captured stdout and stderr together, appended exit 0 in the same invocation and then read a bounded result from the log. |
-| AC-7, Test-only Task recovery | A commit trailer can advance the wave before the proof is verified, or a proof re-dispatch can change the committed tests | Trace the failed-dispatch rule, impl step 7 and the tester's evidence-only scope | none | Trailer reconstruction reaches the same proof check as a normal completion. Missing or invalid proof leaves the Task unticked and its wave open. The evidence-only dispatch uses the existing commits and authoring anchor, and leaves tracked files untouched. The failed-dispatch parser's existing tokens and command stay valid. |
-| AC-1/AC-5, config test citation | The citation misses the test it describes or changes its cases | Inspect the comment move and run the existing `runtime-routing` area | keep | The citation precedes the test declaration. The same assertions exercise all mockup formats, legacy configs and invalid inputs. |
-| AC-2/AC-4/AC-5, integration references | Duplicated provider guidance can diverge from the governing rules | Verify relative links and trace native session setup to the recorded Figma smoke | none | Both references link to the live rule files. Their section anchors resolve, and the Figma note records the setup observed during the earlier authorized check. |
+| AC-2/AC-5, Figma index recovery in Standard design review | An interrupted write leaves the index absent during initial scope enumeration or a later review snapshot | Trace steps 1 and 7, check the recorded recovered-index fixture, and run existing snapshot and manifest tests | none | Step 1 reconciles verified revisions before listing drafts and deciding whether the scope is empty. Step 7 applies that procedure before every snapshot. The local fixture restored a missing index and produced its revision diff in the combined reviewer manifest. [Decisions log](decisions-log.md) |
+| AC-7, recovery of unticked Test-only Tasks | A retry can lose sight of the first test commit or bypass the proof check | Trace lifecycle recovery and impl steps 5–7, then run the existing failed-dispatch anchor check | none | The source trace confirmed that normal re-entry and failed dispatch use the first authoring anchor. Recovered commits go to step 7, where missing or invalid proof keeps the Task unticked and the wave open. With no Task commits, authoring resumes. [Decisions log](decisions-log.md) |
 
 ## Removed tests
 
@@ -31,19 +29,19 @@ No removals. The affected tests cover separate contracts.
 
 ## Added tests
 
-No additions. Existing tests cover the executable snapshot, manifest and config contracts, and the new instructions are checked by the rule trace and recorded integration evidence.
+No additions. Existing tests cover snapshot selection, manifest diffs and failed-dispatch anchors. The local fixture and source trace cover the workflow ordering.
 
 ## Suite run
 
 - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-tools sync-cli sync-render update`
 - Scope: impacted
-- Scope evidence: The changed test is in `runtime-routing`. Path and consumer searches bound the workflow and rule changes to the contract areas, `runtime-review` and `runtime-tools`. The regenerated tester views and release hashes reach `sync-cli`, `sync-render` and `update`. The runner, shared test setup and executable runtime are outside the delta. The safety valve keeps the run impacted.
+- Scope evidence: Path and consumer searches bound the two workflow documents and the lifecycle rule to the contract areas and `runtime-review`, `runtime-routing` and `runtime-tools`. The release hash changes reach `sync-cli`, `sync-render` and `update`. The runner, shared test setup and executable runtime are outside the delta. The safety valve keeps the run impacted.
 - Result: pass — 264 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run.
 - Lint / build: pass
-- HEAD: 4896ebd2f59bf1ae1ac078cbce5ea04b196d8c90
+- HEAD: 5161f7af11f3599a62007287c9855325b8ce73be
 - Line delta: tests +28/−2 (net 26); other +134/−54 (net 80)
 
-The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
+The entry 3 impacted run passed at `4896ebd2` (264/264). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 
 ## Defects
 
