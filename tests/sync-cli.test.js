@@ -23,6 +23,11 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
     assert.ok(targets.has(`.claude/agents/${name}.md`), `sync plan missing .claude/agents/${name}.md`);
     assert.ok(targets.has(`.codex/agents/${name}.toml`), `sync plan missing .codex/agents/${name}.toml`);
   }
+  const codexAgents = [...targets].filter((target) => /^\.codex\/agents\/.+\.toml$/.test(target));
+  const primaryAgents = codexAgents.filter((target) => !target.endsWith('-quota.toml'));
+  assert.strictEqual(primaryAgents.length, 11, 'Sprint 038 AC-12: all primary roles and tier variants have quota alternatives');
+  assert.deepStrictEqual(codexAgents.filter((target) => target.endsWith('-quota.toml')).sort(), primaryAgents.map((target) => target.replace(/\.toml$/, '-quota.toml')).sort());
+  assert.ok(![...targets].some((target) => /^\.claude\/agents\/.+-quota\.md$/.test(target)));
   const skillsDir = path.join(REPO_ROOT, '.asd', 'skills');
   for (const name of fs.readdirSync(skillsDir)) {
     if (!fs.existsSync(path.join(skillsDir, name, 'SKILL.md'))) continue;
@@ -182,6 +187,13 @@ test('sync.js CLI: --apply on a not-found target and a bare --apply each abort t
   const syncStatePath = path.join(root, '.asd', 'sync-state.json');
   const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
   const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
+  const command = path.join(REPO_ROOT, '.asd', 'sync.js');
+  const reportsStale = () => JSON.parse(execFileSync(process.execPath, [command, '--check'], { cwd: root, encoding: 'utf8' })).items.some(({ target, status }) => target === '.asd/release-manifest.json' && status === 'ledger-stale');
+  assert.strictEqual(reportsStale(), false, 'Sprint 038 AC-24: consumer projects can retain upstream ledger hashes');
+  const project = path.join(root, '.asd', 'project');
+  fs.mkdirSync(project);
+  fs.writeFileSync(path.join(project, 'config.yaml'), 'self_hosting: enabled\n');
+  assert.strictEqual(reportsStale(), true, 'Sprint 038 AC-24: check reports a stale self-hosting release ledger');
   const failedApply = (label, ...args) => {
     let error = null;
     try {
@@ -199,6 +211,7 @@ test('sync.js CLI: --apply on a not-found target and a bare --apply each abort t
     return report;
   };
   assert.ok(failedApply('not-found target', '.claude/agents/typo-target-matching-nothing.md').applied.some((a) => a.status === 'not-found'));
+  assert.ok(failedApply('reporting-only ledger', '.asd/release-manifest.json').applied.some((a) => a.status === 'not-found'));
   assert.deepStrictEqual(failedApply('bare --apply').applied, []);
 });
 

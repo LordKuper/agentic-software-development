@@ -2,6 +2,26 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.10.0
+
+### Added
+
+- **Codex review profiles.** Select a local `review.codex_profile` when Codex is the primary harness. A separate read-only Codex process uses the profile's provider, model and effort. The README includes a ChatGPT plus RouterAI example.
+- **Claude Design selection.** Set `project.claude_design` explicitly. When using Claude Design in Lite, a known canvas reachability failure can defer publication to design-promote.
+- **Codex role tiers and quota retry.** Apply the approved role assignments and retry a confirmed model-quota launch rejection once when a compatible alternate is available.
+
+### Changed
+
+- **Project settings.** Every `asd-sprint` invocation checks the complete shipped config before changing Git or dispatching a phase. Use `asd-init` to fill or repair settings after an update. Init writes an explicit value for every shipped setting.
+- **Test checkpoints.** Resume independent area runs with their committed evidence and reuse qualifying suite runs against the exact tested tree. Verified prose-only review fixes can use named contract checks.
+- **Planning evidence.** Audit checks existing tests, plan verifies deployment references and compile-only callers, and review fixes trace required references and sibling sites.
+
+### Fixed
+
+- Review scope and patch assembly retain literal Git paths, apply consumer exclusions, and validate snapshot diffs, finding IDs and reviewer-owned memory before persistence.
+- Named commit checks detect paths with unstaged edits and paths without staged changes. Timing accepts repeated attributes and comma-delimited assignments. Self-hosted sync reports stale release ledgers and invalid apply targets.
+- Test-plan close refusals identify the affected file and failed check. Test-plan tables support escaped pipes and versioned evidence.
+
 ## v14.9.0
 
 Quality gates and CI cost: context-size ceilings, a `checks` gate at impl, gap-proof test admission with a line delta, due accepted-debt stubs and open PRs at scope, and a suite-revision mode.

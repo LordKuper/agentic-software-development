@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:b6235185aa251a716ec0c227305faa5da34c95481a8974eff01d7d4395c4429c content_digest=sha256:50393c56cfa5878dd48d4c58b25f6a76ef56d4cd0abcbf4758c25084c2e25218 asd_version=14.7.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:407a21764b0ce97c466f251cf49599a33e8d159b76d711a2d6ab7b78eb9ed035 content_digest=sha256:da96b6745169d62051fe3a4bc96d9f37618fd3ffb7c0c5e471e931c14f4f0fd6 asd_version=14.9.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -15,8 +15,10 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user $asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, node .asd/runtime.js attribution-check (edits only attribution keys of .claude/settings.json and settings.local.json, and the settings.json record in .asd/sync-state.json), git ls-files and git add/git commit of the tracked files they changed (Attribution check)", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": ["complete valid config (entry check below)", "at most 1 active sprint (Step 1)"], "else": "halt on entry check failure; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: node .asd/runtime.js config-check", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, git ls-files, git add/git commit only changed tracked attribution files (Attribution check)", "run command: node .asd/runtime.js attribution-check (writes only attribution and its sync-state record per Attribution check below)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
+
+Every invocation runs `node .asd/runtime.js config-check` at the repo root before Step 0, ref or state changes, and phase dispatch. On exit 1, report `missing`, `duplicates` and `invalid` by dotted path and direct the user to `$asd-init` before retrying. On other failures report the diagnostic. Halt on any failure.
 
 ## Steps
 
@@ -34,7 +36,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
 
 ### Step 2A: new-sprint flow
-1. Read `.asd/project/config.yaml` (confirm init complete)
+1. Read `.asd/project/config.yaml`
 2. `git status` — if dirty, request user decision: commit / stash / abort
 2a. Unless `self_hosting: enabled`: `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --check-version`. `newer: true` → request user decision (hard, `checkpoints.md` "Gate policy"): update to v<remote> now, then start | continue on v<local>; carry the answer to scope. A warning → continue.
 3. Collect scope as a plain chat message; request user decision only to confirm start or abort

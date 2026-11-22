@@ -633,6 +633,8 @@ test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 charact
   git('commit', '-q', '-m', 'base');
   writeFile(repo, `${memory}/note.md`, 'seen in sprint 019\n');
   git('add', '--', `${memory}/note.md`);
+  writeFile(repo, 'docs/own.md', 'staged change\n');
+  git('add', '--', 'docs/own.md');
   const check = async (subject, paths) => {
     const args = ['commit-check', ...(subject === undefined ? [] : ['--subject', subject]), ...(paths === undefined ? [] : ['--', ...paths])];
     const { status, stdout, stderr } = await runtimeSpawnAsync(args, { cwd: repo, env });
@@ -659,6 +661,16 @@ test('sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 charact
   assert.strictEqual(everyStaged.status, 1, 'with no paths named every staged memory write is checked');
 
   assert.ok(missing.status === 2 && /commit-check takes --subject/.test(missing.stderr), `a missing subject is refused (got ${JSON.stringify(missing)})`);
+
+  git('mv', 'docs/own.md', 'docs/renamed.md');
+  assert.strictEqual((await check(fits, ['docs/own.md', 'docs/renamed.md'])).status, 0, 'Sprint 038 AC-25: both sides of a staged rename count as staged');
+  writeFile(repo, 'docs/renamed.md', 'further unstaged edit\n');
+  writeFile(repo, 'docs/new.md', 'unstaged new file\n');
+  const dirty = await check(fits, ['docs/own.md', 'docs/renamed.md', 'docs/new.md']);
+  assert.deepStrictEqual([dirty.status, dirty.report.path_errors], [1, [
+    { path: 'docs/renamed.md', unstaged: true, missing_staged: false },
+    { path: 'docs/new.md', unstaged: true, missing_staged: true },
+  ]]);
 });
 
 test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed of the named entry with the short HEAD and appends the decisions-log line, touching no other row, and writes neither file when its input is invalid', async () => {
@@ -678,8 +690,8 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
     fs.writeFileSync(logFile, log, 'utf8');
     if (segment !== undefined) fs.writeFileSync(`${planFile.replace(/\.md$/, '')}.entry-01.md`, segment, 'utf8');
     const flags = { 'test-plan': planFile, entry: '2', decisions: logFile, line: 'impl-test: impacted set green', ...overrides };
-    const outcome = await runtimeCliResultAsync(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
-    return { ...outcome, files: () => [fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')] };
+    const outcome = await runtimeSpawnAsync(['impl-test-close', ...Object.entries(flags).flatMap(([name, value]) => [`--${name}`, value])], { cwd: repo, env });
+    return { ...outcome, result: outcome.stdout ? JSON.parse(outcome.stdout) : undefined, planFile, files: () => [fs.readFileSync(planFile, 'utf8'), fs.readFileSync(logFile, 'utf8')] };
   };
   const refusals = [
     ['an entry with no row', { entry: '3' }, /holds 0 Entry log rows for entry 3, expected 1/],
@@ -693,7 +705,7 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
     close('- 2026-01-01 — earlier line\n'),
     close('- 2026-01-01 — no trailing newline', { entry: '1' }),
     Promise.all(refusals.map(([, overrides]) => close('- 2026-01-01 — kept\n', overrides))),
-    close('', {}, `${plan}\n${entryRow(2, '', 'again')}\n`),
+    close('', {}, plan.replace('## Added tests', `${entryRow(2, '', 'again')}\n\n## Added tests`)),
     runtimeCliResultAsync(['impl-test-close', '--test-plan', path.join(work, 'test-plan-1.md')], { cwd: repo, env }),
     close('', { segment: segmentOf('seeded x: node tests/run.js -> exit 0') }),
   ]);
@@ -712,6 +724,8 @@ test('sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD an
     assert.deepStrictEqual(refused[index].files(), [plan, '- 2026-01-01 — kept\n'], `${label}: neither file is written`);
   });
   assert.ok(/holds 2 Entry log rows for entry 2/.test(ambiguous.stderr), 'two rows for one entry are ambiguous and refused');
+  const refusal = ambiguous.result.refusal;
+  assert.deepStrictEqual([ambiguous.status, refusal.file, refusal.check, refusal.cause.trim()], [2, ambiguous.planFile, 'Entry log', ambiguous.stderr.trim().replace(/^runtime: /, '')], 'Sprint 038 AC-27: structural refusal identifies the exact file and check');
   assert.ok(absent.status === 2 && /requires --entry, --decisions, --line/.test(absent.stderr), 'a missing flag names every flag still required');
 });
 

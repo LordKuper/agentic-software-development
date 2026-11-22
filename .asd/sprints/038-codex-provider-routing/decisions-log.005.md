@@ -37,4 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-11-18 — pr: DoD met (all Tasks ticked; wave-1 roster met — combined APPROVE, external cap-accepted iter-08; suite 311/311 re-run at PR open, lint/build clean; retrospective written); PR #129 opened (adaptive: sprint scope authorises publication; version 14.8.0 → 14.9.0)
+
+- 2026-11-22 — design-promote skipped: no persistent design documents enabled in the frozen Lite scope.

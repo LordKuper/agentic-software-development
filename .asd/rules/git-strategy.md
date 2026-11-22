@@ -47,6 +47,8 @@ The main orchestrator commits its own bookkeeping — `state.json`, `decisions-l
 
 **Timing ledger**: a dirty `timing.jsonl` is committed by the orchestrator alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before any clean-tree check or diff-reading gate, so those never see it; an agent never stages it (`sprint-lifecycle.md` "Operation timing").
 
+**Named path check.** Stage each candidate before invoking `commit-check` from the repository root. The check exits 1 when any named path has unstaged changes or no staged change. It reports the path and the failing conditions under `path_errors`. Git lists a rename's staged source deletion and destination addition separately. A directory covers the files under it. With no named paths the check keeps the existing all-staged behavior.
+
 **Memory content check**: every commit of agent-memory writes, the orchestrator's or a dev's or tester's own, uses the form above, whose `commit-check` runs `node .asd/runtime.js memory-check` over the named staged paths only; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (`artifact-layout.md` "Agent memory"). A violating orchestrator-committed write is unstaged and not committed; it returns to its owner's memory-fix dispatch in the current phase, before that phase's COMPLETED (`review-policy.md` "Memory-fix dispatch"). A dev or tester fixes a hit in its own write before committing. Legacy memory text is not swept.
 
 ## PR self-review checklist

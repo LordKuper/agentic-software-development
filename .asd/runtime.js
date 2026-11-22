@@ -240,7 +240,7 @@ function runLocal(command, args) {
       encoding: 'utf8', input: plan.input, shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
     });
   }
-  return { ok: !result.error && result.status === 0 };
+  return { ok: !result.error && result.status === 0, stdout: result.stdout };
 }
 
 function defaultAuthArgs(provider) {
@@ -283,30 +283,96 @@ function authGeneration(input) {
   }
 }
 
-function cacheKey(input, authReady) {
-  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
+function cacheKey(input, authReady, profileIdentity) {
+  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: profileIdentity ? [] : defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input), ...(profileIdentity && { profile: profileIdentity }) });
+}
+
+/** Selects from the host and config values for both init and review. Legacy preflight callers supply the resolved values. */
+function externalRoute(input) {
+  if (input.host === undefined) return { provider: input.provider, command: input.command, model: input.model };
+  defaultAuthArgs(input.host);
+  if (input.host === 'codex' && input.codexProfile !== undefined && input.codexProfile !== '') {
+    return { provider: 'codex', command: input.codexCommand || 'codex', profile: input.codexProfile };
+  }
+  const { loadReleaseManifest, parseCanonicalFrontmatter, resolveModelFamily } = require('./sync.js');
+  const { meta } = parseCanonicalFrontmatter(fs.readFileSync(path.join(__dirname, 'agents', 'asd-external-review.md'), 'utf8'));
+  const wrapped = meta[input.host];
+  const provider = wrapped.wraps_cli;
+  const command = (provider === 'codex' ? input.codexCommand : input.claudeCommand) || provider;
+  return { provider, command, model: resolveModelFamily(loadReleaseManifest(path.dirname(__dirname)), provider, wrapped.wraps_model) };
+}
+
+/** Pins the named profile's inference route against overriding project config.
+ * shortcut: read simple root TOML assignments up to the first table or multiline value. Use a TOML parser if route fields need broader syntax.
+ */
+function codexProfileRoute(route) {
+  if (typeof route.profile !== 'string' || !/^[A-Za-z0-9_-]+$/.test(route.profile)) {
+    return { status: 'profile-invalid', identity: {} };
+  }
+  const codexDir = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
+  const profileFile = path.resolve(codexDir, `${route.profile}.config.toml`);
+  const identity = { file: profileFile, generation: authGeneration({ credentialPath: profileFile }), base: authGeneration({ credentialPath: path.join(codexDir, 'config.toml') }) };
+  let text;
+  try {
+    if (!fs.statSync(profileFile).isFile()) return { status: 'profile-unavailable', identity };
+    text = fs.readFileSync(profileFile, 'utf8');
+  } catch (_) {
+    return { status: 'profile-unavailable', identity };
+  }
+  const fields = new Map();
+  const keys = ['model', 'model_provider', 'model_reasoning_effort'];
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    if (line.startsWith('[') || /^[A-Za-z0-9_-]+[ \t]*=[ \t]*(?:\[|\{|"""|'''|$)/.test(line)) break;
+    const entry = /^([A-Za-z0-9_-]+)[ \t]*=[ \t]*(["'])([A-Za-z0-9_~./:@+-]+)\2[ \t]*(?:#.*)?$/.exec(line);
+    if (!entry || !keys.includes(entry[1])) continue;
+    if (fields.has(entry[1])) return { status: 'profile-invalid', identity };
+    fields.set(entry[1], entry[3]);
+  }
+  const model = fields.get('model');
+  const provider = fields.get('model_provider') || '';
+  const effort = fields.get('model_reasoning_effort') || '';
+  if (!model || !/^[A-Za-z0-9_-]+$/.test(provider) || !/^(none|minimal|low|medium|high|xhigh|max|ultra)$/.test(effort)) {
+    return { status: 'profile-invalid', identity };
+  }
+  const args = ['exec', '--profile', route.profile, `--model=${model}`,
+    '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
+    '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
+  return { route: { ...route, model, args }, identity: { ...identity, provider, effort } };
 }
 
 /** Checks executable and authentication locally without making a model request; reports the host platform External Review combines with its host shell to pick stdin syntax. */
 function externalPreflight(input) {
-  return { ...localReadiness(input), platform: process.platform };
+  if (!input || typeof input !== 'object') fail('preflight input required');
+  if (input.authArgs !== undefined) fail('authArgs are not supported');
+  const route = externalRoute(input);
+  const profile = route.profile === undefined ? null : codexProfileRoute(route);
+  const resolved = profile?.route || route;
+  const result = localReadiness({ ...input, ...resolved }, profile);
+  return { ...result, ...(input.host !== undefined && { route: resolved }), platform: process.platform };
 }
 
-function localReadiness(input) {
-  if (!input || typeof input !== 'object') fail('preflight input required');
+/** Probes local readiness. Codex login status covers only OpenAI auth, so named profiles use the version probe alone. */
+function localReadiness(input, profile) {
   const provider = input.provider;
   const model = input.model;
-  if (provider !== 'codex' && provider !== 'claude') fail('provider must be codex or claude');
-  if (input.authArgs !== undefined) fail('authArgs are not supported');
-  if (typeof model !== 'string' || model.length === 0) fail('model required');
   const authArgs = defaultAuthArgs(provider);
+  if (profile?.status) return { status: profile.status, model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
+  if (typeof model !== 'string' || model.length === 0) fail('model required');
   const version = runLocal(input.command, ['--version']);
   if (!version.ok) {
-    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey(input, false) };
+    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey(input, false, profile?.identity) };
   }
-  const auth = runLocal(input.command, authArgs);
-  const key = cacheKey(input, auth.ok);
-  if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
+  if (profile) {
+    const match = /^codex(?:-cli)? (\d+)\.(\d+)\.(\d+)(?:[-+\s]|$)/.exec(version.stdout?.trim() || '');
+    if (!match || (Number(match[1]) === 0 && Number(match[2]) < 134)) {
+      return { status: 'profile-cli-unsupported', model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
+    }
+  }
+  const authReady = profile ? null : runLocal(input.command, authArgs).ok;
+  const key = cacheKey(input, authReady, profile?.identity);
+  if (authReady === false) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
   const now = Number.isFinite(input.now) ? input.now : Date.now();
   const cached = readCache(input.cachePath, now).entries[key];
   if (cached) {
@@ -364,6 +430,10 @@ function routeTask(input) {
   return { tier, execution, reason, raiseEffort };
 }
 
+function findingId(value) {
+  return Number.isFinite(value) ? String(value) : value;
+}
+
 function rowsById(rows, expected, allowedNa, findings, label) {
   if (!Array.isArray(rows)) fail(`${label} rows must be an array`);
   const allowedStatuses = new Set(LEDGER_VOCABULARY[label]);
@@ -375,7 +445,7 @@ function rowsById(rows, expected, allowedNa, findings, label) {
     if (!allowedStatuses.has(row.s)) fail(`${label} status invalid: ${row.s}`);
     if (row.s === naStatus && (typeof row.p !== 'string' || !allowedNa.get(row.i).has(row.p))) fail(`${label} n/a predicate invalid: ${row.i}`);
     if (row.s !== naStatus && row.p !== undefined) fail(`${label} predicate only allowed for n/a: ${row.i}`);
-    if (row.s === findingStatus && (typeof row.f !== 'string' || !findings.has(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
+    if (row.s === findingStatus && !findings.has(findingId(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
     if (row.s !== findingStatus && row.f !== undefined) fail(`${label} finding reference only allowed for finding: ${row.i}`);
     seen.add(row.i);
   }
@@ -421,7 +491,7 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
     for (const id of Object.keys(entries)) if (!expected.has(id)) fail(`manifest n_a.${label} unknown id: ${id}`);
     return out;
   };
-  const findingIds = Array.isArray(ledger.findings) ? ledger.findings : [];
+  const findingIds = Array.isArray(ledger.findings) ? ledger.findings.map(findingId) : [];
   if (!Array.isArray(actualFindings) || actualFindings.some((id) => typeof id !== 'string' || id.length === 0)) fail('actual findings invalid');
   if (findingIds.some((id) => typeof id !== 'string' || id.length === 0) || new Set(findingIds).size !== findingIds.length || stable(findingIds.slice().sort()) !== stable(actualFindings.slice().sort())) fail('ledger findings invalid');
   const findings = new Set(findingIds);
@@ -557,7 +627,7 @@ function ledgerFromText(text) {
 
 /** Splits one markdown table row into trimmed cells, honouring `\|` escapes and dropping one enclosing backtick pair. */
 function tableCells(line) {
-  return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
+  return line.trim().replace(/^\||(?<!\\)\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
 /** The routing markers a finding's Description carries: `pre_existing` when it opens with `pre-existing:`, `checklist` as the distinct `CL-N` ids it cites; a marker it does not carry is absent. */
@@ -637,6 +707,7 @@ function persistReview(input) {
   const { body, verdict, findings } = checkReview(phase, reviewer, text, input.manifest || path.join(outDir, `${reviewer}.manifest.json`));
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
+  if (input.memoryBaseline !== undefined) checkReviewMemory(reviewer, input.memoryBaseline);
   if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
     fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
     fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
@@ -839,7 +910,9 @@ function verifiedBaseRef(flags) {
 }
 
 function readFileList(file) {
-  return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const text = fs.readFileSync(file, 'utf8');
+  if (text.includes('\0')) return text.split('\0').filter(Boolean);
+  return text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
 /** Where an iteration directory keeps its snapshot copy of a draft: the draft's path mirrored under `snapshot/`, an absolute path with its root dropped; a path climbing out with `..` fails, so a copy never lands outside the snapshot. */
@@ -850,8 +923,14 @@ function snapshotCopyPath(iterationDir, file) {
   return path.join(iterationDir, 'snapshot', relative);
 }
 
+function validateSnapshotRoot(dir, flag) {
+  if (dir !== undefined && path.basename(path.resolve(dir)).toLowerCase() === 'snapshot') fail(`${flag} must name the iteration directory containing snapshot/, not snapshot/ itself`);
+}
+
 /** Copies each draft under the `snapshot/` directory of design-review iteration dir `out`, so the next iteration can diff against it, and returns the drafts whose content differs from their copy under the `previous` iteration dir; a missing copy counts as changed, so a missing snapshot widens scope rather than dropping a draft. */
 function draftSnapshot(files, out, previous) {
+  validateSnapshotRoot(out, '--out');
+  validateSnapshotRoot(previous, '--previous');
   const changed = files.filter((file) => {
     const before = previous === undefined ? null : snapshotCopyPath(previous, file);
     return before === null || !fs.existsSync(before) || !fs.readFileSync(before).equals(fs.readFileSync(file));
@@ -887,16 +966,62 @@ function addedLines(diff) {
 /** Work-history violations among the added lines of a staged agent-memory diff and the names of its newly added files, as `{path, line, token}`; `line` is null for a file name, whose `_` separators count as word breaks so `project_<ordinal>-topic.md` is caught. */
 function memoryViolations(diff, names) {
   const scanned = names.map((name) => ({ file: name, line: null, text: name.replace(/_/g, ' ') })).concat(addedLines(diff));
-  return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
+  return scanned.flatMap(({ file, line, text }) => memoryTokens(text).map((token) => ({ path: file, line, token })));
 }
 
-/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (files or directories, repo-root relative) when any are given. */
+function memoryTokens(text) {
+  return MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => match[0]);
+}
+
+function reviewMemoryHits(reviewer) {
+  if (![...INTERNAL_REVIEWERS, EXTERNAL_REVIEWER].includes(reviewer)) fail('--reviewer must be a review key');
+  const root = require('./sync.js').findRepoRoot(process.cwd());
+  const owner = reviewer === EXTERNAL_REVIEWER ? 'asd-external-review' : `asd-reviewer-${reviewer}`;
+  const directory = `.claude/agent-memory/${owner}`;
+  for (const folder of ['.claude', '.claude/agent-memory', directory]) {
+    if (!fs.lstatSync(path.join(root, folder), { throwIfNoEntry: false })?.isDirectory()) return [];
+  }
+  const hits = [];
+  const scan = (file, line, text) => {
+    for (const token of memoryTokens(text)) hits.push({ path: file, line, token, id: fingerprint([file, line === null, text, token]) });
+  };
+  const visit = (folder) => {
+    for (const entry of fs.readdirSync(path.join(root, folder), { withFileTypes: true })) {
+      const file = `${folder}/${entry.name}`;
+      if (entry.isDirectory()) visit(file);
+      if (!entry.isFile()) continue;
+      scan(file, null, file.replace(/_/g, ' '));
+      fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/).forEach((line, i) => scan(file, i + 1, line));
+    }
+  };
+  visit(directory);
+  return hits;
+}
+
+function checkReviewMemory(reviewer, baselinePath) {
+  const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+  if (!baseline || baseline.reviewer !== reviewer || !Array.isArray(baseline.hits) || baseline.hits.some((id) => typeof id !== 'string' || !/^[0-9a-f]{64}$/.test(id))) fail('review memory baseline invalid');
+  const prior = new Map();
+  for (const id of baseline.hits) prior.set(id, (prior.get(id) || 0) + 1);
+  const added = [];
+  for (const { id, ...hit } of reviewMemoryHits(reviewer)) {
+    const count = prior.get(id) || 0;
+    if (count > 0) prior.set(id, count - 1);
+    else added.push(hit);
+  }
+  if (added.length > 0) fail(`review memory check failed: ${JSON.stringify(added)}`);
+}
+
+function pathCoversFile(target, file) {
+  return target === '' || file === target || file.startsWith(`${target}/`);
+}
+
+/** Runs the work-history check over the staged agent-memory changes, only those under `paths` (normalized repo-relative paths) when any are given. */
 function memoryCheck(flags, paths = []) {
   if (Object.keys(flags).length > 0) fail('memory-check takes no flags');
   const diff = runGit(['diff', '--cached', '-U0', '--no-color', '--no-ext-diff', '--no-prefix', '--', AGENT_MEMORY_PATHSPEC]);
   const names = runGit(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACR', '--', AGENT_MEMORY_PATHSPEC]).split('\0').filter(Boolean);
-  const named = paths.map((entry) => entry.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, ''));
-  const isNamed = (violation) => named.length === 0 || named.some((target) => violation.path === target || violation.path.startsWith(`${target}/`));
+  const isNamed = (violation) => paths.length === 0 || paths.some((target) => pathCoversFile(target, violation.path));
   return memoryViolations(diff, names).filter(isNamed);
 }
 
@@ -921,7 +1046,21 @@ function aiCoAuthorTrailers(message) {
   });
 }
 
-/** The pre-commit report for a commit of `paths` (all staged when none), the header from exactly one of `--subject` or the first line of `--message-file`: the header's length and the memory-check hits among those paths; a message file adds `misplaced`, its `ASD-Task:` lines outside the last paragraph, and, under `git.ai_attribution: disabled`, `ai_attribution`, its Claude or Codex `Co-authored-by:` lines. `ok` only when the header fits and there is no hit, no misplaced trailer and no AI trailer. */
+/** Checks literal named targets without exposing file contents. Rename sides are separate records, and an ignored file can reappear at a staged deletion. */
+function commitPathErrors(paths, named) {
+  if (paths.length === 0) return [];
+  const records = runGit(['--no-optional-locks', '--literal-pathspecs', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--ignored=traditional', '--ignore-submodules=none', '--', ...paths]).split('\0').filter(Boolean);
+  const staged = new Set(records.filter((record) => /^[MADT]/.test(record)).map((record) => record.slice(3)));
+  const unstaged = records.filter((record) => record[1] !== ' ' && (record[0] !== '!' || staged.has(record.slice(3)))).map((record) => record.slice(3));
+  const stagedFiles = [...staged];
+  return named.flatMap((target, index) => {
+    const hasUnstaged = unstaged.some((file) => pathCoversFile(target, file));
+    const missingStaged = !stagedFiles.some((file) => pathCoversFile(target, file));
+    return hasUnstaged || missingStaged ? [{ path: paths[index], unstaged: hasUnstaged, missing_staged: missingStaged }] : [];
+  });
+}
+
+/** Reports header length, named path errors and memory hits. A message file also checks trailer placement and AI attribution. */
 function commitCheck(flags, paths) {
   const unknown = Object.keys(flags).filter((name) => name !== 'subject' && name !== 'message-file');
   const given = ['subject', 'message-file'].filter((name) => name in flags);
@@ -929,8 +1068,11 @@ function commitCheck(flags, paths) {
   const message = given[0] === 'subject' ? null : fs.readFileSync(flags['message-file'], 'utf8');
   const header = message === null ? flags.subject : message.split(/\r?\n/)[0];
   const headerLength = Array.from(header).length;
-  const memory = memoryCheck({}, paths);
-  const report = { ok: headerLength <= COMMIT_HEADER_MAX && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  const named = paths.map((file) => path.relative('.', path.resolve(file)).split(path.sep).join('/'));
+  const pathErrors = commitPathErrors(paths, named);
+  const memory = memoryCheck({}, named);
+  const report = { ok: headerLength <= COMMIT_HEADER_MAX && pathErrors.length === 0 && memory.length === 0, header: { length: headerLength, max: COMMIT_HEADER_MAX }, memory };
+  if (pathErrors.length > 0) report.path_errors = pathErrors;
   if (message === null) return report;
   const misplaced = misplacedTrailers(message);
   const withMisplaced = { ...report, ok: report.ok && misplaced.length === 0, misplaced };
@@ -1224,11 +1366,12 @@ function rangePatchInvocations(ranges, files) {
   });
 }
 
-/** Git invocations diffing each draft against its copy in the previous iteration's snapshot; a draft that snapshot lacks gets none. */
+/** Diffs each draft against its previous snapshot copy, using an addition patch when the copy is absent. */
 function snapshotPatchInvocations(previousDir, files) {
-  return files.flatMap((file) => {
+  return files.map((file) => {
     const copy = snapshotCopyPath(previousDir, file);
-    return fs.existsSync(copy) ? [{ args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', copy, file], okStatuses: [0, 1] }] : [];
+    const before = fs.existsSync(copy) ? copy : '/dev/null';
+    return { args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', before, file], okStatuses: [0, 1] };
   });
 }
 
@@ -1248,9 +1391,15 @@ function writeManifestDiff(dir, files, ranges, snapshot, renameMap = null) {
   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
   const diff = path.join(dir, `${fingerprint(renameMap === null ? invocations : { invocations, renameMap }).slice(0, 16)}.diff`);
   const partial = `${diff}.${process.pid}.tmp`;
-  if (ranges === null) writeGitOutput(partial, invocations);
-  else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
-  fs.renameSync(partial, diff);
+  try {
+    if (ranges === null) {
+      writeGitOutput(partial, invocations);
+      if (invocations.length > 0 && fs.statSync(partial).size === 0) fail('snapshot diff is empty for the requested drafts');
+    } else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
+    fs.renameSync(partial, diff);
+  } finally {
+    fs.rmSync(partial, { force: true });
+  }
   return diff;
 }
 
@@ -1350,16 +1499,39 @@ function positiveInteger(value, name) {
   return Number(value);
 }
 
+function externalScopeFiles(flags, files) {
+  const impl = flags.phase === 'impl-review';
+  const windows = process.platform === 'win32';
+  const asdExclusion = flags['self-hosting'] === true ? /^\.asd\/(?:project|sprints)(?:\/|$)/ : /^(?:\.asd|docs)(?:\/|$)/;
+  return [...new Set(files.flatMap((file) => {
+    const normalized = path.posix.normalize(windows ? file.replace(/\\/g, '/') : file);
+    const absolute = windows ? path.win32.isAbsolute(file) : path.posix.isAbsolute(file);
+    const ambiguous = windows && normalized.split('/').some((segment) => /[. ]$|:/.test(segment));
+    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || absolute || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
+    const checked = windows ? normalized.toLowerCase() : normalized;
+    if (/(?:^|\/)dist(?:\/|$)|(?:^|\/)design-system\.html$/.test(checked)) return [];
+    if (impl && (asdExclusion.test(checked) || /^(?:\.claude\/(?:agents|skills|hooks)|\.codex\/(?:agents|hooks)|\.agents\/skills)(?:\/|$)/.test(checked))) return [];
+    return [impl ? normalized : file];
+  }))];
+}
+
 /** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
 function emitExternalScope(flags, files, ranges, snapshot, renameMap) {
   const isImplReview = flags.phase === 'impl-review';
   if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
   if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
+  if (ranges !== null) {
+    ranges.fullFiles = new Set(externalScopeFiles(flags, [...ranges.fullFiles]));
+    for (const range of [ranges.scope, ranges.full].filter(Boolean)) {
+      range.renames = new Map([...range.renames].filter(([, { source }]) => externalScopeFiles(flags, [source]).includes(source)));
+    }
+  }
   const stem = path.join(flags.out, EXTERNAL_REVIEWER);
+  const scoped = externalScopeFiles(flags, files);
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot, renameMap) },
+    { files: scoped, diff: writeManifestDiff(flags.out, scoped, ranges, snapshot, renameMap) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
@@ -1392,16 +1564,22 @@ function emitInternalManifest(flags, files, ranges, snapshot, renameMap) {
     pureRenames: pureRenames(ranges, reviewed),
   });
   const stem = path.join(flags.out, flags.reviewer);
-  fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
   const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot, renameMap);
+  fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
 function emitManifestCommand(flags) {
-  if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
+  if (typeof flags.files !== 'string') fail('--files <path> required');
   if (!PHASES.includes(flags.phase)) fail('phase must be design-review or impl-review');
   const keys = reviewerKeys(flags.phase.replace(/-review$/, ''));
   if (!keys.includes(flags.reviewer)) fail(`--reviewer <name> required, one of ${keys.join(', ')}`);
+  validateSnapshotRoot(flags.snapshot, '--snapshot');
+  if (flags['scope-only'] === true) {
+    if (flags.reviewer !== EXTERNAL_REVIEWER) fail(`--scope-only applies to --reviewer ${EXTERNAL_REVIEWER} only`);
+    return { files: externalScopeFiles(flags, readFileList(flags.files).concat(flags['full-files'] === undefined ? [] : readFileList(flags['full-files']))) };
+  }
+  if (typeof flags.out !== 'string') fail('--out <dir> required');
   const snapshot = snapshotSource(flags);
   const ranges = manifestRanges(flags);
   const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
@@ -1445,12 +1623,13 @@ function waveFiles(division, k, head) {
   return stringArray(division.waves[k - 1], `wave ${k}`).map((file) => moved.get(file) || file);
 }
 
-/** Writes a review wave's iteration-1 list: its current-path `waves.json` list unioned with the `--files` list, one path per line. */
+/** Writes the wave's current paths and `--files` union, with `--nul` preserving paths for literal Git pathspecs. */
 function waveFilesCommand(flags) {
   if (typeof flags.waves !== 'string' || typeof flags.out !== 'string') fail('--waves <path> and --out <path> required');
   const listed = waveFiles(JSON.parse(fs.readFileSync(flags.waves, 'utf8')), positiveInteger(flags.wave, '--wave'), gitRef(flags.head, '--head'));
   const files = [...new Set(listed.concat(typeof flags.files === 'string' ? readFileList(flags.files) : []))];
-  fs.writeFileSync(flags.out, files.map((file) => `${file}\n`).join(''), 'utf8');
+  const delimiter = flags.nul === true ? '\0' : '\n';
+  fs.writeFileSync(flags.out, files.map((file) => file + delimiter).join(''), 'utf8');
   return { out: flags.out, files: files.length };
 }
 
@@ -1747,7 +1926,7 @@ function timingIds(value, name) {
 
 function timingAttrs(value) {
   if (value === undefined) return {};
-  return Object.fromEntries(value.split(';').map((pair) => {
+  return Object.fromEntries(value.split(/;|,(?=\s*[^=;,\s]+\s*=)/).map((pair) => {
     const at = pair.indexOf('=');
     if (at < 1) fail(`--attrs entry must be k=v: ${pair}`);
     return [pair.slice(0, at).trim(), pair.slice(at + 1).trim()];
@@ -1800,7 +1979,10 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
   const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
   try {
-    if (missing().length > 0 && lookups.routed) fillFrom(lookups.routed(id));
+    if (missing().length > 0 && lookups.routed) {
+      const routed = lookups.routed(id);
+      if (!routed?.agent || filled.agent === undefined || routed.agent === filled.agent) fillFrom(routed);
+    }
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
     const bytes = filled.context_bytes === undefined && lookups.contextBytes ? lookups.contextBytes(id) : undefined;
     if (bytes !== undefined) filled.context_bytes = bytes;
@@ -1888,16 +2070,22 @@ function timingLookups(ledger) {
       return routed && { agent, tier: routed.tier, model: routed.resolved_model };
     },
     agentAttrs: (agent) => {
-      const { VARIANT_SUFFIXES, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
-      const suffix = VARIANT_SUFFIXES.find((candidate) => agent.endsWith(`-${candidate}`));
-      const base = suffix === undefined ? agent : agent.slice(0, -(suffix.length + 1));
+      const { VARIANT_SUFFIXES, CODEX_QUOTA_SUFFIX, codexQuotaFallback, loadReleaseManifest, resolveModelFamily, parseCanonicalFrontmatter, normalizeText } = require('./sync.js');
+      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
+      const quota = host === 'codex' && agent.endsWith(CODEX_QUOTA_SUFFIX);
+      const role = quota ? agent.slice(0, -CODEX_QUOTA_SUFFIX.length) : agent;
+      const suffix = VARIANT_SUFFIXES.find((candidate) => role.endsWith(`-${candidate}`));
+      const base = suffix === undefined ? role : role.slice(0, -(suffix.length + 1));
       const file = path.join(__dirname, 'agents', `${base}.md`);
       if (!/^[a-z0-9-]+$/.test(base) || !fs.existsSync(file)) return undefined;
       const { meta } = parseCanonicalFrontmatter(normalizeText(fs.readFileSync(file, 'utf8')));
-      const host = process.env.CLAUDECODE === '1' ? 'claude' : 'codex';
       const variant = suffix === undefined ? undefined : (meta.variants || {})[suffix];
       const model = [variant, meta].map((source) => source && source[host] && source[host].model).find((value) => value !== undefined);
-      return { tier: suffix === undefined ? 'standard' : suffix, model };
+      const tier = suffix === undefined ? 'standard' : suffix;
+      if (!quota) return { tier, model };
+      const manifest = loadReleaseManifest(path.dirname(__dirname));
+      const fallback = codexQuotaFallback({ model }, manifest);
+      return { tier, model: fallback ? resolveModelFamily(manifest, host, fallback.model) : undefined };
     },
   };
 }
@@ -1905,7 +2093,7 @@ function timingLookups(ledger) {
 /** Runs `timing` or `timing-recover` as one append to `--ledger`, a missing ledger a no-op unless `timing --create`. Any failure, a malformed command line included, prints one stderr warning and still exits 0, so recording never stops the workflow. */
 function timingCommand(command, args) {
   try {
-    const flags = parseFlagArgs(args, ['create']);
+    const flags = parseFlagArgs(args, ['create'], command === 'timing');
     warnIgnoredFlags(command, flags);
     if (typeof flags.ledger !== 'string') fail('--ledger <path> required');
     const exists = fs.existsSync(flags.ledger);
@@ -2152,8 +2340,9 @@ function grantRows(tableText) {
 /** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
 function contextRefs(tableText, role, phase) {
   const rows = grantRows(tableText);
-  const { VARIANT_SUFFIXES } = require('./sync.js');
-  const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
+  const { CODEX_QUOTA_SUFFIX, VARIANT_SUFFIXES } = require('./sync.js');
+  const primary = role.endsWith(CODEX_QUOTA_SUFFIX) ? role.slice(0, -CODEX_QUOTA_SUFFIX.length) : role;
+  const base = primary.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
   if (matched.length === 0) fail(`no grant row for role "${role}" in phase "${phase}"`);
   return [...new Set(matched.flatMap((row) => stringArray(row.refs, `refs of ${row.role} ${row.phase}`)))];
@@ -2304,7 +2493,7 @@ const TEST_ALLOWANCE_LINES = 200;
 function commandsScalar(text, key) {
   const line = text.split(/\r?\n/).find((candidate) => candidate.startsWith(`${key}:`));
   if (line === undefined) return null;
-  const value = designScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
+  const value = yamlScalar(line.slice(key.length + 1).trim(), `commands.yaml ${key}`);
   if (value === '') fail(`commands.yaml ${key} must be a non-empty scalar`);
   return value;
 }
@@ -2328,41 +2517,41 @@ function testDelta(base, commandsFile) {
 }
 
 /** `{start, end}` line range of the one `## <name>` section of a test plan's `lines`, its body after the heading up to the next `## ` heading; null when absent, several fail. */
-function planSection(lines, name) {
+function planSection(lines, name, refuse = fail) {
   const starts = lines.flatMap((line, index) => (new RegExp(`^## ${name}\\b`).test(line) ? [index + 1] : []));
-  if (starts.length > 1) fail(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
+  if (starts.length > 1) refuse(`test-plan has ${starts.length} ## ${name} sections at lines ${starts.join(', ')}`);
   if (starts.length === 0) return null;
   const next = lines.findIndex((line, index) => index >= starts[0] && /^## /.test(line));
   return { start: starts[0], end: next === -1 ? lines.length : next };
 }
 
 /** Fails unless the test plan's `lines` (named `source` in messages) hold an `Added tests` section whose every table, a run of lines from a line opening with a pipe to the next blank line, has a header and a well-formed separator, no line without a leading pipe, no row whose cell count differs from the header's, and, when it has a data row, a `Gap proof` column that is non-empty and opens with no `{{` template placeholder in every row; text outside a table is free. */
-function checkGapProof(lines, source = 'test-plan') {
-  const section = planSection(lines, 'Added tests');
-  if (section === null) fail(`${source} has no ## Added tests section`);
+function checkGapProof(lines, source, refuse) {
+  const section = planSection(lines, 'Added tests', refuse);
+  if (section === null) refuse(`${source} has no ## Added tests section`);
   lines.slice(section.start, section.end).join('\n').split(/\n[ \t]*\n/).forEach((paragraph) => {
     const paragraphLines = paragraph.trim().split('\n');
     const start = paragraphLines.findIndex((line) => line.trim().startsWith('|'));
     if (start === -1) return;
     const run = paragraphLines.slice(start);
-    if (run.some((line) => !line.trim().startsWith('|'))) fail(`${source} Added tests table row lacks a leading pipe`);
+    if (run.some((line) => !line.trim().startsWith('|'))) refuse(`${source} Added tests table row lacks a leading pipe`);
     const [header, separator, ...rows] = run.map(tableCells);
-    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail(`${source} Added tests table separator malformed`);
-    if (rows.some((cells) => cells.length !== header.length)) fail(`${source} Added tests row cell count differs from the header's ${header.length}`);
+    if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) refuse(`${source} Added tests table separator malformed`);
+    if (rows.some((cells) => cells.length !== header.length)) refuse(`${source} Added tests row cell count differs from the header's ${header.length}`);
     if (rows.length === 0) return;
     const column = header.indexOf('Gap proof');
-    if (column === -1) fail(`${source} Added tests table has rows and no Gap proof column`);
-    if (rows.some((cells) => !cells[column])) fail(`${source} Added tests row has an empty Gap proof cell`);
-    if (rows.some((cells) => cells[column].startsWith('{{'))) fail(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
+    if (column === -1) refuse(`${source} Added tests table has rows and no Gap proof column`);
+    if (rows.some((cells) => !cells[column])) refuse(`${source} Added tests row has an empty Gap proof cell`);
+    if (rows.some((cells) => cells[column].startsWith('{{'))) refuse(`${source} Added tests row has an unresolved {{…}} Gap proof placeholder`);
   });
 }
 
 /** Test-plan `lines` with the `Suite run` `- Line delta:` line set to `delta`'s counts, replacing an existing one else appended after the section's last non-empty line; fails when an allowance is required and `Suite run` has no non-empty `- Allowance:` line. */
-function setLineDelta(lines, delta) {
-  const section = planSection(lines, 'Suite run');
-  if (section === null) fail('test-plan has no ## Suite run section');
+function setLineDelta(lines, delta, refuse) {
+  const section = planSection(lines, 'Suite run', refuse);
+  if (section === null) refuse('test-plan has no ## Suite run section');
   const body = lines.slice(section.start, section.end);
-  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) fail(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
+  if (delta.allowance_required && !body.some((line) => /^[ \t]*-[ \t]+Allowance:[ \t]*(?!\{\{)\S/.test(line))) refuse(`test lines net ${delta.test.net} exceeds ${TEST_ALLOWANCE_LINES} and the other lines' net ${delta.other.net}: Suite run needs a non-empty "- Allowance:" line`);
   const side = (counts) => `+${counts.added}/\u2212${counts.removed} (net ${counts.net})`;
   const line = `- Line delta: tests ${side(delta.test)}; other ${side(delta.other)}`;
   const existing = body.findIndex((candidate) => /^[ \t]*-[ \t]+Line delta:/.test(candidate));
@@ -2398,12 +2587,29 @@ function stubsDueCommand(flags) {
   return { due: stubsDue(fs.readFileSync(flags.stubs, 'utf8'), today) };
 }
 
-/** Test-plan text whose one `Entry log` row for entry `entry` (a row opening with that number alone) has its second cell, `HEAD analysed`, set to `head`; no such row, or several, fails. */
-function fillHeadAnalysed(text, entry, head) {
-  const row = new RegExp(`^(\\|[ \\t]*${entry}[ \\t]*\\|)[^|\\n]*(\\|[^\\n]*)$`, 'gm');
-  const rows = (text.match(row) || []).length;
-  if (rows !== 1) fail(`test plan holds ${rows} Entry log rows for entry ${entry}, expected 1`);
-  return text.replace(row, `$1 ${head} $2`);
+/** Fills the second cell of the requested row in the one Entry log section. */
+function fillHeadAnalysed(lines, entry, head, refuse) {
+  const section = planSection(lines, 'Entry log', refuse);
+  if (section === null) refuse('test-plan has no ## Entry log section');
+  const body = lines.slice(section.start, section.end);
+  const [header, separator] = body.filter((line) => line.trim().startsWith('|')).slice(0, 2).map(tableCells);
+  if (header?.[0] !== 'Entry' || header[1] !== 'HEAD analysed' || !header.includes('Scope') || !separator ||
+      separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) {
+    refuse('Entry log table header or separator malformed');
+  }
+  const row = new RegExp(`^(\\s*\\|[ \\t]*${entry}[ \\t]*\\|)[^|]*(\\|.*)$`);
+  const rows = body.flatMap((line, index) => (row.test(line) ? [index] : []));
+  if (rows.length !== 1) refuse(`test plan holds ${rows.length} Entry log rows for entry ${entry}, expected 1`);
+  const index = section.start + rows[0];
+  if (tableCells(lines[index]).length !== header.length) refuse(`Entry log row for entry ${entry} has the wrong cell count`);
+  return lines.map((line, at) => (at === index ? line.replace(row, `$1 ${head} $2`) : line));
+}
+
+/** Tags only record-validation failures with the repair target, leaving CLI and I/O failures on the normal error path. */
+function closeRefusal(file, check) {
+  return (cause) => {
+    throw Object.assign(new Error(cause), { refusal: { file, check, cause } });
+  };
 }
 
 /** Closes an impl-test entry: fills its `Entry log` `HEAD analysed` with the current short HEAD and appends `--line`, dated `now`, to the decisions log; every close checks the `Added tests` gap proofs of the live plan and of the `test-plan.entry-NN.md` segment its re-entry rotated (NN the prior entry), and `--green --base <ref>` also records the `Suite run` line delta. All inputs are validated before either file is written. */
@@ -2415,21 +2621,32 @@ function implTestClose(flags, now = new Date()) {
   if (flags.green === true && typeof flags.base !== 'string') fail('--green requires --base <ref>');
   if (flags.green !== true && (flags.base !== undefined || flags.commands !== undefined)) fail('--base and --commands apply with --green only');
   const head = runGit(['rev-parse', '--short=8', 'HEAD']).trim();
-  const text = fs.readFileSync(flags['test-plan'], 'utf8');
-  const filled = fillHeadAnalysed(text, flags.entry, head);
-  const lines = filled.split(/\r?\n/);
-  checkGapProof(lines);
-  const segment = `${flags['test-plan'].replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
-  if (Number(flags.entry) > 1 && fs.existsSync(segment)) checkGapProof(fs.readFileSync(segment, 'utf8').split(/\r?\n/), path.basename(segment));
-  const plan = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands)).join(text.includes('\r\n') ? '\r\n' : '\n') : filled;
+  const file = flags['test-plan'];
+  const text = fs.readFileSync(file, 'utf8');
+  const lines = fillHeadAnalysed(text.split(/\r?\n/), flags.entry, head, closeRefusal(file, 'Entry log'));
+  checkGapProof(lines, path.basename(file), closeRefusal(file, 'Added tests'));
+  if (Number(flags.entry) > 1) {
+    const segment = `${file.replace(/\.md$/, '')}.entry-${String(Number(flags.entry) - 1).padStart(2, '0')}.md`;
+    let previous;
+    try {
+      previous = fs.readFileSync(segment, 'utf8');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    if (previous !== undefined) checkGapProof(previous.split(/\r?\n/), path.basename(segment), closeRefusal(segment, 'Added tests'));
+  }
+  const updated = flags.green === true ? setLineDelta(lines, testDelta(flags.base, flags.commands), closeRefusal(file, 'Suite run')) : lines;
+  const plan = updated.join(text.includes('\r\n') ? '\r\n' : '\n');
   const log = fs.readFileSync(flags.decisions, 'utf8');
-  fs.writeFileSync(flags['test-plan'], plan, 'utf8');
+  fs.writeFileSync(file, plan, 'utf8');
   fs.appendFileSync(flags.decisions, `${log === '' || log.endsWith('\n') ? '' : '\n'}- ${now.toISOString().slice(0, 10)} — ${flags.line}\n`, 'utf8');
   return { entry: Number(flags.entry), head };
 }
 
 const DESIGN_KEY_LINE = /^([A-Za-z0-9_.-]+):(?: +(.*))?$/;
-const DESIGN_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
+const CONFIG_KEY_LINE = /^([A-Za-z0-9_.-]+|"(?:[^"\\]|\\.)*"|'(?:[^']|'')*'):(?: +(.*))?$/;
+const CONFIG_VALUES = / +# *([a-z][\w-]*(?: +\| +[a-z][\w-]*)+)(?: *;| *$)/;
+const YAML_PLAIN_FORBIDDEN_START = /^[[{&*!|>%@`]/;
 const DESIGN_CSS_UNSAFE = /[;{}<>]/;
 const DESIGN_REFERENCE = /^\{([A-Za-z0-9_.-]+)\}$/;
 const DESIGN_COLOR = /^#[0-9a-f]{3,8}$/i;
@@ -2437,8 +2654,8 @@ const DESIGN_DIMENSION = /^-?\d*\.?\d+(?:px|rem|em|%|pt|vh|vw|ch)$/i;
 /** Marker comment form per region: HTML in the token table, CSS inside the vars `<style>` (an HTML comment there breaks the `:root` selector). */
 const DESIGN_REGIONS = { tokens: (edge) => `<!-- asd:tokens:${edge} -->`, vars: (edge) => `/* asd:vars:${edge} */` };
 
-/** One scalar of a DESIGN.md front-matter line: a quoted or plain string, trailing comment dropped; flow collections, anchors, tags and block scalars fail naming `where`. */
-function designScalar(rest, where) {
+/** Reads one quoted or plain YAML scalar and rejects unsupported constructs. */
+function yamlScalar(rest, where) {
   if (/^["']/.test(rest)) {
     const quoted = rest[0] === '"' ? /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/.exec(rest) : /^'((?:[^']|'')*)'\s*(?:#.*)?$/.exec(rest);
     if (!quoted) fail(`${where}: unterminated or trailing-text quoted scalar`);
@@ -2449,47 +2666,148 @@ function designScalar(rest, where) {
       return fail(`${where}: unsupported escape in quoted scalar`);
     }
   }
-  if (DESIGN_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
+  if (YAML_PLAIN_FORBIDDEN_START.test(rest)) fail(`${where}: unsupported YAML (flow collection, anchor, tag or block scalar); only nested maps of scalars are supported`);
   return rest.replace(/\s+#.*$/, '').trim();
 }
 
-/** Leaf tokens `{path, value, line}` of a DESIGN.md front matter in document order; only nested maps of scalars parse, anything else fails naming its line. */
+function scalarMapSyntaxIssue(rawLine, match, indent, expectedIndent) {
+  if (/^ *\t/.test(rawLine)) return 'tab indentation is not valid YAML';
+  if (!match) return 'unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)';
+  if (indent > expectedIndent) return 'unexpected indentation (multi-line scalar or unsupported construct)';
+  if (indent !== expectedIndent) return 'inconsistent indentation';
+  return null;
+}
+
+/** Scans the block mappings and single-line scalars shared by project config and design tokens. */
+function scalarMap(lines, file, firstLine, keyLine, onIssue) {
+  const entries = [];
+  const stack = [{ indent: 0, path: [], keys: new Set() }];
+  let pending = null;
+  let skippedIndent = Infinity;
+  for (const [index, rawLine] of lines.entries()) {
+    const line = index + firstLine;
+    const where = `${file}:${line}`;
+    const trimmed = rawLine.trim();
+    if (trimmed === '' || trimmed.startsWith('#')) continue;
+    const indent = rawLine.length - rawLine.trimStart().length;
+    if (indent > skippedIndent) continue;
+    skippedIndent = Infinity;
+    if (pending && indent > pending.indent) {
+      pending.entry.kind = 'map';
+      stack.push({ indent, path: pending.entry.path, keys: new Set() });
+    }
+    pending = null;
+    while (indent < stack[stack.length - 1].indent) stack.pop();
+    const frame = stack[stack.length - 1];
+    const match = keyLine.exec(trimmed);
+    const issue = (parts, reason, duplicate = false) => onIssue({ path: parts.join('.') || '<root>', line, reason, duplicate });
+    const structuralError = scalarMapSyntaxIssue(rawLine, match, indent, frame.indent);
+    if (structuralError !== null) {
+      const key = /^([A-Za-z0-9_.-]+)(?=[:\s]|$)/.exec(trimmed);
+      issue(key ? [...frame.path, key[1]] : frame.path, structuralError);
+      skippedIndent = indent;
+      continue;
+    }
+    let key;
+    try {
+      key = yamlScalar(match[1], where);
+    } catch (error) {
+      issue(frame.path, error.message.slice(where.length + 2));
+      skippedIndent = indent;
+      continue;
+    }
+    const keyPath = [...frame.path, key];
+    if (frame.keys.has(key)) issue(keyPath, `duplicate key "${key}"`, true);
+    frame.keys.add(key);
+    const rest = (match[2] || '').trim();
+    const entry = { path: keyPath, line, raw: rest, kind: 'invalid' };
+    entries.push(entry);
+    if (rest === '' || rest.startsWith('#')) {
+      entry.kind = 'empty';
+      pending = { indent, entry };
+      continue;
+    }
+    try {
+      entry.value = yamlScalar(rest, where);
+      entry.kind = 'scalar';
+    } catch (error) {
+      issue(keyPath, error.message.slice(where.length + 2));
+    }
+  }
+  return entries;
+}
+
+/** Extracts design token values without relaxing the front-matter checks. */
 function designLeaves(text, file) {
   const lines = text.replace(/^﻿/, '').split(/\r?\n/);
   if (lines[0].trimEnd() !== '---') fail(`${file}:1: front matter must open with ---`);
   const close = lines.findIndex((line, index) => index > 0 && line.trimEnd() === '---');
   if (close === -1) fail(`${file}: front matter is not closed with ---`);
-  const leaves = [];
-  const stack = [{ indent: 0, path: [], keys: new Set() }];
-  let pending = null;
-  for (let index = 1; index < close; index += 1) {
-    const where = `${file}:${index + 1}`;
-    const line = lines[index];
-    if (/^\s*(?:#.*)?$/.test(line)) continue;
-    if (/^ *\t/.test(line)) fail(`${where}: tab indentation is not valid YAML`);
-    const indent = line.length - line.trimStart().length;
-    const match = DESIGN_KEY_LINE.exec(line.trim());
-    if (!match) fail(`${where}: unsupported YAML; expected "key: value" or "key:" (nested maps of scalars only)`);
-    if (pending && indent > pending.indent) {
-      stack.push({ indent, path: pending.path, keys: new Set() });
-    } else if (!pending && indent > stack[stack.length - 1].indent) {
-      fail(`${where}: unexpected indentation (multi-line scalar or unsupported construct)`);
-    }
-    pending = null;
-    while (indent < stack[stack.length - 1].indent) stack.pop();
-    const frame = stack[stack.length - 1];
-    if (indent !== frame.indent) fail(`${where}: inconsistent indentation`);
-    if (frame.keys.has(match[1])) fail(`${where}: duplicate key "${match[1]}"`);
-    frame.keys.add(match[1]);
-    const rest = (match[2] || '').trim();
-    const keyPath = [...frame.path, match[1]];
-    if (rest === '' || rest.startsWith('#')) {
-      pending = { indent, path: keyPath };
-      continue;
-    }
-    leaves.push({ path: keyPath.join('.'), value: designScalar(rest, where), line: index + 1 });
+  return scalarMap(lines.slice(1, close), file, 2, DESIGN_KEY_LINE, ({ line, reason }) => fail(`${file}:${line}: ${reason}`))
+    .filter((entry) => entry.kind === 'scalar')
+    .map((entry) => ({ path: entry.path.join('.'), value: entry.value, line: entry.line }));
+}
+
+function configEntries(text, file, onIssue) {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  const first = lines.findIndex((line) => !/^\s*(?:#.*)?$/.test(line));
+  let last = lines.length - 1;
+  while (last > first && /^\s*(?:#.*)?$/.test(lines[last])) last -= 1;
+  if (lines[first]?.trimEnd() === '---') lines[first] = '';
+  if (lines[last]?.trimEnd() === '...') lines[last] = '';
+  return scalarMap(lines, file, 1, CONFIG_KEY_LINE, onIssue);
+}
+
+function configValueIssue(field, entry) {
+  if (entry.kind === 'invalid') return null;
+  if (field.kind === 'map') return entry.kind === 'map' ? null : 'expected a mapping';
+  if (entry.kind !== 'scalar') return 'expected an explicit scalar value';
+  const options = CONFIG_VALUES.exec(field.raw);
+  if (options) {
+    const values = options[1].split(/ +\| +/);
+    return values.includes(entry.value) ? null : `expected one of: ${values.join(', ')}`;
   }
-  return leaves;
+  const quoted = /^["']/.test(entry.raw);
+  if (!/^["']/.test(field.raw) && /^\d+$/.test(field.value)) return !quoted && /^\+?\d+$/.test(entry.value) && Number.isSafeInteger(Number(entry.value)) ? null : 'expected a non-negative integer';
+  const plainNonString = /^(?:~|null|true|false|[+-]?(?:0x[\da-f]+|0o[0-7]+|(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|\.inf)|\.nan)$/i;
+  if (!quoted && (plainNonString.test(entry.value) || /:(?:\s|$)|^[-?:](?:\s|$)/.test(entry.value))) return 'expected a string scalar';
+  return entry.value === '' && field.value !== '' ? 'expected a non-empty string' : null;
+}
+
+/** Reports actionable config errors without printing setting values. */
+function configCheckCommand(flags) {
+  const template = path.join(__dirname, 'templates', 't_config.yaml');
+  const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
+  const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
+  const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
+  const seen = new Set();
+  const duplicates = new Set();
+  const invalid = [];
+  let source;
+  try {
+    source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
+  } catch (error) {
+    if (config === '-' || error.code !== 'ENOENT') throw error;
+    source = '';
+  }
+  for (const entry of configEntries(source, config, ({ path, line, reason, duplicate }) => {
+    if (duplicate) duplicates.add(path);
+    else invalid.push({ path, line, reason });
+  })) {
+    const identity = JSON.stringify(entry.path);
+    const field = required.get(identity);
+    if (!field) continue;
+    const key = entry.path.join('.');
+    if (seen.has(identity)) duplicates.add(key);
+    seen.add(identity);
+    const reason = configValueIssue(field, entry);
+    if (reason !== null) invalid.push({ path: key, line: entry.line, reason });
+    else if (key === 'git.ai_attribution' && entry.value === 'disabled' && require('./sync.js').aiAttributionFromConfig(source) !== 'disabled') {
+      invalid.push({ path: key, line: entry.line, reason: 'use unquoted ai_attribution: disabled under the plain git: mapping' });
+    }
+  }
+  const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
+  return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };
 }
 
 /** Token-reference `Type` chip for one leaf: reference, color, dimension, else typography (font family, weight, line height and other typographic scalars). */
@@ -2543,9 +2861,10 @@ function designTokensCommand(flags) {
 /** The flags each command reads; `commit-check`, `attribution-check` and `memory-check` reject their own extras instead. */
 const COMMAND_FLAGS = {
   'manifest-digest': ['manifest'],
-  'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref'],
+  'emit-manifest': ['files', 'out', 'phase', 'reviewer', 'base', 'head', 'full-files', 'full-base', 'snapshot', 'rename-map', 'custom-rules', 'test-plan', 'iteration', 'wave', 'self-hosting', 'checklist', 'base-ref', 'scope-only'],
   'validate-ledger': ['manifest', 'ledger', 'findings'],
-  'persist-review': ['in', 'out-dir', 'phase', 'reviewer', 'late', 'manifest', 'floor'],
+  'persist-review': ['in', 'out-dir', 'phase', 'reviewer', 'late', 'manifest', 'floor', 'memory-baseline'],
+  'review-memory-baseline': ['reviewer'],
   'external-preflight': ['input'],
   'external-record-failure': ['input'],
   'route-task': ['input'],
@@ -2553,10 +2872,11 @@ const COMMAND_FLAGS = {
   'impl-test-close': ['test-plan', 'entry', 'decisions', 'line', 'green', 'base', 'commands'],
   'test-delta': ['base', 'commands'],
   'stubs-due': ['stubs', 'today'],
+  'config-check': ['config'],
   'design-tokens': ['design', 'html'],
   'draft-snapshot': ['files', 'out', 'previous'],
   'review-waves': ['files', 'division', 'out', 'base', 'head', 'rename-map', 'single'],
-  'wave-files': ['waves', 'wave', 'head', 'files', 'out'],
+  'wave-files': ['waves', 'wave', 'head', 'files', 'out', 'nul'],
   'retro-candidates': ['sprints', 'backlog', 'self-hosting'],
   'scratch-dir': [],
   'rotate-decisions': ['sprint', 'to'],
@@ -2578,16 +2898,18 @@ function warnIgnoredFlags(command, flags) {
   Object.keys(flags).filter((name) => !COMMAND_FLAGS[command].includes(name)).forEach((name) => process.stderr.write(`runtime: ignored flag --${name}\n`));
 }
 
-function parseFlagArgs(argv, booleanFlags) {
+function parseFlagArgs(argv, booleanFlags, mergeAttrs = false) {
   const bools = booleanFlags || [];
   const out = {};
   for (let i = 0; i < argv.length; i += 1) {
     if (!argv[i].startsWith('--')) fail('flags require values');
     const name = argv[i].slice(2);
-    if (Object.hasOwn(out, name)) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
+    const repeated = Object.hasOwn(out, name);
+    const merge = repeated && mergeAttrs && name === 'attrs';
+    if (repeated && !merge) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
     if (bools.includes(name)) { out[name] = true; continue; }
     if (argv[i + 1] === undefined) fail('flags require values');
-    out[name] = argv[i + 1];
+    out[name] = merge ? `${out[name]};${argv[i + 1]}` : argv[i + 1];
     i += 1;
   }
   return out;
@@ -2603,8 +2925,13 @@ async function main(argv) {
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only', 'nul']);
   if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
+  if (command === 'config-check') {
+    const result = configCheckCommand(flags);
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.ok ? 0 : 1;
+  }
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -2618,9 +2945,13 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
+  if (command === 'review-memory-baseline') {
+    process.stdout.write(JSON.stringify({ reviewer: flags.reviewer, hits: reviewMemoryHits(flags.reviewer).map(({ id }) => id) }) + '\n');
+    return 0;
+  }
   if (command === 'persist-review') {
     if (typeof flags.in !== 'string' || typeof flags['out-dir'] !== 'string') fail('--in <path> and --out-dir <iteration dir> required');
-    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor });
+    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor, memoryBaseline: flags['memory-baseline'] });
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
@@ -2648,7 +2979,12 @@ async function main(argv) {
     return violations.length === 0 ? 0 : 1;
   }
   if (command === 'impl-test-close') {
-    process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    try {
+      process.stdout.write(JSON.stringify(implTestClose(flags)) + '\n');
+    } catch (error) {
+      if (error.refusal) process.stdout.write(JSON.stringify({ refusal: error.refusal }) + '\n');
+      throw error;
+    }
     return 0;
   }
   if (command === 'test-delta') {
@@ -2727,7 +3063,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, config-check, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {

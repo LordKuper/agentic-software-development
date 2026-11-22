@@ -8,7 +8,7 @@ responsibility:
 # Test plan — sprint {{SPRINT_ID}}
 
 <!--
-Written in impl-test, after the implementation exists. First entry writes this file fresh;
+Written in impl-test, after the implementation exists. First entry writes this file, keeping any area-run shell;
 every re-entry AMENDS it (append/update rows) — never a full rewrite. Defects rows persist
 (resolved ones kept for the record). Narrative rows of prior entries rotate into
 test-plan.entry-NN.md: .asd/rules/artifact-layout.md "Test plan". Change surface is not restated here — it's the diff
@@ -16,9 +16,14 @@ itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2 (full on e
 since the prior entry's `HEAD analysed` on re-entry).
 Rules: .asd/workflows/asd-phase-impl-test.md "Rules", .asd/rules/code-style.md §17.
 English machine literals, never translated (`impl-test-close` and `defect-stalemate` parse them): the
-`## Added tests`, `## Suite run` and `## Defects` headings, the `Gap proof` column header, the
+`## Entry log`, `## Added tests`, `## Suite run` and `## Defects` headings, the `Entry`, `HEAD analysed`
+and `Scope` headers of `Entry log`, the `Gap proof` column header, the
 `Entry`, `Location`, `Symptom` and `Failing test` column headers of `Defects`, and the `- Line delta:`
 and `- Allowance:` labels.
+Escape every literal pipe in a table cell as `\|`, including inside code spans. Preserve the escape
+when rotating rows to a segment. A migration introducing a required column backfills the live plan
+and all existing rotated segments, or explicitly exempts pre-migration rows by version. Current
+rows still require the column.
 -->
 
 ## Entry log
@@ -55,21 +60,30 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
 its run lines with the cycle's one **full-suite** run once the last review wave's reviewers are
-APPROVE/latched, keeping `Line delta` and `Allowance`. The review-fix tester also records here the check a finding requires; `impl-test`
-step 8 reuses it per "Impacted test set". The `pr` gate always reads whatever is recorded here last — the full-suite
+APPROVE/latched, keeping `Line delta` and `Allowance`. The review-fix tester records the check a finding
+requires with its verified commit per `asd-tester.md` "Rules". The `pr` gate reads the last record — the full-suite
 record, by the time `pr` runs. Each per-entry record measures only the tree that entry
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}
 - Scope: {{impacted \| full \| named}} — `full` when every test file ran with no test-name filter, `named` for a named test or name-filtered run (never reused), else `impacted` (`.asd/rules/sprint-lifecycle.md` "Impacted test set" **Scope.**)
+- Scope evidence: {{affected paths and safety-valve decision, when evaluating shared infrastructure}}
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
 - Smoke: {{`smoke` from commands.yaml}} — {{pass \| fail}}; line omitted when the key is absent
 - Line delta: {{written by `impl-test-close --green`: tests +A/−R (net N); other +A/−R (net N)}}
 - Allowance: {{risks the added test lines cover, when `test-delta` requires it \| line omitted}}
 - Slowest tests: {{ten, name and ms, from the `test_durations` run \| line omitted when the key is absent}}
-- HEAD: {{sha}} — commit this run was verified at; a later phase compares current HEAD against it to decide whether to reuse the run (`.asd/rules/sprint-lifecycle.md` "Impacted test set")
+- HEAD: {{sha}} — commit this run was verified at. Leave empty if the run cannot be tied to a committed revision. Reuse rules: `.asd/rules/sprint-lifecycle.md` "Impacted test set".
+
+## Area runs (optional)
+
+For a split first entry only (`asd-phase-impl-test.md` steps 3 and 8). Commit each area result before the next dispatch. Only completed rows verified against the current relevant paths supply evidence for the aggregate. Keep this section as first-entry history on later entries.
+
+| Stage | Area | Command | Relevant paths | State | HEAD | Result |
+|---|---|---|---|---|---|---|
+| {{pre-strategy \| suite}} | {{area}} | {{exact named-area command}} | {{source, test, dependency and setup paths}} | {{pending \| done}} | {{checked sha}} | {{exit code, counts and first failure line if red}} |
 
 ## Defects
 

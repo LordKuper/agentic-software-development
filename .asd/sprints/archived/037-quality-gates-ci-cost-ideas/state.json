@@ -1,7 +1,7 @@
 {
   "sprint_id": "037-quality-gates-ci-cost-ideas",
   "branch": "sprint/037-quality-gates-ci-cost-ideas",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -97,6 +97,13 @@
       "reason": "user answer at iter-07: \"Override, ещё раунд\" with its stated condition \"Если iter-08 снова сузится — принять\"; iter-08 narrowed to one finding (external 1, Entry log/Suite run refusals) → cap-accept",
       "evidence": "decisions-log.md 2026-11-18 impl-review wave-1/iter-08; reviews/impl/wave-1/iter-08/external.md",
       "artifact_revision": "impl-review wave-1/iter-08"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #129 merged and v14.9.0 published",
+      "evidence": "dd0e6afd69a92d992fa90a22088aa8bf1b854cbc",
+      "artifact_revision": "state.json@closure"
     }
   ],
   "task_routing": {
@@ -312,13 +319,14 @@
     }
   },
   "created_at": "2026-11-18T08:42:04.000Z",
-  "updated_at": "2026-11-18T11:11:13.794Z",
+  "updated_at": "2026-11-21T20:41:33.204Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 129,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/129",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "dd0e6afd69a92d992fa90a22088aa8bf1b854cbc"
   },
-  "archived_at": null
+  "archived_at": "2026-11-21T20:41:33.204Z"
 }

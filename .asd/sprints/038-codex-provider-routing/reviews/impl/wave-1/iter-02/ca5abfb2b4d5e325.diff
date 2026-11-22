@@ -1,0 +1,450 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index be222299..550293cf 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -70,8 +70,8 @@
+     ".asd/rules/git-strategy.md": "68ea23e0c74f2254733b4f2ed2a685e5dbb5c3b6a3717436c4c3ccf7db2551c8",
+     ".asd/rules/language-policy.md": "f2f53a9425f18a77aa6e71c63212e092f83bd4089cab03180668ae50e96beb75",
+     ".asd/rules/providers.md": "e997619be09970ece8955a74ffae0ef5f21eb26e472fbfb2f5ea38a78c4ef609",
+-    ".asd/rules/review-policy.md": "557b39e6adf1ac3378432884196805e2f00fff3f9dcb9ae246e4a7f7acf81ed6",
+-    ".asd/rules/sprint-lifecycle.md": "194c9de1f43fc946d76e2942daba9e19c6079d05c84528ef8e0f6532395902a7",
++    ".asd/rules/review-policy.md": "dcaf634f8f84bcb0d681edd8774ae44a68b5a51bb3176a25b3cbb062af6fcadd",
++    ".asd/rules/sprint-lifecycle.md": "39c7a088d604470efcaa092f81fcd98a061f0cbd77c97a6ba4a7f6028251e362",
+     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+@@ -91,8 +91,8 @@
+     ".asd/skills/asd-sync/SKILL.md": "d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+     ".asd/skills/asd-update/SKILL.md": "5535878d29e38941ab4099e87e3d5b014355d2852bc5901e09462733054f65e3",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "b5bc93b884a41b0f5d9737494edbb2549c20f50f9d17d8ed11f130b6ab0f91cb",
+-    ".asd/templates/external-review/t_prompt-external-design.md": "ce7d735bf9c893854ddaaa8dab58f906149c0d710b17f14952342126c76a4901",
++    ".asd/sync.js": "d08d927e3bb621f4f1e55769f834bf47af562b9a15b9f5d5ed5e6027ea7ce233",
++    ".asd/templates/external-review/t_prompt-external-design.md": "1beb4427ac4ea4743337b19820421fec74066041d4bc4d068a30069b384af82f",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "713d4764f3ed2f69aac1f9afd3ee63ae763e7ef34a9137f6c087e9a731fd996b",
+     ".asd/templates/t_AGENTS.md": "dfddf625f35af783514c04bdeee841986937f1224d9bcb7bd41142e9aec45214",
+@@ -141,7 +141,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "7e5da6e9ae0baef27e32c06bdaf3219103cbc337ec205d5f6aab34ace07ab5ab",
++    ".asd/runtime.js": "9344209b7d6357ed5d29454ece11cc9c665d256917ae5d23f9cfe33c1e1f53fb",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 9d28d36a..18f94599 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -41,7 +41,7 @@ Every iteration dispatches each reviewer as a **fresh agent invocation** — new
+ Sole statement, both review phases, every reviewer — each internal reviewer of the sprint's workflow roster (`sprint-lifecycle.md` "Workflows") and External Review. Workflows, agents, external prompts and README link here.
+ 
+ 1. **List** — the reviewer's file list, written by `node .asd/runtime.js emit-manifest` per reviewer (impl-review: per wave; built as "Reviewer responsibility" states; External Review's scope manifest: `external-review.md` "Phase-scoped payload"), is its only normative scope: its ledger file rows and its valid finding locations. Never a second list, never diff text in the payload.
+-2. **Diff** — the `<fingerprint>.diff` file `emit-manifest` writes beside it for exactly that list — named by its inputs, so manifests sharing a list and range share one file, and rewritten at every emit, so a reused iteration directory never serves an older file under that name — is the change content, deletions included, read on demand. impl-review: every iteration, over the iteration's range (`sprint-lifecycle.md` "Review iteration counters"). design-review: from iteration 2, against the previous iteration's draft snapshot (`--snapshot`); none at iteration 1 — the drafts are wholly new, so a diff would only duplicate them.
++2. **Diff** — the `<fingerprint>.diff` file `emit-manifest` writes beside it for exactly that list — named by its inputs, so manifests sharing a list and range share one file, and rewritten at every emit, so a reused iteration directory never serves an older file under that name — is the change content, deletions included, read on demand. impl-review: every iteration, over the iteration's range (`sprint-lifecycle.md` "Review iteration counters"). design-review: from iteration 2, against the previous iteration's draft snapshot (`--snapshot`), with an addition patch for a missing copy. A nonempty delta must produce a nonempty patch. At iteration 1, read the drafts whole.
+ 3. **Whole files** — any file, listed or not, is readable as context when the diff is not enough. An unlisted path stays out of scope — for an internal reviewer, save the Change-surface exception below.
+ 
+ No reviewer — the wrapped CLI included — runs git to derive, widen or narrow its scope, and no payload tells it to.
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 4fda6312..404af2c8 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -277,7 +277,7 @@ A problem that is both a code defect and a workflow malfunction (routine under `
+ 
+ ## Operation timing
+ 
+-The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted|continued]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]…]`: closes before opens, one append, runtime-stamped. `--attrs` may repeat; comma and semicolon separate pairs, and the last value for a duplicate key wins. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces and each whole `--attrs` value (`;` separates shell commands); no `&&`.
++The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted|continued]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]…]`: closes before opens, one append, runtime-stamped. `--attrs` may repeat. Semicolons and commas before a `key=` assignment separate pairs. The last value for a duplicate key wins. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces and each whole `--attrs` value (`;` separates shell commands); no `&&`.
+ 
+ Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model` — the runtime fills a missing one from a routed id's (sans `#<n>`) `task_routing` entry, else from the `agent` attr's frontmatter; an unrouted dispatch passes `--attrs agent=<name>`; unresolved: warns; `context_bytes` — the runtime fills it from the size of that dispatch's `inputs.context` bundle, absent when none); `review-iteration` (`wave`, `iteration`: plain integers); `suite` (`scope`: `full`|`impacted`|`named`); `external-review` (`model`: the wrapped CLI's); `user-wait` (`gate`: gate name or short question label). Unique ids: a routed dispatch's `task_routing` id; a reviewer dispatch `<reviewer key> [wave-<K>/]iter-NN`; else `<agent> <phase>#<n>`; `review-iteration` `<phase> [wave-<K>/]iter-NN`; `suite` `suite <phase>#<n>`; `user-wait` `wait <gate>`. Ids are never reused: an `--open` of a held id, open or closed, is skipped, warning the next free `<id>#<n>`, which a repeated op (re-dispatch after a done or interrupted close, re-asked gate's `user-wait`, repeat suite) takes. A phase op opens and closes by bare phase name (the runtime numbers entries `#<n>`); an op nested in another (a tester's `suite` in its `dispatch`) passes `--parent <that id>`, otherwise it takes the open phase.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index efd09467..e5b59052 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -302,6 +302,9 @@ function externalRoute(input) {
+   return { provider, command, model: resolveModelFamily(loadReleaseManifest(path.dirname(__dirname)), provider, wrapped.wraps_model) };
+ }
+ 
++/** Pins the named profile's inference route against overriding project config.
++ * shortcut: read simple root TOML assignments up to the first table or multiline value. Use a TOML parser if route fields need broader syntax.
++ */
+ function codexProfileRoute(route) {
+   if (typeof route.profile !== 'string' || !/^[A-Za-z0-9_-]+$/.test(route.profile)) {
+     return { status: 'profile-invalid', identity: {} };
+@@ -318,7 +321,6 @@ function codexProfileRoute(route) {
+   }
+   const fields = new Map();
+   const keys = ['model', 'model_provider', 'model_reasoning_effort'];
+-  // shortcut: read simple root assignments only until the first table or multiline value, use a TOML parser if profile route fields need broader syntax.
+   for (const rawLine of text.split(/\r?\n/)) {
+     const line = rawLine.trim();
+     if (!line || line.startsWith('#')) continue;
+@@ -334,7 +336,6 @@ function codexProfileRoute(route) {
+   if (!model || !/^[A-Za-z0-9_-]+$/.test(provider) || !/^(none|minimal|low|medium|high|xhigh|max|ultra)$/.test(effort)) {
+     return { status: 'profile-invalid', identity };
+   }
+-  // Project config outranks a named profile. Pin its selected route for this process.
+   const args = ['exec', '--profile', route.profile, `--model=${model}`,
+     '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
+     '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
+@@ -352,6 +353,7 @@ function externalPreflight(input) {
+   return { ...result, ...(input.host !== undefined && { route: resolved }), platform: process.platform };
+ }
+ 
++/** Probes local readiness. Codex login status covers only OpenAI auth, so named profiles use the version probe alone. */
+ function localReadiness(input, profile) {
+   const provider = input.provider;
+   const model = input.model;
+@@ -368,7 +370,6 @@ function localReadiness(input, profile) {
+       return { status: 'profile-cli-unsupported', model_access: 'unknown', fingerprint: cacheKey(input, false, profile.identity) };
+     }
+   }
+-  // A custom profile may use its own credential helper or environment. Codex login status only checks OpenAI auth.
+   const authReady = profile ? null : runLocal(input.command, authArgs).ok;
+   const key = cacheKey(input, authReady, profile?.identity);
+   if (authReady === false) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
+@@ -1043,13 +1044,11 @@ function aiCoAuthorTrailers(message) {
+   });
+ }
+ 
+-/** Checks literal named targets against the index and worktree without exposing file contents. */
++/** Checks literal named targets without exposing file contents. Rename sides are separate records, and an ignored file can reappear at a staged deletion. */
+ function commitPathErrors(paths, named) {
+   if (paths.length === 0) return [];
+   const records = runGit(['--no-optional-locks', '--literal-pathspecs', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--ignored=traditional', '--ignore-submodules=none', '--', ...paths]).split('\0').filter(Boolean);
+-  // With renames disabled, Git lists the source deletion and destination addition separately.
+   const staged = new Set(records.filter((record) => /^[MADT]/.test(record)).map((record) => record.slice(3)));
+-  // An ignored file can still diverge from the index when it reappears at a staged deletion.
+   const unstaged = records.filter((record) => record[1] !== ' ' && (record[0] !== '!' || staged.has(record.slice(3)))).map((record) => record.slice(3));
+   const stagedFiles = [...staged];
+   return named.flatMap((target, index) => {
+@@ -1365,11 +1364,12 @@ function rangePatchInvocations(ranges, files) {
+   });
+ }
+ 
+-/** Git invocations diffing each draft against its copy in the previous iteration's snapshot; a draft that snapshot lacks gets none. */
++/** Diffs each draft against its previous snapshot copy, using an addition patch when the copy is absent. */
+ function snapshotPatchInvocations(previousDir, files) {
+-  return files.flatMap((file) => {
++  return files.map((file) => {
+     const copy = snapshotCopyPath(previousDir, file);
+-    return fs.existsSync(copy) ? [{ args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', copy, file], okStatuses: [0, 1] }] : [];
++    const before = fs.existsSync(copy) ? copy : '/dev/null';
++    return { args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', before, file], okStatuses: [0, 1] };
+   });
+ }
+ 
+@@ -1502,9 +1502,10 @@ function externalScopeFiles(flags, files) {
+   const windows = process.platform === 'win32';
+   const asdExclusion = flags['self-hosting'] === true ? /^\.asd\/(?:project|sprints)(?:\/|$)/ : /^(?:\.asd|docs)(?:\/|$)/;
+   return [...new Set(files.flatMap((file) => {
+-    const normalized = path.posix.normalize(file.replace(/\\/g, '/'));
++    const normalized = path.posix.normalize(windows ? file.replace(/\\/g, '/') : file);
++    const absolute = windows ? path.win32.isAbsolute(file) : path.posix.isAbsolute(file);
+     const ambiguous = windows && normalized.split('/').some((segment) => /[. ]$|:/.test(segment));
+-    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || path.win32.isAbsolute(file) || /^[a-z]:/i.test(file) || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
++    if (impl && (normalized === '.' || normalized === '..' || normalized.startsWith('../') || absolute || normalized.includes('\0') || ambiguous)) fail(`invalid external scope path: ${file}`);
+     const checked = windows ? normalized.toLowerCase() : normalized;
+     if (/(?:^|\/)dist(?:\/|$)|(?:^|\/)design-system\.html$/.test(checked)) return [];
+     if (impl && (asdExclusion.test(checked) || /^(?:\.claude\/(?:agents|skills|hooks)|\.codex\/(?:agents|hooks)|\.agents\/skills)(?:\/|$)/.test(checked))) return [];
+@@ -1922,7 +1923,7 @@ function timingIds(value, name) {
+ 
+ function timingAttrs(value) {
+   if (value === undefined) return {};
+-  return Object.fromEntries(value.split(/[;,]/).map((pair) => {
++  return Object.fromEntries(value.split(/;|,(?=\s*[^=;,\s]+\s*=)/).map((pair) => {
+     const at = pair.indexOf('=');
+     if (at < 1) fail(`--attrs entry must be k=v: ${pair}`);
+     return [pair.slice(0, at).trim(), pair.slice(at + 1).trim()];
+@@ -2793,10 +2794,14 @@ function configCheckCommand(flags) {
+     const identity = JSON.stringify(entry.path);
+     const field = required.get(identity);
+     if (!field) continue;
+-    if (seen.has(identity)) duplicates.add(entry.path.join('.'));
++    const key = entry.path.join('.');
++    if (seen.has(identity)) duplicates.add(key);
+     seen.add(identity);
+     const reason = configValueIssue(field, entry);
+-    if (reason !== null) invalid.push({ path: entry.path.join('.'), line: entry.line, reason });
++    if (reason !== null) invalid.push({ path: key, line: entry.line, reason });
++    else if (key === 'git.ai_attribution' && entry.value === 'disabled' && require('./sync.js').aiAttributionFromConfig(source) !== 'disabled') {
++      invalid.push({ path: key, line: entry.line, reason: 'use unquoted ai_attribution: disabled under the plain git: mapping' });
++    }
+   }
+   const missing = [...required].filter(([identity, field]) => field.kind !== 'map' && !seen.has(identity)).map(([, field]) => field.path.join('.'));
+   return { ok: missing.length === 0 && duplicates.size === 0 && invalid.length === 0, missing, duplicates: [...duplicates], invalid };
+diff --git a/.asd/sprints/038-codex-provider-routing/test-plan.entry-01.md b/.asd/sprints/038-codex-provider-routing/test-plan.entry-01.md
+new file mode 100644
+index 00000000..dd768b7a
+--- /dev/null
++++ b/.asd/sprints/038-codex-provider-routing/test-plan.entry-01.md
+@@ -0,0 +1,33 @@
++# Test plan — sprint 038-codex-provider-routing, entry 1
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-1–AC-2, AC-4–AC-5 | Sprint enters on an incomplete config or review runs with the primary provider | Component/contract | keep | `runtime-routing` exercises valid, missing, duplicate and invalid config; fake CLI verifies separate profile flags, availability, fingerprint and default routing. Read the quickstart against the profile contract. Authenticated RouterAI verification is conditional on credentials. |
++| AC-3, AC-15 | Mockup setting skips UX preconditions or an interrupted publication repeats | Static workflow trace | none | Follow the approved draft and success/deferred markers from scope to promotion, including the reachability and unknown-result branches. The framework consumes these as instructions. A text assertion does not exercise the canvas host. |
++| AC-6, AC-12, AC-21 | Model, quota override or timeout changes the wrong role or leaves the process detached | Component/contract | keep | `sync-cli`, `sync-render`, `contract-agents` and `contract-templates` cover generated role settings and invocation tokens. A host-confirmed quota event depends on live model availability. |
++| AC-7, AC-18–AC-20, AC-28 | Wrapped verdict loses material findings, review leaks excluded scope or invalid output is written | Component/contract | keep | `runtime-review` covers severity floor, consumer and self-hosting manifests, coverage IDs, snapshot refusal and reviewer-owned memory. The accepted plan's synthetic wrapper and failed-runner smokes complement those assertions. |
++| AC-8, AC-11, AC-14, AC-16, AC-23, AC-26 | Future phase misses a blocking prerequisite, contract edge or sibling mechanism | Static workflow trace | none | Trace each requirement at its planning, audit or fix-dispatch step. These branches are prose for the orchestrator. Existing workflow shape checks cover the machine-parsed parts. |
++| AC-9–AC-10, AC-13, AC-22, AC-27, AC-29–AC-30 | Interrupted work looks green, a wrong tree receives credit or a refusal loses its owner | Component/contract | keep | `runtime-tools` covers pipe cells, entry and added-test validation and precise refusals; `contract-agents`, `contract-templates` and `contract-workflows` check runner and plan handoffs. Trace reuse, area invalidation, repair scope and prose-only eligibility against the workflow. |
++| AC-17, AC-24–AC-25 | Repeated timing attributes drop evidence, stale ledgers pass or named paths commit partially | Component/contract | keep | `runtime-timing`, `runtime-tools` and `sync-cli` cover merge, commit path and stale-ledger outcomes. `hooks`, `migrations` and `update` exercise consumers of the live sync and hash changes. |
++| Review findings 1–4 and 6 | Existing clients lose attribution opt-out, changed draft patches, timing operations or literal paths | Component/contract | keep | Extend the tests that already own the four contracts and record the failing cases below. The pre-fix script copies use the named commits and the current test files. |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++| `tests/runtime-routing.test.js` / Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys | The original check had no disabled spelling compared with the attribution reader. The archived runtime accepts quoted disabled with an empty invalid list. | fail-first at 72115d15: `node .asd/tmp/038-codex-provider-routing-proof-before-review/tests/run.js runtime-routing --filter 'config-check requires explicit valid values'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-review.test.js` / sprint-017 AC-8 (D9e), sprint-038 AC-20: draft-snapshot and emit-manifest patch changed drafts and additions against the prior snapshot | The old snapshot test required no hunk for a missing copy and never requested that case alone. | fail-first at 72115d15: `node .asd/tmp/038-review/tests/run.js runtime-review --filter 'sprint-038 AC-20: draft-snapshot'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-timing.test.js` / sprint-036 AC-7: timing --open of an id the ledger holds, open or closed, appends nothing and warns with the next free #<n>, a repeat op takes that id, the task_routing lookup strips the #<n>, and a flag given twice warns on stderr with the last value winning | The original mixed-delimiter case used values with no literal commas. | fail-first at 72115d15: `node .asd/tmp/038-codex-provider-routing-proof-before-review/tests/run.js runtime-timing --filter 'sprint-036 AC-7: timing --open'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-review.test.js` / Sprint 038 AC-18: external review matches its consumer scope and patch across an excluded rename | Slash-only paths did not expose the POSIX path alias. Windows tests the POSIX scope selector through a preload. Native POSIX checks the Git patch with both spellings changed. | fail-first at 72115d15: `node .asd/tmp/038-codex-provider-routing-proof-before-review/tests/run.js runtime-review --filter 'Sprint 038 AC-18: external review matches'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-tools.test.js` / sprint-033 AC-12/AC-21: commit-check passes a header of at most 50 characters counted as characters, fails a longer one and a memory-check hit among the named staged paths only, ignores a sibling's staged memory hit, and refuses a missing subject | Before Task 14 the test had no staged rename with dirty and unstaged named paths. The archived command reports success on those named paths. | fail-first at 674d2837: `node .asd/tmp/038-codex-provider-routing-proof-before-impl/tests/run.js runtime-tools --filter 'sprint-033 AC-12/AC-21: commit-check passes a header'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-review.test.js` / Sprint 038 AC-28: a new reviewer-memory hit prevents both review writes | The pre-sprint runtime-review area has no test driving the baseline-to-persistence memory rejection path. | mutation in 72115d15 copy removing the memory check from persist-review: `node .asd/tmp/038-review/tests/run.js runtime-review --filter 'a new reviewer-memory hit prevents both review writes'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-review.test.js` / AC-1/2: compact coverage ledger rejects identity, completeness, predicate, and finding-reference fraud | The old coverage ledger cases exercised string IDs only. | fail-first at 674d2837: `node .asd/tmp/038-codex-provider-routing-proof-before-impl/tests/run.js runtime-review --filter 'compact coverage ledger rejects identity'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/sync-cli.test.js` / sync.js CLI: --apply on a not-found target and a bare --apply each abort the batch (exit 1) and skip the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched | The old test only checked hash ledgers while invoking apply. It did not check a stale self-hosted ledger before applying. | fail-first at 674d2837: `node .asd/tmp/038-codex-provider-routing-proof-before-impl/tests/run.js sync-cli --filter '--apply on a not-found target'` → exit 1, 0/1 passed, named test in first cell. |
++| `tests/runtime-tools.test.js` / sprint-033 AC-27 (issue #109): impl-test-close fills the Entry log HEAD analysed of the named entry with the short HEAD and appends the decisions-log line, touching no other row, and writes neither file when its input is invalid | The old ambiguity check looked at stderr without checking structured refusal fields for the repair dispatch. | fail-first at 674d2837: `node .asd/tmp/038-codex-provider-routing-proof-before-impl/tests/run.js runtime-tools --filter 'sprint-033 AC-27 (issue #109): impl-test-close'` → exit 1, 0/1 passed, named test in first cell. |
+diff --git a/.asd/sprints/038-codex-provider-routing/test-plan.md b/.asd/sprints/038-codex-provider-routing/test-plan.md
+index 91a408cf..39cadc90 100644
+--- a/.asd/sprints/038-codex-provider-routing/test-plan.md
++++ b/.asd/sprints/038-codex-provider-routing/test-plan.md
+@@ -12,18 +12,17 @@ responsibility:
+ | Entry | HEAD analysed | Scope |
+ |---|---|---|
+ | 1 | 5854ad90 | full change surface |
++| 2 | eaa1003b | delta since entry 1 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-1–AC-2, AC-4–AC-5 | Sprint enters on an incomplete config or review runs with the primary provider | Component/contract | keep | `runtime-routing` exercises valid, missing, duplicate and invalid config; fake CLI verifies separate profile flags, availability, fingerprint and default routing. Read the quickstart against the profile contract. Authenticated RouterAI verification is conditional on credentials. |
+-| AC-3, AC-15 | Mockup setting skips UX preconditions or an interrupted publication repeats | Static workflow trace | none | Follow the approved draft and success/deferred markers from scope to promotion, including the reachability and unknown-result branches. The framework consumes these as instructions. A text assertion does not exercise the canvas host. |
+-| AC-6, AC-12, AC-21 | Model, quota override or timeout changes the wrong role or leaves the process detached | Component/contract | keep | `sync-cli`, `sync-render`, `contract-agents` and `contract-templates` cover generated role settings and invocation tokens. A host-confirmed quota event depends on live model availability. |
+-| AC-7, AC-18–AC-20, AC-28 | Wrapped verdict loses material findings, review leaks excluded scope or invalid output is written | Component/contract | keep | `runtime-review` covers severity floor, consumer and self-hosting manifests, coverage IDs, snapshot refusal and reviewer-owned memory. The accepted plan's synthetic wrapper and failed-runner smokes complement those assertions. |
+-| AC-8, AC-11, AC-14, AC-16, AC-23, AC-26 | Future phase misses a blocking prerequisite, contract edge or sibling mechanism | Static workflow trace | none | Trace each requirement at its planning, audit or fix-dispatch step. These branches are prose for the orchestrator. Existing workflow shape checks cover the machine-parsed parts. |
+-| AC-9–AC-10, AC-13, AC-22, AC-27, AC-29–AC-30 | Interrupted work looks green, a wrong tree receives credit or a refusal loses its owner | Component/contract | keep | `runtime-tools` covers pipe cells, entry and added-test validation and precise refusals; `contract-agents`, `contract-templates` and `contract-workflows` check runner and plan handoffs. Trace reuse, area invalidation, repair scope and prose-only eligibility against the workflow. |
+-| AC-17, AC-24–AC-25 | Repeated timing attributes drop evidence, stale ledgers pass or named paths commit partially | Component/contract | keep | `runtime-timing`, `runtime-tools` and `sync-cli` cover merge, commit path and stale-ledger outcomes. `hooks`, `migrations` and `update` exercise consumers of the live sync and hash changes. |
++| Review 1 · AC-1–AC-2 | Config validation accepts an opt-out the attribution reader ignores | Component/contract | keep | `runtime-routing` distinguishes the supported disabled form from unsupported spellings. `runtime-tools` and `sync-render` check the downstream attribution behavior. |
++| Review 2 · AC-20 | A draft absent from the previous snapshot yields an empty delta | Component/contract | keep | `runtime-review` checks addition patches, changed drafts, and snapshot refusals, plus whole-file carryover and the first-iteration exception. |
++| Review 3 · AC-17 | Parsing attribute separators cuts a literal comma from the value | Component/contract | keep | `runtime-timing` checks literal commas with adjacent assignments and repeated flags. |
++| Review 4 · AC-18 | A POSIX backslash aliases a different path in external review | Component/contract | keep | `runtime-review` checks path selection on Windows through a POSIX preload and checks the emitted literal-backslash Git patch on native POSIX. |
++| Review 5–6 | Comment moves or evidence repairs are mistaken for untested behavior | Static | none | The comment moves preserve executable code. The focused failing commands, checked revisions, and gap proofs are recorded in `test-plan.entry-01.md`. |
+ 
+ ## Removed tests
+ 
+@@ -38,15 +37,15 @@ responsibility:
+ ## Suite run
+ 
+ - Pre-strategy command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render hooks migrations update` at `1a75a85d`. Exit 0, 314 passed, 0 failed, 0 skipped.
++- Entry 2 pre-strategy command: `node tests/run.js runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render contract-agents contract-rules contract-templates contract-workflows hooks migrations update` at `03d03af5`. Exit 0, 314 passed, 0 failed, 0 skipped. The full gate remains required because the delta changes shared runtime and sync code.
+ - Scope evidence: use the full step-8 gate. `.asd/runtime.js` and `.asd/sync.js` are loaded through shared `tests/lib.js`; changed snapshot, config and release-manifest contracts cross the named areas, including hooks, migrations and update. An isolated area split is unsupported here.
+ - Command: `node tests/run.js`
+-- Scope: full — all 316 tests, unscoped.
+-- Scope evidence: the safety valve widened the gate because `.asd/runtime.js` and `.asd/sync.js` are shared across the framework's test areas.
++- Scope: full — all 316 tests, unfiltered.
++- Scope evidence: use the full step-8 gate. `.asd/runtime.js` and `.asd/sync.js` are loaded through shared `tests/lib.js`; changed snapshot, config and release-manifest contracts cross the named areas, including hooks, migrations and update. An isolated area split is unsupported here.
+ - Result: pass — 316/316 passed, 0 failed, 0 skipped.
+ - Lint / build: pass — `git diff --cached --check`; `node .asd/sync.js --check` (77 generated targets current).
+-- Line delta: tests +170/−17 (net 153); other +877/−332 (net 545)
+-- Slowest tests: `sprint-023 AC-2` 1512 ms; `sprint-019 AC-8` 1142 ms; `sprint-036 AC-14` 1107 ms; `sprint-021 AC-7` 1056 ms; `sprint-020 AC-9` 735 ms; `sprint-033 AC-24` 732 ms; `sprint-027 AC-9` 710 ms; `sprint-033 AC-12/AC-21` 707 ms; `sprint-015 AC-4/AC-5` 660 ms; `sprint-017 AC-4/AC-8` 634 ms.
+-- HEAD: `21eccab7e95fdc8bc6468ed8f648cc5e70432be4` — HEAD and relevant code/test/stub paths were clean and unchanged before and after the run.
++- Line delta: tests +213/−19 (net 194); other +907/−340 (net 567)
++- HEAD: `8a3b8ad51289b430c1ae038bad040768107b49db` — HEAD matched before and after the run. Relevant code, test and stub paths were clean in the index and worktree, including untracked files.
+ 
+ ## Defects
+ 
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 74202e72..e5020bef 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -1333,12 +1333,15 @@ function readClaudeMdBlockBody(repoRoot) {
+ 
+ /** `git.ai_attribution` of `.asd/project/config.yaml`: `disabled` only when the `git:` group holds exactly one `ai_attribution` key among its direct children, its value `disabled`. A missing or unreadable file, a nested, duplicate (in any quoting) or otherwise-valued key reads as `enabled`, the default that writes and rejects nothing. */
+ function readAiAttribution(repoRoot) {
+-  let lines;
+   try {
+-    lines = readNormalized(path.join(repoRoot, '.asd', 'project', 'config.yaml')).split('\n');
++    return aiAttributionFromConfig(fs.readFileSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'), 'utf8'));
+   } catch (_) {
+     return 'enabled';
+   }
++}
++
++function aiAttributionFromConfig(text) {
++  const lines = normalizeText(text).split('\n');
+   const start = lines.findIndex((line) => /^git:\s*(#.*)?$/.test(line));
+   if (start === -1) return 'enabled';
+   const end = lines.findIndex((line, i) => i > start && /^[^\s#]/.test(line));
+@@ -1810,6 +1813,7 @@ module.exports = {
+   CLAUDE_MD_BLOCK_BODY_FALLBACK,
+   readClaudeMdBlockBody,
+   readAiAttribution,
++  aiAttributionFromConfig,
+   readAgentsMdTemplateBody,
+   claudeSessionStartOwnedEntries,
+   codexSessionStartOwnedEntries,
+diff --git a/.asd/templates/external-review/t_prompt-external-design.md b/.asd/templates/external-review/t_prompt-external-design.md
+index d4efc52b..9d7f6557 100644
+--- a/.asd/templates/external-review/t_prompt-external-design.md
++++ b/.asd/templates/external-review/t_prompt-external-design.md
+@@ -15,7 +15,7 @@ Read this JSON file first: {{SCOPE_MANIFEST_PATH}}
+ 
+ ## Inputs
+ 
+-- scope manifest (the file named above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration: in-scope draft paths under `<sprint>/design/`, generated output never listed; the only paths you judge and the only valid finding locations. `diff` is `null` at iteration 1 — read each listed draft whole; from iteration 2 it names a precomputed diff file of those drafts against the previous iteration's snapshot — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location; a listed draft with no hunk in the diff — new, or carried over from an iteration that skipped you — is read whole, never judged from a partial diff. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. No source code, never derive, widen or narrow the scope yourself, never assume content from the manifest bytes
++- scope manifest (the file named above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration: in-scope draft paths under `<sprint>/design/`, generated output never listed; the only paths you judge and the only valid finding locations. `diff` is `null` at iteration 1 — read each listed draft whole; from iteration 2 it names a precomputed diff file of those drafts against the previous iteration's snapshot — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location; read a carried-over draft whole when the diff has no hunk for it. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. No source code, never derive, widen or narrow the scope yourself, never assume content from the manifest bytes
+ - artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} (likec4) or c4-full/subsystems.md (mermaid) exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
+ - out of scope: implementation code and tests (reviewed in impl-review) — do not report code defects or ask to inspect the codebase
+ - project context:
+diff --git a/README.md b/README.md
+index 5bbbd4df..37078b5f 100644
+--- a/README.md
++++ b/README.md
+@@ -288,7 +288,7 @@ Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-proto
+ 
+ All settings live in `.asd/project/config.yaml`. `/asd-init` writes explicit values for the complete shipped schema, including settings inactive under the selected configuration. Re-initialization proposes values for missing keys and preserves valid choices unless you edit them.
+ 
+-Every `/asd-sprint` call runs `node .asd/runtime.js config-check` before changing Git refs or dispatching a phase. Missing, duplicate and invalid settings are reported by dotted path. Run `/asd-init` to complete or repair the configuration, then retry. Explicit empty and disabled values count where the schema allows them. Sprint-mediated init applies only the approved settings and still checks completeness.
++Every `/asd-sprint` call runs `node .asd/runtime.js config-check` before changing Git refs or dispatching a phase. Missing, duplicate and invalid settings are reported by dotted path. Run `/asd-init` to complete or repair the configuration, then retry. Explicit empty and disabled values count where the schema allows them. To disable AI attribution, use the unquoted `ai_attribution: disabled` under `git:`. Sprint-mediated init applies only the approved settings and still checks completeness.
+ 
+ ```yaml
+ user_gates: strict        # adaptive | strict — hard gates always require user approval
+@@ -352,7 +352,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: config completeness (`config-check`), task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--rename-map <json>` (a plan's declared map) collapses each hunk that only applies its substitutions to one line per file, and every whole-file deletion collapses to one line naming the path and deleted line count, `review-waves` sizing only the remainder; `--test-plan` adds `test-plan.md` to Quality's and Combined's impl-review lists; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--checklist <path>` adds the reliability-checklist items whose trigger matches the reviewer's files to its rules and `--base-ref <ref>` reads its rubric from that git ref; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, with the same path exclusions; `--scope-only` returns the file list without writing either artifact; `--reviewer combined` composes the single-pass combined reviewer manifest from the Quality/Efficiency rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`; `--single` fixes one wave for `lite`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), the pre-commit header-length, trailer-placement and memory check the one-command commit form runs, requiring each named path to have staged changes and no unstaged changes, including both sides of a rename (`commit-check --message-file <file> -- <paths>`, or `--subject "<header>"` for a trailer-less commit; with `git.ai_attribution: disabled` also rejecting a Claude or Codex `Co-authored-by:` trailer), the sprint-start attribution check (`attribution-check`, run by `/asd-sprint` on the sprint branch after scope and at resume, a tracked settings file committed as `chore(sprint): reset AI attribution`, an untracked or ignored one edited but never staged: silent unless `git.ai_attribution: disabled`, else it resets re-enabling `attribution`/`includeCoAuthoredBy` entries in the project `.claude/settings.json` and `settings.local.json`, splicing only the changed keys in place and never writing a file or `.claude/` directory that is a symlink or junction, leaving a file with uncommitted changes (`-- <file>`) untouched while it processes the other, one line per fix, and prints a Codex hint where `.codex/` exists; it also puts a missing or different `attribution` of `.claude/settings.json` to `{"commit": "", "pr": ""}` (one line per change) and records it in `.asd/sync-state.json`; sync's merge carries the same value and drops it again under `enabled` only while `.asd/sync-state.json` records sync or the check as its writer, a value already there before either changed it staying the user's), impl-test entry closing (`impl-test-close`, filling `HEAD analysed`, appending the decisions-log line and refusing an `Added tests` row with no `Gap proof`; `--green --base <ref>` also records `Line delta` in `Suite run` and refuses a surplus of added test lines with no `Allowance`; repairable row failures return the file, check and cause for the tester to repair), the test-versus-other line delta (`test-delta --base <ref>`, counting the `test_paths` globs), due accepted-debt stubs (`stubs-due --stubs <path> [--today YYYY-MM-DD]`), context-size ceilings (`context-check`, listing each bundle or file over its ceiling in `.asd/project/context-ceilings.json`, and each present project rules file or reliability checklist with no ceiling (`ceiling: null`); `--seed [--bundles]` writes the file, or adds only its missing keys to an existing one), the `design-system.html` token tables and CSS variables rebuilt from `DESIGN.md` (`design-tokens --design <DESIGN.md> --html <design-system.html>`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2; pass the iteration directory itself to `--snapshot` and `--previous`; an empty patch for changed files with a prior snapshot is a refusal), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`, a section with no table read as zero rows), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`; `--floor <severity>` applies External Review's severity floor in code and records the dropped count; numeric finding IDs are normalized before duplicate and reference checks; the reviewer memory baseline checks newly introduced content before either artifact is written), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`), decisions-log rotation into the next `decisions-log.NNN.md` segment on a phase change outside the impl cycle (`rotate-decisions --sprint <dir> --to <phase>`), a review iteration's verdicts and APPROVE latches recorded in `state.json` (`record-verdicts --state <state.json> --phase design|impl --iteration <N> --verdict "<key>=<value>[;…]"`), one rule-doc section by heading (`section --file <path> --heading <text>`), a role's per-phase context bundle from the `providers.md` grant table (`context --role <agent|orchestrator> --phase <phase> --out <file>`, passed to every dispatch as `inputs.context`; `--base-ref <ref>` reads the review-policy, external-review and checklist-template refs from that git ref), a fix round's stale APPROVE latches cleared (`latch-refresh --state <state.json> --sprint-dir <sprint>`), reliability-checklist `Last hit` stamps and removal candidates (`checklist-hits --checklist <path> --sprint-dir <sprint>`), subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>] [--returns <json>]`, an id whose reviewer return file passes the `persist-review` checks counting as done) and the operation-timing ledger (`timing` appends open/close records, merging repeated `--attrs` flags and accepting comma- or semicolon-separated pairs, filling a dispatch open's missing `tier`/`model`, appending nothing for a close of a never-opened id or an open of an id the ledger already holds, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set, the user waits, the dispatch `context_bytes` and the `suite_full` run time against its baseline for retro)
++│   ├── runtime.js                   # deterministic helper: config completeness (`config-check`), task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--rename-map <json>` (a plan's declared map) collapses each hunk that only applies its substitutions to one line per file, and every whole-file deletion collapses to one line naming the path and deleted line count, `review-waves` sizing only the remainder; `--test-plan` adds `test-plan.md` to Quality's and Combined's impl-review lists; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--checklist <path>` adds the reliability-checklist items whose trigger matches the reviewer's files to its rules and `--base-ref <ref>` reads its rubric from that git ref; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, with the same path exclusions; `--scope-only` returns the file list without writing either artifact; `--reviewer combined` composes the single-pass combined reviewer manifest from the Quality/Efficiency rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`; `--single` fixes one wave for `lite`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), the pre-commit header-length, trailer-placement and memory check the one-command commit form runs, requiring each named path to have staged changes and no unstaged changes, including both sides of a rename (`commit-check --message-file <file> -- <paths>`, or `--subject "<header>"` for a trailer-less commit; with `git.ai_attribution: disabled` also rejecting a Claude or Codex `Co-authored-by:` trailer), the sprint-start attribution check (`attribution-check`, run by `/asd-sprint` on the sprint branch after scope and at resume, a tracked settings file committed as `chore(sprint): reset AI attribution`, an untracked or ignored one edited but never staged: silent unless `git.ai_attribution: disabled`, else it resets re-enabling `attribution`/`includeCoAuthoredBy` entries in the project `.claude/settings.json` and `settings.local.json`, splicing only the changed keys in place and never writing a file or `.claude/` directory that is a symlink or junction, leaving a file with uncommitted changes (`-- <file>`) untouched while it processes the other, one line per fix, and prints a Codex hint where `.codex/` exists; it also puts a missing or different `attribution` of `.claude/settings.json` to `{"commit": "", "pr": ""}` (one line per change) and records it in `.asd/sync-state.json`; sync's merge carries the same value and drops it again under `enabled` only while `.asd/sync-state.json` records sync or the check as its writer, a value already there before either changed it staying the user's), impl-test entry closing (`impl-test-close`, filling `HEAD analysed`, appending the decisions-log line and refusing an `Added tests` row with no `Gap proof`; `--green --base <ref>` also records `Line delta` in `Suite run` and refuses a surplus of added test lines with no `Allowance`; repairable row failures return the file, check and cause for the tester to repair), the test-versus-other line delta (`test-delta --base <ref>`, counting the `test_paths` globs), due accepted-debt stubs (`stubs-due --stubs <path> [--today YYYY-MM-DD]`), context-size ceilings (`context-check`, listing each bundle or file over its ceiling in `.asd/project/context-ceilings.json`, and each present project rules file or reliability checklist with no ceiling (`ceiling: null`); `--seed [--bundles]` writes the file, or adds only its missing keys to an existing one), the `design-system.html` token tables and CSS variables rebuilt from `DESIGN.md` (`design-tokens --design <DESIGN.md> --html <design-system.html>`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2; pass the iteration directory itself to `--snapshot` and `--previous`; a missing draft copy produces an addition patch, and an empty patch for a nonempty delta is a refusal), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`, a section with no table read as zero rows), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`; `--floor <severity>` applies External Review's severity floor in code and records the dropped count; numeric finding IDs are normalized before duplicate and reference checks; the reviewer memory baseline checks newly introduced content before either artifact is written), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`), decisions-log rotation into the next `decisions-log.NNN.md` segment on a phase change outside the impl cycle (`rotate-decisions --sprint <dir> --to <phase>`), a review iteration's verdicts and APPROVE latches recorded in `state.json` (`record-verdicts --state <state.json> --phase design|impl --iteration <N> --verdict "<key>=<value>[;…]"`), one rule-doc section by heading (`section --file <path> --heading <text>`), a role's per-phase context bundle from the `providers.md` grant table (`context --role <agent|orchestrator> --phase <phase> --out <file>`, passed to every dispatch as `inputs.context`; `--base-ref <ref>` reads the review-policy, external-review and checklist-template refs from that git ref), a fix round's stale APPROVE latches cleared (`latch-refresh --state <state.json> --sprint-dir <sprint>`), reliability-checklist `Last hit` stamps and removal candidates (`checklist-hits --checklist <path> --sprint-dir <sprint>`), subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>] [--returns <json>]`, an id whose reviewer return file passes the `persist-review` checks counting as done) and the operation-timing ledger (`timing` appends open/close records, merging repeated `--attrs` flags and splitting on semicolons or commas that introduce another assignment, filling a dispatch open's missing `tier`/`model`, appending nothing for a close of a never-opened id or an open of an id the ledger already holds, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set, the user waits, the dispatch `context_bytes` and the `suite_full` run time against its baseline for retro)
+ │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md, agent-protocol.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md, t_reliability-checklist.md
+diff --git a/docs/architecture/tech-reference/node-24.15.md b/docs/architecture/tech-reference/node-24.15.md
+new file mode 100644
+index 00000000..fa0cded8
+--- /dev/null
++++ b/docs/architecture/tech-reference/node-24.15.md
+@@ -0,0 +1,13 @@
++---
++responsibility:
++  owns: Node.js interfaces used by the review runtime and regression checks
++  excludes: deployment commands, configuration schema
++  delegates_to: .asd/runtime.js, tests/run.js
++---
++
++# Node.js @ 24.15.0
++
++- Verified 2026-11-22 against the installed runtime and release-tagged [path](https://github.com/nodejs/node/blob/v24.15.0/doc/api/path.md), [file system](https://github.com/nodejs/node/blob/v24.15.0/doc/api/fs.md) and [CLI](https://github.com/nodejs/node/blob/v24.15.0/doc/api/cli.md) documentation.
++- `path.posix` and `path.win32` select path grammar independently of the host. A backslash is a filename character in POSIX grammar and a separator in Windows grammar. Git's slash-delimited repository paths feed literal pathspecs.
++- `fs.existsSync(path)` checks whether a snapshot copy exists. `fs.statSync(path).size` is the output byte count. Test whether the selected delta produced a patch before renaming it into its final location.
++- `node --require <module>` preloads a CommonJS test shim before the entry script. Use an isolated fixture when substituting a historical implementation or exercising a different host-path branch.
+diff --git a/tests/runtime-review.test.js b/tests/runtime-review.test.js
+index 336a2780..ecaaece1 100644
+--- a/tests/runtime-review.test.js
++++ b/tests/runtime-review.test.js
+@@ -130,6 +130,27 @@ test('Sprint 038 AC-18: external review matches its consumer scope and patch acr
+   assert.match(patch, /\+added test/);
+   assert.doesNotMatch(patch, /docs\/|updated docs|updated canon/);
+   assert.deepStrictEqual(await run(['--scope-only', '--self-hosting']), { status: 0, result: { files: [...source, ...canonical] } });
++
++  const literal = 'src\\moved.js';
++  fs.writeFileSync(listed, literal);
++  if (process.platform === 'win32') {
++    const posix = path.join(work, 'posix.cjs');
++    fs.writeFileSync(posix, 'Object.defineProperty(process, "platform", { value: "linux" });\n');
++    const scope = execFileSync(process.execPath, ['--require', posix, RUNTIME_JS, ...args, '--scope-only'], { encoding: 'utf8' });
++    assert.deepStrictEqual(JSON.parse(scope).files, [literal]);
++    return;
++  }
++  const importedPath = JSON.stringify(literal);
++  const [posixBase, posixHead] = await importCommits(sandbox, [
++    { [importedPath]: 'old literal\n' },
++    { [importedPath]: 'updated literal\n', 'src/moved.js': 'updated slash path\n' },
++  ], { parent: head });
++  const posix = await run(['--out', work, '--base', posixBase, '--head', posixHead, '--iteration', '1', '--wave', '1']);
++  assert.strictEqual(posix.status, 0);
++  assert.deepStrictEqual(JSON.parse(fs.readFileSync(posix.result.scope, 'utf8')).files, [literal]);
++  const posixPatch = fs.readFileSync(posix.result.diff, 'utf8');
++  assert.match(posixPatch, /\+updated literal/);
++  assert.doesNotMatch(posixPatch, /updated slash path/);
+ });
+ 
+ test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {
+@@ -979,7 +1000,7 @@ test('sprint-015 AC-2 (EXT-1): draft-snapshot copies each design-review iteratio
+   assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
+ });
+ 
+-test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapshot, and emit-manifest --snapshot diffs the listed drafts against the previous iteration\'s copies - no diff at iteration 1, none for a draft the snapshot lacks, refused outside design-review', () => {
++test('sprint-017 AC-8 (D9e), sprint-038 AC-20: draft-snapshot and emit-manifest patch changed drafts and additions against the prior snapshot', () => {
+   const root = mkTempDir();
+   const drafts = ['prd.html', 'adr.html'].map((name) => path.join(root, 'design', name));
+   drafts.forEach((file, index) => writeFile(root, path.relative(root, file), `draft ${index} line 1\ndraft ${index} line 2\n`));
+@@ -1017,10 +1038,15 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
+   const added = path.join(root, 'design', 'ux-spec.html');
+   fs.writeFileSync(added, 'new draft\n', 'utf8');
+   snapshot(2);
++  const onlyAdded = emit(runtime.COMBINED_REVIEWER, 2, [added], ['--snapshot', iterDir(1)]);
++  assert.ok(onlyAdded.diff, JSON.stringify(onlyAdded));
++  assert.match(fs.readFileSync(onlyAdded.diff, 'utf8'), /\+new draft/, 'a delta with no prior copy must produce a nonempty addition patch');
+   const second = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
++  assert.ok(second.diff, JSON.stringify(second));
+   const patch = fs.readFileSync(second.diff, 'utf8');
+   assert.ok(patch.includes('-draft 0 line 2') && patch.includes('+draft 0 revised'), 'iteration 2+ diffs a changed draft against the previous iteration\'s copy');
+-  assert.ok(!patch.includes('new draft') && !patch.includes('draft 1'), 'a draft the previous snapshot lacks gets no hunk - it is read whole - and an unlisted draft never appears');
++  assert.match(patch, /\+new draft/);
++  assert.doesNotMatch(patch, /draft 1/);
+   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
+   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
+ 
+diff --git a/tests/runtime-routing.test.js b/tests/runtime-routing.test.js
+index a6b154d5..41207120 100644
+--- a/tests/runtime-routing.test.js
++++ b/tests/runtime-routing.test.js
+@@ -212,6 +212,21 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
+   };
+   const complete = await check(template);
+   assert.deepStrictEqual([complete.status, JSON.parse(complete.stdout)], [0, { ok: true, missing: [], duplicates: [], invalid: [] }]);
++  const withAttribution = (setting) => template.replace(/^  ai_attribution:.*$/m, `  ${setting}`);
++  assert.strictEqual((await check(withAttribution('ai_attribution: disabled'))).status, 0);
++  for (const settings of [
++    withAttribution('ai_attribution: "disabled"'),
++    withAttribution('"ai_attribution": disabled'),
++    withAttribution('ai_attribution : disabled'),
++    withAttribution('ai_attribution: disabled').replace(/^git:$/m, '"git":'),
++  ]) {
++    const outcome = await check(settings);
++    assert.deepStrictEqual(
++      [outcome.status, JSON.parse(outcome.stdout).invalid.map(({ path: key }) => key)],
++      [1, ['git.ai_attribution']],
++      'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
++    );
++  }
+   const incomplete = await check(template.replace(/^  codex_profile:.*$/m, '').replace(/^  claude_design:.*$/m, '  claude_design: [redacted-value]\n  claude_design: disabled'));
+   const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
+   assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.claude_design'], ['project.claude_design']]);
+diff --git a/tests/runtime-timing.test.js b/tests/runtime-timing.test.js
+index 59365e1c..83b647db 100644
+--- a/tests/runtime-timing.test.js
++++ b/tests/runtime-timing.test.js
+@@ -513,9 +513,9 @@ test('sprint-036 AC-7: timing --open of an id the ledger holds, open or closed,
+   const third = timing(['--open', 'Task 1#2', '--kind', 'dispatch']);
+   assert.deepStrictEqual([ledgerText(), /next free id Task 1#3/.test(third.stderr)], [before, true], 'AC-7: with #2 held too the next free id is #3');
+ 
+-  const twice = timing(['--open', 'Task 2', '--kind', 'user', '--kind', 'dispatch', '--attrs', 'agent=asd-dev,tier=standard', '--attrs', 'agent=asd-tester;scope=impacted']);
++  const twice = timing(['--open', 'Task 2', '--kind', 'user', '--kind', 'dispatch', '--attrs', 'gate=review, optional follow-up;agent=asd-dev,tier=standard', '--attrs', 'agent=asd-tester;scope=impacted']);
+   const last = ledgerLines(ledgerText()).pop();
+-  assert.deepStrictEqual([last.kind, last.attrs.agent, last.attrs.tier, last.attrs.scope], ['dispatch', 'asd-tester', 'standard', 'impacted'], 'Sprint 038 AC-17: repeated attrs merge both delimiters, keeping the last value for a duplicate key');
++  assert.deepStrictEqual([last.id, last.kind, last.attrs.gate, last.attrs.agent, last.attrs.tier, last.attrs.scope], ['Task 2', 'dispatch', 'review, optional follow-up', 'asd-tester', 'standard', 'impacted'], 'Sprint 038 AC-17: repeated attrs merge both delimiters, preserving literal commas in values and keeping the last duplicate key');
+   assert.match(twice.stderr, /flag --kind given more than once/);
+   assert.doesNotMatch(twice.stderr, /flag --attrs given more than once/);
+ });

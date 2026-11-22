@@ -162,6 +162,77 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
 });
 
+test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and only probe CLI version', () => {
+  const root = mkTempDir();
+  const profile = path.join(root, 'routerai.config.toml');
+  const trace = path.join(root, 'probes.jsonl');
+  const windows = process.platform === 'win32';
+  const command = path.join(root, windows ? 'review.cmd' : 'review');
+  const script = windows
+    ? '@echo off\r\necho %*>>"%ASD_TEST_CLI_TRACE%"\r\necho %ASD_TEST_CLI_VERSION%\r\n'
+    : '#!/bin/sh\nprintf "%s\\n" "$*" >> "$ASD_TEST_CLI_TRACE"\nprintf "%s\\n" "$ASD_TEST_CLI_VERSION"\n';
+  fs.writeFileSync(command, script, { mode: 0o700 });
+  const saved = { ...process.env };
+  process.env.CODEX_HOME = root;
+  process.env.ASD_TEST_CLI_TRACE = trace;
+  process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.134.0';
+  const input = { host: 'codex', codexProfile: 'routerai', codexCommand: command, cachePath: path.join(root, 'cache.json'), now: 1000 };
+  try {
+    assert.strictEqual(runtime.externalPreflight(input).status, 'profile-unavailable');
+    const model = 'model = "~anthropic/claude-opus-latest"\nmodel_reasoning_effort = "medium"\n';
+    fs.writeFileSync(profile, `${model}[irrelevant]\nmodel_provider = "routerai"\n`);
+    assert.strictEqual(runtime.externalPreflight(input).status, 'profile-invalid');
+    fs.writeFileSync(profile, `${model}model_provider = "routerai"\n`);
+    process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.133.9';
+    assert.strictEqual(runtime.externalPreflight(input).status, 'profile-cli-unsupported');
+    process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.134.0';
+    const ready = runtime.externalPreflight(input);
+    assert.deepStrictEqual([ready.status, ready.route], ['local-ready', {
+      provider: 'codex', command, profile: 'routerai', model: '~anthropic/claude-opus-latest',
+      args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest', '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'],
+    }]);
+    assert.deepStrictEqual(fs.readFileSync(trace, 'utf8').trim().split(/\r?\n/), ['--version', '--version']);
+    const defaultRoute = withExitZeroNode(() => runtime.externalPreflight({ ...input, codexProfile: '', claudeCommand: process.execPath }));
+    assert.deepStrictEqual([defaultRoute.status, defaultRoute.route.provider, defaultRoute.route.command], ['local-ready', 'claude', process.execPath]);
+  } finally {
+    for (const key of ['CODEX_HOME', 'ASD_TEST_CLI_TRACE', 'ASD_TEST_CLI_VERSION']) {
+      if (saved[key] === undefined) delete process.env[key];
+      else process.env[key] = saved[key];
+    }
+  }
+});
+
+test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys', async () => {
+  const root = mkTempDir();
+  const config = path.join(root, 'config.yaml');
+  const template = canonText('.asd/templates/t_config.yaml');
+  const check = (settings) => {
+    fs.writeFileSync(config, settings);
+    return runtimeSpawnAsync(['config-check', '--config', config]);
+  };
+  const complete = await check(template);
+  assert.deepStrictEqual([complete.status, JSON.parse(complete.stdout)], [0, { ok: true, missing: [], duplicates: [], invalid: [] }]);
+  const withAttribution = (setting) => template.replace(/^  ai_attribution:.*$/m, `  ${setting}`);
+  assert.strictEqual((await check(withAttribution('ai_attribution: disabled'))).status, 0);
+  for (const settings of [
+    withAttribution('ai_attribution: "disabled"'),
+    withAttribution('"ai_attribution": disabled'),
+    withAttribution('ai_attribution : disabled'),
+    withAttribution('ai_attribution: disabled').replace(/^git:$/m, '"git":'),
+  ]) {
+    const outcome = await check(settings);
+    assert.deepStrictEqual(
+      [outcome.status, JSON.parse(outcome.stdout).invalid.map(({ path: key }) => key)],
+      [1, ['git.ai_attribution']],
+      'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
+    );
+  }
+  const incomplete = await check(template.replace(/^  codex_profile:.*$/m, '').replace(/^  claude_design:.*$/m, '  claude_design: [redacted-value]\n  claude_design: disabled'));
+  const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
+  assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.claude_design'], ['project.claude_design']]);
+  assert.doesNotMatch(incomplete.stdout + incomplete.stderr, /redacted-value/);
+});
+
 test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
   const mechanicalEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }] };
   assert.deepStrictEqual(

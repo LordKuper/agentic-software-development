@@ -1,0 +1,1 @@
+[{"id":"1","severity":"high","location":"tests/runtime-review.test.js:134"},{"id":"2","severity":"high","location":".asd/sync.js:1343"},{"id":"3","severity":"medium","location":"docs/architecture/tech-reference/node-24.15.md:10"}]

@@ -9,7 +9,8 @@ test('AC-2/4/6/8: the External Review CLI command settings exist in the config t
   const config = fs.readFileSync(path.join(REPO_ROOT, '.asd', 'templates/t_config.yaml'), 'utf8');
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(init.includes('system.tools.codex_command') && init.includes('system.tools.claude_command'));
+  assert.match(init, /external-preflight --input <path>/);
+  assert.ok(init.includes('review.codex_profile') && init.includes('system.tools'));
   assert.ok(config.includes('codex_command: ""') && config.includes('claude_command: ""'));
   assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('external review unavailable: <specific status>'));
   assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('external review unavailable: <specific status>'));
@@ -244,9 +245,11 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: the External Review interrupted and 
   assert.ok(agentEscalation.some((row) => row.signal === interrupted[1]), `the agent's Escalation must carry the interrupted literal \`${interrupted[1]}\``);
   const report = canonText('.asd/templates/external-review/t_review-report.md');
   assert.ok(report.includes(SKIP), 't_review-report.md\'s first-line alternatives must admit the skip token');
-  const carried = /as its `([^`]+)` line/.exec(sectionOf('.asd/rules/external-review.md', 'Iteration semantics'));
-  assert.ok(carried, 'external-review.md "Iteration semantics" must name the line a skipped iteration records its unreviewed files on');
-  assert.ok(report.includes(`**${carried[1]}**`), `t_review-report.md must slot the \`${carried[1]}\` line the next iteration reads`);
+  const carried = 'Unreviewed files';
+  const iteration = sectionOf('.asd/rules/external-review.md', 'Iteration semantics');
+  const field = iteration.split('\n').find((line) => line.startsWith(`**${carried}.**`)) ?? '';
+  assert.ok(spans(field).includes(carried), 'external-review.md must define the Unreviewed files field');
+  assert.ok(report.includes(`**${carried}**`), 'the report must provide the Unreviewed files field the next iteration reads');
 });
 
 test('AC-15: the decisions-log tail checkpoints.md counts fix rounds by is the one asd-phase-impl.md emits', () => {
@@ -516,6 +519,6 @@ test('sprint-031 AC-1/AC-2/AC-3: standard dispatches combined and External Revie
 });
 
 test('sprint-035 AC-14: the config template ships safety_valve enabled at top level, and the README config schema and asd-init name the key', () => {
-  assert.ok(/^safety_valve: enabled$/m.test(canonText('.asd/templates/t_config.yaml')), 'the config template carries the key at top level, enabled');
+  assert.ok(/^safety_valve: enabled(?: +#.*)?$/m.test(canonText('.asd/templates/t_config.yaml')), 'the config template carries the key at top level, enabled');
   assert.deepStrictEqual(['README.md', '.asd/skills/asd-init/SKILL.md'].filter((rel) => !canonText(rel).includes('safety_valve')), [], 'the config schema mirrors name the key');
 });

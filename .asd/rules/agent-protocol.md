@@ -30,6 +30,12 @@ Every `delegate to agent` payload opens with one fenced JSON object; the orchest
 - `answers` (`[{"question", "answer"}]`), `advice`, `consults_left`: set on a relay re-dispatch ("Relay").
 - Role keys a workflow's dispatch names join the same object. Reviewer: `manifest` (its emitted manifest path), `diff` (its `.diff` path, or `null`), `floor` (severity floor), `findings_header` (internal reviewers only, never External Review: the literal findings header row of `t_review.md`), `iteration`, `interrupted` (its own interrupted-attempt record for this iteration, `{"count", "cause"}`, or `null`) — scope per `review-policy.md` "Clean-context review iteration".
 
+## Model quota retry
+
+Applies to every agent delegation, including reviewer and advisor relays. If the host rejects a dispatch at launch with a confirmed quota for the selected model, the orchestrator retries that dispatch once using an available, role-adequate alternate per `providers.md` "Model quota overrides". Preserve the original payload, permissions, provider and review scope. Use a fresh dispatch id and close any rejected attempt's open timing op as interrupted. Record the original model, the retry's resolved model and the terse quota reason in the decisions log and retry timing attrs (`original_model`, `model`, `quota_reason`). Use the original tier for timing.
+
+An unavailable or inadequate alternate, or a failed retry, follows the calling workflow's existing failure path. For a dispatch that already started, follow state recovery for partial work. This retry applies to the External Review agent's launch. Quota from its wrapped CLI follows `external-review.md` "Outcome contract".
+
 ## Return
 
 Line 1: the signal token (`ABORT`: its whole first line; a reviewer: the verdict line). Then one fenced JSON object with that signal's fields. Then an optional Markdown body (audit sections, proposals, recommendation).

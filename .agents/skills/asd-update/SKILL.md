@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:14a9e612098d73b2496b7059d547e54034e8db7fb4bde4688e169bdce816bc5b content_digest=sha256:aa379a829623999d4d1461dd8f4e2f81e80c27f6f90df8217086701a5cd5e708 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:5535878d29e38941ab4099e87e3d5b014355d2852bc5901e09462733054f65e3 content_digest=sha256:6a5b246e41e8a769bc88670f4c8ba9037d6cd1499f94dc65a6425bc9833e8a4d asd_version=14.9.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and a migration's rewrite of a changed shipped command in commands.yaml or removal of a retired agent's memory directory), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -37,12 +37,13 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
+8. After a real update, tell the user `$asd-sprint` checks against the shipped config template and directs incomplete projects to `$asd-init`.
 
 ### Sprint-mediated mode
 
 Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
 
-- That choice is the confirmation: skip step 1; steps 2-7 apply unchanged.
+- That choice is the confirmation: skip step 1; steps 2-8 apply unchanged.
 - Conflicts and `--force` still go to the user — never force without asking.
 - No commit here: the orchestrator commits the result, `asd-sync`'s writes included (left uncommitted with the rest). Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
 - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.

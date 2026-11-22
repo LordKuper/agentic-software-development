@@ -32,6 +32,9 @@ function validCoverageFixture() {
 test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate, and finding-reference fraud', () => {
   const { manifest, ledger } = validCoverageFixture();
   assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger, ['F-1']), { ok: true });
+  const numeric = { ...ledger, findings: [1], rules: [{ i: 'r-1', s: 'finding', f: 1 }] };
+  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, numeric, ['1']), { ok: true }, 'Sprint 038 AC-19: normalize numeric IDs and references');
+  assert.throws(() => runtime.validateCoverageLedger(manifest, { ...numeric, findings: [1, '1'] }, ['1']), /ledger findings invalid/, 'Sprint 038 AC-19: reject duplicates after normalization');
   const cases = [
     ['wrong digest', () => { const x = structuredClone(ledger); x.manifest_digest = '0'.repeat(64); return x; }, /identity/],
     ['missing row', () => { const x = structuredClone(ledger); x.files = []; return x; }, /incomplete/],
@@ -77,6 +80,91 @@ test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on a valid
   assert.deepStrictEqual([valid.status, JSON.parse(valid.stdout)], [0, { ok: true }]);
   assert.notStrictEqual(rejected.status, 0, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
   assert.ok(!rejected.stdout.includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
+});
+
+test('Sprint 038 AC-28: a new reviewer-memory hit prevents both review writes', async () => {
+  const { repo, env } = sandboxGitRepo();
+  fs.mkdirSync(path.join(repo, '.asd'));
+  const memory = '.claude/agent-memory/asd-external-review/note.md';
+  const legacy = 'Saved in sprint 019\n';
+  writeFile(repo, memory, legacy);
+  const work = mkTempDir();
+  const baseline = path.join(work, 'baseline.json');
+  const input = path.join(work, 'review.md');
+  const run = (args) => runtimeSpawnAsync(args, { cwd: repo, env });
+  const captured = await run(['review-memory-baseline', '--reviewer', 'external']);
+  assert.strictEqual(captured.status, 0);
+  assert.strictEqual(JSON.parse(captured.stdout).hits.length, 1);
+  fs.writeFileSync(baseline, captured.stdout);
+  fs.writeFileSync(input, '[REVIEW-impl-external]: APPROVE\n\n| # | Severity | Location | Description | Suggested fix |\n|---|---|---|---|---|\n');
+  const persist = () => run(['persist-review', '--phase', 'impl', '--reviewer', 'external', '--in', input, '--out-dir', work, '--memory-baseline', baseline]);
+  writeFile(repo, memory, `${legacy}Opened in sprint 038\n`);
+  const refused = await persist();
+  assert.strictEqual(refused.status, 2);
+  assert.match(refused.stderr, /review memory check failed:.*sprint 038/);
+  assert.deepStrictEqual(fs.readdirSync(work).sort(), ['baseline.json', 'review.md']);
+  writeFile(repo, memory, legacy);
+  assert.strictEqual((await persist()).status, 0, 'unchanged historical memory does not block persistence');
+});
+
+/** Writes a fixture scope with the Git command that impl-review uses for path handoffs. */
+function writeImplReviewScope(git, file, base, head, pathspec) {
+  const step = stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1);
+  const command = spans(step).find((span) => span.startsWith('git ') && span.includes('--name-only'));
+  assert.ok(command, 'impl-review step 1 must define the command that derives the scope list');
+  const args = command.slice('git '.length).split(/\s+/).map((arg) => arg
+    .replace('<scratch>', file)
+    .replace('<from>...HEAD', `${base}...${head}`)
+    .replace('<pathspec>', pathspec));
+  git(...args);
+  return step;
+}
+
+test('Sprint 038 AC-18: external review matches its consumer scope and patch across an excluded rename', async () => {
+  const sandbox = sandboxGitRepo();
+  const content = 'line of moved source\n'.repeat(20);
+  const [base, head] = await importCommits(sandbox, [
+    { 'docs/moved.md': content, 'docs/notes.md': 'draft\n', '.asd/rules/guide.md': 'old\n' },
+    { 'docs/moved.md': null, 'docs/notes.md': 'updated docs\n', 'src/moved.js': content, '.asd/rules/guide.md': 'updated canon\n', 'tests/sample.js': 'added test\n' },
+  ]);
+  const work = mkTempDir();
+  const listed = path.join(work, 'listed.txt');
+  const source = ['src/moved.js', 'tests/sample.js'];
+  const canonical = ['.asd/rules/guide.md', 'docs/notes.md'];
+  fs.writeFileSync(listed, [...source, ...canonical].join('\n'));
+  const args = ['emit-manifest', '--phase', 'impl-review', '--reviewer', 'external', '--files', listed];
+  const run = (more) => runtimeCliResultAsync([...args, ...more], { cwd: sandbox.repo, env: sandbox.env });
+  const range = ['--out', work, '--base', base, '--head', head, '--iteration', '1', '--wave', '1'];
+  assert.deepStrictEqual(await run(['--scope-only']), { status: 0, result: { files: source } });
+  const consumer = await run(range);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(consumer.result.scope, 'utf8')).files, source);
+  const patch = fs.readFileSync(consumer.result.diff, 'utf8');
+  assert.match(patch, /\+line of moved source/);
+  assert.match(patch, /\+added test/);
+  assert.doesNotMatch(patch, /docs\/|updated docs|updated canon/);
+  assert.deepStrictEqual(await run(['--scope-only', '--self-hosting']), { status: 0, result: { files: [...source, ...canonical] } });
+
+  const literal = 'src\\moved.js';
+  if (process.platform === 'win32') {
+    fs.writeFileSync(listed, literal);
+    const posix = path.join(work, 'posix.cjs');
+    fs.writeFileSync(posix, 'Object.defineProperty(process, "platform", { value: "linux" });\n');
+    const scope = execFileSync(process.execPath, ['--require', posix, RUNTIME_JS, ...args, '--scope-only'], { encoding: 'utf8' });
+    assert.deepStrictEqual(JSON.parse(scope).files, [literal]);
+    return;
+  }
+  const importedPath = JSON.stringify(literal);
+  const [posixBase, posixHead] = await importCommits(sandbox, [
+    { [importedPath]: 'old literal\n' },
+    { [importedPath]: 'updated literal\n', 'src/moved.js': 'updated slash path\n' },
+  ], { parent: head });
+  writeImplReviewScope(sandbox.git, listed, posixBase, posixHead, `:(literal)${literal}`);
+  const posix = await run(['--out', work, '--base', posixBase, '--head', posixHead, '--iteration', '1', '--wave', '1']);
+  assert.strictEqual(posix.status, 0);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(posix.result.scope, 'utf8')).files, [literal]);
+  const posixPatch = fs.readFileSync(posix.result.diff, 'utf8');
+  assert.match(posixPatch, /\+updated literal/);
+  assert.doesNotMatch(posixPatch, /updated slash path/);
 });
 
 test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {
@@ -888,7 +976,7 @@ test('sprint-017 AC-1/AC-4 (COR-5): wave-files reads wave K\'s list at its curre
 
   const out1 = path.join(work, 'wave1.txt');
   const out1Union = path.join(work, 'wave1-union.txt');
-  const extra = write('extra.txt', 'lib/renamed.js\nsrc/new.js\n');
+  const extra = write('extra.txt', 'lib/renamed.js\r\nsrc/new.js\r\n');
   const [mapped, unioned, refused] = await Promise.all([
     runWaveFiles(['--wave', '1', '--out', out1]),
     runWaveFiles(['--wave', '1', '--files', extra, '--out', out1Union]),
@@ -926,7 +1014,7 @@ test('sprint-015 AC-2 (EXT-1): draft-snapshot copies each design-review iteratio
   assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
 });
 
-test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapshot, and emit-manifest --snapshot diffs the listed drafts against the previous iteration\'s copies - no diff at iteration 1, none for a draft the snapshot lacks, refused outside design-review', () => {
+test('sprint-017 AC-8 (D9e), sprint-038 AC-20: draft-snapshot and emit-manifest patch changed drafts and additions against the prior snapshot', () => {
   const root = mkTempDir();
   const drafts = ['prd.html', 'adr.html'].map((name) => path.join(root, 'design', name));
   drafts.forEach((file, index) => writeFile(root, path.relative(root, file), `draft ${index} line 1\ndraft ${index} line 2\n`));
@@ -949,6 +1037,11 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   };
 
   snapshot(1);
+  fs.mkdirSync(iterDir(2), { recursive: true });
+  const unchanged = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0]], ['--snapshot', iterDir(1)]);
+  assert.ok(unchanged.status === 2 && /snapshot diff is empty/.test(unchanged.stderr), 'Sprint 038 AC-20: a requested draft with a prior copy cannot yield an empty patch');
+  const nested = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0]], ['--snapshot', path.join(iterDir(1), 'snapshot')]);
+  assert.strictEqual(nested.status, 2, 'Sprint 038 AC-20: reject the snapshot subdirectory in place of its iteration root');
   const copies = drafts.map((file) => path.join(iterDir(1), 'snapshot', path.relative(path.parse(file).root, file)));
   assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
   const first = emit(runtime.COMBINED_REVIEWER, 1, drafts);
@@ -959,10 +1052,15 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   const added = path.join(root, 'design', 'ux-spec.html');
   fs.writeFileSync(added, 'new draft\n', 'utf8');
   snapshot(2);
+  const onlyAdded = emit(runtime.COMBINED_REVIEWER, 2, [added], ['--snapshot', iterDir(1)]);
+  assert.ok(onlyAdded.diff, JSON.stringify(onlyAdded));
+  assert.match(fs.readFileSync(onlyAdded.diff, 'utf8'), /\+new draft/, 'a delta with no prior copy must produce a nonempty addition patch');
   const second = emit(runtime.COMBINED_REVIEWER, 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
+  assert.ok(second.diff, JSON.stringify(second));
   const patch = fs.readFileSync(second.diff, 'utf8');
   assert.ok(patch.includes('-draft 0 line 2') && patch.includes('+draft 0 revised'), 'iteration 2+ diffs a changed draft against the previous iteration\'s copy');
-  assert.ok(!patch.includes('new draft') && !patch.includes('draft 1'), 'a draft the previous snapshot lacks gets no hunk - it is read whole - and an unlisted draft never appears');
+  assert.match(patch, /\+new draft/);
+  assert.doesNotMatch(patch, /draft 1/);
   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
 
@@ -991,17 +1089,30 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   assert.ok(climbed && climbed.status === 2 && /must not climb out/.test(climbed.stderr) && !fs.existsSync(path.join(iterDir(3), 'climb.html')), `a draft path climbing out with .. must fail before a copy lands outside the snapshot directory. Got: ${JSON.stringify(climbed)}`);
 });
 
-test('sprint-015 AC-4 (F-2): the impl-review scope-list command prints a non-ASCII path unquoted, so it still matches as a literal pathspec', () => {
+test('sprint-015 AC-4 (F-2), sprint-038 AC-18: Git scope paths reach the wave manifest and patch verbatim', () => {
   const { repo, env, git } = sandboxGitRepo();
-  writeFile(repo, 'README.md', 'base\n');
-  git('add', '.');
-  git('commit', '-q', '-m', 'base');
-  writeFile(repo, 'docs/résumé.md', 'new\n');
-  git('add', '.');
-  git('commit', '-q', '-m', 'add');
-  const command = /running the diff above as `git ([^`]+)`/.exec(stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1));
-  assert.ok(command, 'impl-review step 1 must still name the command that derives the scope file list');
-  assert.deepStrictEqual(git(...command[1].split(/\s+/), 'HEAD~1', 'HEAD').split('\n').filter(Boolean), ['docs/résumé.md'], 'the scope list must carry the raw path: a C-quoted one matches nothing as a pathspec and drops out of the reviewers\' .diff');
+  const file = 'src/résumé.js';
+  const content = 'unquoted path marker';
+  const [base, head] = importCommitsSync({ repo, env }, [{ 'README.md': 'base\n' }, { [file]: `${content}\n` }]);
+  const work = mkTempDir();
+  const scope = path.join(work, 'git-scope');
+  const division = path.join(work, 'division.json');
+  const waves = path.join(work, 'waves.json');
+  const waveScope = path.join(work, 'wave-scope');
+  const run = (args) => JSON.parse(runtimeCli(args, { cwd: repo, env }));
+
+  const step = writeImplReviewScope(git, scope, base, head, '.');
+  fs.writeFileSync(division, JSON.stringify([[file]]), 'utf8');
+  run(['review-waves', '--files', scope, '--base', base, '--head', head, '--division', division, '--out', waves]);
+  const waveCommand = spans(step).find((span) => span.startsWith('node .asd/runtime.js wave-files'));
+  const waveFlags = waveCommand?.split(' ').filter((token) => token === '--nul') ?? [];
+  run(['wave-files', '--waves', waves, '--wave', '1', '--head', head, '--files', scope, '--out', waveScope, ...waveFlags]);
+  const emitted = run(['emit-manifest', '--phase', 'impl-review', '--reviewer', 'external', '--files', waveScope,
+    '--out', work, '--base', base, '--head', head, '--iteration', '1', '--wave', '1']);
+
+  assert.strictEqual(fs.readFileSync(waveScope, 'utf8'), `${file}\0`);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(emitted.scope, 'utf8')).files, [file]);
+  assert.ok(fs.readFileSync(emitted.diff, 'utf8').includes(`+${content}`));
 });
 
 test('sprint-020 AC-9: persist-review validates a returned review and writes it with its findings JSON in one command - token, roster and ledger checked first, the preamble dropped, the late form beside, an existing review never overwritten, and any failure exits 2 writing nothing', () => {
@@ -1438,7 +1549,7 @@ test('sprint-033 AC-25: persist-review --floor drops each external finding below
     persist(external, 'external', 'urgent'),
     persist(external, 'external'),
   ]);
-  assert.deepStrictEqual(partial.result, { token: 'CONCERNS', findings: [{ id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }], dropped: 1 }, 'AC-25: the low row is dropped, the rest kept, and the count is reported');
+  assert.deepStrictEqual(partial.result, { token: 'CONCERNS', findings: [{ id: '2', severity: 'high', location: 'b.md:2' }, { id: '3', severity: 'medium', location: 'c.md:3' }], dropped: 1 }, 'Sprint 038 AC-7: the wrapped report keeps its verdict and material findings with their severities, dropping the minor row below the floor');
   const written = fs.readFileSync(path.join(partial.dir, 'external.md'), 'utf8');
   assert.ok(written.endsWith('dropped: 1\n') && !written.includes('a.md:1') && written.includes('b.md:2') && written.includes('c.md:3'), 'the persisted review lacks the dropped row and records the count');
   assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(partial.dir, 'external.findings.json'), 'utf8')), partial.result.findings, 'the findings JSON is the floored set the minor test-only route reads');

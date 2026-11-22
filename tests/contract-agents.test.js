@@ -132,6 +132,17 @@ test('sprint-035 AC-10: the `suite` scope values "Operation timing" lists are th
   assert.deepStrictEqual(values(listed[1]), values(templateScope[1]), 'the scope values of a suite op must equal the Suite run Scope values');
 });
 
+test('Sprint 038 AC-7/AC-22: runner records valid red area results and leaves interrupted rows pending', () => {
+  const rules = sectionOf('.asd/agents/asd-tester.md', 'Rules');
+  const area = rules.split('\n').find((line) => line.includes('`area-run` runner:')) || '';
+  assert.match(area, /captured runner exit.*exit code.*first failure.*mark it `done`.*commit/);
+  assert.match(area, /Otherwise leave the row pending.*report a valid red result/);
+  assert.match(rules, /`runner` variant.*reports pass\/fail with the runner's first failure lines/);
+  const template = canonText('.asd/templates/t_test-plan.md');
+  assert.match(template, /Keep this section as first-entry history/);
+  assert.match(template, /exit code, counts and first failure line if red/);
+});
+
 test('sprint-036 AC-12: every agent granted the commit command writes its dispatch-scoped commit-msg file under its write list, and its deny of writes elsewhere in .asd/ excepts that file', () => {
   const committers = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((name) => `.asd/agents/${name}`).filter((rel) => (jsonOf(rel, 'Tools').run || []).some((item) => item.startsWith('git add/git commit')));
   assert.ok(committers.length > 0, 'AC-12: the roster has agents that commit');
