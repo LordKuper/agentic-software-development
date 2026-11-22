@@ -99,3 +99,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl-test re-entry 3 pre-strategy: 314/314 in 13 named areas at `4a1cbcfa`. All proof carried to test-plan.entry-02.md. No test changes or defects. Shared list parsing and sync require the full suite gate.
 - 2026-11-22 — route impl-test entry 3 suite: runner, dispatch HEAD ac5a555ad23ab5d08da4e54b9c8819ae80ac4cf7
 - 2026-11-22 — impl-test: impacted set green (316/316; full safety-valve gate), 0/0 tests added/removed during impl-test re-entry 3
+- 2026-11-22 — external wave-1/iter-03: APPROVE (skipped: external review unavailable: negative-cache (authentication)); 53 files unreviewed, including all 52 carried over. Same cause as F-1. No APPROVE latch.
+- 2026-11-22 — impl-review wave-1/iter-03 DoD met. Combined approved with valid coverage; external availability skip recorded. Reused full-suite 316/316 at `ac5a555a` after checking no code, test or stub changes. Green handoff advanced under the accepted Lite scope and adaptive policy.

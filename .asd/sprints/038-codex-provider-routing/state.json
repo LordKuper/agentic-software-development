@@ -1,7 +1,7 @@
 {
   "sprint_id": "038-codex-provider-routing",
   "branch": "sprint/038-codex-provider-routing",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -55,6 +55,13 @@
       "reason": "all 14 tasks complete and no unresolved flagged choices",
       "evidence": "decisions-log.md: Implementation accepted",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "accepted Lite scope; required internal reviewer and verified full suite are green, with the configured availability skip recorded",
+      "evidence": "wave-1/iter-03 combined APPROVE; external skip; 316/316 @ac5a555a",
+      "artifact_revision": "reviews/impl/wave-1/iter-03"
     }
   ],
   "task_routing": {
@@ -160,10 +167,10 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "4517cfc6b60b31a40b20dece6ffca0cf800e87ac", "iter-02": "7c89c0b177a6fa8dba1e692f0a6e779087014339" }, "latched": {} } ] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 3, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "4517cfc6b60b31a40b20dece6ffca0cf800e87ac", "iter-02": "7c89c0b177a6fa8dba1e692f0a6e779087014339", "iter-03": "98084334e0818d4ed6692915917ea092ab6e22b7" }, "latched": { "combined": 3 } } ] }
   },
   "created_at": "2026-11-21T20:41:57.634Z",
-  "updated_at": "2026-11-22T00:04:48.000Z",
+  "updated_at": "2026-11-22T00:13:51.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
