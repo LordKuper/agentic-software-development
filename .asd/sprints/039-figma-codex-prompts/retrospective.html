@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<!--
+responsibility:
+  owns: html shell wrap for all asd user-facing html docs
+  excludes: doc content, doc-specific structure
+  delegates_to: fragment templates (t_prd, t_adr, t_ux-spec, t_concept, t_stack, t_design-system, t_accessibility, t_retrospective)
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="project">
+  <meta name="sprint-id" content="039-figma-codex-prompts">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-11-22">
+  <meta name="responsibility" content="Sprint friction analysis and follow-up proposals">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Sprint 039 retrospective</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+      --ok-tint: rgba(31,136,61,0.07); --danger-tint: rgba(207,34,46,0.06);
+      --chip-must-bg: #ffebe9; --chip-must-fg: #cf222e;
+      --chip-should-bg: #fff5e1; --chip-should-fg: #9a6700;
+      --chip-may-bg: #ddf4ff; --chip-may-fg: #0969da;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+        --ok-tint: rgba(63,185,80,0.12); --danger-tint: rgba(248,81,73,0.10);
+        --chip-must-bg: #3b1416; --chip-must-fg: #ff7b72;
+        --chip-should-bg: #2d2410; --chip-should-fg: #e3b341;
+        --chip-may-bg: #0d2538; --chip-may-fg: #58a6ff;
+      }
+    }
+    html, body { margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+    body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .badges .provenance-reverse-engineered, .badges .provenance-migrated { color: var(--warn); border-color: var(--warn); }
+    .badges .status-draft       { color: var(--neutral); border-color: var(--neutral); }
+    .badges .status-in-review   { color: var(--warn);    border-color: var(--warn); }
+    .badges .status-approved    { color: var(--ok);      border-color: var(--ok); }
+    .badges .status-locked      { color: var(--info);    border-color: var(--info); }
+    .stats { margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
+    .stats .chip { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3, h4 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code, pre { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; }
+    code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre { background: var(--code-bg); padding: 12px; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; padding: 0; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--code-bg); position: sticky; top: 0; z-index: 1; }
+    tbody tr:nth-child(even) td { background: var(--card-bg); }
+    blockquote { border-left: 3px solid var(--accent); margin: 0; padding: 4px 14px; color: var(--muted); }
+    .mermaid { background: var(--bg); text-align: center; margin: 16px 0; }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 32px; }
+
+    /* fragment-shared utilities */
+    .lede { font-size: 1.08rem; color: var(--fg); }
+    section.hero { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; }
+    section.callout { border-left: 4px solid var(--border); padding: 8px 14px; background: var(--card-bg); border-radius: 4px; }
+    section.callout.warn { border-left-color: var(--warn); }
+    section.callout.warn h2::before { content: "⊘ "; color: var(--warn); }
+
+    ol.goal-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+    ol.goal-grid li { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; display: flex; gap: 10px; }
+    ol.goal-grid .num { flex: 0 0 auto; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+    ol.goal-grid p { margin: 0; }
+
+    details.role-group { border: 1px solid var(--border); border-radius: 6px; margin: 8px 0; background: var(--card-bg); }
+    details.role-group > summary { cursor: pointer; padding: 8px 12px; font-weight: 600; }
+    details.role-group > summary .count { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+    details.role-group ul.stories { margin: 0; padding: 4px 16px 12px 28px; }
+    ul.stories li { margin: 4px 0; }
+    ul.stories b { color: var(--accent); font-weight: 600; }
+
+    table.ac-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    .chip.prio-must   { background: var(--chip-must-bg);   color: var(--chip-must-fg); border-color: var(--chip-must-fg); }
+    .chip.prio-should { background: var(--chip-should-bg); color: var(--chip-should-fg); border-color: var(--chip-should-fg); }
+    .chip.prio-may    { background: var(--chip-may-bg);    color: var(--chip-may-fg); border-color: var(--chip-may-fg); }
+
+    ul.non-goals { margin: 0; padding-left: 22px; }
+    ul.non-goals li::marker { content: "⊘  "; color: var(--warn); }
+
+    /* definition-list pattern: Purpose / Entry / Exit / Notes */
+    dl.def-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 8px 0; }
+    dl.def-list dt { font-weight: 600; color: var(--muted); }
+    dl.def-list dd { margin: 0; }
+
+    /* ADR */
+    .adr { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card-bg); }
+    .adr > .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+    .adr h2 { margin-top: 0.4em; border-bottom: none; font-size: 1.3rem; }
+    .adr h3 { margin-top: 1.1em; border-bottom: none; font-size: 1.15rem; }
+    .status-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
+    .status-proposed   { color: var(--warn);    border-color: var(--warn); }
+    .status-accepted   { color: var(--ok);      border-color: var(--ok); }
+    .consequences { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .consequences .pros, .consequences .cons { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); }
+    .consequences .pros { background: var(--ok-tint); border-left: 3px solid var(--ok); }
+    .consequences .cons { background: var(--danger-tint); border-left: 3px solid var(--danger); }
+    .consequences h4 { margin: 0 0 4px; font-size: 1rem; color: var(--muted); }
+    .consequences ul { margin: 0; padding-left: 20px; }
+    @media (max-width: 720px) { .consequences { grid-template-columns: 1fr; } }
+    ul.alt-list li { margin: 4px 0; }
+    ul.alt-list li strong { color: var(--fg); }
+
+    /* UX-spec mockup */
+    article.mockup { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card-bg); }
+    article.mockup > h3 { margin-top: 0; }
+    .mockup-preview { background: var(--bg); border: 1px dashed var(--border); border-radius: 6px; padding: 16px; margin: 10px 0; min-height: 80px; }
+    .screen-meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 6px 0 10px; font-size: 0.92rem; }
+    .screen-meta b { color: var(--muted); font-weight: 600; }
+
+    /* Concept */
+    .pillar-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .pillar-grid li { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 10px 12px; }
+    .pillar-grid li strong { display: block; margin-bottom: 4px; color: var(--accent); }
+    .anti-pillar-grid li { border-left-color: var(--danger); }
+    .anti-pillar-grid li strong { color: var(--danger); }
+    ul.user-segments { list-style: none; padding: 0; }
+    ul.user-segments li { padding: 8px 12px; margin: 6px 0; border-left: 3px solid var(--accent); background: var(--card-bg); border-radius: 4px; }
+    ul.user-segments li b { color: var(--accent); }
+    ul.metrics li { margin: 4px 0; }
+    ul.metrics li .target { float: right; color: var(--ok); font-variant-numeric: tabular-nums; }
+
+    /* Stack */
+    table.tech-table .ver { font-variant-numeric: tabular-nums; color: var(--muted); }
+    .principle-list { list-style: none; padding: 0; }
+    .principle-list li { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--info); border-radius: 6px; padding: 8px 12px; margin: 6px 0; }
+    .principle-list li strong { color: var(--info); }
+
+    /* Accessibility */
+    section.a11y-domain { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; margin: 14px 0; }
+    section.a11y-domain h2 { border-bottom: 1px dashed var(--border); }
+    .limitation { background: var(--chip-should-bg); border-left: 3px solid var(--warn); padding: 8px 12px; margin: 6px 0; border-radius: 4px; }
+    .limitation b { color: var(--warn); }
+
+    /* Design system */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .swatch { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+    .swatch .chip-color { height: 80px; border-radius: 4px; border: 1px solid var(--border); }
+    .swatch code { font-size: 0.78rem; }
+    .swatch small { color: var(--muted); }
+    .spacing-scale { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); }
+    .spacing-scale > div { background: var(--accent); width: 24px; border-radius: 2px 2px 0 0; }
+    article.component-preview { border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 14px 0; background: var(--card-bg); }
+    .preview { padding: 16px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg); }
+
+    @media print {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+      a { color: inherit; text-decoration: none; }
+      footer { page-break-before: always; }
+      details.role-group[open] > summary { list-style: none; }
+      details.role-group { break-inside: avoid; }
+      tr, li { break-inside: avoid; }
+    }
+  </style>
+
+</head>
+<body>
+  <div class="layout">
+    <aside class="toc" aria-label="Contents">
+  <nav>
+    <p>Contents</p>
+    <a href="#outcome">Outcome</a>
+    <a href="#analysis">Analysis</a>
+    <a href="#actions">Actions</a>
+    <a href="#systemic-proposals">Systemic proposals</a>
+    <a href="#duration">Duration</a>
+  </nav>
+</aside>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>project</span>
+          <span class="status-final">final</span>
+          <!-- provenance badge omitted when provenance == original -->
+          <span class="provenance-original">original</span>
+        </div>
+        <h1>Sprint 039 retrospective</h1>
+        <div class="stats">10 friction entries · 4 actionable proposals</div>
+      </header>
+      <main><section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">10 entries analysed, 2 framework actions, 0 consumer actions, and 2 systemic proposals. Covered entries are cited below.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+  <thead><tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr></thead>
+  <tbody>
+    <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>The initial dispatch assembled the scope and manifest with different self-hosting flags.</td><td><span class="chip area">asd</span></td></tr>
+    <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>The wrapper lacked an explicit host signal in its dispatch context and confused the executing shell with the wrapped provider.</td><td><span class="chip area">asd</span></td></tr>
+    <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>Local login preflight could not see the provider account hold until actual invocation.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-4"><td><a href="#F-4">F-4</a></td><td>The account hold remained recorded in the same unexpired cache entry.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-5"><td><a href="#F-5">F-5</a></td><td>The same cached authentication failure applied to the recovery delta.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-6"><td><a href="#F-6">F-6</a></td><td>The carried external scope still had the same cached authentication failure.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-7"><td><a href="#F-7">F-7</a></td><td>The review-order delta still used the same unavailable provider route.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-8"><td><a href="#F-8">F-8</a></td><td>The runner command was launched without the process-local repository ownership setting.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-9"><td><a href="#F-9">F-9</a></td><td>A separate Git-dependent assertion inherited the same missing setting.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-10"><td><a href="#F-10">F-10</a></td><td>The Windows fixture assumed file-symlink privileges for a realpath-escape check.</td><td><span class="chip area">asd</span></td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+  <thead><tr><th>Addresses</th><th>Guardrail</th><th>Acts on</th><th>Home</th></tr></thead>
+  <tbody>
+    <tr id="A-1"><td><a href="#F-1">F-1</a></td><td>covered by: apply the self-hosting flag to scope and manifests in impl-review step 1 and step 6.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl-review.md</code></td></tr>
+    <tr id="A-2"><td><a href="#F-2">F-2</a></td><td>Carry the wrapper host in external-review preflight and use it to select the invocation shell.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code></td></tr>
+    <tr id="A-3"><td><a href="#F-3">F-3</a>, <a href="#F-4">F-4</a>, <a href="#F-5">F-5</a>, <a href="#F-6">F-6</a>, <a href="#F-7">F-7</a></td><td>covered by: external-review detection, bounded negative cache, and an explicit unreviewed scope.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/external-review.md</code></td></tr>
+    <tr id="A-4"><td><a href="#F-8">F-8</a>, <a href="#F-9">F-9</a></td><td>Check repository discovery in the exact environment used to start the terminal test runner.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code></td></tr>
+    <tr id="A-5"><td><a href="#F-10">F-10</a></td><td>covered by: migration fixture checks the same external path through a Windows junction or POSIX file link.</td><td><span class="chip area">asd</span></td><td><code>tests/migrations.test.js</code></td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <table>
+  <thead><tr><th>Guardrail</th><th>Acts on</th><th>Home</th><th>Expected saving</th></tr></thead>
+  <tbody>
+    <tr id="P-1"><td>Check the existing aggregate standalone-skill byte budget in context-check when a standalone skill changes.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code></td><td>Fewer failed impacted passes and fix rounds for a budget already enforced by the contract tests.</td></tr>
+    <tr id="P-2"><td>Trace an interrupted provider-backed artifact through recovery, reconciliation, and review in the plan&#39;s reachability check.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md</code></td><td>Earlier validation for the identity and evidence carried across phases. The first two related fix dispatches ran 100s and 34s above the sprint dispatch median.</td></tr>
+    <tr id="P-3"><td>covered by: list each triggering call site when planning a universal behavior change.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md</code></td><td>The Codex question-routing dispatch spent 38s above the dispatch median checking call sites.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="duration">
+  <h2>Duration</h2>
+  <h3>Summary</h3>
+  <table>
+  <thead><tr><th>Measure</th><th>Key</th><th>Time</th></tr></thead>
+  <tbody>
+    <tr><td>wall</td><td>—</td><td>103m 54s</td></tr>
+    <tr><td>machine</td><td>—</td><td>91m 35s</td></tr>
+    <tr><td>user-wait</td><td>—</td><td>8m 53s</td></tr>
+    <tr><td>unaccounted</td><td>—</td><td>3m 26s</td></tr>
+    <tr><td>phase</td><td>scope</td><td>7m 54s</td></tr>
+    <tr><td>phase</td><td>audit</td><td>1m 16s</td></tr>
+    <tr><td>phase</td><td>plan</td><td>2m 12s</td></tr>
+    <tr><td>phase</td><td>impl</td><td>37m 18s</td></tr>
+    <tr><td>phase</td><td>impl-test</td><td>21m 30s</td></tr>
+    <tr><td>phase</td><td>impl-review</td><td>29m 35s</td></tr>
+    <tr><td>phase</td><td>design-promote</td><td>0m 18s</td></tr>
+    <tr><td>phase</td><td>cleanup</td><td>0m 25s</td></tr>
+    <tr><td>kind</td><td>user-wait</td><td>8m 53s</td></tr>
+    <tr><td>kind</td><td>phase</td><td>100m 28s</td></tr>
+    <tr><td>kind</td><td>dispatch</td><td>88m 44s</td></tr>
+    <tr><td>kind</td><td>suite</td><td>5m 4s</td></tr>
+    <tr><td>kind</td><td>external-review</td><td>5m 21s</td></tr>
+    <tr><td>kind</td><td>review-iteration</td><td>27m 35s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-dev / standard / sol</td><td>26m 15s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-tester / standard / sol</td><td>27m 44s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-dev-escalated / escalated / sol</td><td>11m 16s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-reviewer-combined / standard / sol</td><td>16m 40s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-external-review / — / —</td><td>5m 21s</td></tr>
+    <tr><td>agent / tier / model</td><td>asd-tester-runner / runner / luna</td><td>6m 48s</td></tr>
+    <tr><td>rework</td><td>reentries (14)</td><td>58m 36s</td></tr>
+    <tr><td>rework</td><td>iterations (4)</td><td>21m 30s</td></tr>
+    <tr><td>rework</td><td>interrupted (4)</td><td>6m 33s</td></tr>
+    <tr><td>baseline median</td><td>scope</td><td>41m 43s</td></tr>
+    <tr><td>baseline median</td><td>audit</td><td>4m 28s</td></tr>
+    <tr><td>baseline median</td><td>plan</td><td>5m 21s</td></tr>
+    <tr><td>baseline median</td><td>impl</td><td>52m 10s</td></tr>
+    <tr><td>baseline median</td><td>impl-test</td><td>25m 58s</td></tr>
+    <tr><td>baseline median</td><td>impl-review</td><td>21m 57s</td></tr>
+    <tr><td>baseline median</td><td>design-promote</td><td>0m 11s</td></tr>
+    <tr><td>baseline median</td><td>retro</td><td>2m 8s</td></tr>
+    <tr><td>baseline median</td><td>pr</td><td>2m 2s</td></tr>
+    <tr><td>baseline median</td><td>cleanup</td><td>0m 28s</td></tr>
+    <tr><td>baseline median</td><td>terminal full suite</td><td>0m 46s</td></tr>
+  </tbody>
+</table>
+  <h3>Slow set</h3>
+  <table>
+  <thead><tr><th>Operation</th><th>Duration</th><th>Excess</th><th>Cause</th><th>Row</th></tr></thead>
+  <tbody>
+    <tr><td>task-3</td><td>6m 18s</td><td>3m 0s</td><td>Native Figma format, permissions and handoff crossed four workflow stages.</td><td><a href="#P-2">P-2</a></td></tr>
+    <tr><td>review-fix1-dev</td><td>4m 58s</td><td>1m 40s</td><td>The first fix chain covered Figma revision handoff and Test-only recovery.</td><td><a href="#P-2">P-2</a></td></tr>
+    <tr><td>review1-combined-retry</td><td>3m 59s</td><td>0m 40s</td><td>The first internal manifest had to be rebuilt with the correct framework flag.</td><td><a href="#A-1">A-1</a></td></tr>
+    <tr><td>task-4</td><td>3m 56s</td><td>0m 38s</td><td>The developer swept structured decision call sites across existing skills and workflows.</td><td><a href="#P-3">P-3</a></td></tr>
+    <tr><td>review-fix2-dev</td><td>3m 52s</td><td>0m 34s</td><td>The second fix chain moved recovery ahead of scope enumeration and authoring.</td><td><a href="#P-2">P-2</a></td></tr>
+  </tbody>
+</table>
+  <h3>User waits</h3>
+  <table>
+  <thead><tr><th>Wait</th><th>Duration</th><th>Avoidable</th><th>Cause</th><th>Row</th></tr></thead>
+  <tbody>
+    <tr><td>workflow-choice</td><td>0m 15s</td><td>No</td><td>The workflow is a hard choice.</td><td>—</td></tr>
+    <tr><td>requirements</td><td>1m 30s</td><td>No</td><td>Figma output, widget reach and the chat fallback needed user preferences.</td><td>—</td></tr>
+    <tr><td>refinement</td><td>1m 41s</td><td>No</td><td>File destination and Figma failure behavior required user choices.</td><td>—</td></tr>
+    <tr><td>approach-choice</td><td>0m 58s</td><td>No</td><td>The conceptual approach is a hard choice.</td><td>—</td></tr>
+    <tr><td>retro-dispositions</td><td>1m 51s</td><td>No</td><td>The user decided each proposed retrospective item.</td><td>—</td></tr>
+    <tr><td>scope-acceptance</td><td>0m 57s</td><td>No</td><td>The user accepted the eight criteria.</td><td>—</td></tr>
+    <tr><td>plan-acceptance</td><td>0m 37s</td><td>No</td><td>The user accepted the exact plan and compatibility contract.</td><td>—</td></tr>
+    <tr><td>figma-smoke-target</td><td>1m 3s</td><td>No</td><td>Writing an external Design draft required the authorized test destination.</td><td>—</td></tr>
+  </tbody>
+</table>
+</section></main>
+      <footer>by Codex | 2026-11-22 | sprint 039-figma-codex-prompts</footer>
+    </div>
+  </div>
+</body>
+</html>
