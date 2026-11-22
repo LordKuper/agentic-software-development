@@ -26,7 +26,7 @@ Owner: inline orchestrator; dispatches `asd-advisor` for an escalation consult (
 
    **Re-entry**: skip each sub-step already done — fast-forward, clean tree, branch, closure write, folder and ledger, workflow choice, state seed, Goal (it stands as the raw scope) — then continue at step 2.
 2. Seed state and decisions log; a carried ASD update choice takes a `gate_decisions` entry `gate: asd update`, `decision_actor: user`, and one decisions-log line. Then run staged solution design (`sprint-lifecycle.md` "Staged solution design") before any `AC-N` is written:
-   - (a) Interview the user in chat, each question defining in one clause every framework term it uses; write the raw scope and the answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
+   - (a) Interview the user per `core.md` "Request user decision", defining every framework term each question uses in one clause. Write the raw scope and answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
    - (b) Research inline, then write its Findings (each with its source URL) and Approaches to `research.md` at once. Unable to search → escalation consult, then request user decision: retry, skip (write Findings `no web research: <cause>` then, plus one decisions-log line) or abort [GATE hard: abort].
    - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the refined requirements and the `Chosen` line to `research.md`, plus one decisions-log line.
    - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line — each counting only with content and no `{{` placeholder.

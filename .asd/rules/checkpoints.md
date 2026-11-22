@@ -15,7 +15,7 @@ For a hard gate, or a routine gate that does not qualify adaptively:
 - **approve-before-write**: request a decision before the gated mutation.
 - **write-then-review-accept**: write the artifact, post its absolute path and short delta summary, then revise in place until explicit `accept`.
 
-Record user decisions with `decision_actor=user`; silence and unrelated text are never approval. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
+Record an explicit user decision with `decision_actor=user` only after receiving the answer. Preselection, silence, incomplete answers, clarifications and unrelated text leave the gate pending. Apply the same gate rules to submitted free text and optional choices. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
 
 ## Approval recording
 
