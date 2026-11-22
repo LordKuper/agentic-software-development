@@ -16,13 +16,13 @@ responsibility:
 | 3 | 30a0a48c | delta since entry 2 |
 | 4 | 5b1a1ec7 | delta since entry 3 |
 | 5 | e2c58cd3 | delta since entry 4 |
+| 6 | | delta since entry 5 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| AC-2/AC-5, Figma handoff after interrupted index writes | A recovered link can reach the reviewer without the metadata needed for handoff | Trace the publication rule and review steps 1 and 7, inspect the recorded recovery fixture, and run snapshot and manifest tests | none | The restored row's reviewer patch retained the verified frame revision, screen state, component and unbound token reference. Review pauses if required metadata is pending, before initial enumeration or a later snapshot. [Decisions log](decisions-log.md) |
-| AC-7, partially completed Test-only Tasks | A commit for one subtask can conceal unfinished work or let a regression test bypass proof | Trace lifecycle recovery and impl steps 5 and 7 and run the existing failed-dispatch anchor check | none | In the recorded source trace, a completed compile-only subtask reaches step 7 and the unfinished regression subtask returns to authoring using the first dispatch anchor. The completion check compares the full Task diff to its proof and leaves affected subtasks unticked if proof is missing or invalid. [Decisions log](decisions-log.md) |
+| AC-2/AC-5, iteration allocation during Figma index recovery | A pause can consume an iteration, advance the severity floor and leave a missing prior snapshot | Trace design-review steps 1, 4, 5, 7 and 9 and run the existing workflow, snapshot and manifest contracts | none | Step 4 reconciles and refreshes the draft list before allocating the iteration. Recovery can pause before the counter and floor advance. Step 7 takes the refreshed list and uses the actual prior iteration snapshot. The existing CLI tests cover the unchanged snapshot arguments and delta behavior. [Decisions log](decisions-log.md) |
 
 ## Removed tests
 
@@ -30,18 +30,18 @@ No removals. The affected tests cover separate contracts.
 
 ## Added tests
 
-No additions. Existing tests cover the snapshot, manifest and failed-dispatch anchor contracts. The recorded fixture and source trace cover the revised recovery instructions.
+No additions. The source trace covers the reordered workflow steps. Existing tests cover the snapshot and manifest contracts.
 
 ## Suite run
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-tools sync-cli sync-render update`
+- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review sync-cli sync-render update`
 - Scope: impacted
-- Scope evidence: Searches for the changed design-system and lifecycle rules, workflow paths, snapshot and manifest commands and failed-dispatch anchor bound the impact to the contract areas and `runtime-review`, `runtime-routing` and `runtime-tools`. The release hash changes reach `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the runner, shared test setup and executable runtime are outside the delta.
-- Result: pass — 264 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run.
+- Scope evidence: Direct workflow references and canonical Markdown scans select the four contract areas. The existing step 7 check selects `runtime-review`. Release manifest readers and upstream hash validation select `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the delta is the design-review workflow and its upstream hash.
+- Result: pass — 207 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run. Eligible for the impacted gate while those paths remain unchanged.
 - Lint / build: pass
-- HEAD: 9457ed9947c285dc6c1e6011c9c72be51a209b63
+- HEAD: ca3b97d880eeb6532388fc4725a7a13faf4c7608
 
-The entry 4 and 3 impacted runs passed at `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
+The entry 5, 4 and 3 impacted runs passed at `9457ed99`, `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 - Line delta: tests +28/−2 (net 26); other +139/−56 (net 83)
 
 ## Defects
