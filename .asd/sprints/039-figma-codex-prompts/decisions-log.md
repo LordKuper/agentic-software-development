@@ -89,6 +89,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — impl fix for wave-1/iter-04: findings resolved
 - 2026-11-22 — route impl-test entry 6: standard, dispatch HEAD ca3b97d880eeb6532388fc4725a7a13faf4c7608
 - 2026-11-22 — wave-1/iter-05 external review skipped after preflight returned negative-cache (authentication). Recorded the entire carried unreviewed scope.
+- 2026-11-22 — route impl-review wave-1/iter-05 suite: runner, dispatch HEAD e50a3bfb21c9dcbaf8e01ee50e2216dd48e68193
+- 2026-11-22 — First terminal run: 312/316. The Git failures came from missing per-process safe.directory configuration; Windows also denied the old migration's file-symlink fixture. Clear approval latches per red-suite rule and triage before the next terminal run.
+- 2026-11-22 — route impl-review wave-1/iter-05 suite: standard, dispatch HEAD 2d5c49effe6766029dc6c52aca2e16927c294034
+- 2026-11-22 — Terminal triage reproduced the migration fixture failure and fixed only that fixture. The platform branch follows a directory junction to the intact external file on Windows and retains the file symlink on POSIX. Existing rejection and outside-file assertions are unchanged. Targeted migration test 1/1; Git-focused areas 58/58 with process configuration inherited.
+- 2026-11-22 — route impl-review wave-1/iter-05 suite: runner, dispatch HEAD 4ea1a1031f89749d9e0b1cb98098cbe3cf120627
+- 2026-11-22 — impl-review DoD met on wave-1/iter-05. Combined approved, external review used the configured authentication availability skip, and the full suite passed 316/316 on 4ea1a103 with build and lint green.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
 - 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests

@@ -140,3 +140,23 @@
 {"op":"open","id":"wave-1-iter-05","kind":"review-iteration","parent":"impl-review#5","start":"2026-11-22T12:11:56.966Z","attrs":{"wave":"1","iteration":"5"}}
 {"op":"open","id":"review5-combined","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:11:57.392Z","attrs":{"agent":"asd-reviewer-combined","wave":"1","iteration":"5","tier":"standard","model":"sol"}}
 {"op":"close","id":"review5-combined","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:11:57.392Z","end":"2026-11-22T12:13:51.640Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","wave":"1","iteration":"5","tier":"standard","model":"sol"}}
+{"op":"open","id":"terminal-suite","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:14:00.588Z","attrs":{"agent":"asd-tester-runner","tier":"runner","task":"terminal suite","model":"luna"}}
+{"op":"open","id":"suite impl-review#1","kind":"suite","parent":"terminal-suite","start":"2026-11-22T12:14:47.243Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-review#1","kind":"suite","parent":"terminal-suite","start":"2026-11-22T12:14:47.243Z","end":"2026-11-22T12:15:50.903Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"terminal-suite","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:14:00.588Z","end":"2026-11-22T12:17:41.975Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","task":"terminal suite","model":"luna"}}
+{"op":"open","id":"terminal-triage","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:17:57.023Z","attrs":{"agent":"asd-tester","tier":"standard","task":"terminal suite triage","model":"sol"}}
+{"op":"open","id":"suite impl-review#2","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:18:58.670Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-review#2","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:18:58.670Z","end":"2026-11-22T12:18:58.968Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-review#3","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:19:36.319Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-review#3","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:19:36.319Z","end":"2026-11-22T12:19:36.527Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-review#4","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:19:36.762Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-review#4","kind":"suite","parent":"terminal-triage","start":"2026-11-22T12:19:36.762Z","end":"2026-11-22T12:19:46.181Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"terminal-triage","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:17:57.023Z","end":"2026-11-22T12:20:34.856Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","task":"terminal suite triage","model":"sol"}}
+{"op":"open","id":"terminal-suite-retry","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:20:34.931Z","attrs":{"agent":"asd-tester-runner","tier":"runner","task":"terminal suite retest","model":"luna"}}
+{"op":"open","id":"suite impl-review#5","kind":"suite","parent":"terminal-suite-retry","start":"2026-11-22T12:21:13.228Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-review#5","kind":"suite","parent":"terminal-suite-retry","start":"2026-11-22T12:21:13.228Z","end":"2026-11-22T12:21:22.218Z","outcome":"interrupted","attrs":{"scope":"full"}}
+{"op":"open","id":"suite impl-review#6","kind":"suite","parent":"terminal-suite-retry","start":"2026-11-22T12:21:25.400Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-review#6","kind":"suite","parent":"terminal-suite-retry","start":"2026-11-22T12:21:25.400Z","end":"2026-11-22T12:22:30.453Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"terminal-suite-retry","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:20:34.931Z","end":"2026-11-22T12:23:41.848Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","task":"terminal suite retest","model":"luna"}}
+{"op":"close","id":"wave-1-iter-05","kind":"review-iteration","parent":"impl-review#5","start":"2026-11-22T12:11:56.966Z","end":"2026-11-22T12:23:41.929Z","outcome":"done","attrs":{"wave":"1","iteration":"5"}}
+{"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-11-22T12:11:35.595Z","end":"2026-11-22T12:23:42.006Z","outcome":"done","attrs":{}}

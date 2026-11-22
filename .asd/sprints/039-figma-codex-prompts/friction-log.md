@@ -55,3 +55,27 @@
 - **What happened**: Iteration 5 preflight retained the cached authentication failure.
 - **Impact**: The carried scope and review-order changes remained externally unreviewed.
 - **Refs**: reviews/impl/wave-1/iter-05/external.md.
+
+## F-8 — Terminal Git routing check lost its ownership configuration
+
+- **Phase**: impl-review
+- **Surface**: terminal suite, runtime-routing area outside the last impacted selection
+- **What happened**: The runner did not pass the process-scoped Git configuration into the Node invocation. A Git attribute assertion failed at repository discovery.
+- **Impact**: Required a corrected terminal run. The routing assertion passed with the configuration inherited unchanged.
+- **Refs**: test-plan.md Suite run and terminal triage evidence.
+
+## F-9 — Terminal timing check lost the same ownership configuration
+
+- **Phase**: impl-review
+- **Surface**: terminal suite, runtime-timing area outside the last impacted selection
+- **What happened**: The timing assertion's child Git command encountered the same process configuration gap as F-8.
+- **Impact**: Required a corrected terminal run. The timing assertion passed unchanged with the configuration inherited.
+- **Refs**: test-plan.md Suite run and terminal triage evidence.
+
+## F-10 — Windows denied the migration fixture's file symlink
+
+- **Phase**: impl-review
+- **Surface**: terminal suite, migrations area outside the last impacted selection
+- **What happened**: The existing PM migration fixture could not create its external file link in the non-elevated Windows process.
+- **Impact**: The migration assertion could not run until the fixture used a Windows junction to the same external file.
+- **Refs**: test-plan.md terminal triage evidence.
