@@ -162,3 +162,4 @@
 {"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-11-22T12:11:35.595Z","end":"2026-11-22T12:23:42.006Z","outcome":"done","attrs":{}}
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-22T12:23:52.310Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-22T12:23:52.310Z","end":"2026-11-22T12:24:10.074Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-22T12:24:10.420Z","attrs":{}}
