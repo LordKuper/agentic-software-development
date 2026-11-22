@@ -37,6 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-- 2026-11-22 — cleanup checkpoint fd27c38df6940dac370e2ffbdeb84e7515fd64c1
-- 2026-11-22 — cleanup: removed none; reverted none; verified n/a: no removals.
