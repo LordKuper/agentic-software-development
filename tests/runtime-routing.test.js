@@ -233,6 +233,30 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
   const { missing, duplicates, invalid } = JSON.parse(incomplete.stdout);
   assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.mockup_format'], ['project.mockup_format']]);
   assert.doesNotMatch(incomplete.stdout + incomplete.stderr, /redacted-value/);
+
+  // Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
+  const withMockupSettings = (...settings) => template.replace(/^  mockup_format:.*$/m, settings.map((setting) => `  ${setting}`).join('\n'));
+  for (const settings of [
+    ['mockup_format: html'],
+    ['mockup_format: claude_design'],
+    ['mockup_format: figma'],
+    ['claude_design: enabled'],
+    ['claude_design: disabled'],
+    ['mockup_format: figma', 'claude_design: disabled'],
+  ]) {
+    assert.strictEqual((await check(withMockupSettings(...settings))).status, 0, settings.join(', '));
+  }
+
+  const absent = await check(withMockupSettings());
+  assert.deepStrictEqual([absent.status, JSON.parse(absent.stdout).missing], [1, ['project.mockup_format']]);
+  const mixed = await check(withMockupSettings('mockup_format: unknown', 'claude_design: disabled'));
+  assert.deepStrictEqual([mixed.status, JSON.parse(mixed.stdout).invalid.map(({ path: key }) => key)], [1, ['project.mockup_format']]);
+  const badLegacy = await check(withMockupSettings('mockup_format: figma', 'claude_design: unknown', 'claude_design: enabled'));
+  const legacyResult = JSON.parse(badLegacy.stdout);
+  assert.deepStrictEqual(
+    [badLegacy.status, legacyResult.duplicates, legacyResult.invalid.map(({ path: key }) => key)],
+    [1, ['project.claude_design'], ['project.claude_design']]
+  );
 });
 
 test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
