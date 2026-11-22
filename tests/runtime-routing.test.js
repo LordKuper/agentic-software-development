@@ -202,6 +202,7 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
   }
 });
 
+// Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
 test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys', async () => {
   const root = mkTempDir();
   const config = path.join(root, 'config.yaml');
@@ -234,7 +235,6 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
   assert.deepStrictEqual([incomplete.status, missing, duplicates, invalid.map(({ path: key }) => key)], [1, ['review.codex_profile'], ['project.mockup_format'], ['project.mockup_format']]);
   assert.doesNotMatch(incomplete.stdout + incomplete.stderr, /redacted-value/);
 
-  // Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
   const withMockupSettings = (...settings) => template.replace(/^  mockup_format:.*$/m, settings.map((setting) => `  ${setting}`).join('\n'));
   for (const settings of [
     ['mockup_format: html'],
