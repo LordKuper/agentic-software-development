@@ -160,3 +160,5 @@
 {"op":"close","id":"terminal-suite-retry","kind":"dispatch","parent":"wave-1-iter-05","start":"2026-11-22T12:20:34.931Z","end":"2026-11-22T12:23:41.848Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","task":"terminal suite retest","model":"luna"}}
 {"op":"close","id":"wave-1-iter-05","kind":"review-iteration","parent":"impl-review#5","start":"2026-11-22T12:11:56.966Z","end":"2026-11-22T12:23:41.929Z","outcome":"done","attrs":{"wave":"1","iteration":"5"}}
 {"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-11-22T12:11:35.595Z","end":"2026-11-22T12:23:42.006Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-22T12:23:52.310Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-22T12:23:52.310Z","end":"2026-11-22T12:24:10.074Z","outcome":"done","attrs":{}}
