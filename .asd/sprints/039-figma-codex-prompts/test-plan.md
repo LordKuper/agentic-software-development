@@ -15,13 +15,14 @@ responsibility:
 | 2 | 6f4bbe3a | delta since entry 1 |
 | 3 | 30a0a48c | delta since entry 2 |
 | 4 | 5b1a1ec7 | delta since entry 3 |
+| 5 | 9457ed99 | delta since entry 4 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| AC-2/AC-5, Figma index recovery in Standard design review | An interrupted write leaves the index absent during initial scope enumeration or a later review snapshot | Trace steps 1 and 7, check the recorded recovered-index fixture, and run existing snapshot and manifest tests | none | Step 1 reconciles verified revisions before listing drafts and deciding whether the scope is empty. Step 7 applies that procedure before every snapshot. The local fixture restored a missing index and produced its revision diff in the combined reviewer manifest. [Decisions log](decisions-log.md) |
-| AC-7, recovery of unticked Test-only Tasks | A retry can lose sight of the first test commit or bypass the proof check | Trace lifecycle recovery and impl steps 5–7, then run the existing failed-dispatch anchor check | none | The source trace confirmed that normal re-entry and failed dispatch use the first authoring anchor. Recovered commits go to step 7, where missing or invalid proof keeps the Task unticked and the wave open. With no Task commits, authoring resumes. [Decisions log](decisions-log.md) |
+| AC-2/AC-5, Figma handoff after interrupted index writes | A recovered link can reach the reviewer without the metadata needed for handoff | Trace the publication rule and review steps 1 and 7, inspect the recorded recovery fixture, and run snapshot and manifest tests | none | The restored row's reviewer patch retained the verified frame revision, screen state, component and unbound token reference. Review pauses if required metadata is pending, before initial enumeration or a later snapshot. [Decisions log](decisions-log.md) |
+| AC-7, partially completed Test-only Tasks | A commit for one subtask can conceal unfinished work or let a regression test bypass proof | Trace lifecycle recovery and impl steps 5 and 7 and run the existing failed-dispatch anchor check | none | In the recorded source trace, a completed compile-only subtask reaches step 7 and the unfinished regression subtask returns to authoring using the first dispatch anchor. The completion check compares the full Task diff to its proof and leaves affected subtasks unticked if proof is missing or invalid. [Decisions log](decisions-log.md) |
 
 ## Removed tests
 
@@ -29,19 +30,18 @@ No removals. The affected tests cover separate contracts.
 
 ## Added tests
 
-No additions. Existing tests cover snapshot selection, manifest diffs and failed-dispatch anchors. The local fixture and source trace cover the workflow ordering.
+No additions. Existing tests cover the snapshot, manifest and failed-dispatch anchor contracts. The recorded fixture and source trace cover the revised recovery instructions.
 
 ## Suite run
 
 - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-tools sync-cli sync-render update`
 - Scope: impacted
-- Scope evidence: Path and consumer searches bound the two workflow documents and the lifecycle rule to the contract areas and `runtime-review`, `runtime-routing` and `runtime-tools`. The release hash changes reach `sync-cli`, `sync-render` and `update`. The runner, shared test setup and executable runtime are outside the delta. The safety valve keeps the run impacted.
+- Scope evidence: Searches for the changed design-system and lifecycle rules, workflow paths, snapshot and manifest commands and failed-dispatch anchor bound the impact to the contract areas and `runtime-review`, `runtime-routing` and `runtime-tools`. The release hash changes reach `sync-cli`, `sync-render` and `update`. The safety valve keeps the run impacted because the runner, shared test setup and executable runtime are outside the delta.
 - Result: pass — 264 passed, 0 failed, 0 skipped (exit 0). HEAD matched and relevant code, test and stub paths were clean before and after the run.
 - Lint / build: pass
-- HEAD: 5161f7af11f3599a62007287c9855325b8ce73be
-- Line delta: tests +28/−2 (net 26); other +139/−56 (net 83)
+- HEAD: 9457ed9947c285dc6c1e6011c9c72be51a209b63
 
-The entry 3 impacted run passed at `4896ebd2` (264/264). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
+The entry 4 and 3 impacted runs passed at `5161f7af` and `4896ebd2` (264/264 each). The entry 2 impacted run passed at `2974ba1d`. The subsequent named check passed at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 
 ## Defects
 
