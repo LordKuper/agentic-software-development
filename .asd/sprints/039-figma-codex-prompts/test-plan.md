@@ -30,15 +30,14 @@ No additions. The existing standalone skill cap test already reproduces D-1.
 
 ## Suite run
 
-- Command: `node tests/run.js contract-rules contract-workflows runtime-routing sync-cli update`
-- Scope: impacted
-- Scope evidence: From entry 1, the only non-sprint changes are `asd-init` prose, its Claude and Codex views, and their source hash entries in `.asd/release-manifest.json`. Searches for `asd-init`, `mockup_format`, `claude_design`, skill discovery globs, sync plan consumers and manifest hashes identified these five areas. They cover the cap, provider-tree exclusions and current views, config validation and source hashes. The runner and context inputs are unchanged. The enabled safety valve permits the named areas.
-- Result: pass — 106 passed, 0 failed, 0 skipped (exit 0). The pre-strategy run supplies the suite gate evidence. HEAD matched and relevant paths were clean before and after the run.
-- Lint / build: pass
-- HEAD: 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84
-
-Complete runner output and exit code are in `.asd/tmp/039-impl-test-entry-2-pre-strategy.log`. Entry 1's original red run remains in Git at `71a70a21`.
+- Command: `node tests/run.js runtime-routing --filter 'config-check requires explicit valid values'`
+- Scope: named
+- Scope evidence: Review finding `combined.md F-4` moves the AC-1/AC-5 citation above this test declaration. The existing filter matched one test.
+- Result: pass — 1 passed, 0 failed, 0 skipped (exit 0). HEAD matched and code, test and stub paths were clean before and after the run.
+- HEAD: fd4340a943700168b36b8f90cb347724c56d3974
 - Line delta: tests +28/−2 (net 26); other +127/−49 (net 78)
+
+The entry 2 impacted run is recorded at `fd4340a9`. Entry 1's original red run is recorded at `71a70a21`.
 
 ## Defects
 
