@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 71a70a21 | full change surface |
-| 2 | 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84 | delta since entry 1 |
+| 2 | 6f4bbe3a | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -38,6 +38,7 @@ No additions. The existing standalone skill cap test already reproduces D-1.
 - HEAD: 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84
 
 Complete runner output and exit code are in `.asd/tmp/039-impl-test-entry-2-pre-strategy.log`. Entry 1's original red run remains in Git at `71a70a21`.
+- Line delta: tests +28/−2 (net 26); other +127/−49 (net 78)
 
 ## Defects
 
@@ -51,3 +52,6 @@ Complete runner output and exit code are in `.asd/tmp/039-impl-test-entry-2-pre-
 |---|---|---|
 | AC-2/AC-5 | In an authorized Figma Design draft, use the remote MCP file session to create a native frame, read its node structure back and open the stable node link. | Live Figma remote MCP passed. An independently inspected 480 × 198 native frame had one child FRAME, three editable TEXT descendants, a bound background variable and zero image nodes. The stable link resolved and the frame was visually inspected. |
 | AC-4/AC-5 | Present a choice in the Codex App async widget, observe enqueue and wait for the explicit choice. | Live Codex App passed. The widget delivered the explicit draft-creation answer after enqueue. The orchestrator used that answer to run the authorized Figma check. |
+
+- result: pass — AC-2/AC-5, independent Figma canvas read-back and visual inspection.
+- result: pass — AC-4/AC-5, explicit authorization received through the live Codex App widget.

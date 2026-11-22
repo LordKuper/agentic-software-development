@@ -55,4 +55,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Figma smoke passed: remote MCP created the authorized Design draft, wrote one native 480×198 frame, and read back the frame with 1 nested FRAME, 3 editable TEXT layers, no image fills, and a bound background variable. Inspected the composition screenshot. The Codex App delivered the explicit authorization after the widget enqueue. Private file identifiers stay in chat.
 - 2026-11-22 — route D-1: standard, dispatch HEAD 94428f22102dbc076ff2236a4770999bc63c5eda; risk artifact: skill byte budget via standalone skills total
 - 2026-11-22 — impl test-fix: defects D-1 resolved. The standalone skill set uses 62,226 of 62,351 bytes. Generated views were synchronized, and build, lint, context and agnix passed.
+- 2026-11-22 — route impl-test entry 2: standard, dispatch HEAD 2974ba1d5be8dc62930d1b5fbbb3503e8af4cf84
+- 2026-11-22 — Manual integration checks passed through live Figma frame read-back and the explicit Codex App widget response. The unavailable-tool paths are rule and fixture checks.
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
+- 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
