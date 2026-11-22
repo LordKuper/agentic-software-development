@@ -66,5 +66,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-22 — Figma revision check passed: changed padding in the existing authorized test frame, then read back the changed value and the same frame ID. In a local index fixture, increasing only the verified revision with the same URL made draft-snapshot include the index and emit-manifest produce the revision diff.
 - 2026-11-22 — route combined.md F-4: standard, dispatch HEAD 8afe21b55bf9ddff82fdc509b6fa953d0a7f8d07
 - 2026-11-22 — impl fix for wave-1/iter-01: findings resolved
+- 2026-11-22 — route impl-test entry 3: standard, dispatch HEAD 4896ebd2f59bf1ae1ac078cbce5ea04b196d8c90
 - 2026-11-22 — impl-test: defects D-1 → impl test-fix (digest 6b945f0b7c82d1018f62d85421f01901304e056c4af83c90f97999d66c66137e)
 - 2026-11-22 — impl-test: impacted set green (106/106), 0/0 tests
+- 2026-11-22 — impl-test: impacted set green (264/264), 0/0 tests
