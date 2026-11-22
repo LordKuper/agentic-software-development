@@ -1,7 +1,7 @@
 {
   "sprint_id": "039-figma-codex-prompts",
   "branch": "sprint/039-figma-codex-prompts",
-  "phase": "audit",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -41,6 +41,13 @@
       "reason": "all eight criteria deliverable and baseline checks green",
       "evidence": "audit.md: Existing implementation found, Gaps and Risks; seven impacted test areas passed",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "user accepted plan and requested implementation",
+      "evidence": "decisions-log.md: Plan accepted",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
