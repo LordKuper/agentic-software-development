@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b content_digest=sha256:3c79944ca93d8a6641a7e169ce0d340d9db33f10cb9f022d5150308cfe697fbb asd_version=14.11.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:e4efe1a859ddb68471db6f3d77a6dab9082fababef934cc26a1711867b594642 content_digest=sha256:c6236d4128aa1b53fc1d5c58c03721bc873caa544a39cedf146d7d2f7aad9228 asd_version=14.11.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -114,7 +114,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
-3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
+3. `accept-all` → rerun the installed config check before writing. On exit 2, relay its diagnostic and stop. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert only approved `missing` leaves and needed parent mappings. Write only `.asd/project/config.yaml`.
 
 ## Rules
 
