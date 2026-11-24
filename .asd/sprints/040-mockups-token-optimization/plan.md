@@ -31,9 +31,9 @@ Reachability: asd-update installs the schema and runs migrations; its completion
 
 AC-2, AC-6, AC-7. Own the update/entry skills and runtime cap after Task 1.
 
-- [ ] Move the completeness check and offer to the real `asd-update` completion path. Reuse `asd-init` resolution, preserve its ownership, report invalid/duplicate/missing paths, and keep dry-run/version lookup read-only. Cover normal and sprint-mediated update, partial outcomes, safe user decline and failure diagnostics.
-- [ ] Remove the sprint entry check, condense redundant NEXT prose without changing routing, and update the README. Shorten the accepted init/update duplication without changing config admission rules.
-- [ ] Reuse the standalone-skill file set and LF-normalized 62,351-byte bound for `context-check`. Expose one source for the bound and measurement for Task 6's contract adaptation.
+- [x] Move the completeness check and offer to the real `asd-update` completion path. Reuse `asd-init` resolution, preserve its ownership, report invalid/duplicate/missing paths, and keep dry-run/version lookup read-only. Cover normal and sprint-mediated update, partial outcomes, safe user decline and failure diagnostics.
+- [x] Remove the sprint entry check, condense redundant NEXT prose without changing routing, and update the README. Shorten the accepted init/update duplication without changing config admission rules.
+- [x] Reuse the standalone-skill file set and LF-normalized 62,351-byte bound for `context-check`. Expose one source for the bound and measurement for Task 6's contract adaptation.
 
 ### Task 3: Common rules and review protocol
 Material risk: artifact: section and literal contract
@@ -58,9 +58,9 @@ Reachability: phase context assembly resolves named rule sections at dispatch; e
 
 AC-5, AC-7. Own `sprint-lifecycle.md`, `providers.md`, `design-system.md` and the affected phase workflow bodies after Task 1.
 
-- [ ] Split recovery instructions by consumer, grant creator recovery to impl/impl-test and verdict recovery to design-review, impl-review and pr. Keep the phase table addressable, and narrow the plan-author checklist to plan while keeping task grammar reachable. Preserve exact recovery and parsed contract sections or coordinate with Task 6.
-- [ ] Split provider publication instructions into conditional grants without parent-section retransmission. Preserve actual authoring/recovery paths under AC-1 for both workflows.
-- [ ] Apply the named workflow reductions in audit.md, including both review phases, impl/test, plan, scope, design/promote, retro and PR. Keep the same sequence, output contracts, skip conditions, safety and compatibility. Compare context bundles before and after.
+- [x] Split recovery instructions by consumer, grant creator recovery to impl/impl-test and verdict recovery to design-review, impl-review and pr. Keep the phase table addressable, and narrow the plan-author checklist to plan while keeping task grammar reachable. Preserve exact recovery and parsed contract sections or coordinate with Task 6.
+- [x] Split provider publication instructions into conditional grants without parent-section retransmission. Preserve actual authoring/recovery paths under AC-1 for both workflows.
+- [x] Apply the named workflow reductions in audit.md, including both review phases, impl/test, plan, scope, design/promote, retro and PR. Keep the same sequence, output contracts, skip conditions, safety and compatibility. Compare context bundles before and after.
 
 ### Task 6: Verify behavior and context contracts
 Material risk: none

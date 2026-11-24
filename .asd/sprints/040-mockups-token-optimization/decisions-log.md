@@ -45,3 +45,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — Wave 1 verified: Task 1 a8ecb89; Task 3 bf6324b; Task 4 3b689d7; generated views synced in 8473947. Context ceilings and all 77 sync statuses pass.
 - 2026-11-24 — route Task 2: escalated, dispatch HEAD 8473947f3b6cb7f0ae7f0a641dad74380ba2b20e; risk broad-reasoning
 - 2026-11-24 — route Task 5: escalated, dispatch HEAD 8473947f3b6cb7f0ae7f0a641dad74380ba2b20e; risk broad-reasoning
+- 2026-11-24 — Accepted Combined memory-index shortening remains blocked. Claude Code refused the role-owner request because the account is on hold; repository trust was also absent. The owner-authored index is separate from the Codex measurements.
+- 2026-11-24 — Wave 2 verified: Task 2 6f9c6d4; Task 5 76fd446; Node 16 migration compatibility fix 6ff3528; generated views synced in 9feb273.
+- 2026-11-24 — route Task 6: test-only, dispatch HEAD 9feb273ba507078764ed0e5a00c1ad90c9fd7bdb
