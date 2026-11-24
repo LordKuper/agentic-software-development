@@ -136,3 +136,37 @@
 {"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-24T13:09:35.135Z","attrs":{"context_bytes":"73385","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-24T13:09:35.135Z","end":"2026-11-24T13:17:35.803Z","outcome":"done","attrs":{"context_bytes":"73385","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-24T13:09:35.036Z","end":"2026-11-24T13:17:35.803Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test entry 3 strategy","kind":"dispatch","parent":"impl-test#3","start":"2026-11-24T13:17:48.394Z","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"open","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-24T13:17:53.307Z","attrs":{}}
+{"op":"open","id":"suite impl-test#3","kind":"suite","parent":"impl-test entry 3 strategy","start":"2026-11-24T13:19:04.277Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#3","kind":"suite","parent":"impl-test entry 3 strategy","start":"2026-11-24T13:19:04.277Z","end":"2026-11-24T13:19:34.262Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 3 strategy","kind":"dispatch","parent":"impl-test#3","start":"2026-11-24T13:17:48.394Z","end":"2026-11-24T13:21:53.207Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"open","id":"impl-test entry 3 author","kind":"dispatch","parent":"impl-test#3","start":"2026-11-24T13:21:53.207Z","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"open","id":"suite impl-test#4","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:23:51.518Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#4","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:23:51.518Z","end":"2026-11-24T13:23:55.869Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#5","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:32.731Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#5","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:32.731Z","end":"2026-11-24T13:24:36.953Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#6","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.134Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#6","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.134Z","end":"2026-11-24T13:24:37.576Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#7","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.633Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#7","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.633Z","end":"2026-11-24T13:24:37.864Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#8","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.924Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#8","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:37.924Z","end":"2026-11-24T13:24:39.267Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#9","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:39.327Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#9","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:39.327Z","end":"2026-11-24T13:24:40.507Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#10","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:40.566Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#10","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:40.566Z","end":"2026-11-24T13:24:40.812Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#11","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:40.872Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#11","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:40.872Z","end":"2026-11-24T13:24:42.305Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#12","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:42.361Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#12","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:24:42.361Z","end":"2026-11-24T13:24:43.688Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#13","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:36.098Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#13","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:36.098Z","end":"2026-11-24T13:25:36.503Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#14","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:36.560Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#14","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:36.560Z","end":"2026-11-24T13:25:37.649Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#15","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:37.697Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#15","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:25:37.697Z","end":"2026-11-24T13:25:41.557Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#16","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:27:14.923Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#16","kind":"suite","parent":"impl-test entry 3 author","start":"2026-11-24T13:27:14.923Z","end":"2026-11-24T13:27:48.301Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-test entry 3 author","kind":"dispatch","parent":"impl-test#3","start":"2026-11-24T13:21:53.207Z","end":"2026-11-24T13:29:13.176Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"close","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-24T13:17:53.307Z","end":"2026-11-24T13:29:13.176Z","outcome":"done","attrs":{}}

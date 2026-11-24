@@ -69,3 +69,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — impl fix for wave-1/iter-01: findings resolved
 - 2026-11-24 — route impl-test entry 3 strategy: standard, dispatch HEAD 102bbb4fd25500c76c634115bb80bfdde966b6b2
 - 2026-11-24 — All 24 matched Codex probes passed after the review fixes and provider sync at ee94c86. Lite 618,556 → 430,941 (−30.3%); Standard 764,116 → 520,232 (−31.9%). Both pass AC-8. See token-baseline.md and codex-phase-review-fix.json.
+- 2026-11-24 — route impl-test entry 3 author: standard, dispatch HEAD 25bd4c3eca84a5287d78b1f6b9411813f7a547fe
+- 2026-11-24 — impl-test: impacted set green (326/326, full safety valve), 3/0 tests

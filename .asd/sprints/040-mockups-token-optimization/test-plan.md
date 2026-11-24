@@ -12,7 +12,7 @@ responsibility:
 |---|---|---|
 | 1 | be1c83b2 | full change surface |
 | 2 | 17dae23b | delta since entry 1 |
-| 3 | | delta since entry 2 |
+| 3 | bcc7edda | delta since entry 2 |
 
 ## Risk → check decisions
 
@@ -56,6 +56,7 @@ The Windows runner used directory junctions for `.asd` and `project`, and a junc
 - Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current.
 - HEAD: 1734f03a97209fb549d4d0f5e45cdc8f6a06ca77
 - Provenance: `suite impl-test#16` under dispatch `impl-test entry 3 author`. HEAD matched before and after. Relevant project settings, generated views, source, tests and stubs were clean, including untracked files. The project defines no smoke command.
+- Line delta: tests +359/−43 (net 316); other +851/−844 (net 7)
 
 ## Defects
 
