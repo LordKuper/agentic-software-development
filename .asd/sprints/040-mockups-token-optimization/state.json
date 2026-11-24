@@ -1,7 +1,7 @@
 {
   "sprint_id": "040-mockups-token-optimization",
   "branch": "sprint/040-mockups-token-optimization",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -132,11 +132,11 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 1, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "ebc18c274ed85a70219213903730bffbd59bf7e9" }, "latched": {} } ] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T12:59:11Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-11-24T13:09:16Z",
+  "review_fixes_pending": true,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

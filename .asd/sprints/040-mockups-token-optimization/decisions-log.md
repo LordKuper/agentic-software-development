@@ -62,3 +62,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — Repeated all 24 probes at 7f4ec78 after adding the fail-closed entry guard. Lite 618,556 → 430,693 (−30.4%); Standard 764,116 → 519,800 (−32.0%). Both retain AC-8 headroom.
 - 2026-11-24 — Task 9 completed at 972c85e, impacted tests 208/208. Startup regression reproduced on isolated 1889c3e (1 selected, exit 1, missing phase-entry heading) and the isolated rewording control passed (1/1). Checked 29 named sections and unchanged agent-grant rows. All 77 sync targets current, context overages none, agnix 0 errors and 0 warnings. NEXT: impl-test.
 - 2026-11-24 — impl-test: impacted set green (290/290), 0/0 tests
+- 2026-11-24 — Resumed Lite impl-review at wave-1/iter-01. External Review: negative-cache (authentication) after real Claude Code account-hold denial; full unreviewed scope recorded.
+- 2026-11-24 — wave-1/iter-01: Combined CONCERNS (1–6, two critical). Route to impl review-fix for migration retry, legacy frozen mockup selection, minimum-Node config check, settings-write authority, linked config paths and migration comments. No terminal suite on this iteration.
