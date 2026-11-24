@@ -253,3 +253,4 @@
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-24T14:10:08.318Z","attrs":{}}
 {"op":"open","id":"suite pr#1","kind":"suite","parent":"pr#1","start":"2026-11-24T14:10:26.191Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite pr#1","kind":"suite","parent":"pr#1","start":"2026-11-24T14:10:26.191Z","end":"2026-11-24T14:10:50.947Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"open","id":"pr-publication","kind":"user-wait","parent":"pr#1","start":"2026-11-24T14:11:43.268Z","attrs":{"gate":"PR publication"}}
