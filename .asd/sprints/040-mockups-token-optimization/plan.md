@@ -68,9 +68,9 @@ Test-only: tests/**
 
 AC-1, AC-2, AC-5, AC-6, AC-7. Adapt affected contract assertions after Tasks 1–5. Keep strict evidence coverage.
 
-- [ ] Exercise legacy migration matrix, idempotence and preservation of unrelated settings. Check four explicit modes, old frozen states and both workflows including mockup-only, none and non-UI paths.
-- [ ] Verify the check moved to actual update completion in both modes, without running on previews or sprint entry, and the early cap uses the same bound and file set as the existing contract. Cover exact cap, overflow and phase-shim exclusion.
-- [ ] Validate affected references, generated views, reviewer formats and role/phase grants. Keep or strengthen existing behavior checks.
+- [x] Exercise legacy migration matrix, idempotence and preservation of unrelated settings. Check four explicit modes, old frozen states and both workflows including mockup-only, none and non-UI paths.
+- [x] Verify the check moved to actual update completion in both modes, without running on previews or sprint entry, and the early cap uses the same bound and file set as the existing contract. Cover exact cap, overflow and phase-shim exclusion.
+- [x] Validate affected references, generated views, reviewer formats and role/phase grants. Keep or strengthen existing behavior checks.
 
 Orchestrator-only verification after Task 6: rerun the matched Codex probes, report per-phase differences and distinguish estimated per-file bytes from measured consumption. The accepted local custom-rule changes must be applied within owner authority and the Combined memory index by its owner within its allowed write policy.
 

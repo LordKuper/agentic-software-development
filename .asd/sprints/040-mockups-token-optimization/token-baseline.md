@@ -54,3 +54,43 @@ Evidence: [24 phase windows and usage by role](./codex-sprint-039-usage.json), [
 [Context priority](./context-priority.csv) inventories the tracked snapshot. Rank by bytes assembled from each canonical file across the declared Lite and Standard phase bundles, one occurrence per eligible phase/role. Agent grants represent possible dispatches; conditional roles are not weighted by real frequency. Count phase workflow bodies and loaded phase skills separately; assign generated phase skill bytes to canon. A zero means no match in this map, not proof that a file is unused. Dynamic, conditional and startup context outside the mapped grants requires separate evidence. File attribution is an estimate; the Codex counters are measurements of whole requests.
 
 First five: `sprint-lifecycle.md` (1,056,749 B), `artifact-layout.md` (563,048 B), `review-policy.md` (414,835 B), `core.md` (381,990 B), `agent-protocol.md` (314,977 B).
+
+## Matched comparison
+
+Candidate framework snapshot `48e521ad4621ee90ec0f60e0a1b1f8a8fb9a8325`. Same Codex CLI, model, effort, phase inputs, one-line response and read-only invocation. [Raw candidate usage](./codex-phase-after.json). All 24 probes passed, with no tool calls and 8 output tokens per probe.
+
+| Workflow | Phase | Input before → after | Cached input before → after | Input change | Prompt byte change |
+|---|---|---:|---:|---:|---:|
+| lite | control | 31,158 → 28,190 | 7,552 → 26,240 | -2,968 | 0 |
+| lite | scope | 63,739 → 56,813 | 63,616 → 0 | -6,926 | -17,019 |
+| lite | audit | 61,891 → 54,291 | 7,552 → 18,304 | -7,600 | -20,008 |
+| lite | design-promote | 63,100 → 54,477 | 27,520 → 7,552 | -8,623 | -24,976 |
+| lite | plan | 55,191 → 48,436 | 7,552 → 0 | -6,755 | -16,327 |
+| lite | impl | 67,879 → 61,223 | 27,520 → 26,240 | -6,656 | -15,920 |
+| lite | impl-test | 63,953 → 56,894 | 27,520 → 18,304 | -7,059 | -17,597 |
+| lite | impl-review | 78,377 → 70,657 | 27,520 → 18,304 | -7,720 | -20,818 |
+| lite | cleanup | 55,345 → 48,242 | 0 → 18,304 | -7,103 | -17,749 |
+| lite | retro | 50,916 → 47,699 | 18,304 → 0 | -3,217 | -18,396 |
+| lite | pr | 58,165 → 52,299 | 0 → 26,240 | -5,866 | -12,610 |
+| standard | control | 31,158 → 28,190 | 27,520 → 18,304 | -2,968 | 0 |
+| standard | scope | 63,739 → 56,813 | 27,520 → 0 | -6,926 | -17,019 |
+| standard | audit | 61,891 → 54,291 | 27,520 → 0 | -7,600 | -20,008 |
+| standard | design | 62,282 → 54,428 | 27,520 → 18,304 | -7,854 | -21,610 |
+| standard | design-review | 79,259 → 70,754 | 31,104 → 26,240 | -8,505 | -24,974 |
+| standard | design-promote | 63,100 → 54,477 | 7,552 → 28,032 | -8,623 | -24,976 |
+| standard | plan | 55,191 → 48,436 | 0 → 26,240 | -6,755 | -16,327 |
+| standard | impl | 67,879 → 61,223 | 27,520 → 26,240 | -6,656 | -15,920 |
+| standard | impl-test | 63,953 → 56,894 | 0 → 26,240 | -7,059 | -17,597 |
+| standard | impl-review | 78,377 → 70,657 | 27,520 → 26,240 | -7,720 | -20,818 |
+| standard | cleanup | 55,345 → 48,242 | 0 → 28,032 | -7,103 | -17,749 |
+| standard | retro | 54,935 → 47,699 | 0 → 26,240 | -7,236 | -18,396 |
+| standard | pr | 58,165 → 52,299 | 31,104 → 7,552 | -5,866 | -12,610 |
+
+| Workflow | Phase input before → after | Reduction | Control-adjusted input before → after | Reduction |
+|---|---:|---:|---:|---:|
+| lite | 618,556 → 551,031 | 10.9% | 306,976 → 269,131 | 12.3% |
+| standard | 764,116 → 676,213 | 11.5% | 390,220 → 337,933 | 13.4% |
+
+Totals count each declared phase once and exclude control. The control fell from 31,158 to 28,190 input tokens. The control-adjusted column subtracts the corresponding run's control from each phase and approximates the phase-specific contribution. Cache hits varied between probe sets. These measurements capture context loading in Codex and do not extrapolate to live spend or cache-adjusted billing. The historical execution data has no matched post-change rollout.
+
+Holding the pre-wave-2 inputs constant, Task 5 reduced 56 static bundles. The orchestrator's per-phase bundles shrank by 5,068–14,725 UTF-8 bytes across 12 phases after the reference correction. This byte comparison excludes on-demand provider sections and is separate from measured tokens.

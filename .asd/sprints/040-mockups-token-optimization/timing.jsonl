@@ -58,3 +58,33 @@
 {"op":"close","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-24T12:06:56.047Z","end":"2026-11-24T12:17:34.930Z","outcome":"done","attrs":{"context_bytes":"85429","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"close","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-11-24T12:06:56.047Z","end":"2026-11-24T12:17:34.930Z","outcome":"done","attrs":{"context_bytes":"85429","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"open","id":"Task 6","kind":"dispatch","parent":"impl#1","start":"2026-11-24T12:17:35.019Z","attrs":{"agent":"asd-tester","context_bytes":"75124","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl#1","kind":"suite","parent":"Task 6","start":"2026-11-24T12:18:26.312Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#1","kind":"suite","parent":"Task 6","start":"2026-11-24T12:18:26.312Z","end":"2026-11-24T12:18:44.051Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#2","kind":"suite","parent":"Task 6","start":"2026-11-24T12:21:55.102Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#2","kind":"suite","parent":"Task 6","start":"2026-11-24T12:21:55.102Z","end":"2026-11-24T12:22:12.171Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#3","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:23.707Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#3","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:23.707Z","end":"2026-11-24T12:23:23.863Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#4","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:24.178Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#4","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:24.178Z","end":"2026-11-24T12:23:24.341Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#5","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:24.667Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#5","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:24.667Z","end":"2026-11-24T12:23:25.041Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#6","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:25.356Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#6","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:25.356Z","end":"2026-11-24T12:23:25.515Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#7","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:25.831Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#7","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:25.831Z","end":"2026-11-24T12:23:25.985Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#8","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:26.311Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#8","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:26.311Z","end":"2026-11-24T12:23:26.523Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#9","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:26.835Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#9","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:26.835Z","end":"2026-11-24T12:23:27.009Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#10","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:27.326Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#10","kind":"suite","parent":"Task 6","start":"2026-11-24T12:23:27.326Z","end":"2026-11-24T12:23:27.466Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#11","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:04.119Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#11","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:04.119Z","end":"2026-11-24T12:24:04.248Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#12","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:04.578Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#12","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:04.578Z","end":"2026-11-24T12:24:04.751Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#13","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:05.066Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#13","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:05.066Z","end":"2026-11-24T12:24:05.222Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#14","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:05.538Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#14","kind":"suite","parent":"Task 6","start":"2026-11-24T12:24:05.538Z","end":"2026-11-24T12:24:28.866Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"Task 6","kind":"dispatch","parent":"impl#1","start":"2026-11-24T12:17:35.019Z","end":"2026-11-24T12:25:24.426Z","outcome":"done","attrs":{"agent":"asd-tester","context_bytes":"75124","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-24T11:56:32.684Z","end":"2026-11-24T12:25:24.426Z","outcome":"done","attrs":{}}

@@ -1,0 +1,666 @@
+[
+  {
+    "workflow": "lite",
+    "phase": "audit",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 110517,
+    "files": [
+      ".agents/skills/asd-phase-audit/SKILL.md",
+      ".asd/workflows/asd-phase-audit.md",
+      ".asd\\tmp\\040-baseline\\lite-audit-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 54291,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "cleanup",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 84245,
+    "files": [
+      ".agents/skills/asd-phase-cleanup/SKILL.md",
+      ".asd/workflows/asd-phase-cleanup.md",
+      ".asd\\tmp\\040-baseline\\lite-cleanup-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 48242,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "control",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 197,
+    "files": [],
+    "ok": true,
+    "usage": {
+      "input_tokens": 28190,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "design-promote",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 111177,
+    "files": [
+      ".agents/skills/asd-phase-design-promote/SKILL.md",
+      ".asd/workflows/asd-phase-design-promote.md",
+      ".asd\\tmp\\040-baseline\\lite-design-promote-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 54477,
+      "cached_input_tokens": 7552,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "impl-review",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 179437,
+    "files": [
+      ".agents/skills/asd-phase-impl-review/SKILL.md",
+      ".asd/workflows/asd-phase-impl-review.md",
+      ".asd\\tmp\\040-baseline\\lite-impl-review-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 70657,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "impl-test",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 120788,
+    "files": [
+      ".agents/skills/asd-phase-impl-test/SKILL.md",
+      ".asd/workflows/asd-phase-impl-test.md",
+      ".asd\\tmp\\040-baseline\\lite-impl-test-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 56894,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "impl",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 139261,
+    "files": [
+      ".agents/skills/asd-phase-impl/SKILL.md",
+      ".asd/workflows/asd-phase-impl.md",
+      ".asd\\tmp\\040-baseline\\lite-impl-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 61223,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "plan",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 86109,
+    "files": [
+      ".agents/skills/asd-phase-plan/SKILL.md",
+      ".asd/workflows/asd-phase-plan.md",
+      ".asd\\tmp\\040-baseline\\lite-plan-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 48436,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "pr",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 100271,
+    "files": [
+      ".agents/skills/asd-phase-pr/SKILL.md",
+      ".asd/workflows/asd-phase-pr.md",
+      ".asd\\tmp\\040-baseline\\lite-pr-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 52299,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "retro",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 81242,
+    "files": [
+      ".agents/skills/asd-phase-retro/SKILL.md",
+      ".asd/workflows/asd-phase-retro.md",
+      ".asd\\tmp\\040-baseline\\lite-retro-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 47699,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "lite",
+    "phase": "scope",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 118236,
+    "files": [
+      ".agents/skills/asd-phase-scope/SKILL.md",
+      ".asd/workflows/asd-phase-scope.md",
+      ".asd\\tmp\\040-baseline\\lite-scope-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 56813,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "audit",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 110525,
+    "files": [
+      ".agents/skills/asd-phase-audit/SKILL.md",
+      ".asd/workflows/asd-phase-audit.md",
+      ".asd\\tmp\\040-baseline\\standard-audit-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 54291,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "cleanup",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 84253,
+    "files": [
+      ".agents/skills/asd-phase-cleanup/SKILL.md",
+      ".asd/workflows/asd-phase-cleanup.md",
+      ".asd\\tmp\\040-baseline\\standard-cleanup-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 48242,
+      "cached_input_tokens": 28032,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "control",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 201,
+    "files": [],
+    "ok": true,
+    "usage": {
+      "input_tokens": 28190,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "design-promote",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 111185,
+    "files": [
+      ".agents/skills/asd-phase-design-promote/SKILL.md",
+      ".asd/workflows/asd-phase-design-promote.md",
+      ".asd\\tmp\\040-baseline\\standard-design-promote-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 54477,
+      "cached_input_tokens": 28032,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "design-review",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 181777,
+    "files": [
+      ".agents/skills/asd-phase-design-review/SKILL.md",
+      ".asd/workflows/asd-phase-design-review.md",
+      ".asd\\tmp\\040-baseline\\standard-design-review-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 70754,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "design",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 109913,
+    "files": [
+      ".agents/skills/asd-phase-design/SKILL.md",
+      ".asd/workflows/asd-phase-design.md",
+      ".asd\\tmp\\040-baseline\\standard-design-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 54428,
+      "cached_input_tokens": 18304,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "impl-review",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 179445,
+    "files": [
+      ".agents/skills/asd-phase-impl-review/SKILL.md",
+      ".asd/workflows/asd-phase-impl-review.md",
+      ".asd\\tmp\\040-baseline\\standard-impl-review-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 70657,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "impl-test",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 120796,
+    "files": [
+      ".agents/skills/asd-phase-impl-test/SKILL.md",
+      ".asd/workflows/asd-phase-impl-test.md",
+      ".asd\\tmp\\040-baseline\\standard-impl-test-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 56894,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "impl",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 139269,
+    "files": [
+      ".agents/skills/asd-phase-impl/SKILL.md",
+      ".asd/workflows/asd-phase-impl.md",
+      ".asd\\tmp\\040-baseline\\standard-impl-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 61223,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "plan",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 86117,
+    "files": [
+      ".agents/skills/asd-phase-plan/SKILL.md",
+      ".asd/workflows/asd-phase-plan.md",
+      ".asd\\tmp\\040-baseline\\standard-plan-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 48436,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "pr",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 100279,
+    "files": [
+      ".agents/skills/asd-phase-pr/SKILL.md",
+      ".asd/workflows/asd-phase-pr.md",
+      ".asd\\tmp\\040-baseline\\standard-pr-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 52299,
+      "cached_input_tokens": 7552,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "retro",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 81250,
+    "files": [
+      ".agents/skills/asd-phase-retro/SKILL.md",
+      ".asd/workflows/asd-phase-retro.md",
+      ".asd\\tmp\\040-baseline\\standard-retro-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 47699,
+      "cached_input_tokens": 26240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  },
+  {
+    "workflow": "standard",
+    "phase": "scope",
+    "model": "gpt-6.2-sol",
+    "effort": "low",
+    "role": "orchestrator",
+    "prompt_bytes": 118244,
+    "files": [
+      ".agents/skills/asd-phase-scope/SKILL.md",
+      ".asd/workflows/asd-phase-scope.md",
+      ".asd\\tmp\\040-baseline\\standard-scope-context.md"
+    ],
+    "ok": true,
+    "usage": {
+      "input_tokens": 56813,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0
+    },
+    "toolCalls": 0,
+    "exitCode": 0,
+    "itemTypes": [
+      "error",
+      "error",
+      "agent_message"
+    ]
+  }
+]
