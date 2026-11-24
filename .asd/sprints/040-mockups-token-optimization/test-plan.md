@@ -40,13 +40,15 @@ Entry 5 added no tests. The review-fix extension and its proofs are in [entry 4]
 ## Suite run
 
 - Pre-strategy evidence: The initial seven-area run passed 175/175 (`suite impl-test#18`). The complete selection below added `contract-templates` after tracing its canonical Markdown scan, and ran before strategy. The complete run is eligible for the impacted gate because this entry needs no test edits.
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-timing sync-cli sync-render update`
-- Scope: impacted
-- Scope evidence: The enabled safety valve bounds the delta to the init approval clause, its content-contract test and the corresponding views and release hashes. `contract-agents`, `contract-rules` and `contract-templates` scan canonical skills. `contract-workflows` reads this skill and checks the standalone cap. `runtime-timing` verifies enforcement at the cap boundary. `sync-cli`, `sync-render` and `update` exercise release and sync checks, and `update` runs both the repaired contract and CLI retry. Shared runtime, sync and test setup are outside the delta.
-- Result: pass, exit 0. 189 passed, 0 failed, 0 runner-level skips. Four existing Windows fixture branches bypassed file-symlink assertions.
-- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current. `node .asd/runtime.js context-check` reported no exceeded ceilings.
-- HEAD: 9eb5a8ec562230421cf95387f033a14388fc96ca
-- Provenance: `suite impl-test#19` under dispatch `impl-test entry 5 strategy`. HEAD matched before and after. Relevant source, generated views, agent memory, tests and stubs were clean, including untracked files. No smoke command is configured.
+- Command: `node tests/run.js` (configured `test_durations`; unscoped)
+- Scope: full
+- Scope evidence: The configured duration command is the unscoped full suite command; every test file ran without an area or name filter.
+- Result: pass, exit 0. 326/326 passed.
+- Lint / build: `git diff --cached --check` — pass, exit 0; `node .asd/sync.js --check` — pass, exit 0 (all generated sync items current).
+- Smoke: not configured.
+- HEAD: 372a94acc8c6ecda8632a11329615262c4f9c523 (confirmed unchanged before and after).
+- Slowest tests: sprint-023 AC-2 branch sync — 1164 ms; sprint-036 AC-14 agent-liveness returned review — 1084 ms; sprint-021 AC-7 agent-liveness transcript states — 1040 ms; sprint-019 AC-8 scoped commit command — 819 ms; sprint-017 AC-8 draft-snapshot / emit-manifest diff — 552 ms; sprint-033 AC-12/AC-21 commit-check — 518 ms; sprint-027 AC-9 runner filter — 493 ms; sprint-017 AC-4/AC-8 emit-manifest full range — 492 ms; sprint-020 AC-9 persist-review — 490 ms; sprint-038 AC-1/AC-2 and sprint-040 AC-1 config-check — 481 ms.
+- Provenance: `suite impl-review#2` under dispatch `impl-review terminal suite retry`. The prior `suite impl-review#1` run reported 323/326 because child Git commands were denied; retry triage confirmed those tests pass with per-invocation `safe.directory` environment variables and no code change. This run set those variables only in its PowerShell process, verified `git check-attr whitespace -- README.md`, and passed 326/326. Smoke is not configured.
 - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
 - Line delta: tests +359/−43 (net 316); other +894/−888 (net 6)
 

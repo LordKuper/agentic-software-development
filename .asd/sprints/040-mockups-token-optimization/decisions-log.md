@@ -89,3 +89,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — route impl-test entry 5 strategy: standard, dispatch HEAD 9eb5a8ec562230421cf95387f033a14388fc96ca
 - 2026-11-24 — impl-test: impacted set green (189/189 reused at 9eb5a8e), 0/0 tests
 - 2026-11-24 — wave-1/iter-04: Combined APPROVE with complete validated ledger. External available only as authentication skip; 70 unreviewed paths carried from all attempts. Run fresh terminal full suite because code, memory and tests changed after entry 3 full run.
+- 2026-11-24 — route impl-review terminal suite: runner, dispatch HEAD 372a94acc8c6ecda8632a11329615262c4f9c523
+- 2026-11-24 — route impl-review terminal triage: standard, dispatch HEAD 372a94acc8c6ecda8632a11329615262c4f9c523
+- 2026-11-24 — Terminal full suite 323/326 at 372a94a because the isolated process did not set Git safe.directory. Fresh Tester reproduced the host denial and passed the three previously failing tests on unchanged HEAD using process-scoped Git config. contract-rules and runtime-timing were inside the last impacted run. runtime-routing was outside (F-3). Rerun unscoped in a fresh runner. No code or test defect.
+- 2026-11-24 — route impl-review terminal suite retry: runner, dispatch HEAD 372a94acc8c6ecda8632a11329615262c4f9c523
+- 2026-11-24 — Impl-review DoD met. Combined APPROVE and iteration-local External Review availability skip. Fresh terminal full suite 326/326 at 372a94a with process-scoped Git settings, lint and all 77 sync targets green. Adaptive handoff to design-promote.
