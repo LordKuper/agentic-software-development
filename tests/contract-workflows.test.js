@@ -139,12 +139,12 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
       const optionalDocs = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents');
       const noOpRow = /^\| design \| (.*?) \|$/m.exec(optionalDocs)?.[1] ?? '';
       assert.ok(designDocs.every((doc) => spans(noOpRow).includes(doc)), 'the no-op table identifies every frozen design document');
-      assert.match(promote, /\bNo-op when all five design documents are disabled and there are no in-scope mockups\b/, `sprint-020 AC-5, sprint-040 AC-1: ${name} promotes a mockup-only sprint and skips only empty combined scope`);
+      assert.match(promote, /\bNo-op (?:when|with) all five design doc(?:ument)?s (?:are )?disabled and (?:there are )?no in-scope mockups\b/, `sprint-020 AC-5, sprint-040 AC-1: ${name} promotes a mockup-only sprint and skips only empty combined scope`);
       assert.strictEqual(designDocs.length, 5, 'the Lite no-op clause counts every design document');
-      const inputsOf = (text) => [...text.slice(0, text.indexOf('in place of drafts')).replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
-      const promoteInputs = inputsOf(promote);
-      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && rel !== '.asd/workflows/asd-phase-design-promote.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
-      assert.ok(promoteInputs.length > 0, `sanity: the "Workflows" design-promote bullet must name the files read "in place of drafts", or the input comparison below compares nothing`);
+      const inputsOf = (text) => [...text.replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
+      const promoteInputs = inputsOf(promote.split(/\.(?=\s)/).find((sentence) => sentence.includes('"Design-promote phase"')) || '');
+      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && rel !== '.asd/workflows/asd-phase-design-promote.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts')), line.indexOf('in place of drafts')))]));
+      assert.ok(promoteInputs.length > 0, 'sanity: the "Workflows" design-promote bullet must name the files it reads');
       const promoteItem = jsonOf('.asd/workflows/asd-phase-design-promote.md', 'Inputs').find((item) => item.startsWith(`${name}:`)) || '';
       inputSites.push(['.asd/workflows/asd-phase-design-promote.md Inputs', [...promoteItem.matchAll(/([\w-]+\.md)/g)].map((match) => match[1]).sort()]);
       assert.deepStrictEqual(inputSites.filter(([, inputs]) => inputs.join() !== promoteInputs.join()), [], `documentation.md F-3 (wave-1/iter-01): every site stating what ${name}'s design-promote reads in place of drafts must name the same files as its "Workflows" home (${promoteInputs.join(', ')}) - a wider acting site reads what its cited rule never grants, a narrower one promotes without it`);
@@ -526,6 +526,34 @@ test('sprint-040 AC-1: frozen mockup selection reaches Standard drafts and Lite 
   const ux = canonText('.asd/templates/t_ux-spec.html');
   assert.match(ux, /<a href="\{\{relative mockup path or stable remote URL\}\}">/);
   assert.doesNotMatch(ux, /<iframe\b|\bsrcdoc=/i);
+});
+
+test('sprint-040 AC-8: sprint startup and direct phase entry reach the shared context and fail closed', () => {
+  const providerPath = '.asd/rules/providers.md';
+  const protocolPath = '.asd/rules/agent-protocol.md';
+  const branch = 'Orchestrator branch references';
+  const entry = 'Orchestrator phase entry';
+  const sprintSteps = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Steps');
+  const phases = [...new Set(readWorkflowDefinitions().flatMap(({ phases }) => phases))];
+  const providers = readRepoFile(providerPath);
+  const procedure = headingBody(protocolPath, entry);
+  const branchRules = headingBody(providerPath, branch);
+  const gaps = [];
+
+  if (!sprintSteps.split('### Step 1:')[0].includes(`\`providers.md\` "${branch}"`)) gaps.push('sprint startup before sprint detection');
+  if (!/context --role orchestrator --phase <phase> --out /.test(procedure) ||
+      !procedure.includes('orchestrator-scope.context.md') ||
+      !/build failure.*`FAILED`.*before executing phase steps/i.test(procedure)) gaps.push('phase bundle and build failure guard');
+  if (!procedure.includes('section --file <path> --heading <text>') ||
+      !/missing required text blocks/i.test(branchRules)) gaps.push('required section failure guard');
+
+  for (const phase of phases) {
+    const refs = runtime.contextRefs(providers, 'orchestrator', phase);
+    const { ops } = jsonOf(`.asd/workflows/asd-phase-${phase}.md`, 'Entry');
+    if (!ops.some((op) => op.startsWith(`context: agent-protocol.md '${entry}'`))) gaps.push(`${phase}: entry operation`);
+    if (!refs.includes(`${providerPath}#${branch}`)) gaps.push(`${phase}: branch bundle`);
+  }
+  assert.deepStrictEqual(gaps, [], 'both sprint workflows and direct phase runs must reach the shared failure guards before acting');
 });
 
 test('sprint-031 AC-1/AC-2/AC-3: standard dispatches combined and External Review in design-review while impl-review rosters stay, the design-review workflow and its skill dispatch the agents of that roster under its keys, and a reviewer carries design-review inputs only where a roster dispatches it there', () => {

@@ -371,14 +371,13 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class h
   assert.ok(/review-fix mode first.*initial mode over the plan's unticked Tasks only.*one `NEXT: impl-test`/.test(amendment), 'AC-6: "Scope amendment" must run review-fix first, then initial mode over unticked Tasks only (never a ticked one again), before one NEXT: impl-test');
   const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
   const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
-  assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
+  assert.ok(/skip fully ticked waves|wave whose Tasks are all ticked is skipped/i.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
 
   const gate = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
-  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => /flagged choice/i.test(sentence) && sentence.includes('plan decision')) || '';
-  const scopeClass = 'new or changed scope';
-  assert.ok(unmet.includes(`\`${scopeClass}\``), `AC-8: "Gate policy" must carry a flagged-choice sentence about an unmeetable plan decision that names the ${scopeClass} class`);
-  assert.ok(gate.includes(`Hard in both modes: ${scopeClass}`), `AC-8: the ${scopeClass} class the flagged-choice sentence names must be the hard class "Gate policy" lists`);
+  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => /unmeetable plan/.test(sentence)) || '';
+  assert.match(unmet, /widen.*needed files.*(?:seek a scope decision to drop|dropping.*new or changed scope)/i, 'AC-8: widen an unmeetable plan fix or get a scope decision before dropping the requirement');
+  assert.match(gate, /Hard in both modes: (?:unauthorized scope|new or changed scope).*"Scope amendment"/, 'AC-8: changing scope stays a hard gate');
   const mutation = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
   assert.ok(mutation.includes('superseded') && mutation.includes('citation'), 'AC-9: code-style.md §17 must bound the representative mutation of a changed-rule pin (superseded text, new clause removed with its citation kept)');
 });

@@ -60,6 +60,9 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
     for (const [, list] of text.matchAll(/`\.asd\/runtime\.js`\s*\(?((?:`\w+`(?:\s*[,/]\s*)?)+)/g)) {
       for (const [, symbol] of list.matchAll(/`(\w+)`/g)) citers.set(symbol, (citers.get(symbol) || []).concat(rel));
     }
+    for (const [, symbol] of text.matchAll(/`(\w+)`\s*\(`?\.asd\/runtime\.js`?\)/g)) {
+      citers.set(symbol, (citers.get(symbol) || []).concat(rel));
+    }
     for (const [, subcommand] of text.matchAll(/node \.asd\/runtime\.js ([a-z-]+)/g)) invoked.push(`${rel}: ${subcommand}`);
     for (const [, predicate] of text.matchAll(/`n\/a: ([^`<][^`]*)`/g)) quoted.push(`${rel}: ${predicate}`);
   }
