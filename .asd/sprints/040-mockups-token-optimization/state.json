@@ -201,42 +201,11 @@
   },
   "skipped_phases": [],
   "reviews": {
-    "design": {
-      "iteration": 0,
-      "verdicts": {},
-      "latched": {}
-    },
-    "impl": {
-      "wave": 1,
-      "waves": [
-        {
-          "iteration": 3,
-          "verdicts": {
-            "iter-01": {
-              "combined": "CONCERNS",
-              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
-            },
-            "iter-02": {
-              "combined": "CONCERNS",
-              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
-            },
-            "iter-03": {
-              "combined": "CONCERNS",
-              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
-            }
-          },
-          "iteration_heads": {
-            "iter-01": "ebc18c274ed85a70219213903730bffbd59bf7e9",
-            "iter-02": "dc5513b0991b0bc9c615ea5334ba1404b3e343b5",
-            "iter-03": "98809e7c599764a38a6d8795de88fc10ba6bc503"
-          },
-          "latched": {}
-        }
-      ]
-    }
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 4, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-04": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "ebc18c274ed85a70219213903730bffbd59bf7e9", "iter-02": "dc5513b0991b0bc9c615ea5334ba1404b3e343b5", "iter-03": "98809e7c599764a38a6d8795de88fc10ba6bc503", "iter-04": "464948245970becfe18d75d947c81fa087570f59" }, "latched": { "combined": 4 } } ] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T13:55:29.575Z",
+  "updated_at": "2026-11-24T13:55:35.287Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

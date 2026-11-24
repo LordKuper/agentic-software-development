@@ -88,3 +88,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — impl fix for wave-1/iter-03: findings resolved
 - 2026-11-24 — route impl-test entry 5 strategy: standard, dispatch HEAD 9eb5a8ec562230421cf95387f033a14388fc96ca
 - 2026-11-24 — impl-test: impacted set green (189/189 reused at 9eb5a8e), 0/0 tests
+- 2026-11-24 — wave-1/iter-04: Combined APPROVE with complete validated ledger. External available only as authentication skip; 70 unreviewed paths carried from all attempts. Run fresh terminal full suite because code, memory and tests changed after entry 3 full run.
