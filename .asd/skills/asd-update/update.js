@@ -628,8 +628,7 @@ async function main() {
     const plan = planUpdate(repoRoot, fetched.sourceRoot);
     printPlan(plan);
     const reachedTarget = compareVersions(plan.oldVersion, plan.newVersion) >= 0;
-    if (reachedTarget && plan.pendingMigrationVersions.length === 0
-      && plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
+    if (reachedTarget && plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
       log('\nAlready up to date.');
       return;
     }
