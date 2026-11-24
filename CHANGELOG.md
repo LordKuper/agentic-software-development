@@ -2,6 +2,19 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.12.0
+
+### Changed
+
+- Choose `claude_design`, `figma`, `html` or `none` with `project.mockup_format`. The mockup setting is independent of the UX specification. New UX specifications link to standalone mockups.
+- Check the installed configuration at the end of a real `asd-update` and offer values for missing settings. Sprint entry skips the completeness check.
+- Load phase-specific guidance in smaller bundles. Matched Codex phase probes used 30.3% less input for Lite and 31.9% less for Standard.
+
+### Fixed
+
+- Preserve the effective legacy mockup mode when migrating settings. A retry can finish a pending migration after the framework files are already current.
+- Refuse linked installed config paths during the migration and update completion. Keep the updater diagnostics and sync checks compatible with Node.js 16.7.
+
 ## v14.11.0
 
 ### Added
