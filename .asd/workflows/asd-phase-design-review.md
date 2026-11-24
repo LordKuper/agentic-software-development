@@ -11,12 +11,12 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a 
 ## Inputs
 
 ```json
-[".asd/project/config.yaml (review.external_review, review.codex_profile, system.tools, review.iterations_low/medium/high/critical, self_hosting, language.chat, language.docs)", "state.json frozen documents.*, reviews.design", "in-scope drafts in <sprint>/design/, files under <sprint>/design/mockups/ included with ux_spec enabled (step 1)", "previous iteration's review files and snapshot (iter 2+)"]
+[".asd/project/config.yaml (review.external_review, review.codex_profile, system.tools, review.iterations_low/medium/high/critical, self_hosting, language.chat, language.docs; mockup settings for legacy state only)", "state.json frozen documents.*, mockup_format and reviews.design", "in-scope drafts in <sprint>/design/, including standalone mockups (step 1)", "previous iteration's review files and snapshot (iter 2+)"]
 ```
 
 ## Steps
 
-1. Read frozen `documents.prd`/`ux_spec`/`adr`/`c4` from `<sprint>/state.json`. With `ux_spec` enabled, reconcile complete verified Figma entries into `design/mockups/index.md` per `design-system.md` §12 and pause if a required entry is still pending recovery. Then list the **intersection** of enabled documents and drafts that exist in `<sprint>/design/`. With `ux_spec` enabled, include every file under `<sprint>/design/mockups/`, at any depth.
+1. Read frozen documents and the effective mockup format (`sprint-lifecycle.md` "Mockup format", including its legacy fallback). For `figma`, reconcile complete verified entries in `design/mockups/index.md` per `design-system.md` §12 and pause while required recovery is pending. List existing drafts for enabled documents. When the effective format is other than `none`, include every file under `<sprint>/design/mockups/` at any depth, including mockup-only scope.
 2. **No-op path** — a design-block collapse (`sprint-lifecycle.md` "Design/design-review/design-promote collapse") never reaches this phase; this defensive fallback covers an empty intersected scope on a direct re-dispatch: write inline (mechanical, no gate, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)"; emit phase COMPLETED; skip remaining steps.
 3. Read `.asd/project/config.yaml`; `self_hosting: enabled` adds `--self-hosting` to step 7's `emit-manifest`.
 3a. When `review.external_review=enabled`, run `node .asd/runtime.js external-preflight --input <path>` before External Review dispatch or diff assembly. Supply the host, profile, command overrides and cache path per `external-review.md` "Detection and negative cache". Pass the ready result to the wrapper unchanged. On non-ready — only then — record the transparent availability skip (`external-review.md` "Outcome contract"), still computing step 7's scope-manifest `files[]` for its `Unreviewed files`; after a real authentication/quota/reachability/command failure call `external-record-failure` with the returned fingerprint, the same cache path, and bounded retry data.
@@ -59,7 +59,7 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a 
 - Orchestrator: apply `design-system.md` §12 "Figma publication and recovery" to any inline Figma fix at step 9, for accepted FAIL and CONCERNS alike.
 - Reviewer: return findings + complete coverage ledger (file, rule, and section) + verdict as final text per `t_review.md` (External Review: `external-review/t_review-report.md`), first-line verdict token `[REVIEW-design-<reviewer>]: ...`; an internal reviewer also writes it verbatim to its return file `.asd/tmp/<NNN-slug>-design-iter-NN-<reviewer>.return.md` (`review-policy.md` "Coverage ledger" Persistence). A reviewer never writes `<reviewer>.md` itself.
 - Reviewer: cover every id in the manifest, `n/a` authorizations included; impl-only rubric sections never fire against drafts — the manifest's `n_a` carries that phase gate.
-- `asd-reviewer-combined` judges draft correctness on every draft; with no ux-spec/design-system draft in scope, its UI conformance entry is `n/a: outside phase gate`.
+- `asd-reviewer-combined` judges every draft. Its UI conformance entry is `n/a: outside phase gate` only when no UX-spec, design-system or standalone mockup draft is in scope.
 - A reviewer never returns a bare `QUESTION`: its question rides the verdict `question:` carrier (`review-policy.md` "Gate Verdict Format").
 
 ## Dispatch

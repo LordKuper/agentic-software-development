@@ -186,7 +186,7 @@ flowchart TD
 |---|---|
 | **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, best-practice web research, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; one triage-authorisation request precedes the first GitHub write; creates the sprint branch and folder |
 | **audit** | Orchestrator reads every existing doc bearing on the touched areas, plus the code; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks and stubs to resolve. Before declaring a missing check or bound, search tests for the concern's identifiers and cite the result. |
-| **design** | Orchestrator writes PRD, UX-spec and UI mockups, ADRs and C4 schema, each section locked in on disk before the next and then one artifact-level accept |
+| **design** | Orchestrator produces enabled document drafts and standalone UI mockups, with section lock-in and artifact acceptance where applicable |
 | **design-review** | 1 combined internal reviewer (Quality and Efficiency rubrics in one pass) plus External Review iterate to APPROVE |
 | **design-promote** | Orchestrator decomposes approved sprint drafts per subsystem and promotes them to persistent `docs/` |
 | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave; maps each user decision to an AC/Task or Out of scope, and runs the `commands.yaml` build once (`FAILED` names the failing command). Schedules compile-only test adaptations first in the next wave and keeps each wave build green. Verifies infrastructure command references and pinned deployment images, and records alert-key behavior under retention, threshold changes, recovery without new data and clock rollback. |
@@ -314,7 +314,7 @@ language:
 
 project:
   subsystem_decomposition: enabled    # enabled | disabled
-  mockup_format: html                 # html | claude_design | figma
+  mockup_format: html                 # none | html | claude_design | figma
   diagram_tool: likec4                # none | likec4 | mermaid (any diagram also needs decomposition enabled)
 
 backward_compat: migration            # strict | migration | none
@@ -338,7 +338,7 @@ git:
   ai_attribution: enabled             # enabled | disabled; disabled keeps Claude/Codex attribution out of commits and PRs
 ```
 
-When `documents.ux_spec` is enabled, `project.mockup_format` selects local HTML, Claude Design, or Figma Design for Lite scope and Standard design. In existing configs without `mockup_format`, `project.claude_design: enabled` selects Claude Design and `disabled` selects HTML. Claude Design uses local previews when unavailable and can retry a deferred Lite publication at design-promote. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
+`project.mockup_format` selects standalone HTML, Claude Design, Figma Design or `none` independently of `documents.ux_spec`. Scope freezes the mode for the sprint, using `none` for non-UI work. Lite creates mockups at scope and promotes them after implementation review. Standard creates them at design and includes them in design review and promotion, including mockup-only sprints. UX specs link to available previews. The release migration keeps the previous effective format, including `none` wherever the old UX-spec setting suppressed mockups. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
 
 Figma needs a connected remote integration and edit access to a Design file you supply or approve creating. ASD records links to editable frames for review, implementation and promotion. If it cannot write, you choose temporary local HTML or wait for access. The project setting stays on Figma. [Figma setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
 
@@ -402,7 +402,7 @@ your-project/
 │       ├── DESIGN.md                # Google Labs format token source
 │       ├── design-system.html       # rendered live preview
 │       ├── accessibility.html
-│       ├── mockups/                 # promoted from the sprint's design/mockups/; ux_spec enabled only
+│       ├── mockups/                 # promoted from the sprint's design/mockups/
 │       └── <subsystem>.html         # ux-spec per subsystem
 ├── .agnix.toml                      # this repo only (self-hosting): agnix config for `checks.agnix`, CC-SK-007 disabled with its reason
 ├── AGENTS.md                        # SSoT rules hub, read by both providers
@@ -517,7 +517,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
 
 **Can I skip PRD/UX-spec/design system/ADR/C4/cleanup for a lean sprint?**
-Yes. PRD, UX-spec, design system and ADR are independently toggleable under `documents.*` in `config.yaml` (`ux_spec` gates only the sprint ux-spec and persistent ux-spec docs; `design_system` gates the design-system gate, `design-md-delta.yaml` and DESIGN.md/design-system.html/accessibility.html promotion); the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. In the `standard` workflow, when `prd`/`ux_spec`/`design_system`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run, and `cleanup` runs unless the top-level `cleanup: disabled` (also frozen at scope) makes it a no-op; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. For a sprint with no design phases at all, pick the `lite` workflow at scope: `design-promote` then runs after `impl-review`, writing the enabled docs from the implementation. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
+Yes. PRD, UX-spec, design system and ADR are independently toggleable under `documents.*` in `config.yaml`. The diagram is off with `project.diagram_tool: none` or decomposition disabled. Scope freezes these settings and the effective mockup format in `state.json`. Before an optional document has a draft, ask to skip it at the scope gate or audit exit. A hard gate flips its frozen value for that sprint. `documents.audit` resolving to off makes audit a no-op and records one skip line. Standard collapses `design`, `design-review` and `design-promote` in one write at the audit exit when all five design documents are off and the effective mockup format is `none`, advancing to `plan`. `plan`, `impl`, `impl-test`, `impl-review`, `retro` and `pr` always run. `cleanup: disabled` skips cleanup. When PRD is disabled, `sprint.md` supplies the `AC-N` criteria. Lite runs `design-promote` after `impl-review`, using the accepted implementation for enabled docs and promoting existing in-scope mockups. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
 
 **Do my retro findings about ASD reach the framework?**
 Yes. A consumer project's retro publishes each open `asd` row as an `[asd-retro]` issue on the ASD repo, in English, containing only the guardrail, cause or saving, the framework path, provider and ASD version; `gh` unavailable skips it, `upstream_issues: disabled` turns it off. ASD's own sprints triage those issues at scope, put the open ones to you for include/reject/defer, and close the included ones once the release is published.

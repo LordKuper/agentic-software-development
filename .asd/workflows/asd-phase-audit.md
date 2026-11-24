@@ -11,7 +11,7 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries 
 ## Inputs
 
 ```json
-["state.json frozen workflow and documents.*", "sprint.md", "research (sprint-lifecycle.md 'Input sources')", "touched areas: source, every docs/ document bearing on them, other documentation, stubs", "docs/architecture/subsystems.md and touched <id>.md (subsystem_decomposition enabled)", "t_audit.md"]
+["state.json frozen workflow, documents.* and mockup_format", "sprint.md", "research (sprint-lifecycle.md 'Input sources')", "touched areas: source, every docs/ document bearing on them, other documentation, stubs", "docs/architecture/subsystems.md and touched <id>.md (subsystem_decomposition enabled)", "t_audit.md"]
 ```
 
 ## Steps

@@ -33,7 +33,7 @@ A workflow is one sprint lifecycle, declared in `.asd/workflows/<name>.json`; on
 - Chain: scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → cleanup → retro → pr. No `design`, no `design-review`, no drafts.
 - Acceptance criteria: always `sprint.md`'s `AC-N` list, whatever `documents.prd`. `plan` reads `sprint.md` plus `audit.md` when audit ran; it needs no promoted doc.
 - impl-review dispatches `combined` plus External Review (`reviewers.impl`); waves, counters, severity floors, latches, the terminal full suite and fix routing are unchanged. Its green exit is `NEXT: design-promote`.
-- design-promote runs after impl-review DoD, "Design-promote phase" steps 1-5 with `sprint.md`, `plan.md`, the sprint diff and `audit.md` when present in place of drafts: the orchestrator writes or updates the persistent docs of every document the frozen `documents.*` enables — no draft, no review. With `design_system` enabled the design-system gate (`asd-phase-design.md` step 7) precedes the ux write. Hard gates stay: a new subsystem, material stack/UX/brand direction, each `DESIGN.md` token change (`checkpoints.md` "Gate policy"). No-op when frozen `prd`, `ux_spec`, `adr`, `c4` and `design_system` are all `false`. Its writes are committed before `NEXT: cleanup`.
+- design-promote runs after impl-review DoD, "Design-promote phase" steps 1-5 with `sprint.md`, `plan.md`, the sprint diff and `audit.md` when present in place of drafts. It writes enabled persistent docs and promotes existing in-scope mockups from scope independently. With `design_system` enabled, its gate (`asd-phase-design.md` step 7) precedes the UX write. Hard gates stay: a new subsystem, material stack/UX/brand direction, each `DESIGN.md` token change (`checkpoints.md` "Gate policy"). No-op when all five design documents are disabled and there are no in-scope mockups. Commit the writes before `NEXT: cleanup`.
 
 ## Phases (all mandatory)
 
@@ -188,6 +188,12 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 **Config string → state boolean**: `t_state.json`'s `documents` map holds `"{{DOC_AUDIT}}"`/`"{{DOC_PRD}}"`/`"{{DOC_UX_SPEC}}"`/`"{{DOC_DESIGN_SYSTEM}}"`/`"{{DOC_ADR}}"`/`"{{DOC_C4}}"`, and top-level `cleanup` holds `"{{CLEANUP}}"`, as quoted placeholders — quoted so the template file itself stays valid, parseable JSON as shipped. At `scope` write time, replace each entire quoted token (**including its surrounding quotes**) with the bare JSON boolean `true`/`false` matching that value's normalized form (`{{DOC_AUDIT}}` the effective audit boolean, `{{DOC_C4}}` the effective diagram) — the written `state.json` must end up with `"audit": true`, never `"audit": "{{DOC_AUDIT}}"` or `"audit": "true"`. Never leave a placeholder token, quoted or not, in a written `state.json`.
 
+### Mockup format
+
+`project.mockup_format` accepts `none | html | claude_design | figma`. Scope freezes the effective mode as the string `state.json.mockup_format`: `none` for a non-UI scope, otherwise the configured mode. An explicit format is independent of `documents.ux_spec`, including a document skip. Block invalid mockup setting values. A config without `mockup_format` retains the legacy UX gate (absent `documents` group enables UX, a present group requires `ux_spec: enabled`), then maps `project.claude_design: enabled` to `claude_design`, `disabled` to `html`, and absence to `claude_design`. The release migration applies that old UX gate even to an explicit pre-upgrade format.
+
+When an in-flight state lacks `mockup_format`, use its frozen legacy UX flag (absent `documents` snapshot enables UX, a present group requires `ux_spec: true`). If enabled, use the affected UI scope and any existing mockup sources, index or publication records. Recover the recorded provider first, then use a configured non-`none` format or the legacy mapping above without the live UX flag. Preserve archived state and let a present snapshot take precedence over live settings and leftover files.
+
 **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-run") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
 
 **Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first; at the audit exit, a skipped audit's own `"audit"` precedes them in that same write. This way the successor of `phase` in the workflow's `phases` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
@@ -224,7 +230,7 @@ A phase whose entire applicable-artifact set is empty skips dispatch, records it
 | Phase | No-op when |
 |---|---|
 | audit | `audit` disabled |
-| design | `prd`, `ux_spec`, `design_system`, `adr`, effective `c4` all disabled |
+| design | `prd`, `ux_spec`, `design_system`, `adr`, effective `c4` all disabled and effective mockup format `none` |
 | design-review | design phase produced zero drafts |
 | design-promote | zero approved drafts to promote (`lite`: "Workflows") |
 | cleanup | frozen `cleanup` `false` |
@@ -233,7 +239,7 @@ A `cleanup` no-op appends `"cleanup"` to `skipped_phases`, advances `phase` and 
 
 ### Design/design-review/design-promote collapse
 
-`standard` only ("Workflows"). One deterministic no-op write at the audit exit — design is never dispatched either; the design workflow repeats it only as a defensive fallback for a direct re-dispatch. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `documents.prd`/`ux_spec`/`design_system`/`adr`/`c4` are all `false`. A legacy `state.json.skip_design_phases` is ignored: the scope that froze it `true` froze those documents `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
+`standard` only ("Workflows"). Collapse when frozen `documents.prd`/`ux_spec`/`design_system`/`adr`/`c4` are all `false` and the effective mockup format is `none` ("Mockup format"). Ignore historical `skipped_phases` and legacy `state.json.skip_design_phases`. One deterministic no-op write at audit exit sets `phase="design-promote"`; `design` repeats it only as a defensive fallback for direct re-dispatch. None of the three phases is dispatched after the collapse. Resume dispatches `plan`, which needs no promotion.
 
 ## Design-promote phase
 
@@ -247,7 +253,7 @@ The main orchestrator handles gates and writes every promotion itself:
 4. Promotion:
    - product → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
    - architecture → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; only when frozen `documents.c4` is `true`, applies the sprint's c4 delta patch (or, when the persistent diagram did not exist before this sprint, writes the full schema directly) — likec4 to `docs/architecture/c4/`, mermaid to the diagram block in `subsystems.md`; architecture migration items. Rendering (`dist/`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
-   - ux → `docs/ux/<subsystem>.html` from ux-spec draft when frozen `ux_spec`; when frozen `design_system`, patches `DESIGN.md` from `design-md-delta.yaml` and regenerates `design-system.html`; ux migration items.
+   - ux → `docs/ux/<subsystem>.html` from ux-spec draft when frozen `ux_spec`; when frozen `design_system`, patches `DESIGN.md` from `design-md-delta.yaml` and regenerates `design-system.html`; ux migration items. Promote in-scope mockups independently per `design-system.md` §12.
 5. The dispatching workflow composes promotion records and writes state inline.
 
 Dropping the per-persistent-write and final-mutation gates (former steps 4's trailing sentence and step 5) also drops the **partial rollback** affordance they used to offer (confirm / rollback / partial rollback on the whole batch) — no direct replacement exists at this gate level. The compensating control is a non-blocking post-promotion summary the dispatching workflow posts after all writes land (implemented in `asd-phase-design-promote.md`, not this rule doc).
