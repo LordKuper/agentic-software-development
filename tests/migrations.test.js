@@ -2,7 +2,7 @@
 
 // release migrations under .asd/migrations
 
-const { assert, fs, path, sync, update, REPO_ROOT, FIXTURES, tests, test, mkTempDir, loadManifest, GOOD_AGENT_CANON, writeFile, markedFileContent, canonText, readRemovedConfigKeys, migrateConfig900, canonAgents, retiredAgentNames1400, legacyReviewerKeys1400 } = require('./lib.js');
+const { assert, fs, path, spawnSync, sync, update, REPO_ROOT, FIXTURES, tests, test, mkTempDir, loadManifest, GOOD_AGENT_CANON, writeFile, markedFileContent, canonText, readRemovedConfigKeys, migrateConfig900, canonAgents, retiredAgentNames1400, legacyReviewerKeys1400 } = require('./lib.js');
 
 const migration400 = require('../.asd/migrations/4.0.0.js');
 
@@ -71,6 +71,49 @@ test('sprint-040 AC-1: migration rejects unresolved legacy settings without rewr
     writeFile(repoRoot, MOCKUP_CONFIG, input);
     assert.throws(() => migrate({ repoRoot }), { message: new RegExp(key.replace('.', '\\.')) });
     assert.strictEqual(fs.readFileSync(file, 'utf8'), input);
+  }
+});
+
+test('sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths', () => {
+  const migrate = require('../.asd/migrations/14.12.0.js');
+  const input = 'project:\n  claude_design: disabled\n  diagram_tool: private-fixture-value\n';
+  const runtime = '.asd/runtime.js';
+  const template = '.asd/templates/t_config.yaml';
+  for (const relative of ['.asd', '.asd/project', MOCKUP_CONFIG]) {
+    const repoRoot = mkTempDir();
+    const outside = mkTempDir();
+    const link = path.join(repoRoot, relative);
+    const real = path.join(outside, relative);
+    writeFile(outside, MOCKUP_CONFIG, input);
+    const cliRoot = relative === '.asd' ? outside : repoRoot;
+    writeFile(cliRoot, runtime, canonText(runtime));
+    writeFile(cliRoot, template, canonText(template));
+    fs.mkdirSync(path.dirname(link), { recursive: true });
+    if (relative === MOCKUP_CONFIG) {
+      try {
+        fs.symlinkSync(real, link, 'file');
+      } catch (error) {
+        if (process.platform !== 'win32' || error.code !== 'EPERM') throw error;
+        fs.symlinkSync(path.dirname(real), link, 'junction');
+      }
+    } else {
+      fs.symlinkSync(real, link, 'junction');
+    }
+
+    const refusal = `${relative} must be`;
+    const snapshot = () => [
+      fs.readlinkSync(link),
+      fs.readFileSync(path.join(outside, MOCKUP_CONFIG), 'utf8'),
+      fs.readdirSync(path.join(outside, '.asd/project')).sort(),
+      fs.readdirSync(path.join(repoRoot, '.asd/project')).sort(),
+    ];
+    const before = snapshot();
+    const check = spawnSync(process.execPath, [path.join(repoRoot, runtime), 'config-check'], { encoding: 'utf8' });
+    assert.strictEqual(check.status, 2, `${relative}: ${check.stdout}${check.stderr}`);
+    assert.ok(check.stderr.includes(refusal), check.stderr);
+    assert.doesNotMatch(check.stdout + check.stderr, /private-fixture-value/);
+    assert.throws(() => migrate({ repoRoot }), (error) => error.message.includes(refusal));
+    assert.deepStrictEqual(snapshot(), before);
   }
 });
 

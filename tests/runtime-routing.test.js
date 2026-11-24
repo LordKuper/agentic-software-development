@@ -2,7 +2,7 @@
 
 // runtime.js task routing, external-review preflight, negative cache and command invocation
 
-const { assert, fs, path, execFileSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, writeFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
 
 /** A path to the host's node under a second spelling, so a fingerprint over the command differs while the same executable runs. */
 const NODE_ALTERNATE_SPELLING = `${path.dirname(process.execPath)}${path.sep}${path.sep}${path.basename(process.execPath)}`;
@@ -258,6 +258,36 @@ test('Sprint 038 AC-1/AC-2, sprint-040 AC-1: config-check requires valid values,
     [badLegacy.status, legacyResult.duplicates, legacyResult.invalid.map(({ path: key }) => key)],
     [1, ['project.claude_design'], ['project.claude_design']]
   );
+});
+
+test('sprint-040 AC-2: config-check accepts installed, explicit file and stdin input', () => {
+  const root = mkTempDir();
+  const templateFile = '.asd/templates/t_config.yaml';
+  const template = canonText(templateFile);
+  const config = '.asd/project/config.yaml';
+  const cli = '.asd/runtime.js';
+  writeFile(root, cli, canonText(cli));
+  writeFile(root, templateFile, template);
+  writeFile(root, 'preview.yaml', template);
+  const check = (args = [], input) => {
+    const result = spawnSync(process.execPath, [path.join(root, cli), 'config-check', ...args], {
+      cwd: root, encoding: 'utf8', input,
+    });
+    assert.ok(result.stdout, result.stderr);
+    return [result.status, JSON.parse(result.stdout)];
+  };
+
+  const [absentStatus, absent] = check();
+  assert.deepStrictEqual([absentStatus, absent.ok], [1, false]);
+  assert.ok(absent.missing.includes('project.mockup_format'));
+  writeFile(root, config, template.replace(/^  mockup_format:.*$/m, ''));
+  const [status, incomplete] = check();
+  assert.deepStrictEqual([status, incomplete.missing], [1, ['project.mockup_format']]);
+  const complete = [0, { ok: true, missing: [], duplicates: [], invalid: [] }];
+  assert.deepStrictEqual(check(['--config', 'preview.yaml']), complete);
+  assert.deepStrictEqual(check(['--config', '-'], template), complete);
+  writeFile(root, config, template);
+  assert.deepStrictEqual(check(), complete);
 });
 
 test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {

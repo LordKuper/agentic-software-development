@@ -2,7 +2,7 @@
 
 // update.js state machine, driver and migration runner; release-manifest integrity
 
-const { assert, fs, path, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
 
 test('sprint-040 AC-2: only real update completion offers missing settings through installed asd-init', () => {
   const skill = '.asd/skills/asd-update/SKILL.md';
@@ -22,7 +22,9 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
-  assert.match(adoption, /On acceptance, insert exactly the approved missing leaves/);
+  const write = stepOf(adoption, '3');
+  assert.match(write, /\bacceptance\b/i);
+  assert.match(write, /\bexactly\b[^\n]*\bapproved missing leaves\b/i);
 });
 
 test('update state machine: upstream unchanged / local untouched -> noop', () => {
@@ -117,6 +119,65 @@ function writeManifest(root, overrides) {
 function hashOf(text) {
   return sync.sha256Hex(sync.normalizeText(text));
 }
+
+test('sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes', () => {
+  const localRoot = mkTempDir();
+  const releaseRoot = mkTempDir();
+  const upstreamRoot = path.join(releaseRoot, 'upstream');
+  const config = '.asd/project/config.yaml';
+  const manifest = '.asd/release-manifest.json';
+  const migration = '.asd/migrations/14.12.0.js';
+  const oldVersion = '14.11.0';
+  const targetVersion = '14.12.0';
+  const metadata = { repo: 'https://github.com/fixture/upstream', managed_paths: [migration] };
+  const input = 'project:\n  claude_design: disabled\n';
+  const invalid = input.replace('disabled', 'unknown');
+  const readLocal = (relative) => fs.readFileSync(path.join(localRoot, relative), 'utf8');
+  const archive = path.join(releaseRoot, 'upstream.tar.gz');
+  const preload = path.join(releaseRoot, 'local-download.js');
+  const cli = path.join(REPO_ROOT, '.asd/skills/asd-update/update.js');
+
+  writeManifest(localRoot, { ...metadata, asd_version: oldVersion });
+  writeManifest(upstreamRoot, { ...metadata, asd_version: targetVersion });
+  writeFile(localRoot, config, invalid);
+  for (const relative of ['.asd/runtime.js', '.asd/sync.js']) writeFile(localRoot, relative, canonText(relative));
+  writeFile(upstreamRoot, migration, canonText(migration));
+  execFileSync('tar', ['-czf', archive, 'upstream'], { cwd: releaseRoot });
+  writeFile(releaseRoot, 'local-download.js', `
+require('node:https').get = (_url, _options, receive) => {
+  const response = require('node:fs').createReadStream(${JSON.stringify(archive)});
+  response.statusCode = 200;
+  queueMicrotask(() => receive(response));
+  return response;
+};
+`);
+  const run = (...args) => spawnSync(process.execPath, ['--require', preload, cli, ...args], {
+    cwd: localRoot, encoding: 'utf8', timeout: 10_000,
+  });
+
+  const failed = run();
+  assert.strictEqual(failed.status, 1, failed.stderr);
+  assert.match(failed.stderr, /migration 14\.12\.0 failed/);
+  assert.strictEqual(readLocal(config), invalid);
+  assert.strictEqual(JSON.parse(readLocal(manifest)).asd_version, oldVersion);
+  assert.strictEqual(readLocal(migration), canonText(migration));
+
+  writeFile(localRoot, config, input);
+  const before = readLocal(manifest);
+  const preview = run('--dry-run');
+  assert.strictEqual(preview.status, 0, preview.stderr);
+  assert.match(preview.stdout, /^Planned writes: 0$/m);
+  assert.match(preview.stdout, /^Migrations that will run: 14\.12\.0$/m);
+  assert.strictEqual(readLocal(manifest), before);
+  assert.strictEqual(readLocal(config), input);
+
+  const retried = run();
+  assert.strictEqual(retried.status, 0, retried.stderr);
+  assert.match(retried.stdout, /^Applied 0 change\(s\)\.$/m);
+  assert.strictEqual(readLocal(config), 'project:\n  mockup_format: html\n');
+  assert.strictEqual(JSON.parse(readLocal(manifest)).asd_version, targetVersion);
+  assert.match(preview.stdout, /^\[dry-run\] no files written\.$/m);
+});
 
 test('update driver: new upstream file with nothing local -> add, written on apply', async () => {
   const localRoot = mkTempDir();
