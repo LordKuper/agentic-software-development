@@ -47,18 +47,15 @@ The Windows runner used directory junctions for `.asd` and `project`, and a junc
 ## Suite run
 
 - Entry 3 pre-strategy evidence: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows migrations runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update` under `suite impl-test#3` exited 1. 310 passed, 1 failed, 0 runner-level skips. Seven existing file-link fixture branches bypassed assertions because the Windows host could not create file symlinks. First failure: `FAIL - sprint-040 AC-2: only real update completion offers missing settings through installed asd-init`. `tests/update.test.js:25` still expects `/On acceptance, insert exactly the approved missing leaves/`. The implementation retains both requirements with an installed-config recheck between them. Relevant source, test and stub paths were clean throughout. HEAD moved from `102bbb4` to `bca653a` during the run with only sprint evidence changed. This is pre-strategy evidence only.
-- Entry 3 gate selection: full. With the safety valve enabled, `.asd/runtime.js` changes argument parsing shared by phase commands, and `.asd/sync.js` changes agent variant eligibility and ledger checks used by build and update. Use `node tests/run.js` at step 8 on the test-authoring revision.
 - Entry 3 authoring evidence: `node tests/run.js migrations runtime-routing update` passed 84/84, exit 0, after each test batch (`suite impl-test#4` and `#15`). Node `v16.7.0`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` passed 1/1 (`#11`). `npx --offline --yes --package node@16.7.0 node .asd/sync.js --check` exited 0 (`#12`), compared with exit 1 and `sync: Object.hasOwn is not a function` on isolated `bd73e08^` (`#9`).
 - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
-- Pre-strategy evidence: Task 9 self-check `node tests/run.js contract-rules contract-workflows contract-agents contract-templates runtime-routing runtime-tools runtime-timing sync-render sync-cli` passed 208/208 on its final test diff before commit. Entry 2 ran the expanded selection below on the committed tree before choosing any test work.
-- Command: `node tests/run.js contract-rules contract-workflows contract-agents contract-templates runtime-routing runtime-tools runtime-timing runtime-review sync-render sync-cli update`
-- Scope: impacted
-- Scope evidence: The enabled safety valve traced `.asd/rules/providers.md` and its named Markdown sections through runtime context extraction and the phase and sprint entry contracts. The selection includes all changed tests, phase and review contract readers, generated sprint skill checks and the update tests that compare live release hashes. The runner, shared test support, executable runtime, hooks and migrations have no delta since entry 1. The hook tests use isolated fixtures. Eleven of fourteen areas cover the traced consumers.
-- Result: pass, exit 0. 290 passed, 0 failed, 0 runner-level skips. Seven existing Windows fixture paths bypassed symlink assertions because the host could not create symlinks. Temporary Git fixtures emitted CRLF warnings.
-- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current. `node .asd/runtime.js context-check` reported no exceeded ceilings. The implementation handoff reported agnix at 0 errors and 0 warnings.
-- HEAD: 710d5a8478f4592e3e3d4f5fa5e56e0f1d08d2a2
-- Provenance: `suite impl-test#2` under dispatch `impl-test entry 2`. HEAD matched before and after, with clean relevant paths including untracked files. Eligible for the impacted suite gate while code, tests and stubs are unchanged. No smoke command is configured.
-- Line delta: tests +223/−41 (net 182); other +816/−825 (net -9)
+- Command: `node tests/run.js`
+- Scope: full
+- Scope evidence: With the safety valve enabled, `.asd/runtime.js` changes argument parsing shared by phase commands, and `.asd/sync.js` changes agent variant eligibility and ledger checks used by build and update.
+- Result: pass, exit 0. 326 passed, 0 failed, 0 runner-level skips. Seven existing Windows fixture branches bypassed file-symlink assertions because the host could not create them. The new linked-config test ran with junctions on this host, including a junction at the config path.
+- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current.
+- HEAD: 1734f03a97209fb549d4d0f5e45cdc8f6a06ca77
+- Provenance: `suite impl-test#16` under dispatch `impl-test entry 3 author`. HEAD matched before and after. Relevant project settings, generated views, source, tests and stubs were clean, including untracked files. The project defines no smoke command.
 
 ## Defects
 
