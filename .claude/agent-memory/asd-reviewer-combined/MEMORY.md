@@ -1,44 +1,44 @@
-- [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null
-- [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, scope Grep to canon subdirs, write the return file before the final message
-- [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — after a rule-order fix, resolve the mirrors' "same placement" pointer chains and read the tester's recorded ceilings
-- [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — read the suite pin and plan decision before flagging a pointer-plus-outcome clause; prefer pointer-coverage gaps
-- [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
-- [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
-- [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells
-- [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
-- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, per-mode rows, External Review twins) against agent Inputs required/modes
-- [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
-- [In-body comment sweep](feedback_in-body-comment-sweep.md) — added `//` lines in JS bodies, or a context comment a reorder detached: high Quality finding, move its WHY to the header doc
-- [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
-- [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
-- [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
-- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
-- [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
-- [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
-- [None-row coverage claims](feedback_none-row-coverage-claims.md) — a `none` row citing existing suite checks: grep the exact token the fix added; would a revert go red?
-- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
-- [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
-- [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
-- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
-- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "a finding from <agent>" lines, combined's return rules
-- [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
-- [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
-- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
-- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
-- [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
-- [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — guard narrowed to A and B: does a revert of each conjunct alone turn some test red?
-- [Reuse scope labels](feedback_reuse-scope-labels.md) — a recorded run reused by Scope label: can a named-test or filtered run (one-file suite) write that label?
-- [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare or empty-arg `gh repo view` follows set-default/upstream ranking, not `origin`; `gh label create -f` sans --color recolors
-- [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
-- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
-- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it
-- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — rule making an agent write a new file (scratch commit-msg): check its Tools write list and "deny" entries
-- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — owned key added under one setting: does the flip back remove it, by recorded ownership, never by value equality alone?
-- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
-- [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
-- [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — "marker absent from output" leak test over a JSON.parse error: V8 shows only ±10 chars, a long marker never leaks whole
-- [Seed-time key sets](feedback_seed-time-key-sets.md) — seed keyed by files present at seed time misses lazy ones; on a fail-closed fix, trace who adds the key at the creation site
-- [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — a `{{…}}`-anywhere refusal false-refuses text citing a template placeholder; ask for a start/whole-cell anchor
-- [Impacted scope claims](feedback_impacted-scope-claims.md) — "area reads none of the changed files": check shared-helper imports, direct spawns, and a changed runner (safety valve)
-- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — fix routes a case to "waits for step N" from a later step: does the flow return to N; same case in Escalation JSON?
-- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — grep in-scope agent-memory lines for MEMORY_HISTORY_PATTERNS tokens; a committed hit bypassed memory-check
+- [Live subagent transcripts](reference_live-subagent-transcripts.md) — Transcript shape in the session’s JSONL
+- [Large-diff read budget](feedback_large-diff-read-budget.md) — Diffs of 200 KB or more
+- [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — After a rule-order fix
+- [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — Pointer-plus-outcome clauses
+- [Re-review without a shell](feedback_rereview-no-shell-checks.md) — Hash, suite and pin evidence
+- [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — Accepted departures in the decisions log
+- [Return findings-table shape](feedback_return-findings-table-shape.md) — Pipe-table and ledger contract
+- [Relocation review method](feedback_relocation-review-method.md) — Removed hunks and changed path tables
+- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — Per-mode, fix and External Review rows
+- [Grant-table migration review](feedback_grant-table-migration-review.md) — Prose grants moved to references
+- [In-body comment sweep](feedback_in-body-comment-sweep.md) — Added or orphaned JS comments
+- [Re-entry evidence check](feedback_reentry-evidence-check.md) — Skip keys and template placeholders
+- [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — Phase lists for commit-capable roles
+- [State-key merge migrations](feedback_state-key-merge-migrations.md) — Nodes with partial legacy rosters
+- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — `reviewerFiles` adds test-plan paths
+- [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — Coverage unique to a changed case
+- [Role removal, work inline](feedback_role-removal-inline-work.md) — Tool grants and surviving name variants
+- [None-row coverage claims](feedback_none-row-coverage-claims.md) — Existing tests cited for a fix
+- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — New `gh` or `git` calls
+- [Shell-quoting claims](feedback_shell-quoting-claims.md) — PowerShell typographic quotes
+- [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — `.asd` discovery from `.asd/tmp`
+- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — Redundant guards can hide `ENOENT`
+- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — Phase claims in README and rules
+- [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Route-time HEAD follows entry commits
+- [Delegation vs never-list](feedback_delegation-vs-never-list.md) — Delegate’s actual writes
+- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — Gaps in cause lists can demote cases
+- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — Inside a single-dispatch span
+- [Prose-marker guards](feedback_prose-marker-guards.md) — Agent-written text with informal variants
+- [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — A narrowed guard with two conditions
+- [Reuse scope labels](feedback_reuse-scope-labels.md) — Named or filtered runs labeled as suites
+- [gh base-repo resolution](reference_gh-base-repo-resolution.md) — Bare repo lookup and forced label updates
+- [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — Rewritten tests can mask a lost case
+- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — An unrelated hunk activates the gate
+- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — Regex literals and multiline strings
+- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — New scratch files
+- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — Ownership when reverting a setting
+- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — Sweep-test literals match `git grep`
+- [Warning remedy trace](feedback_warning-remedy-trace.md) — Repair commands in the failed state
+- [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — Long markers in truncated `JSON.parse` errors
+- [Seed-time key sets](feedback_seed-time-key-sets.md) — Lazily created files
+- [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — Placeholders cited in ordinary text
+- [Impacted scope claims](feedback_impacted-scope-claims.md) — Shared imports, spawns and runner changes
+- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — Routing to an earlier step after failure
+- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — Committed memory bypassed its check
