@@ -16,20 +16,20 @@
 
 ## Translate at write time
 
-Agents may reason internally in `language.chat`. Before `Write`/`Edit` to a user-facing artifact, translate to `language.docs`. Before writing a machine file, render in English.
+Agents may reason in `language.chat`. Render each write in its Matrix language.
 
 ## Quote translation
 
-When an agent quotes a user-facing artefact during chat, the quote MUST be rendered in `language.chat`, even if the source file is in another language. Translate inline. Cite the source path so user can open the original.
+Translate artifact quotes inline to `language.chat` and cite the source path.
 
 ## User-decision options
 
-Every interactive option presented to the user — a user-decision request's `question`, `header`, every option `label`/`description`, the Problem/Options/Recommended/Consequences block, any free-text approval prompt — MUST be rendered in `language.chat`. Includes standard control options (`Lock in` / `Revise this section` / `Skip` / `Approve` / `Edit` / `Reject` / `Confirm` / `Rollback` / etc.). Translate at the call site; never emit English option labels when `language.chat` is non-English.
+Translate at the call site to `language.chat`: choice `question` and `header`, every `label` and `description` including standard controls (`Lock in`, `Revise this section`, etc.), Problem/Options/Recommended/Consequences, and free-text approval prompts.
 
-Internal signal tokens crossing the agent boundary (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`, `APPROVE`, `CONCERNS`, return-contract strings), and the JSON keys and return-object fields of `agent-protocol.md`, stay in English — machine signals, not user-facing text.
+Keep internal signals (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`, `APPROVE`, `CONCERNS`, return-contract strings), JSON keys and return-object fields in English (`agent-protocol.md`).
 
-Free-text approval is not a substitute for a required hard-gate decision. Gate class, exact existing authorization reuse, and adaptive evidence are governed only by `checkpoints.md`; this file sets the language. A strict write-then-review-accept gate requires explicit `accept`; revision feedback remains free text.
+Follow `checkpoints.md` for gate class, exact authorization reuse and adaptive evidence. A required hard-gate decision needs its specified answer. A strict write-then-review-accept gate requires explicit `accept`. Revision feedback is free text.
 
 ## Write-then-review-accept: chat-language self-sufficiency
 
-For `write-then-review-accept` gates, the written artifact is in `language.docs`, which may differ from `language.chat`. The delta summary posted in chat (`checkpoints.md` step 2) MUST be self-sufficient for the user to give informed feedback in `language.chat` — do not just say "see the file"; summarize what changed and why, in `language.chat`. Key changed passages MAY be quoted-and-translated per "Quote translation" above, but never the full artifact body (`checkpoints.md` no-content-dumps rule).
+For write-then-review-accept, summarize what changed and why in `language.chat` so the user can give informed feedback from chat. Quote and translate key passages as needed. Keep the full body in the artifact (`checkpoints.md`).

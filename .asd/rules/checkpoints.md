@@ -2,24 +2,26 @@
 
 ## Gate policy
 
-`config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. A flagged choice reporting that a plan decision cannot be met within its Task's files is resolved by meeting the decision, widening the fix to the files it needs; dropping the decision's requirement is a `new or changed scope` decision, never an adaptive acceptance. A flagged choice changing a predicate or contract an agent definition, README or rule states is checked against that text and routed back when it contradicts it. The orchestrator records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
+Freeze `config.yaml`'s `user_gates` in `state.json.user_gates` at scope. Standalone `/asd-concept`, `/asd-stack` and `/asd-design-system` without an active sprint read config directly. Values: `strict` or `adaptive`; absent means `strict`; invalid or unreadable blocks.
 
-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (mid-sprint procedure: `sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`asd-phase-audit.md` step 3b); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver, an accepted-debt review-date renewal included; open-PR disposition at scope (`asd-phase-scope.md` step 2a); review-cap override (per review wave in impl-review); a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); retro intake dispositions (`asd-phase-scope.md` step 2a), decided inside the scope gate; the staged-design approach choice (`sprint-lifecycle.md` "Staged solution design"), decided at scope step 2 before the `AC-N`; the sprint's workflow choice (`sprint-lifecycle.md` "Workflows"); the ASD update choice at new-sprint start (`asd-sprint` SKILL); and abort. Machine checks never become approvals.
+Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (`sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; deletion of project files during migration; audit contradiction precedence cannot settle (`asd-phase-audit.md` step 3b); material architecture change; debt (including review-date renewal) or any reviewer/coverage/quality waiver; review-cap override (per impl-review wave); abort; and rows marked hard below. Machine checks never supply approval.
 
-Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
+`strict` requires explicit approval per inventory class. In `adaptive`, the orchestrator may advance a routine gate only with exact user authority, documented constraints, understood effects and resources, passing checks and no unresolved material alternative. Routine candidates include the applicable inventory rows, in-bounds ADRs, mechanical docs updates and bounded complication decisions. Investigate missing facts; ask the user for missing authority, preference or material trade-off. Reuse exact authorization and record decisions per "Approval recording". Confidence alone is insufficient.
+
+A flagged choice reporting an unmeetable plan decision must meet it by widening the fix to the needed files; dropping its requirement is a `new or changed scope` decision. Check a flagged predicate or contract change against its agent definition, README or rule and route contradictions back.
 
 ## Gate mechanics
 
 For a hard gate, or a routine gate that does not qualify adaptively:
 
 - **approve-before-write**: request a decision before the gated mutation.
-- **write-then-review-accept**: write the artifact, post its absolute path and short delta summary, then revise in place until explicit `accept`.
+- **write-then-review-accept**: follow the mechanic below.
 
-Record an explicit user decision with `decision_actor=user` only after receiving the answer. Preselection, silence, incomplete answers, clarifications and unrelated text leave the gate pending. Apply the same gate rules to submitted free text and optional choices. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
+Apply gate rules to free text and optional choices alike. Only an explicit answer permits `decision_actor=user`; preselection, silence, incomplete answers, clarifications and unrelated text leave the gate pending. A policy change cannot approve a pending hard gate. No-op phases have no artifact gate.
 
 ## Approval recording
 
-For an active sprint, record the actor, gate, artifact revision and short-ref evidence/reason in `state.json.gate_decisions` (`artifact-layout.md` "State file") and append the narrative to the sprint decision log. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` has no state/log write: the accepted artifact and git history are its evidence. A material semantic change invalidates only the decision governing that artifact.
+For an active sprint, record `{gate, decision_actor, reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and append the narrative to the sprint decision log. Use `decision_actor:"orchestrator"` for a routine adaptive pass. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` uses the accepted artifact and git history as evidence, with no state/log write. A material semantic change invalidates only its artifact's decision.
 
 ## Criterion cost surfacing
 
@@ -41,16 +43,16 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | Gate | Class |
 |---|---|
 | audit, design/impl-review green handoff, initial impl assessment, decomposition | approve-before-write |
-| new subsystem or material ADR/contract/compatibility choice | hard approve-before-write |
+| new subsystem boundary or material ADR, public contract or compatibility change | hard approve-before-write |
 | scope, plan, concept, stack, PRD, UX, design-system, ADR draft | write-then-review-accept |
 | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
-| per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
-| retro intake dispositions (scope gate: one explicit include/reject/defer per retro row, `asd-retro` issue or project issue put to the user; written on acceptance) | hard approve-before-write |
-| open-PR disposition (scope gate: one explicit merge/include/close/defer per open PR) | hard approve-before-write |
-| approach choice (scope step 2, staged design, before the `AC-N`) | hard approve-before-write |
-| workflow choice (scope step 1) | hard approve-before-write |
-| ASD update choice (new-sprint start) | hard approve-before-write |
+| per-sprint document skip (scope gate or audit exit, `sprint-lifecycle.md` "Optional documents") | hard approve-before-write |
+| retro intake dispositions (`asd-phase-scope.md` step 2a: one explicit include/reject/defer per retro row, `asd-retro` issue or project issue put to the user; written on scope acceptance) | hard approve-before-write |
+| open-PR disposition (`asd-phase-scope.md` step 2a: one explicit merge/include/close/defer per open PR) | hard approve-before-write |
+| approach choice (scope step 2 before the `AC-N`, `sprint-lifecycle.md` "Staged solution design") | hard approve-before-write |
+| workflow choice (scope step 1, `sprint-lifecycle.md` "Workflows") | hard approve-before-write |
+| ASD update choice (new-sprint start, `asd-sprint` SKILL) | hard approve-before-write |
 
 Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a), post-release closes, a consumer's included-issue closes and every included-PR close (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above. Step 2a's triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate.
 
@@ -58,7 +60,7 @@ Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a), p
 
 ## Write-then-review-accept mechanic
 
-Write the artifact to its real path, post its absolute path with a short delta summary, and revise that same artifact until explicit `accept`. In strict this is mandatory for its listed inventory rows; in adaptive it is the fallback when routine evidence is insufficient.
+Write the artifact to its real path, post its absolute path with a short delta summary, and revise it in place until explicit `accept`.
 
 ## Precondition chain
 

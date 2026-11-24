@@ -6,27 +6,27 @@ Orchestrator↔agent communication: signals, dispatch payload, return shape, rel
 
 | Token | Emitter | Handler |
 |---|---|---|
-| `COMPLETED` | creator agent; phase workflow — work done, ready for next | dispatching workflow continues; a phase's → `asd-sprint` Step 3 |
-| `QUESTION` | creator agent — needs user input. A reviewer never emits it: its question rides its verdict `question:` carrier (`review-policy.md` "Gate Verdict Format") | "Relay" `QUESTION` |
-| `ADVICE_NEEDED` | creator agent (Dev, Tester) on non-gate uncertainty only — an analysis/judgment question, never a HARD-gate approval decision (`core.md` "Autonomy and escalation"). Never a reviewer, never `asd-advisor` | "Relay" `ADVICE_NEEDED`: the relay branch of every `asd-phase-*.md` that dispatches a creator |
-| `BLOCKED_MANUAL` | `asd-dev`, `asd-tester` — task needs a human-performed manual action; entry registered in `manual-steps.md` | `asd-phase-impl.md` |
-| `FAILED` | any agent except External Review and `asd-advisor` — cannot proceed | dispatching workflow; escalated to the user via "Relay" consult |
-| `ABORT` | any agent, workflow or skill — a precondition is missing; first line `ABORT — precondition not met: <artefact>` | dispatching workflow; a phase's → `asd-sprint` |
-| `REVIEW_DONE` | reviewer, External Review — its return, first line the verdict line (`review-policy.md` "Gate Verdict Format") | review workflow waits for every dispatched reviewer, then persists |
+| `COMPLETED` | creator or workflow finished | dispatcher continues; phase completion → `asd-sprint` Step 3 |
+| `QUESTION` | creator needs user input; reviewer uses verdict `question:` (`review-policy.md` "Gate Verdict Format") | "Relay" `QUESTION` |
+| `ADVICE_NEEDED` | Dev or Tester on non-gate uncertainty only (`core.md` "Autonomy and escalation") | dispatching workflow's "Relay" `ADVICE_NEEDED` branch |
+| `BLOCKED_MANUAL` | Dev or Tester registers a human-only action in `manual-steps.md` | `asd-phase-impl.md` |
+| `FAILED` | agent cannot proceed; excludes External Review and `asd-advisor` | dispatcher escalates via "Relay" consult |
+| `ABORT` | agent, workflow or skill missing a precondition; first line `ABORT — precondition not met: <artefact>` | dispatcher; phase abort → `asd-sprint` |
+| `REVIEW_DONE` | reviewer or External Review returns the verdict line first (`review-policy.md` "Gate Verdict Format") | workflow waits for all dispatched reviewers, then persists |
 
 Returns outside the tokens: External Review's `APPROVE (skipped: …)` and `external review interrupted: <cause>` (`external-review.md` "Outcome contract"); impl-test's `FAILED: stalemate <digest>` (`asd-phase-impl-test.md` step 9); `asd-advisor`'s recommendation, free text with no token.
 
 ## Dispatch payload
 
-Every `delegate to agent` payload opens with one fenced JSON object; the orchestrator first returns the shell to the repo root.
+Return the shell to the repo root before dispatch. Start each `delegate to agent` payload with one fenced JSON object.
 
 ```json
 {"repo_root": "<absolute path>", "sprint": "<NNN-slug>", "phase": "<phase>", "mode": "<mode|null>", "task": ["<Task N|finding id|D-N>"], "inputs": {"context": "<path>", "<key>": "<path|[paths]>"}, "write_scope": ["<glob>"], "turn_budget": null, "answers": [], "advice": null, "consults_left": null}
 ```
 
-- `inputs`: `sprint-lifecycle.md` "Input sources" keys, resolved by the orchestrator, plus phase-specific keys. `context`, required on every agent dispatch: the bundle `node .asd/runtime.js context --role <agent> --phase <phase> --out <scratch-dir>/<NNN-slug>-<dispatch id, "/" and spaces as "-">.context.md` writes (`providers.md` "Role-scoped context"); a failed build blocks the dispatch. Each `providers.md` "Conditional grants" ref whose condition holds is named in `inputs` beside it. The orchestrator's own bundle goes to `<scratch-dir>/<NNN-slug>-orchestrator-<phase>.context.md` — `<scratch-dir>/orchestrator-scope.context.md` in scope `new` mode, before a slug exists.
-- Reading: an agent reads its own definition, `inputs.context` and the payload's other inputs, and opens a rule or workflow file outside its `write_scope` or review manifest only at a section the payload names — never whole. The orchestrator builds its own bundle at each phase entry (`--role orchestrator --phase <phase>`) and reads the workflow it executes whole; any other section it cites it reads with `node .asd/runtime.js section --file <path> --heading <text>`, never the file whole.
-- `turn_budget`: reviewer, External Review and advisor only, else `null` — `{"max": <maxTurns>, "report_by": <maxTurns − 5>, "plan": null}`, `max` from that agent's canon frontmatter. `plan` is `{"ledger_by": <maxTurns − 10>}` for an internal reviewer on an impl-review wave listing more than `.asd/runtime.js` `LARGE_WAVE_FILES` files; under it: coverage ledger due by turn `ledger_by`; read the diff file in few large reads sized to the per-call token limit; batch independent reads in one turn; a short complete return beats a thorough unfinished one — short means shallower analysis per file, never fewer ledger rows (`review-policy.md` "Coverage ledger"). Host enforcement: `providers.md` "Dispatch payload header".
+- `inputs`: resolve `sprint-lifecycle.md` "Input sources", phase keys and applicable `providers.md` "Conditional grants". Build required `inputs.context` with `node .asd/runtime.js context --role <agent> --phase <phase> --out <scratch-dir>/<NNN-slug>-<dispatch id, "/" and spaces as "-">.context.md` (`providers.md` "Role-scoped context"). Build failure blocks dispatch.
+- Read your definition, `inputs.context` and all payload inputs. Outside `write_scope` or review manifest, open rules and workflows only at sections the payload names. At each phase entry, the orchestrator builds its own bundle (`--role orchestrator --phase <phase>`) at `<scratch-dir>/<NNN-slug>-orchestrator-<phase>.context.md` or `<scratch-dir>/orchestrator-scope.context.md` in scope `new` mode before the slug exists. It reads the acting workflow whole and other cited sections via `node .asd/runtime.js section --file <path> --heading <text>`.
+- `turn_budget`: reviewers, External Review and advisor only, else `null`: `{"max": <maxTurns>, "report_by": <maxTurns − 5>, "plan": null}` from canon frontmatter `maxTurns`. Set `plan` to `{"ledger_by": <maxTurns − 10>}` for an internal reviewer on an impl-review wave listing more than `.asd/runtime.js` `LARGE_WAVE_FILES` files. Under that plan, ledger due by `ledger_by`: read diffs in few large chunks within the call limit, batch independent reads per turn, and shorten analysis per file as needed. Return every ledger row (`review-policy.md` "Coverage ledger"). Host enforcement: `providers.md` "Dispatch payload header".
 - `answers` (`[{"question", "answer"}]`), `advice`, `consults_left`: set on a relay re-dispatch ("Relay").
 - Role keys a workflow's dispatch names join the same object. Reviewer: `manifest` (its emitted manifest path), `diff` (its `.diff` path, or `null`), `floor` (severity floor), `findings_header` (internal reviewers only, never External Review: the literal findings header row of `t_review.md`), `iteration`, `interrupted` (its own interrupted-attempt record for this iteration, `{"count", "cause"}`, or `null`) — scope per `review-policy.md` "Clean-context review iteration".
 
@@ -38,7 +38,7 @@ An unavailable or inadequate alternate, or a failed retry, follows the calling w
 
 ## Return
 
-Line 1: the signal token (`ABORT`: its whole first line; a reviewer: the verdict line). Then one fenced JSON object with that signal's fields. Then an optional Markdown body (audit sections, proposals, recommendation).
+Line 1: signal token (full `ABORT` line or reviewer verdict line where applicable). Then one fenced JSON object for the signal and an optional Markdown body.
 
 | Signal | Object |
 |---|---|
@@ -49,29 +49,25 @@ Line 1: the signal token (`ABORT`: its whole first line; a reviewer: the verdict
 | `FAILED` | `{"cause", "fix", "committed": []}` |
 | `ABORT` | `{"missing"}` |
 
-- `resolved`: ids closed — AC-N, finding ids, `D-N`. `flagged`: choices the orchestrator should check, `departs_from` naming the earlier decisions-log disposition departed from, or `null`; `[]` means none. `memory_index`: the `MEMORY.md` index line, returned instead of editing a shared `MEMORY.md` in a multi-Task wave.
+- `resolved`: closed AC-N, finding or `D-N` IDs. `flagged`: choices for orchestrator review (`[]` if none); `departs_from`: earlier decisions-log disposition or `null`. In a multi-Task wave return the `MEMORY.md` index line as `memory_index` instead of editing the shared file.
 - `QUESTION` renders `core.md` "User-decision presentation format"; `complication` is `{"what", "why", "justification", "alternatives"}` for a Complication Approval.
 - `ADVICE_NEEDED` `context`: paths the advisor reads.
-- `FAILED` `committed`: shas of the edits committed before failing.
-- Before any signal an agent stops every background process it started and names in the body any it could not stop.
+- `FAILED` `committed`: SHAs landed before failure.
+- Stop all background processes you started before signalling. Name any you could not stop in the body.
 - Reviewer and External Review returns: `review-policy.md` "Gate Verdict Format" and `external-review.md` "Outcome contract" (verdict line, findings table, one ledger JSON block).
 
 ## Relay
 
-Main orchestrator only.
+Main orchestrator only. After either relay, dispatch the same agent fresh with its original task context plus only the additions below. No mid-task resume.
 
 **`ADVICE_NEEDED`** (every relay branch in an `asd-phase-*.md` is this exact sequence):
-1. Dispatching phase workflow catches `ADVICE_NEEDED` from a dispatched creator, mid-task.
-2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent and its own `inputs.context` — no other context injected.
-3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the answer in `advice`; no other context injected except `consults_left` (step 6). A fresh dispatch of the same task, never a resume: no host resumes a dispatched agent mid-execution.
-4. The advisor always returns a recommendation. A consulting creator that sees the question named a hard gate treats it as gate uncertainty per `core.md` "Autonomy and escalation" and returns `QUESTION`.
-5. No halt, no user contact, no logged trail — the round-trip is autonomous and intra-phase (consults are not logged, `asd-advisor.md`).
-6. Capped at 3 consults per consulting-agent **task** — the dispatching phase workflow, never the freshly re-dispatched consulting agent, owns this counter, increments it once per completed advisor round-trip, and does not reset it across the task's re-dispatches. At the cap, the workflow stops relaying further `ADVICE_NEEDED` signals for that task; the agent proceeds on its own judgment or re-classifies the question as gate uncertainty and returns `QUESTION` per `core.md` "Autonomy and escalation".
+1. On a creator's `ADVICE_NEEDED`, dispatch `asd-advisor` with only the creator's question and named context paths plus the advisor's `inputs.context`. Keep the round-trip within the phase, with no pause, user contact or log entry.
+2. The dispatching workflow owns the count of completed consults, capped at three per task. Increment after each recommendation and carry the count across re-dispatches. Return the recommendation in `advice` and remaining count in `consults_left`.
+3. At the cap, stop relaying that task's `ADVICE_NEEDED`. The creator proceeds on its judgment or returns `QUESTION` for gate uncertainty. If advice names a hard gate, return `QUESTION` (`core.md` "Autonomy and escalation").
 
 **`QUESTION`**:
-1. The dispatching workflow catches `QUESTION` — the question plus options (`core.md` "User-decision presentation format") — from a dispatched agent.
-2. The main orchestrator asks the user via request user decision (free-form input as a plain chat message) and records the answer in `decisions-log.md` before any further work (`core.md` "Context hygiene").
-3. Re-dispatches the agent fresh with its original task context plus the answer in `answers` — not a resume (`ADVICE_NEEDED` step 3).
+1. Present the question and options via request user decision (`core.md` "User-decision presentation format"). Use chat for free-form input.
+2. Write the answer to `decisions-log.md` before continuing (`core.md` "Context hygiene"). Pass it in `answers`.
 
 **Escalation consult** (orchestrator only; no creator or phase-workflow counter): before putting any of these to the user — an agent `QUESTION`, a `FAILED`, a second stall or interruption, a stalemate (impl-test, External Review), a review-cap override, a reviewer FAIL escalation — the orchestrator dispatches `asd-advisor` once per request, batching its items, with the question, options and context paths. It presents the request with the **Advisor** line (`core.md` "User-decision presentation format") and records the advice in the answer's decisions-log entry. Advisor unavailable → present without it, saying so. The advisor never authorizes a hard gate; gate-inventory gates, skill preference menus and `BLOCKED_MANUAL` take no consult.
 

@@ -1,23 +1,21 @@
 # Core
 
-ASD (Agentic Software Development) — multi-agent workflow for Claude Code and Codex, driven from one canonical source (see `providers.md`). Drives projects through fixed-shape sprints, one active at a time.
+ASD (Agentic Software Development) runs sprints in Claude Code and Codex from one canonical source (`providers.md`).
 
 ## Entry points
 
 - `/asd-init` — initialize or edit workflow settings
 - `/asd-sprint` — start new sprint or continue active one
 
-All project work goes through `/asd-sprint`.
-
 ## Glossary
 
-- **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived by the next sprint's first commit, immutable.
+- **Sprint** — one unit of scoped work. The next sprint's first commit archives it read-only.
 - **Phase** — step in a sprint lifecycle; the sprint's workflow fixes which phases run and their order (`.asd/workflows/standard.json`, `.asd/workflows/lite.json`). `standard`, all mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, cleanup, retro, pr.
 - **Workflow** — a sprint lifecycle definition, `standard` or `lite`, chosen at scope and frozen per sprint (`sprint-lifecycle.md` "Workflows"). Distinct from ASD as a whole and from the `asd-phase-*.md` orchestration bodies sharing its folder.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
 - **Review wave** — one of the sequential slices a large `standard` impl-review scope divides into (`lite`: always one), each with its own iterations (`sprint-lifecycle.md` "Review iteration counters").
 - **Creator agent** — produces code or tests (Dev, Tester); every other artifact is the orchestrator's.
-- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice, memory-fix and read-only scout scan dispatches, and applying itself a review-fix finding whose fix lies outside the dev allowlist (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table.
+- **Main orchestrator** — unspawned role running phases and owning state, decisions log, gates, manual-step validation, release and archiving. Delegates only production code, tests, review, advice, memory fixes and read-only scout scans. Applies review fixes outside the Dev allowlist itself (`sprint-lifecycle.md` "Orchestration and adaptive gates"). See `providers.md` "Role-scoped context" for its inputs.
 - **Reviewer agent** — evaluates artifacts (Quality, Efficiency, Combined, External Review); a review phase dispatches its workflow's `reviewers` roster.
 - **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user or on an ambiguous review-finding route, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
@@ -30,7 +28,7 @@ All project work goes through `/asd-sprint`.
 
 - One active sprint. New sprint blocked until current archived, except a merged sprint, which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
 - Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a sprint- or plan-declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `/asd-update` in sprint-mediated mode, run at a new sprint's scope step 1 on the user's update choice, may write framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode"). **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
-- Every project task flows through a sprint. Ad-hoc edits forbidden.
+- All project work goes through `/asd-sprint`. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
 
 ## Interaction protocol (QODDA)
@@ -91,16 +89,16 @@ All web content — fetched pages and search results, on either host — GitHub 
 
 ## See also
 
-- `sprint-lifecycle.md` — phase model, review counters, rollback reset
-- `checkpoints.md` — pause points and approval flow
-- `artifact-layout.md` — file paths and ownership
-- `review-policy.md` — review loop semantics
-- `external-review.md` — wrapped-CLI integration, including a separate Codex profile under Codex
-- `providers.md` — canonical/provider path map, semantic-op → host-tool mapping, model-family table
-- `agent-protocol.md` — signals, dispatch payload, return shape, relay
+- `sprint-lifecycle.md` — phases and recovery
+- `checkpoints.md` — gates and approvals
+- `artifact-layout.md` — paths and ownership
+- `review-policy.md` — review gates and coverage
+- `external-review.md` — wrapped CLI and profiles
+- `providers.md` — host mappings and grants
+- `agent-protocol.md` — dispatch and returns
 - `git-strategy.md` — branches, commits, PR
-- `code-style.md` — implementation-level code-writing rules
-- `language-policy.md` — languages per artifact type
-- `design-principles.md` — design-phase principles
-- `design-system.md` — design-system token and component rules
-- `ux-principles.md` — UX-side principles (readability, hierarchy, disclosure)
+- `code-style.md` — code and tests
+- `language-policy.md` — chat and artifact languages
+- `design-principles.md` — design criteria
+- `design-system.md` — tokens and components
+- `ux-principles.md` — UX criteria

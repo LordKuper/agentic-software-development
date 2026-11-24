@@ -23,7 +23,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── custom-coding-rules.md
 │   │   ├── retro-backlog.md                 # lazy, "Retro backlog"
 │   │   ├── reliability-checklist.md         # lazy, "Reliability checklist"
-│   │   ├── context-ceilings.json            # consumer-owned, written by `runtime.js context-check --seed`
+│   │   ├── context-ceilings.json            # consumer-owned context limits
 │   │   └── stubs.md
 │   ├── tmp/                                 # git-ignored helper files, "Scratch directory"
 │   └── sprints/
@@ -37,18 +37,18 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
-│       │   │   ├── mockups/                     # ux_spec enabled only; local mockups or remote links in index.md; design-system.md "Mockups"
-│       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
+│       │   │   ├── mockups/                     # design-system.md "Mockups"
+│       │   │   ├── adr.html                     # folds at design-promote
 │       │   │   ├── design-md-delta.yaml
-│       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
+│       │   │   └── c4-full/                     # diagram delta, or full schema when absent
 │       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
-│       │   ├── <rename-map>.json              # optional, the file a plan's `Rename map:` line names, sprint-lifecycle.md "Plan file format"
+│       │   ├── <rename-map>.json              # optional, from plan's `Rename map:`
 │       │   ├── test-plan.md
 │       │   ├── test-plan.entry-NN.md          # rotated narrative segments, "Test plan"
 │       │   ├── manual-steps.md
 │       │   ├── friction-log.md
-│       │   ├── timing.jsonl                   # orchestrator-owned; written only via runtime.js timing*, sprint-lifecycle.md "Operation timing"
+│       │   ├── timing.jsonl                   # sprint-lifecycle.md "Operation timing"
 │       │   ├── retrospective.html
 │       │   └── reviews/
 │       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.late.md
@@ -59,7 +59,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 ├── .claude/settings.json, .codex/hooks.json            # JSON-merge: ASD owns only its hook entry (providers.md)
 ├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
 ├── .codex/{agents/, hooks/}                            # generated provider view
-├── .agents/skills/<name>/SKILL.md                      # generated provider view (Codex reads skills only here)
+├── .agents/skills/<name>/SKILL.md                      # generated Codex skills
 ├── docs/
 │   ├── product/
 │   │   ├── concept.html
@@ -79,15 +79,13 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 └── CLAUDE.md
 ```
 
-A sprint folder holds **only** the artifacts named above, plus the per-reviewer coverage evidence `review-policy.md` "Coverage ledger" persists beside each `<reviewer>.md`. Nothing else is written under `.asd/sprints/<NNN-slug>/`: the tree is archived read-only at closure, freezing any stray file.
+A sprint folder holds **only** the paths above plus the per-reviewer coverage evidence beside each `<reviewer>.md` (`review-policy.md` "Coverage ledger").
 
 ## Paths (decomposition disabled)
 
-`docs/` becomes flat:
+Only `docs/` differs:
 
 ```
-.asd/project/reliability-checklist.md      # lazy, "Reliability checklist"
-.asd/project/context-ceilings.json         # consumer-owned, written by `runtime.js context-check --seed`
 docs/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
@@ -96,21 +94,19 @@ docs/
 └── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html, mockups/}
 ```
 
-No registry, no `<subsystem>.md`, no `c4/` directory. No subsystem subfolders.
-
 ## Agent memory
 
-Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above). One directory per dispatched agent name, tier variants included: distinct agents never share a memory file, so co-authorship arises only between concurrent dispatches of the same agent, which share that directory and its single `MEMORY.md`. Before a write lands, the writing agent checks it against its own definition (declared tool policy: `providers.md` "Declared tool policy"); a practice that contradicts the definition is never recorded.
+Agent memory lives in `.claude/agent-memory/<agent>/` at the repo root regardless of dispatch working directory. Each dispatched name, tier variants included, owns one directory with a `MEMORY.md` index and one file per memory. Only concurrent dispatches of that name share the directory and index. Before writing, check the practice against the agent's definition and declared tool policy (`providers.md` "Declared tool policy").
 
 **Content**: memory holds method only; it never records a sprint id, a Task, a wave, an iteration or a review verdict — that history belongs in the sprint's artefacts. Checked at every memory commit: `git-strategy.md` "Commit before review".
 
 A release retiring an agent deletes its directory in its migration (`.asd/migrations/`), so no consumer keeps a memory no dispatch loads.
 
-**Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
+**Carve-out to the read-only generated-view rule**: agents may write their own memory. `sync.js` never generates or reconciles it. Other provider-view paths remain read-only under this rule.
 
-**In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
+**In the review surface, both modes**: agent memory is hand-authored source and never a review-scope exclusion. Commit and diff reachability: `review-policy.md` "Change-surface rule".
 
-**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too. The check pins the exact sentences and terms the sprint removed, taken from its own diff's removed lines, never a free-phrasing regex. A hit in agent memory is fixed inside that entry (`review-policy.md` "Memory-fix dispatch"). A test pinning the removed terms is a temporary test (`code-style.md` §17); a later sprint's prune pass removes it.
+**Leftover-term check**: at first `impl-test` entry for a removal, search the whole repo, including retired agents' memory, for the exact sentences and terms in the sprint diff's removed lines. Fix memory hits in that entry (`review-policy.md` "Memory-fix dispatch"). Any test pinning removed text is temporary (`code-style.md` §17).
 
 ## Scratch directory
 
@@ -150,9 +146,7 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 
 ## HTML shell wrapping (mandatory)
 
-Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, retrospective) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
-
-The shell trims two blocks per document instead of always emitting them: the mermaid CDN script (only when the fragment actually contains a diagram) and the auto-TOC nav (only when the fragment has enough sections to need one). Both are ordinary computed placeholders, filled by the creator at write time — see table below.
+Wrap each user-facing HTML artifact in `t_html-shell.html` using its fragment template. Emit a **self-contained single file** with inline shell styles and no sibling-file dependencies.
 
 **Placeholder fill** — creators compute and inline when writing:
 
@@ -161,15 +155,15 @@ The shell trims two blocks per document instead of always emitting them: the mer
 | `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Retrospective` |
 | `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for any sprint-scoped artifact (drafts, `retrospective.html`); `project` for project-wide docs |
 | `{{SPRINT_ID}}` | active `state.json.sprint_id` for any sprint-scoped artifact (drafts, `retrospective.html`); empty for persistent docs |
-| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote, `lite`'s unreviewed write from the accepted implementation included) / `locked` (archived); `final` for a terminal report with no draft/review lifecycle (`retrospective.html`). `adr.html` is a set of decisions (one `<article>` each, `t_adr.html` "repeat this article per decision") — `{{STATUS}}` here is this document-lifecycle value, not an individual ADR's `proposed`/`accepted` status, which lives solely on that ADR's `.status-chip` |
+| `{{STATUS}}` | `draft` (design), `in-review` (design-review), `approved` (design-promote in either workflow), `locked` (archived), `final` (terminal report). Each ADR decision has its own `proposed`/`accepted` `.status-chip` per `t_adr.html` |
 | `{{UPDATED_AT}}` | ISO date (YYYY-MM-DD) of last write |
 | `{{RESPONSIBILITY}}` | the `owns:` line from the fragment's responsibility frontmatter |
 | `{{PROVENANCE}}` | `original` \| `reverse-engineered` \| `migrated` (from fragment frontmatter) |
 | `{{SOURCE}}` | the `source:` field; empty when provenance=original |
 | `{{SOURCE_SUFFIX}}` | ` (from {{SOURCE}})` in the provenance badge when source non-empty; else empty |
-| `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADRs — Sprint 001 · <slug>` (set-level; ADR doc holds one or more decisions, so no single decision title fits doc-level `{{TITLE}}` — the individual decision title lives on each ADR's own `<h2>`/chip inside `{{CONTENT}}`) |
-| `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `N decisions · subsystems · updated …` (set-level; per-ADR status/subsystem stays on that ADR's own chips, not doc-level STATS); UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
-| `{{TOC_NAV}}` | full `<nav class="toc">…</nav>` block (title + `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text) when the fragment has **3 or more** `<h2>` sections; empty string below that threshold — the nav is omitted entirely, not emitted empty. The shell derives the two-column layout purely from this via CSS (`.layout:has(> nav.toc)`) — no separate layout-class placeholder needed. For a multi-ADR `adr.html` (one `<article class="adr">` per decision), each decision's `<h2 id="adr-{{N}}-title">` (the per-decision title heading, first child after `.meta`) is the TOC-entry source — one entry per ADR article (linking `#adr-{{N}}-title`), not one entry per `<h2>` inside it. That article's own Context/Decision/Consequences/… headings are `<h3>`, below the TOC's `<h2>`-counting threshold, and stay unlinked in the TOC — the id-prefixing already disambiguates them for direct anchors |
+| `{{TITLE}}` | doc title, e.g. `PRD — Sprint 001 · <slug>` or `ADRs — Sprint 001 · <slug>`; each ADR keeps its title in its own `<h2>`/chip |
+| `{{STATS}}` | draft PRD: `N stories · N AC · updated …`; persistent PRD: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `N decisions · subsystems · updated …`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …`. Per-ADR status and subsystem stay on that decision's chips |
+| `{{TOC_NAV}}` | full `<nav class="toc">…</nav>` (title + `<ol>` of `<section id>` links in fragment order with `<h2>` text) when the fragment has **3 or more** `<h2>` sections; empty string otherwise. `.layout:has(> nav.toc)` controls two-column layout. For `adr.html`, link each decision's `<h2 id="adr-{{N}}-title">` directly, one per `<article class="adr">`, omitting its `<h3>` subheadings |
 | `{{MERMAID_SCRIPT}}` | the mermaid CDN `<script src>` + init `<script>` tag pair when `{{CONTENT}}` contains a `.mermaid` diagram block; empty string when the fragment has no diagram |
 | `{{CONTENT}}` | fragment body (everything after the frontmatter comment) |
 | `{{GENERATED_BY}}` | `ASD workflow` |
