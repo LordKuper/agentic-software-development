@@ -79,3 +79,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — F-1 owner path resolved: Combined authored its accepted index reduction in Codex, committed at d24d80a. Verified all 44 labels, targets and order; index 8,246 → 4,747 bytes. Memory check passed. All 22 measured Codex phase bundles still match their probe inputs byte for byte.
 - 2026-11-24 — Review fixes at d7c0795 and 41eea73, build 77 targets current, lint and context checks green, agnix 0 errors and 0 warnings. Focused updater area 38/38 (a51ad16).
 - 2026-11-24 — impl fix for wave-1/iter-02: findings resolved
+- 2026-11-24 — route impl-test entry 4 strategy: standard, dispatch HEAD c5b1feda4d9eebce86b0af681590106044f0c658
+- 2026-11-24 — impl-test: impacted set green (152/152 reused at c5b1feda), 0/0 tests
