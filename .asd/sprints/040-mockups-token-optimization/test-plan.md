@@ -51,6 +51,8 @@ Entry 5 added no tests. The review-fix extension and its proofs are in [entry 4]
 - Provenance: `suite impl-review#2` under dispatch `impl-review terminal suite retry`. The prior `suite impl-review#1` run reported 323/326 because child Git commands were denied; retry triage confirmed those tests pass with per-invocation `safe.directory` environment variables and no code change. This run set those variables only in its PowerShell process, verified `git check-attr whitespace -- README.md`, and passed 326/326. Smoke is not configured.
 - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
 - Line delta: tests +359/−43 (net 316); other +894/−888 (net 6)
+- Release candidate: v14.12.0 at 80b2a505a577c835f2586fe219691f7a5fbf2d1b passed the same unscoped command 326/326 (exit 0) in suite pr#1. Lint, all 77 sync statuses and context ceilings passed. The terminal suite above verifies the reviewed source revision.
+
 
 ## Defects
 
