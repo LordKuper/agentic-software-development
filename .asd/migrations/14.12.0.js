@@ -14,26 +14,51 @@ const COMMENT = `# ${FORMATS.join(' | ')}`;
 const OLD_HEADER = '# Format for UI mockups when they are enabled.';
 const HEADER = '# UI mockup format, independent of documents.ux_spec. Use none to skip mockups.';
 const LEGACY_COMMENT = '# enabled | disabled';
+const LINE_ENDING = /\r?\n$/;
 
 function rewriteSelection(line, entry, mode) {
-  const [, indent, originalKey, gap, scalar, tail] = /^( *)([^:]+):( +[ \t]*)(.*?)([ \t]+#.*|[ \t]*)$/.exec(line);
+  const [, indent, originalKey, gap, scalar, tail, ending = ''] = /^( *)([^:]+):( +[ \t]*)(.*?)([ \t]+#.*|[ \t]*)(\r?\n)?$/.exec(line);
   const key = entry.path[1] === 'mockup_format' ? originalKey : 'mockup_format';
   const quote = /^['"]/.exec(scalar)?.[0] ?? '';
   const value = entry.value === mode ? scalar : `${quote}${mode}${quote}`;
   const shippedComment = [LEGACY_COMMENT, '# html | claude_design | figma'].includes(tail.trimStart());
-  return `${indent}${key}:${gap}${value}${shippedComment ? ` ${COMMENT}` : tail}`;
+  return `${indent}${key}:${gap}${value}${shippedComment ? ` ${COMMENT}` : tail}${ending}`;
 }
 
-function insertSelection(lines, entries, project, mode) {
+function insertSelection(lines, entries, project, mode, defaultEnding) {
+  const additions = [];
+  let insertion;
+  let indent = '  ';
   if (project) {
     const child = entries.find(({ path: parts }) => parts[0] === 'project' && parts.length === 2);
-    const indent = child ? /^ */.exec(lines[child.line - 1])[0] : '  ';
-    lines.splice(project.line, 0, `${indent}mockup_format: ${mode} ${COMMENT}`);
-    return;
+    if (child) indent = /^ */.exec(lines[child.line - 1])[0];
+    insertion = project.line;
+  } else {
+    let last = lines.length - 1;
+    while (last >= 0 && /^\s*(?:#.*)?(?:\r?\n)?$/.test(lines[last])) last -= 1;
+    insertion = lines[last]?.trimEnd() === '...' ? last : last + 1;
+    additions.push('project:');
   }
-  const last = lines.findLastIndex((line) => !/^ *(?:#.*)?$/.test(line));
-  const insertion = lines[last]?.trimEnd() === '...' ? last : last + 1;
-  lines.splice(insertion, 0, 'project:', `  mockup_format: ${mode} ${COMMENT}`);
+  additions.push(`${indent}mockup_format: ${mode} ${COMMENT}`);
+  const previousEnding = LINE_ENDING.exec(lines[insertion - 1] ?? '')?.[0];
+  const nextEnding = LINE_ENDING.exec(lines[insertion] ?? '')?.[0];
+  const ending = previousEnding ?? nextEnding ?? defaultEnding;
+  const atUnterminatedEnd = insertion === lines.length && !previousEnding;
+  if (atUnterminatedEnd && insertion > 0) lines[insertion - 1] += ending;
+  lines.splice(insertion, 0, additions.join(ending) + (atUnterminatedEnd ? '' : ending));
+}
+
+function replaceConfig(file, text) {
+  const mode = fs.statSync(file).mode;
+  const tempDir = fs.mkdtempSync(path.join(path.dirname(file), '.asd-migration-'));
+  const tempFile = path.join(tempDir, path.basename(file));
+  try {
+    fs.writeFileSync(tempFile, text, { encoding: 'utf8', flag: 'wx', mode });
+    fs.renameSync(tempFile, file);
+  } finally {
+    fs.rmSync(tempFile, { force: true });
+    fs.rmdirSync(tempDir);
+  }
 }
 
 /** Retires the legacy selector while preserving the old UX-gated effective mode. */
@@ -43,10 +68,6 @@ module.exports = function migrate({ repoRoot }) {
   const raw = fs.readFileSync(configPath, 'utf8');
   const bom = raw.startsWith('\uFEFF') ? '\uFEFF' : '';
   const body = raw.slice(bom.length);
-  const eol = body.includes('\r\n') ? '\r\n' : '\n';
-  if (/\r(?!\n)/.test(body) || (eol === '\r\n' && /(^|[^\r])\n/.test(body))) {
-    throw new Error(`${CONFIG}: use consistent LF or CRLF line endings`);
-  }
 
   // Use the same block-style YAML subset and line numbers as config-check. Fail before writing if
   // the relevant settings cannot be resolved. Unrelated settings are never reserialized.
@@ -73,27 +94,25 @@ module.exports = function migrate({ repoRoot }) {
   const oldUxEnabled = !documents || ux?.value === 'enabled';
   const oldFormat = format?.value ?? (legacy?.value === 'disabled' ? 'html' : 'claude_design');
   const mode = oldUxEnabled ? oldFormat : 'none';
-  const lines = body.split(eol);
+  const lines = body === '' ? [] : body.split(/(?<=\n)/);
   const selection = format ?? legacy;
   if (selection) {
     const index = selection.line - 1;
     lines[index] = rewriteSelection(lines[index], selection, mode);
     if (lines[index - 1]?.trim() === OLD_HEADER) lines[index - 1] = lines[index - 1].replace(OLD_HEADER, HEADER);
   } else {
-    insertSelection(lines, entries, project, mode);
+    insertSelection(lines, entries, project, mode, body.includes('\r\n') ? '\r\n' : '\n');
   }
   if (format && legacy) {
     const index = legacy.line - 1;
-    const comment = /[ \t]+(#.*)$/.exec(lines[index])?.[1];
-    if (comment && comment !== LEGACY_COMMENT) lines[index] = /^ */.exec(lines[index])[0] + comment;
+    const [, comment, ending = ''] = /[ \t]+(#.*)(\r?\n)?$/.exec(lines[index]) ?? [];
+    if (comment && comment !== LEGACY_COMMENT) lines[index] = /^ */.exec(lines[index])[0] + comment + ending;
     else lines.splice(index, 1);
   }
 
-  const next = bom + lines.join(eol);
+  const next = bom + lines.join('');
   if (next === raw) return { status: 'unchanged', changes: [] };
-  const tempPath = `${configPath}.asd-migration.tmp`;
-  fs.writeFileSync(tempPath, next, { encoding: 'utf8', mode: fs.statSync(configPath).mode });
-  fs.renameSync(tempPath, configPath);
+  replaceConfig(configPath, next);
   const changes = [`${FORMAT}: ${mode}`];
   if (legacy) changes.push(`removed ${LEGACY}`);
   return { status: 'migrated', changes };
