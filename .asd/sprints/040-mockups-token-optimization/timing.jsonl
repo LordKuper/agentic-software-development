@@ -200,3 +200,23 @@
 {"op":"close","id":"combined wave-1/iter-03","kind":"dispatch","parent":"impl-review wave-1/iter-03","start":"2026-11-24T13:42:57.961Z","end":"2026-11-24T13:47:40.595Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","context_bytes":"84759","model":"sol"}}
 {"op":"close","id":"impl-review wave-1/iter-03","kind":"review-iteration","parent":"impl-review#4","start":"2026-11-24T13:42:57.909Z","end":"2026-11-24T13:47:40.595Z","outcome":"done","attrs":{"wave":"1","iteration":"3"}}
 {"op":"close","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-11-24T13:42:57.858Z","end":"2026-11-24T13:47:40.595Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#5","kind":"phase","parent":null,"start":"2026-11-24T13:47:41.131Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-03 skill","kind":"dispatch","parent":"impl#5","start":"2026-11-24T13:47:41.184Z","attrs":{"agent":"asd-dev","tier":"standard","context_bytes":"73517","model":"sol"}}
+{"op":"close","id":"review-fix wave-1/iter-03 skill","kind":"dispatch","parent":"impl#5","start":"2026-11-24T13:47:41.184Z","end":"2026-11-24T13:49:36.311Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","context_bytes":"73517","model":"sol"}}
+{"op":"open","id":"review-test-fix wave-1/iter-03","kind":"dispatch","parent":"impl#5","start":"2026-11-24T13:49:36.311Z","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"66092","model":"sol"}}
+{"op":"open","id":"suite impl#16","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.075Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#16","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.075Z","end":"2026-11-24T13:50:56.266Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#17","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.333Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#17","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.333Z","end":"2026-11-24T13:50:56.407Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#18","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.448Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#18","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.448Z","end":"2026-11-24T13:50:56.524Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#19","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.568Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#19","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:50:56.568Z","end":"2026-11-24T13:50:57.107Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#20","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.022Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#20","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.022Z","end":"2026-11-24T13:51:15.218Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#21","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.273Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#21","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.273Z","end":"2026-11-24T13:51:15.405Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#22","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.454Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#22","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.454Z","end":"2026-11-24T13:51:15.586Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"close","id":"review-test-fix wave-1/iter-03","kind":"dispatch","parent":"impl#5","start":"2026-11-24T13:49:36.311Z","end":"2026-11-24T13:52:26.478Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"66092","model":"sol"}}
+{"op":"close","id":"impl#5","kind":"phase","parent":null,"start":"2026-11-24T13:47:41.131Z","end":"2026-11-24T13:52:26.478Z","outcome":"done","attrs":{}}
