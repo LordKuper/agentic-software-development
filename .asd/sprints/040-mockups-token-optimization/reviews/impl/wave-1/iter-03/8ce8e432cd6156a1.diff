@@ -1,0 +1,249 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 3d2593c..d9fc6d3 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -90,7 +90,7 @@
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+     ".asd/skills/asd-update/SKILL.md": "0ea87279e88c92a93670701c331642b1a34aa997b17636a8660460e2caa4a7c4",
+-    ".asd/skills/asd-update/update.js": "a02a169a45264f1baab6dbbc56671ab4f3c984d9be4b8020ba91590890b74887",
++    ".asd/skills/asd-update/update.js": "819ae12986270acd468d49c48b61ad6df120cdbc892dfcc2fd421491aad12615",
+     ".asd/sync.js": "fd60392612efeb7a6c95f7e9300b0ceb5415b61c2de5223d3feae60478ec339d",
+     ".asd/templates/external-review/t_prompt-external-design.md": "1beb4427ac4ea4743337b19820421fec74066041d4bc4d068a30069b384af82f",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+diff --git a/.asd/skills/asd-update/update.js b/.asd/skills/asd-update/update.js
+index 624f942..12b45d3 100644
+--- a/.asd/skills/asd-update/update.js
++++ b/.asd/skills/asd-update/update.js
+@@ -628,8 +628,7 @@ async function main() {
+     const plan = planUpdate(repoRoot, fetched.sourceRoot);
+     printPlan(plan);
+     const reachedTarget = compareVersions(plan.oldVersion, plan.newVersion) >= 0;
+-    if (reachedTarget && plan.pendingMigrationVersions.length === 0
+-      && plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
++    if (reachedTarget && plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
+       log('\nAlready up to date.');
+       return;
+     }
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.entry-03.md b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-03.md
+new file mode 100644
+index 0000000..d1757e0
+--- /dev/null
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-03.md
+@@ -0,0 +1,39 @@
++# Test plan entry 03 — sprint 040-mockups-token-optimization
++
++Rotated at entry 4. Entry 3 analysed `bcc7edda`.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-1, AC-2 · Update retry | A migration failure leaves current managed files and a pending installed version. A successful-looking zero-write retry or a preview can leave the migration unapplied or mutate the consumer prematurely. | `update` CLI with the real migration and an offline release archive | add | Existing dry-run, migration-runner and `applyPlan` tests bypass the CLI early exit. Exercise failure, repair, zero-write dry preview and real retry in one fixture. Assert the preview names the pending migration and leaves config and manifest byte-identical, then the retry migrates the config and advances the manifest with zero managed writes. Prove the test on the old CLI decision. |
++| AC-1 · Installed config touched by the 14.12 migration | A linked `.asd`, `project` or config path can redirect reading or replacement of YAML. | `migrations` with links into a separate fixture | add | Existing migration fixtures use ordinary paths. Require the linked-path refusal, unchanged link identity and destination bytes, and no new files near either config. Use real junctions for directory paths and a real file symlink on a supported host. Prove the check by restoring the old migration path behavior in isolation. |
++| AC-2 · Installed config diagnostic | The default CLI reads through a linked `.asd`, `project` or config path. Missing regular config and explicit preview inputs must still return the documented results. | `migrations` shared link fixture and `runtime-routing` installed and preview input fixture | add | Current cases exercise explicit `--config <path>` only. Assert exit 2 without leaked linked values or destination changes, exit 1 with missing keys for absent or incomplete plain installed config, and exit 0 for complete plain installed config. Extend explicit file coverage with `--config -` for stdin and prove a failure on the old default CLI path. |
++| AC-2 · Supported Node floor | `config-check` exits before reporting missing keys, or sync's check/render aborts during a real update. | Actual Node `v16.7.0` for a named config CLI check and `node .asd/sync.js --check` | keep | The regular suite uses whichever Node runs it. Run the targeted config case and sync once on the exact floor, with an isolated pre-fix comparison. Keep the regular suite zero-dependency with no package downloads or runtime installation. |
++| AC-2 · Approved missing settings | A wording-dependent test obscures the intended handoff and write restrictions. | Repair the existing `update` workflow assertion | keep | The pre-strategy failure expects adjacent prose now separated by the recheck before writing. Assert the existing approval choices and the restriction to approved leaves and required parent mappings without matching their adjacency. Keep all other completion checks. |
++| AC-1 · Legacy active mockup scope | Frozen UX enables mockups while live format is `none`, so a draftless resume could switch providers. | Trace the updated lifecycle rule and both resume paths | none | This is workflow guidance. Check that a recorded provider is recovered when present and missing evidence stops before provider selection or collapse until an explicit choice is recorded and frozen. The existing contracts cover the frozen format handoff and design collapse. |
++| AC-2, AC-5 · Settings authority and migration comments | The approved update-completion writer is missing from the authority chain, or generated views drift from canon. | Read the invariant and its pointers, inspect the migration and use existing sync/contract checks | none | The authority and comment edits affect guidance. Existing manifest and generated-view checks cover the derived files. |
++| AC-8 · Matched Codex usage after review fixes | The repair delta pushes either workflow above the accepted token limit. | [Matched review-fix probes and raw readings](./token-baseline.md#review-fix-verification) | none | At `ee94c86`, Lite used 430,941 input tokens (30.3% lower) and Standard used 520,232 (31.9% lower). All 24 probes passed. |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++No existing test qualified for removal in the delta since entry 2.
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++| `tests/update.test.js:sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. Driver tests missed the CLI early exit. | Fail-first at `bd73e08^`: `node tests/run.js update --filter 'update CLI retries a pending migration'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes`. The preview and real retry both printed `Already up to date.` against an installed version with a pending migration. runs: 2 |
++| `tests/migrations.test.js:sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. The existing installed migration and the explicit CLI file checks left linked default paths uncovered. | `node tests/run.js migrations --filter 'installed config migration and check refuse linked paths'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` on pre-fix `bd73e08^` (default check follows `.asd`, exit 1) and on the same snapshot with only runtime restored to current (migration does not refuse). runs: 2 |
++| `tests/runtime-routing.test.js:sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on its ordinary Node. Runtime routing exercised explicit files alone. Search `config-check`, `--config` and installed-path fixtures found no default/stdin contract or exact Node floor coverage. | Fail-first at `bd73e08^`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` → exit 1, 1 matched, `sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` because `Object.hasOwn is not a function`. A proof-only preload bootstrapped the test scratch path to reach `config-check` on the old CLI. runs: 1 |
++
++The Windows runner used directory junctions for `.asd` and `project`, and a junction at the config path after Windows refused a file symlink. On a host that permits file symlinks, the same test exercises a real config file symlink. The test runs both installed-config entry points in each case and checks the link, destination bytes and directory listings afterward.
++
++## Entry 3 suite evidence
++
++The pre-strategy run passed 310/311 and identified the stale approval-prose assertion. After authoring, both affected-area runs passed 84/84. The exact Node 16.7.0 config diagnostic and sync build passed. The full suite passed 326/326 at `1734f03`, with lint and build passing. The first complete run and its host caveats are recorded in `bcc7edda:test-plan.md` under this sprint directory.
++
++The next review-fix ran the `update` area after both findings and the memory change. All 38 tests passed at `d24d80a` (`suite impl#15`).
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.md b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+index 6d9b827..d190857 100644
+--- a/.asd/sprints/040-mockups-token-optimization/test-plan.md
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+@@ -13,50 +13,42 @@ responsibility:
+ | 1 | be1c83b2 | full change surface |
+ | 2 | 17dae23b | delta since entry 1 |
+ | 3 | bcc7edda | delta since entry 2 |
++| 4 | 7ee837fe | delta since entry 3 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-1, AC-2 · Update retry | A migration failure leaves current managed files and a pending installed version. A successful-looking zero-write retry or a preview can leave the migration unapplied or mutate the consumer prematurely. | `update` CLI with the real migration and an offline release archive | add | Existing dry-run, migration-runner and `applyPlan` tests bypass the CLI early exit. Exercise failure, repair, zero-write dry preview and real retry in one fixture. Assert the preview names the pending migration and leaves config and manifest byte-identical, then the retry migrates the config and advances the manifest with zero managed writes. Prove the test on the old CLI decision. |
+-| AC-1 · Installed config touched by the 14.12 migration | A linked `.asd`, `project` or config path can redirect reading or replacement of YAML. | `migrations` with links into a separate fixture | add | Existing migration fixtures use ordinary paths. Require the linked-path refusal, unchanged link identity and destination bytes, and no new files near either config. Use real junctions for directory paths and a real file symlink on a supported host. Prove the check by restoring the old migration path behavior in isolation. |
+-| AC-2 · Installed config diagnostic | The default CLI reads through a linked `.asd`, `project` or config path. Missing regular config and explicit preview inputs must still return the documented results. | `migrations` shared link fixture and `runtime-routing` installed and preview input fixture | add | Current cases exercise explicit `--config <path>` only. Assert exit 2 without leaked linked values or destination changes, exit 1 with missing keys for absent or incomplete plain installed config, and exit 0 for complete plain installed config. Extend explicit file coverage with `--config -` for stdin and prove a failure on the old default CLI path. |
+-| AC-2 · Supported Node floor | `config-check` exits before reporting missing keys, or sync's check/render aborts during a real update. | Actual Node `v16.7.0` for a named config CLI check and `node .asd/sync.js --check` | keep | The regular suite uses whichever Node runs it. Run the targeted config case and sync once on the exact floor, with an isolated pre-fix comparison. Keep the regular suite zero-dependency with no package downloads or runtime installation. |
+-| AC-2 · Approved missing settings | A wording-dependent test obscures the intended handoff and write restrictions. | Repair the existing `update` workflow assertion | keep | The pre-strategy failure expects adjacent prose now separated by the recheck before writing. Assert the existing approval choices and the restriction to approved leaves and required parent mappings without matching their adjacency. Keep all other completion checks. |
+-| AC-1 · Legacy active mockup scope | Frozen UX enables mockups while live format is `none`, so a draftless resume could switch providers. | Trace the updated lifecycle rule and both resume paths | none | This is workflow guidance. Check that a recorded provider is recovered when present and missing evidence stops before provider selection or collapse until an explicit choice is recorded and frozen. The existing contracts cover the frozen format handoff and design collapse. |
+-| AC-2, AC-5 · Settings authority and migration comments | The approved update-completion writer is missing from the authority chain, or generated views drift from canon. | Read the invariant and its pointers, inspect the migration and use existing sync/contract checks | none | The authority and comment edits affect guidance. Existing manifest and generated-view checks cover the derived files. |
+-| AC-8 · Matched Codex usage after review fixes | The repair delta pushes either workflow above the accepted token limit. | [Matched review-fix probes and raw readings](./token-baseline.md#review-fix-verification) | none | At `ee94c86`, Lite used 430,941 input tokens (30.3% lower) and Standard used 520,232 (31.9% lower). All 24 probes passed. |
++| AC-1, AC-2 · Current-version shortcut and release hash | Removing the duplicate predicate could let an older installed version bypass a pending migration or leave the recorded updater hash stale. | Existing `update` CLI retry and manifest checks, `contract-rules`, `contract-workflows`, `sync-cli`, `sync-render` and sync build | none | A pending migration must be strictly newer than the installed version and at most the target. No version can meet both when installed is at or above target. The existing CLI test still exercises zero managed writes with a pending migration, including dry preview and the real retry. |
++| AC-2 · Approval contract test | An ordinary rewording can break the contract test despite preserving permission to write. | Existing `update` contract test and trace to `core.md` | none | `41eea73` removed two prose assertions. The heading, literal approval choices, real, preview and partial outcome checks, and executable retry coverage remain. `asd-init` Update completion step 3 and the Settings writes invariant still require approval and limit the write to approved missing values. |
++| AC-7, AC-8 · Combined reviewer memory index | Shortened cues could make a method hard to locate or break a link in the Claude reviewer's project memory. | `contract-agents` live memory-index bijection plus comparison of link labels, targets and order | none | The Claude view declares `memory: project` and is a live consumer. Both revisions have the same 44 ordered link identities and all targets exist. The owner's commit check passed and the 22 measured Codex phase bundles still match their probe inputs. |
+ 
+ ## Removed tests
+ 
+ | Test | Reason | In change scope |
+ |---|---|---|
+ 
+-No existing test qualified for removal in the delta since entry 2.
++The review-fix removed two assertions from an existing test. No tests were removed or proposed for removal.
+ 
+ ## Added tests
+ 
+ | Test | Gap proof | Regression proof |
+ |---|---|---|
+-| `tests/update.test.js:sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. Driver tests missed the CLI early exit. | Fail-first at `bd73e08^`: `node tests/run.js update --filter 'update CLI retries a pending migration'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes`. The preview and real retry both printed `Already up to date.` against an installed version with a pending migration. runs: 2 |
+-| `tests/migrations.test.js:sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. The existing installed migration and the explicit CLI file checks left linked default paths uncovered. | `node tests/run.js migrations --filter 'installed config migration and check refuse linked paths'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` on pre-fix `bd73e08^` (default check follows `.asd`, exit 1) and on the same snapshot with only runtime restored to current (migration does not refuse). runs: 2 |
+-| `tests/runtime-routing.test.js:sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on its ordinary Node. Runtime routing exercised explicit files alone. Search `config-check`, `--config` and installed-path fixtures found no default/stdin contract or exact Node floor coverage. | Fail-first at `bd73e08^`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` → exit 1, 1 matched, `sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` because `Object.hasOwn is not a function`. A proof-only preload bootstrapped the test scratch path to reach `config-check` on the old CLI. runs: 1 |
+ 
+-The Windows runner used directory junctions for `.asd` and `project`, and a junction at the config path after Windows refused a file symlink. On a host that permits file symlinks, the same test exercises a real config file symlink. The test runs both installed-config entry points in each case and checks the link, destination bytes and directory listings afterward.
++Entry 4 added no tests.
+ 
+ ## Suite run
+ 
+-- Entry 3 pre-strategy evidence: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows migrations runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update` under `suite impl-test#3` exited 1. 310 passed, 1 failed, 0 runner-level skips. Seven existing file-link fixture branches bypassed assertions because the Windows host could not create file symlinks. First failure: `FAIL - sprint-040 AC-2: only real update completion offers missing settings through installed asd-init`. `tests/update.test.js:25` still expects `/On acceptance, insert exactly the approved missing leaves/`. The implementation retains both requirements with an installed-config recheck between them. Relevant source, test and stub paths were clean throughout. HEAD moved from `102bbb4` to `bca653a` during the run with only sprint evidence changed. This is pre-strategy evidence only.
+-- Entry 3 authoring evidence: `node tests/run.js migrations runtime-routing update` passed 84/84, exit 0, after each test batch (`suite impl-test#4` and `#15`). Node `v16.7.0`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` passed 1/1 (`#11`). `npx --offline --yes --package node@16.7.0 node .asd/sync.js --check` exited 0 (`#12`), compared with exit 1 and `sync: Object.hasOwn is not a function` on isolated `bd73e08^` (`#9`).
++- Pre-strategy evidence: The command below ran before strategy. It passed all six selected areas and is eligible for the impacted gate because this entry needs no test edits and the numbered suite captured the complete affected set.
++- Command: `node tests/run.js contract-agents contract-rules contract-workflows sync-cli sync-render update`
++- Scope: impacted
++- Scope evidence: The enabled safety valve bounds the executable change to the updater's no-op predicate. `update` covers the real CLI and live ledger hash. `contract-rules` and `contract-workflows` scan the changed updater. `sync-cli` and `sync-render` exercise release-ledger checking and loading. `contract-agents` directly checks the live, changed Claude memory index. Shared runtime, sync, test harness, hook and migration code did not change.
++- Result: pass, exit 0. 152 passed, 0 failed, 0 runner-level skips. Four existing Windows fixture branches bypassed file-symlink assertions.
++- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets were current.
++- HEAD: c5b1feda4d9eebce86b0af681590106044f0c658
++- Provenance: `suite impl-test#17` under dispatch `impl-test entry 4 strategy`. HEAD matched before and after. Relevant source, generated views, agent memory, tests and stubs were clean, including untracked files. No smoke command is configured.
+ - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
+-- Command: `node tests/run.js`
+-- Scope: full
+-- Scope evidence: With the safety valve enabled, `.asd/runtime.js` changes argument parsing shared by phase commands, and `.asd/sync.js` changes agent variant eligibility and ledger checks used by build and update.
+-- Result: pass, exit 0. 326 passed, 0 failed, 0 runner-level skips. Seven existing Windows fixture branches bypassed file-symlink assertions because the host could not create them. The new linked-config test ran with junctions on this host, including a junction at the config path.
+-- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current.
+-- HEAD: 1734f03a97209fb549d4d0f5e45cdc8f6a06ca77
+-- Provenance: `suite impl-test#16` under dispatch `impl-test entry 3 author`. HEAD matched before and after. Relevant project settings, generated views, source, tests and stubs were clean, including untracked files. The project defines no smoke command.
+-- Line delta: tests +359/−43 (net 316); other +851/−844 (net 7)
++- Line delta: tests +356/−43 (net 313); other +894/−888 (net 6)
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index f8bcb49..7f22260 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -1,44 +1,44 @@
+-- [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null
+-- [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, scope Grep to canon subdirs, write the return file before the final message
+-- [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — after a rule-order fix, resolve the mirrors' "same placement" pointer chains and read the tester's recorded ceilings
+-- [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — read the suite pin and plan decision before flagging a pointer-plus-outcome clause; prefer pointer-coverage gaps
+-- [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
+-- [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
+-- [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells
+-- [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
+-- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, per-mode rows, External Review twins) against agent Inputs required/modes
+-- [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
+-- [In-body comment sweep](feedback_in-body-comment-sweep.md) — added `//` lines in JS bodies, or a context comment a reorder detached: high Quality finding, move its WHY to the header doc
+-- [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
+-- [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
+-- [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
+-- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
+-- [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
+-- [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
+-- [None-row coverage claims](feedback_none-row-coverage-claims.md) — a `none` row citing existing suite checks: grep the exact token the fix added; would a revert go red?
+-- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
+-- [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
+-- [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
+-- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
+-- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "a finding from <agent>" lines, combined's return rules
+-- [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
+-- [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
+-- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
+-- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
+-- [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
+-- [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — guard narrowed to A and B: does a revert of each conjunct alone turn some test red?
+-- [Reuse scope labels](feedback_reuse-scope-labels.md) — a recorded run reused by Scope label: can a named-test or filtered run (one-file suite) write that label?
+-- [gh base-repo resolution](reference_gh-base-repo-resolution.md) — bare or empty-arg `gh repo view` follows set-default/upstream ranking, not `origin`; `gh label create -f` sans --color recolors
+-- [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — a review-fix narrowing a definition: put the AC sentence beside the new text; rewritten pins hide a dropped case
+-- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — per-line heuristic gated by any changed line of the file: an unrelated hunk can trip the gate; read exact regexes first
+-- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — hand lexer claiming a safe-direction ceiling: trace `/\/*$/` regexes and multi-line `'`/`"` strings before accepting it
+-- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — rule making an agent write a new file (scratch commit-msg): check its Tools write list and "deny" entries
+-- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — owned key added under one setting: does the flip back remove it, by recorded ownership, never by value equality alone?
+-- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — "git grep <old> hits only X" AC: the sprint's own leftover-sweep test literal is a hit; live-probe records belong in Manual verification
+-- [Warning remedy trace](feedback_warning-remedy-trace.md) — a warning naming a repair command (run /asd-sync, restore from git): walk the remedy on the post-failure state; does it repair?
+-- [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — "marker absent from output" leak test over a JSON.parse error: V8 shows only ±10 chars, a long marker never leaks whole
+-- [Seed-time key sets](feedback_seed-time-key-sets.md) — seed keyed by files present at seed time misses lazy ones; on a fail-closed fix, trace who adds the key at the creation site
+-- [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — a `{{…}}`-anywhere refusal false-refuses text citing a template placeholder; ask for a start/whole-cell anchor
+-- [Impacted scope claims](feedback_impacted-scope-claims.md) — "area reads none of the changed files": check shared-helper imports, direct spawns, and a changed runner (safety valve)
+-- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — fix routes a case to "waits for step N" from a later step: does the flow return to N; same case in Escalation JSON?
+-- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — grep in-scope agent-memory lines for MEMORY_HISTORY_PATTERNS tokens; a committed hit bypassed memory-check
++- [Live subagent transcripts](reference_live-subagent-transcripts.md) — Transcript shape in the session’s JSONL
++- [Large-diff read budget](feedback_large-diff-read-budget.md) — Diffs of 200 KB or more
++- [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — After a rule-order fix
++- [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — Pointer-plus-outcome clauses
++- [Re-review without a shell](feedback_rereview-no-shell-checks.md) — Hash, suite and pin evidence
++- [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — Accepted departures in the decisions log
++- [Return findings-table shape](feedback_return-findings-table-shape.md) — Pipe-table and ledger contract
++- [Relocation review method](feedback_relocation-review-method.md) — Removed hunks and changed path tables
++- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — Per-mode, fix and External Review rows
++- [Grant-table migration review](feedback_grant-table-migration-review.md) — Prose grants moved to references
++- [In-body comment sweep](feedback_in-body-comment-sweep.md) — Added or orphaned JS comments
++- [Re-entry evidence check](feedback_reentry-evidence-check.md) — Skip keys and template placeholders
++- [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — Phase lists for commit-capable roles
++- [State-key merge migrations](feedback_state-key-merge-migrations.md) — Nodes with partial legacy rosters
++- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — `reviewerFiles` adds test-plan paths
++- [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — Coverage unique to a changed case
++- [Role removal, work inline](feedback_role-removal-inline-work.md) — Tool grants and surviving name variants
++- [None-row coverage claims](feedback_none-row-coverage-claims.md) — Existing tests cited for a fix
++- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — New `gh` or `git` calls
++- [Shell-quoting claims](feedback_shell-quoting-claims.md) — PowerShell typographic quotes
++- [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — `.asd` discovery from `.asd/tmp`
++- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — Redundant guards can hide `ENOENT`
++- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — Phase claims in README and rules
++- [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Route-time HEAD follows entry commits
++- [Delegation vs never-list](feedback_delegation-vs-never-list.md) — Delegate’s actual writes
++- [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — Gaps in cause lists can demote cases
++- [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — Inside a single-dispatch span
++- [Prose-marker guards](feedback_prose-marker-guards.md) — Agent-written text with informal variants
++- [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — A narrowed guard with two conditions
++- [Reuse scope labels](feedback_reuse-scope-labels.md) — Named or filtered runs labeled as suites
++- [gh base-repo resolution](reference_gh-base-repo-resolution.md) — Bare repo lookup and forced label updates
++- [Fix overcorrection vs AC](feedback_fix-overcorrection-vs-ac.md) — Rewritten tests can mask a lost case
++- [File-wide gate, line classifier](feedback_file-wide-gate-line-classifier.md) — An unrelated hunk activates the gate
++- [Lexer ceiling claims](feedback_lexer-ceiling-claims.md) — Regex literals and multiline strings
++- [New agent write vs deny list](feedback_new-agent-write-vs-deny-list.md) — New scratch files
++- [Owned-key toggle flip-back](feedback_owned-key-toggle-flip-back.md) — Ownership when reverting a setting
++- [Grep ACs vs sweep pins](feedback_grep-ac-vs-sweep-pins.md) — Sweep-test literals match `git grep`
++- [Warning remedy trace](feedback_warning-remedy-trace.md) — Repair commands in the failed state
++- [V8 JSON error leak markers](feedback_v8-json-error-leak-markers.md) — Long markers in truncated `JSON.parse` errors
++- [Seed-time key sets](feedback_seed-time-key-sets.md) — Lazily created files
++- [Placeholder regex anchoring](feedback_placeholder-regex-anchoring.md) — Placeholders cited in ordinary text
++- [Impacted scope claims](feedback_impacted-scope-claims.md) — Shared imports, spawns and runner changes
++- [Back-reference gate reachability](feedback_back-reference-gate-reachability.md) — Routing to an earlier step after failure
++- [Memory lines vs history patterns](feedback_memory-lines-vs-history-patterns.md) — Committed memory bypassed its check
+diff --git a/tests/update.test.js b/tests/update.test.js
+index e90752c..7fdc8dc 100644
+--- a/tests/update.test.js
++++ b/tests/update.test.js
+@@ -22,9 +22,6 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
+   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
+   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
+   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
+-  const write = stepOf(adoption, '3');
+-  assert.match(write, /\bacceptance\b/i);
+-  assert.match(write, /\bexactly\b[^\n]*\bapproved missing leaves\b/i);
+ });
+ 
+ test('update state machine: upstream unchanged / local untouched -> noop', () => {

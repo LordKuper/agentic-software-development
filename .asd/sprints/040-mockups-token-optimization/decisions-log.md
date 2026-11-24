@@ -81,3 +81,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — impl fix for wave-1/iter-02: findings resolved
 - 2026-11-24 — route impl-test entry 4 strategy: standard, dispatch HEAD c5b1feda4d9eebce86b0af681590106044f0c658
 - 2026-11-24 — impl-test: impacted set green (152/152 reused at c5b1feda), 0/0 tests
+- 2026-11-24 — wave-1/iter-03: Combined CONCERNS (1); external availability skip with 70 paths. The static trace and menu check do not independently guard the write step. Preserve the earlier de-brittling with the existing accept-all decision and missing diagnostic field in the write step, then test those literals with fail-first and reword control.
