@@ -5,7 +5,7 @@ Owner: inline orchestrator; dispatches none.
 ## Entry
 
 ```json
-{"requires": ["standard: design-review done", "lite: impl-review DoD met (review-policy.md 'DoD per review phase') and state.json phase advanced from impl-review, else ABORT — precondition not met: impl-review DoD"], "modes": {"standard": "frozen workflow=standard: promote approved drafts after design-review", "lite": "frozen workflow=lite: promote from the accepted implementation after impl-review, no draft, no review"}, "ops": ["context: node .asd/runtime.js context --phase design-promote --role orchestrator at entry, read it; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["standard: design-review done", "lite: impl-review DoD met (review-policy.md 'DoD per review phase') and state.json phase advanced from impl-review, else ABORT — precondition not met: impl-review DoD"], "modes": {"standard": "frozen workflow=standard: promote approved drafts after design-review", "lite": "frozen workflow=lite: promote from the accepted implementation after impl-review, no draft, no review"}, "ops": ["context: agent-protocol.md 'Orchestrator phase entry'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs

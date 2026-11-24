@@ -2,39 +2,30 @@
 
 ## Gate policy
 
-Freeze `config.yaml`'s `user_gates` in `state.json.user_gates` at scope. Standalone `/asd-concept`, `/asd-stack` and `/asd-design-system` without an active sprint read config directly. Values: `strict` or `adaptive`; absent means `strict`; invalid or unreadable blocks.
+Freeze `user_gates` at scope in `state.json.user_gates`. Without a sprint, standalone concept, stack and design-system read config. Accept `strict|adaptive`; absent = `strict`; invalid/unreadable blocks.
 
-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (`sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; deletion of project files during migration; audit contradiction precedence cannot settle (`asd-phase-audit.md` step 3b); material architecture change; debt (including review-date renewal) or any reviewer/coverage/quality waiver; review-cap override (per impl-review wave); abort; and rows marked hard below. Machine checks never supply approval.
+Hard in both modes: unauthorized scope, acceptance criteria or user-value changes ("Scope amendment"); unauthorized initial/material UX, brand, accessibility or stack direction; migration deletion of project files; audit contradictions not settled by precedence (audit step 3b); material architecture change; debt or review-date renewal; reviewer, coverage or quality waivers; review-cap overrides per wave; abort; inventory rows marked hard. Checks confer no authority.
 
-`strict` requires explicit approval per inventory class. In `adaptive`, the orchestrator may advance a routine gate only with exact user authority, documented constraints, understood effects and resources, passing checks and no unresolved material alternative. Routine candidates include the applicable inventory rows, in-bounds ADRs, mechanical docs updates and bounded complication decisions. Investigate missing facts; ask the user for missing authority, preference or material trade-off. Reuse exact authorization and record decisions per "Approval recording". Confidence alone is insufficient.
+`strict` requires explicit approval per gate class. In `adaptive`, routine gates may pass with exact user authority, documented constraints, understood effects/resources, green checks and no unresolved material alternative. Candidates: routine inventory rows, in-bounds ADRs, mechanical docs updates and bounded complication decisions. Investigate facts; ask for authority, preference or material trade-offs. Reuse exact authorization and record it per "Approval recording".
 
-A flagged choice reporting an unmeetable plan decision must meet it by widening the fix to the needed files; dropping its requirement is a `new or changed scope` decision. Check a flagged predicate or contract change against its agent definition, README or rule and route contradictions back.
+Widen an unmeetable plan fix to the needed files or seek a scope decision to drop its requirement. Verify flagged predicate/contract changes against agent definitions, README or rules; route contradictions back.
 
 ## Gate mechanics
 
-For a hard gate, or a routine gate that does not qualify adaptively:
-
-- **approve-before-write**: request a decision before the gated mutation.
-- **write-then-review-accept**: follow the mechanic below.
-
-Apply gate rules to free text and optional choices alike. Only an explicit answer permits `decision_actor=user`; preselection, silence, incomplete answers, clarifications and unrelated text leave the gate pending. A policy change cannot approve a pending hard gate. No-op phases have no artifact gate.
+For hard or unqualified routine gates, **approve-before-write** asks before mutation; **write-then-review-accept** follows its mechanic below. Optional choices and free text need an explicit answer for `decision_actor=user`; preselection, silence, incomplete answers, clarifications or unrelated text leave it pending. Policy changes cannot approve pending hard gates. No-op phases have no artifact gate.
 
 ## Approval recording
 
-For an active sprint, record `{gate, decision_actor, reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and append the narrative to the sprint decision log. Use `decision_actor:"orchestrator"` for a routine adaptive pass. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` uses the accepted artifact and git history as evidence, with no state/log write. A material semantic change invalidates only its artifact's decision.
+Save `{gate, decision_actor, reason, evidence, artifact_revision}` with short refs in `state.json.gate_decisions`, plus narrative in the sprint decisions log. A routine adaptive pass uses `decision_actor:"orchestrator"`. Standalone concept, stack and design-system use the accepted artifact and git history instead of state/log. Invalidate only the materially changed artifact's decision.
 
 ## Criterion cost surfacing
 
-Gates are keyed by gate name, so a criterion’s running cost is stated in the request, not looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request, stated before the decision.
+Before deciding an AC addition, change, retirement or closure (including retro intake) or review-cap override, state and record in gate `evidence` for each affected AC:
 
-**Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
+- Iterations: count review dirs with findings naming that AC, including `reviews/impl/wave-*/iter-NN/` and legacy flat dirs. State this as a lower bound because some findings omit AC IDs.
+- Fix rounds: count live and rotated decisions-log entries for those iteration IDs, matched on the stable tail `for <id>: findings resolved` (`asd-phase-impl.md` step 11).
 
-- *iterations charged* — count of iteration directories (`<sprint>/reviews/<phase>/iter-NN/`; in impl-review `<sprint>/reviews/impl/wave-*/iter-NN/` plus legacy `<sprint>/reviews/impl/iter-NN/`) whose findings name that `AC-N`. A finding need not cite an AC (only Correctness traces AC-N), so the count is a lower bound, stated as one;
-- *fix rounds charged* — count of fix-round entries across `<sprint>/decisions-log.md` and its segments (`artifact-layout.md` "Decisions log"), whose iteration id (`wave-<K>/iter-NN`, legacy `iter-NN`; `sprint-lifecycle.md` "Review iteration counters") is one of those iterations, matched on the stable tail `for <id>: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
-
-State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
-
-The pair goes into the `evidence` of the record that gate already makes (above), with the actor deciding on it visible. Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
+Show explicit zero for untouched criteria. For cap override cover every AC with unresolved findings in that iteration. Measure from disk each time. Counts never trigger a decision.
 
 ## Gate inventory
 
@@ -54,9 +45,7 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | workflow choice (scope step 1, `sprint-lifecycle.md` "Workflows") | hard approve-before-write |
 | ASD update choice (new-sprint start, `asd-sprint` SKILL) | hard approve-before-write |
 
-Publishing an `asd-retro` issue (retro), triage closes of one (scope step 2a), post-release closes, a consumer's included-issue closes and every included-PR close (pr merge) take no gate in either mode; an issue's include/reject/defer is the retro intake dispositions gate above. Step 2a's triage writes are authorised by one request user decision before the first write, which is not a gate-inventory gate.
-
-`cleanup` removals take no gate: test files are outside its reach, so test removal stays the gate above. `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
+Ungated: retro issue publication, scope triage closes (one user decision before the first triage write), post-release closes, consumer included-issue and included-PR closes. Intake dispositions stay gated. Cleanup removals are ungated and exclude tests. No standalone gate for `c4-full/` or extra mandatory pause for per-section QODDA.
 
 ## Write-then-review-accept mechanic
 

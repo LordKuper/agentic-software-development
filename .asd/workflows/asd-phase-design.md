@@ -5,7 +5,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
 ## Entry
 
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "audit.md approved, or (frozen documents.audit false) the audit phase COMPLETED signal alone (checkpoints.md precondition chain)", "state.json phase advanced from audit"], "ops": ["context: node .asd/runtime.js context --phase design --role orchestrator at entry, read it; --role asd-advisor before each ## Dispatch delegation, passed as inputs.context; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "audit.md approved, or (frozen documents.audit false) the audit phase COMPLETED signal alone (checkpoints.md precondition chain)", "state.json phase advanced from audit"], "ops": ["context: agent-protocol.md 'Orchestrator phase entry'; agent bundles per 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
