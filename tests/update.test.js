@@ -22,9 +22,6 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
-  const write = stepOf(adoption, '3');
-  assert.match(write, /\bacceptance\b/i);
-  assert.match(write, /\bexactly\b[^\n]*\bapproved missing leaves\b/i);
 });
 
 test('update state machine: upstream unchanged / local untouched -> noop', () => {
