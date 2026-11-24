@@ -132,3 +132,41 @@ Candidate snapshot `7f4ec784fcb75a7ce2b35191923988b08d9e12f8`, including the fai
 | standard | 12 | 764,116 → 519,800 | 32.0% | 573,087 | 390,220 → 181,520 |
 
 Both workflows reach AC-8 independently. Cached input is included in input. The totals exclude controls and include each declared phase once. The phase prompts still carry the common core, language and project rules. Conditional branch instructions have explicit lookup paths. The comparison measures input for context loading and the fixed reply, including the host's startup overhead. It does not estimate entire live sprint usage, external tools, retries or cache-adjusted billing. Cached counts varied by run.
+
+## Review-fix verification
+
+Snapshot `ee94c860f6b1c9910d12e87379d400171b66994d`, after the first implementation review fixes and provider sync. The same Codex CLI probe ran all 22 phase prompts and both controls with the original model, effort and fixed reply. All 24 trials returned the expected reply with 8 output tokens and zero tool calls. [Raw review-fix readings](./codex-phase-review-fix.json).
+
+| Workflow | Phase | Input before → after | Cached input before → after |
+|---|---|---:|---:|
+| lite | control | 31,158 → 28,159 | 7,552 → 26,240 |
+| lite | scope | 63,739 → 41,622 | 63,616 → 26,240 |
+| lite | audit | 61,891 → 38,240 | 7,552 → 7,552 |
+| lite | plan | 55,191 → 38,478 | 7,552 → 26,240 |
+| lite | impl | 67,879 → 49,639 | 27,520 → 26,240 |
+| lite | impl-test | 63,953 → 45,777 | 27,520 → 26,240 |
+| lite | impl-review | 78,377 → 56,983 | 27,520 → 26,240 |
+| lite | design-promote | 63,100 → 39,918 | 27,520 → 0 |
+| lite | cleanup | 55,345 → 39,383 | 0 → 26,240 |
+| lite | retro | 50,916 → 37,849 | 18,304 → 7,552 |
+| lite | pr | 58,165 → 43,052 | 0 → 26,240 |
+| standard | control | 31,158 → 28,159 | 27,520 → 26,240 |
+| standard | scope | 63,739 → 41,622 | 27,520 → 26,240 |
+| standard | audit | 61,891 → 38,240 | 27,520 → 7,552 |
+| standard | design | 62,282 → 40,082 | 27,520 → 26,240 |
+| standard | design-review | 79,259 → 49,209 | 31,104 → 26,240 |
+| standard | design-promote | 63,100 → 39,918 | 7,552 → 26,240 |
+| standard | plan | 55,191 → 38,478 | 0 → 26,240 |
+| standard | impl | 67,879 → 49,639 | 27,520 → 26,240 |
+| standard | impl-test | 63,953 → 45,777 | 0 → 26,240 |
+| standard | impl-review | 78,377 → 56,983 | 27,520 → 26,240 |
+| standard | cleanup | 55,345 → 39,383 | 0 → 0 |
+| standard | retro | 54,935 → 37,849 | 0 → 26,240 |
+| standard | pr | 58,165 → 43,052 | 31,104 → 26,240 |
+
+| Workflow | Input before → after | Reduction | 25% threshold (max) | Control-adjusted before → after |
+|---|---:|---:|---:|---:|
+| lite | 618,556 → 430,941 | 30.3% | 463,917 | 306,976 → 149,351 |
+| standard | 764,116 → 520,232 | 31.9% | 573,087 | 390,220 → 182,324 |
+
+Both workflows pass AC-8. Controls are excluded from the threshold calculation. Total input includes cached input. This measures controlled phase context in Codex, without a live sprint’s tool calls, delegated work or retries.
