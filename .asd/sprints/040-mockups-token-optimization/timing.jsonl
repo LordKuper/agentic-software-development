@@ -244,3 +244,5 @@
 {"op":"close","id":"suite impl-review#2","kind":"suite","parent":"impl-review terminal suite retry","start":"2026-11-24T14:05:30.436Z","end":"2026-11-24T14:05:55.145Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-review terminal suite retry","kind":"dispatch","parent":"impl-review#5","start":"2026-11-24T14:04:20.304Z","end":"2026-11-24T14:07:18.308Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","context_bytes":"62247","model":"luna"}}
 {"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-11-24T13:55:35.323Z","end":"2026-11-24T14:07:18.308Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-24T14:07:36.013Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-24T14:07:36.013Z","end":"2026-11-24T14:07:36.137Z","outcome":"done","attrs":{}}
