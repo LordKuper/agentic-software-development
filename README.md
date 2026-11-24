@@ -102,9 +102,9 @@ node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --dry-r
 
 That command is also the manual fallback if you prefer running it outside Claude Code — self-locating, so it works from any directory in the repo. It needs `tar` on PATH (bundled with Windows 10 1803+, macOS, Linux) and Node >= 16.7.
 
-After a successful update, `/asd-update` runs `/asd-sync` itself, because canon files changed upstream leave the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) stale. Running `update.js` directly only runs `node .asd/sync.js --check`, so follow it with `/asd-sync`, or `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), to regenerate them.
+After a real run, `/asd-update` runs `/asd-sync` and checks `.asd/project/config.yaml` against the installed template. This includes partial updates and successful runs that find ASD already current. Preview and version lookup stay read-only. The raw `update.js` command reports provider drift via `node .asd/sync.js --check`. Follow a direct update with `/asd-sync` or `node .asd/sync.js --apply <generated-view-path...>` to regenerate the named views.
 
-Run `/asd-init` if an upgrade leaves missing or invalid settings. It proposes the missing values and keeps valid choices unless you change them.
+The update reports missing, duplicate and invalid settings by dotted path. If you opt into `/asd-init` from the update, it proposes only missing values and applies the additions you approve. Run `/asd-init` separately to repair invalid or duplicate settings.
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
@@ -288,7 +288,7 @@ Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-proto
 
 All settings live in `.asd/project/config.yaml`. `/asd-init` writes explicit values for the complete shipped schema, including settings inactive under the selected configuration. Re-initialization proposes values for missing keys and preserves valid choices unless you edit them.
 
-Every `/asd-sprint` call runs `node .asd/runtime.js config-check` before changing Git refs or dispatching a phase. Missing, duplicate and invalid settings are reported by dotted path. Run `/asd-init` to complete or repair the configuration, then retry. Explicit empty and disabled values count where the schema allows them. To disable AI attribution, use the unquoted `ai_attribution: disabled` under `git:`. Sprint-mediated init applies only the approved settings and still checks completeness.
+`/asd-update` checks config completeness at completion. Explicit empty and disabled values count where the schema allows them. To disable AI attribution, use the unquoted `ai_attribution: disabled` under `git:`. Sprint-mediated init validates completeness before applying the approved settings.
 
 ```yaml
 user_gates: strict        # adaptive | strict — hard gates always require user approval
@@ -366,7 +366,7 @@ your-project/
 │   ├── project/
 │   │   ├── config.yaml              # workflow settings
 │   │   ├── commands.yaml            # build/test/lint/run + optional smoke, test_paths, test_durations, `checks` map + design.md lint
-│   │   ├── context-ceilings.json    # byte ceilings `runtime.js context-check` enforces (seeded by `--seed`)
+│   │   ├── context-ceilings.json    # seeded project and bundle byte ceilings for `runtime.js context-check`, which also enforces the fixed 62,351-byte LF-normalized standalone skill total
 │   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
 │   │   ├── custom-design-rules.md   # design / design-review rules
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)

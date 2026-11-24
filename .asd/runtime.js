@@ -2395,6 +2395,23 @@ const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
 const CONTEXT_HEADROOM_PERCENT = 10;
 /** A ceiling key naming a context bundle, `<role>@<phase>`; any other key is a repo-relative file. */
 const CONTEXT_BUNDLE_KEY = /^([a-z0-9-]+)@([a-z]+(?:-[a-z]+)*)$/;
+/** Maximum aggregate size of the canonical standalone skills in LF-normalized UTF-8 bytes. */
+const CAP_STANDALONE_SKILLS_BYTES = 62351;
+
+/** Repo-relative canonical standalone skill files, excluding phase shims. */
+function standaloneSkillFiles(repoRoot = path.join(__dirname, '..')) {
+  return fs.readdirSync(path.join(repoRoot, '.asd', 'skills'))
+    .filter((name) => !name.startsWith('asd-phase-')).sort()
+    .map((name) => `.asd/skills/${name}/SKILL.md`);
+}
+
+/** Aggregate LF-normalized UTF-8 bytes of the standalone skills. */
+function standaloneSkillBytes(repoRoot = path.join(__dirname, '..')) {
+  return standaloneSkillFiles(repoRoot).reduce((sum, file) => {
+    const text = fs.readFileSync(path.join(repoRoot, file), 'utf8');
+    return sum + Buffer.byteLength(text.replace(/\r\n/g, '\n'));
+  }, 0);
+}
 
 /** Every `<role>@<phase>` the grant table gives a bundle: each role it names in each phase of every workflow definition, the `*` rows being role defaults, not a phase. */
 function contextBundleKeys() {
@@ -2440,13 +2457,15 @@ function seedCeilings(flags, file) {
   return { out: file, keys: keys.length };
 }
 
-/** `context-check`: `{over}` listing each ceiling key whose size exceeds its ceiling, plus each present project file with no ceiling key (`ceiling: null`, fail-closed for a file created after the seed, which `--seed` adds); with `--seed`, seeds the file instead. */
+/** `context-check`: reports exceeded ceilings and project files with no ceiling, or seeds the file with `--seed`. */
 function contextCheckCommand(flags) {
   const file = typeof flags.ceilings === 'string' ? flags.ceilings : path.join(__dirname, '..', CONTEXT_CEILINGS_FILE);
   if (flags.seed === true) return seedCeilings(flags, file);
   if (flags.bundles !== undefined) fail('--bundles applies to --seed only');
   const ceilings = readCeilings(file);
   const over = Object.entries(ceilings).map(([key, ceiling]) => ({ key, bytes: contextSize(key), ceiling })).filter((entry) => entry.bytes > entry.ceiling);
+  const bytes = standaloneSkillBytes();
+  if (bytes > CAP_STANDALONE_SKILLS_BYTES) over.push({ key: 'standalone-skills', bytes, ceiling: CAP_STANDALONE_SKILLS_BYTES });
   const unbounded = contextProjectFiles().filter((key) => !(key in ceilings)).map((key) => ({ key, bytes: contextSize(key), ceiling: null }));
   return { over: over.concat(unbounded) };
 }
@@ -3076,4 +3095,4 @@ if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CAP_STANDALONE_SKILLS_BYTES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, standaloneSkillBytes, standaloneSkillFiles, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };

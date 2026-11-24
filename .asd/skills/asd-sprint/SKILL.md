@@ -17,10 +17,8 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": ["complete valid config (entry check below)", "at most 1 active sprint (Step 1)"], "else": "halt on entry check failure; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: node .asd/runtime.js config-check", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, git ls-files, git add/git commit only changed tracked attribution files (Attribution check)", "run command: node .asd/runtime.js attribution-check (writes only attribution and its sync-state record per Attribution check below)", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": ["at most 1 active sprint (Step 1)"], "else": "more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view, gh issue view (release retry check); git status --porcelain, git ls-files, git add/git commit only changed tracked attribution files (Attribution check)", "run command: node .asd/runtime.js attribution-check (writes only attribution and its sync-state record per Attribution check below)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
-
-Every invocation runs `node .asd/runtime.js config-check` at the repo root before Step 0, ref or state changes, and phase dispatch. On exit 1, report `missing`, `duplicates` and `invalid` by dotted path and direct the user to `/asd-init` before retrying. On other failures report the diagnostic. Halt on any failure.
 
 ## Steps
 
@@ -46,7 +44,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 5. On COMPLETED → "Attribution check", then advance per Step 3
 
 ### Step 2B: resume flow
-1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`, then "Attribution check"
+1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition. Apply `sprint-lifecycle.md` "Sprint state recovery" where needed. Run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`, then "Attribution check"
 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Offer only phases of the frozen workflow. Exclude `design`, `design-review` and `design-promote` only under the Standard collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"), which includes the effective mockup format.
 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
@@ -56,7 +54,7 @@ Run on the sprint branch only (after scope COMPLETED in Step 2A, at Step 2B step
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
-- `COMPLETED` → read the phase skill's `NEXT:` field; a target outside the frozen definition's `next[<phase>]` → relay FAILED, halt; else dispatch that phase skill. `NEXT:` is authoritative — follows the definition's `phases` order except the design-block collapse (`audit` returns `NEXT: plan` under the collapse test; `design` returns `NEXT: plan` on its defensive-fallback no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or the next phase of `phases` on DoD met; `cleanup` always returns `NEXT: retro`, run or no-op alike; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase runs open mode into merge mode in one dispatch: `NEXT: done` once the merge is confirmed and, self-hosting, the release published → halt, the next sprint's scope archiving it (`sprint-lifecycle.md` "PR phase"); `NEXT: await-merge` is a blocked merge (PR open, sprint at its active path, `phase="pr"`) → halt, a later resume re-entering merge mode.
+- `COMPLETED` → validate the phase skill's `NEXT:` against the frozen definition's `next[<phase>]`. Missing or disallowed target → relay FAILED, halt. For `NEXT: done`, halt and leave archiving to the next sprint's scope. For `NEXT: await-merge`, halt with the sprint active at `phase="pr"`; resume enters merge mode. Dispatch every other allowed target.
 - `FAILED` → take the escalation consult (`agent-protocol.md` "Relay"), then relay with the Advisor line, halt
 - `QUESTION` → take the escalation consult, then relay per `agent-protocol.md` "Relay" `QUESTION` with the Advisor line; halt until the reply, then re-delegate the phase skill
 - `ABORT — precondition not met` → relay, halt
@@ -87,7 +85,7 @@ SKILL: asd-sprint | SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-p
 ```
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (phase chain, exit criteria)
+- `.asd/rules/sprint-lifecycle.md` (exit criteria and "Phase table" for on-demand reference)
 - `.asd/rules/agent-protocol.md` (signals, relay)
 - `.asd/rules/checkpoints.md` (precondition chain, auto-abort)
 - `.asd/rules/core.md` (interaction protocol)
