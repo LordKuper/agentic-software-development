@@ -132,6 +132,13 @@
       "reason": "accepted scope and plan are covered by a validated Combined verdict and green terminal suite; wrapped review has a documented availability skip",
       "evidence": "wave-1/iter-04; terminal full suite 326/326 at 372a94a; 30.3% Lite and 31.9% Standard",
       "artifact_revision": "test-plan.md@terminal-green"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "approved public PR creation and merge in response to the publication request",
+      "evidence": "decisions-log.md: Public PR #148",
+      "artifact_revision": "cb32515"
     }
   ],
   "task_routing": {
@@ -253,6 +260,6 @@
   "updated_at": "2026-11-24T14:08:52.987Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": { "number": 148, "state": "open", "url": "https://github.com/LordKuper/agentic-software-development/pull/148" },
   "archived_at": null
 }
