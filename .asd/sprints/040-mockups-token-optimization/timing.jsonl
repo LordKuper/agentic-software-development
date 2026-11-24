@@ -38,3 +38,5 @@
 {"op":"close","id":"asd-advisor audit#7","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","end":"2026-11-24T11:52:26.885Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
 {"op":"close","id":"asd-advisor audit#8","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","end":"2026-11-24T11:53:23.934Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
 {"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-24T11:02:54.578Z","end":"2026-11-24T11:54:17.069Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-24T11:54:34.302Z","attrs":{}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-24T11:54:34.302Z","end":"2026-11-24T11:56:07.646Z","outcome":"done","attrs":{}}

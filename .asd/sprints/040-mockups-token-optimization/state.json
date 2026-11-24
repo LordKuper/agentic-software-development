@@ -1,7 +1,7 @@
 {
   "sprint_id": "040-mockups-token-optimization",
   "branch": "sprint/040-mockups-token-optimization",
-  "phase": "audit",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -90,16 +90,27 @@
       "reason": "complete tracked inventory, validated Codex evidence and accepted file verdicts under AC-7",
       "evidence": "audit.md; token-baseline.md; context-priority.csv; 46/46 impacted baseline checks",
       "artifact_revision": "audit.md@complete"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "task boundaries implement accepted scope and advisor recommendations under standing authorization",
+      "evidence": "plan.md; audit.md; baseline sync-check green",
+      "artifact_revision": "plan.md@accepted"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "escalated", "reason": "risk:migration", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:section and literal contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:provider discovery contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T11:54:16Z",
+  "updated_at": "2026-11-24T11:56:07Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

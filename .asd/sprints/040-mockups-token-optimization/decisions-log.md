@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-11-24 — Plan accepted adaptively. AC-7 supersedes AC-4 and is carried in Tasks 2–6 in waves 1–3. Baseline build is green. The user authorized all in-scope advisor recommendations. The tasks preserve compatibility and run affected contract verification before measured comparison.
