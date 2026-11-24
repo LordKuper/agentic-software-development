@@ -23,7 +23,7 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Steps
 
 ### Step 0: fast-forward the base branch
-Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
+Read `git-strategy.md` "Branch" before fast-forwarding local `git.base_branch`. A refusal halts and asks the user; an unreachable remote warns and continues on local state. After this step, read `providers.md` "Orchestrator branch references" from disk before sprint detection. Use the current rules, workflows and phase skills from disk for the remaining steps.
 
 ### Step 1: detect active sprint
 - A sprint is active while `state.json.phase != "done"`, its folder at `.asd/sprints/<NNN-slug>/` or, legacy, `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"`
