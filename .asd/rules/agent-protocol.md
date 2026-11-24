@@ -30,7 +30,7 @@ Dispatch from repo root with one leading fenced JSON object.
 
 ### Orchestrator phase entry
 
-Build and read `node .asd/runtime.js context --role orchestrator --phase <phase> --out <scratch-dir>/<NNN-slug>-orchestrator-<phase>.context.md` (new scope before slug: `<scratch-dir>/orchestrator-scope.context.md`). Read the acting workflow whole. Resolve cited sections via `node .asd/runtime.js section --file <path> --heading <text>`; reuse text already in the loaded bundle.
+Build the required bundle with `node .asd/runtime.js context --role orchestrator --phase <phase> --out <scratch-dir>/<NNN-slug>-orchestrator-<phase>.context.md` (new scope before slug: `<scratch-dir>/orchestrator-scope.context.md`). On build failure, return `FAILED` before executing phase steps. Read only the freshly built bundle; never fall back to a stale file. Read the acting workflow whole. Resolve cited sections via `node .asd/runtime.js section --file <path> --heading <text>`; reuse text already in the loaded bundle.
 
 ## Model quota retry
 
