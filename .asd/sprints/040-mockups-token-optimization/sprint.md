@@ -18,6 +18,7 @@ Simplify mockup and configuration workflows. Measure ASD token use in Codex and 
 - AC-5: Apply approved optimizations using the shortest clear form, including checklists or structured data where useful. Preserve required contracts and behavior. Re-run the Codex scenarios against the revised framework and report before/after usage by phase separately from estimated per-file savings. Verify the mockup and config behavior with targeted checks.
 - AC-6: `context-check` checks the existing aggregate byte cap for standalone skills before a change reaches the contract suite (retro 039#P-1).
 - AC-7 (replaces AC-4): Inventory ASD files and generated artifact types. Obtain a Russian-language advisor verdict for each file on keeping, shortening, consolidating or removing it, with evidence of purpose, consumers, dependencies and expected savings. The orchestrator accepts in-scope recommendations under the user's standing authorization and records their disposition.
+- AC-8: Reduce summed Codex input tokens by at least 25% separately for Lite and Standard against the original controlled phase baseline. Keep the same model, effort, harness, phase set and measurement boundaries. Include cached input in total input, count each phase once, and exclude control runs. Maximum totals: 463,917 for Lite and 573,087 for Standard. Verify rules needed by each phase remain reachable and report control-adjusted usage separately.
 
 ## Out of scope
 

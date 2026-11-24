@@ -74,6 +74,32 @@ AC-1, AC-2, AC-5, AC-6, AC-7. Adapt affected contract assertions after Tasks 1�
 
 Orchestrator-only verification after Task 6: rerun the matched Codex probes, report per-phase differences and distinguish estimated per-file bytes from measured consumption. The accepted local custom-rule changes must be applied within owner authority and the Combined memory index by its owner within its allowed write policy.
 
+### Task 7: Remove repeated instruction delivery
+Material risk: change: broad-reasoning
+Reachability: session or phase bootstrap loads common instructions before workflow actions; each phase receives its necessary local instructions and can resolve exceptional branches before acting.
+
+AC-5, AC-7, AC-8. Own provider grants and reading protocol. Use the advisor verdict and actual per-phase section sizes.
+
+- [ ] Reduce repeated full-file and wildcard injection. Preserve safety, role boundaries and expected normal-path rules. Give exceptional branches explicit on-demand references; verify every active consumer and resume path.
+- [ ] Estimate the complete required input, including any newly unconditional reads. Aim for headroom under both Codex limits.
+
+### Task 8: Compress high-cost rules and phase inputs
+Material risk: change: broad-reasoning
+
+AC-5, AC-7, AC-8. Own canonical rule prose and workflow bodies within the advisor's findings.
+
+- [ ] Shorten the highest recurrent instructions and phase bodies. Preserve authoritative sections, parsed literals, permission boundaries, behavioral contracts and compatible state. Coordinate named references with Task 7.
+
+### Task 9: Verify the 25% changes
+Material risk: none
+Test-only: tests/**
+
+AC-5, AC-8. Adapt or extend named tests for the new grant and consumption boundaries after Tasks 7–8.
+
+- [ ] Verify consumer reachability, mandatory rules, normal and exceptional phase behavior, both workflows and generated views. Run the impacted set with regression evidence for changed behavior.
+
+Orchestrator-only verification before review: repeat all 22 phase probes and both controls, record raw per-phase counts, and continue reducing if either workflow misses AC-8.
+
 ## Dependencies
 
 | Wave | Tasks |
@@ -81,6 +107,8 @@ Orchestrator-only verification after Task 6: rerun the matched Codex probes, rep
 | 1 | Task 1, Task 3, Task 4 |
 | 2 | Task 2, Task 5 |
 | 3 | Task 6 |
+| 4 | Task 7, Task 8 |
+| 5 | Task 9 |
 
 - Tasks 2 and 5 consume Task 1's independent setting and compatibility rule. Task 5 also depends on the compact common protocol and reviewer rules from Tasks 3–4. Task 6 follows the contract changes.
 - Sync the affected generated views after each wave before treating sync-check as final. Contract tests follow production changes as declared Test-only.
@@ -94,3 +122,4 @@ Orchestrator-only verification after Task 6: rerun the matched Codex probes, rep
 | Codex only, baseline before changes, prioritize by recurring context | AC-3 / audit; AC-5 / matched verification |
 | Accept Russian per-file advisor recommendations under standing authority | AC-7 / Tasks 2–6 |
 | Enforce the existing aggregate standalone-skill limit early | AC-6 / Tasks 2 and 6 |
+| At least 25% less summed Codex input for each workflow | AC-8 / Tasks 7–9 and matched verification |
