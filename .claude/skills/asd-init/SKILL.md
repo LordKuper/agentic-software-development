@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:efa48f2364ef1632e6aa1b13ec321dbad1709bb2a7fdfb2bde6e6c27fe1bfb2d content_digest=sha256:10e688cd61c0ab5bfa07e850d775a115e2b17de6df8014e70b884991785b7b8a asd_version=14.11.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b content_digest=sha256:3c79944ca93d8a6641a7e169ce0d340d9db33f10cb9f022d5150308cfe697fbb asd_version=14.11.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -112,9 +112,9 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 ### Update completion
 
-1. Read the installed config and template. Use "Config check" to confirm which passed paths are still missing. If none remain, stop. Otherwise apply "Missing settings" to those paths and show only the proposed additions.
+1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
-3. On acceptance, insert exactly the approved missing leaves and any needed parent mappings. If the config or template changed during approval, re-check and obtain approval for the current proposal. Configuration is this mode's only write.
+3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
 
 ## Rules
 
@@ -137,7 +137,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 ### Config check
 
-Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
+Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure, including links in the installed config path.
 
 Validate both mockup keys when present. `project.mockup_format` accepts the four template values. A valid legacy-only config remains accepted. Resolve its effective value per `sprint-lifecycle.md` "Optional documents".
 
