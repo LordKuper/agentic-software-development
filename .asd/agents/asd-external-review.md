@@ -42,8 +42,8 @@ External review wrapper (its row in `review-policy.md` "Reviewer responsibility"
 
 - must: consume the phase-supplied preflight, never an extra availability probe; never call `runtime.js` or name the negative-cache path (`external-review.md` "Detection and negative cache", sole SSoT). Local readiness never proves model access.
 - must: compose the prompt from the phase's template, the injected context and the scope manifest path; never proceed without the prompt template loaded.
-- must: invoke the selected route once over the whole manifest per "Invocation" — no batches, one retry on failure (`external-review.md` "Outcome contract").
-- must: parse the captured stdout, map severity ("Severity mapping"), drop nitpick categories explicitly and keep every other finding at any severity — the floor is applied afterwards by `persist-review --floor` (`external-review.md` "Output mapping"), never by this agent, so its below-floor count is 0; no finding left → APPROVE; cite the wrapped CLI’s finding id and source inside the Description cell.
+- must: invoke the selected route once over the whole manifest, with one retry on failure ("Invocation" and `external-review.md` "Outcome contract").
+- must: parse stdout per "Severity mapping". Report a below-floor count of 0 and use APPROVE when no finding remains, except on stalemate. Cite the wrapped CLI's finding id and source in the Description cell.
 - must: return one report per `t_review-report.md` — Kept findings table (the template's five columns verbatim; empty: its header and separator rows only, never a placeholder row), Dropped findings (counts only: below-floor count plus nitpick count per category), Verdict (FAIL only per `review-policy.md` "Verdict format", the stalemate FAIL aside), Next action.
 - must: on stalemate (same issue set at or above `payload.floor` 2 consecutive iterations, compared with the supplied floored set) return `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
 - never: return anything but a permitted outcome (`external-review.md` "Outcome contract"): a verdict (stalemate included), or the availability skip on a non-ready preflight only; a failure after invocation (crash, hang, timeout, unusable output, retry exhausted) returns `external review interrupted: <cause>`, an interrupted dispatch, never a skip. An empty return, or prose with no verdict token, is no outcome.
@@ -85,21 +85,10 @@ Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orche
 
 ## Severity mapping
 
-Wrapped CLI → ASD:
-
-- blocker, critical → critical
-- major → high
-- minor → medium
-- info, suggestion → low
+Apply `external-review.md` "Output mapping": drop nitpicks and keep every other finding. Persistence applies the floor.
 
 ## Invocation
 
-Use `preflight.route.command` as one executable. For a named profile use `preflight.route.args` as literal argument values, including its explicit read-only flags. For the default route use the rendered `{{wraps_invoke_args}}` tail for `{{wraps_cli}}`; preflight already applied its `{{wraps_config_key}}` override. Never rebuild the selected route or evaluate the executable or arguments as shell code. Capture stdout as the review text.
+Follow `external-review.md` "OS-specific invocation" and Tools for literal executable and arguments, read-only flags, prompt-only stdin, direct plain-text stdout capture, timeout and scratch cleanup. Never rebuild the selected route or evaluate its executable or arguments as shell code.
 
-- Codex host on `win32`: pipe a literal PowerShell here-string to the executable via `&` with an argument array. Keep the prompt off disk.
-- Codex host elsewhere: pipe a quoted heredoc to the quoted executable with each argument quoted separately. Keep the prompt off disk.
-- Claude Code on any platform (Bash, Git Bash on Windows): write the rendered prompt with the file-write operation to `<scratch-dir>/<NNN-slug>-external-<phase>-<iteration id, "/" as "-">.prompt.md` (`<scratch-dir>`: the directory of `payload.inputs.context`). Redirect it into the selected command with the Bash tool’s `timeout: 600000`. Delete the prompt file after the foreground call returns, whatever its outcome. Never poll its PID.
-
-All forms feed the rendered prompt alone via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools read the manifest the prompt names, then resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output.
-
-The wrapped CLI enforces read-only explicitly. Codex `exec` uses `--sandbox read-only`. Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence` to restrict tools, customizations and persistence.
+Default `{{wraps_cli}}` argument tail: `{{wraps_invoke_args}}`. Preflight applies the `{{wraps_config_key}}` override.
