@@ -97,3 +97,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — design-promote skipped: no enabled persistent document or mockup in the frozen self-hosting scope.
 - 2026-11-24 — cleanup checkpoint 12d18fb7151fe5a4bd2351a3cc0a5efbf028345c
 - 2026-11-24 — cleanup: removed none; reverted none; verified n/a: no removals
+- 2026-11-24 — Retrospective written and verified: 4 friction entries, 3 actions and 3 systemic proposals. No upstream publication in framework self-hosting. NEXT: pr.

@@ -13,6 +13,7 @@ responsibility:
 | F-1 | impl | Claude Code account hold blocked a memory-owner request | — |
 | F-2 | impl-review | Claude Code passed local preflight and refused external review | reviews/impl/wave-1/iter-01/external.md |
 | F-3 | impl-review | Child Git lacked checkout permission during the terminal suite | test-plan.md |
+| F-4 | retro | Timing summary detected dispatches outside parent phase intervals | timing.jsonl |
 
 ## F-1 — Claude Code account hold blocked a memory-owner request
 
@@ -38,3 +39,11 @@ responsibility:
 - **What happened**: Three child Git reads failed without the exact checkout in process-scoped safe.directory. tests/runtime-routing.test.js:374 was outside the last impacted set. tests/contract-rules.test.js:13 and tests/runtime-timing.test.js:239 were inside it.
 - **Impact**: The first terminal run failed 323/326. The focused checks passed with scoped Git config on unchanged HEAD. The full gate had to be repeated.
 - **Refs**: test-plan.md, decisions-log.md
+
+## F-4 — Timing summary detected dispatches outside parent phase intervals
+
+- **Phase**: retro
+- **Surface**: operation timing ledger
+- **What happened**: The summary flagged Task 1, Task 3, Task 4 and impl-test entry 3 strategy as outside their parent phase intervals. The latter was recorded before the phase open succeeded.
+- **Impact**: The four dispatch timings cannot be attributed to a complete parent interval. Test, review and Codex token evidence remain independent.
+- **Refs**: timing.jsonl

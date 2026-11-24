@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!--
+responsibility:
+  owns: html shell wrap for all asd user-facing html docs
+  excludes: doc content, doc-specific structure
+  delegates_to: fragment templates (t_prd, t_adr, t_ux-spec, t_concept, t_stack, t_design-system, t_accessibility, t_retrospective)
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="040-mockups-token-optimization">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-11-24">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause per F-N entry, then deduplicated findings drafted as guardrail + home, as remediation and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 040 · Mockups and token optimization</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+      --ok-tint: rgba(31,136,61,0.07); --danger-tint: rgba(207,34,46,0.06);
+      --chip-must-bg: #ffebe9; --chip-must-fg: #cf222e;
+      --chip-should-bg: #fff5e1; --chip-should-fg: #9a6700;
+      --chip-may-bg: #ddf4ff; --chip-may-fg: #0969da;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+        --ok-tint: rgba(63,185,80,0.12); --danger-tint: rgba(248,81,73,0.10);
+        --chip-must-bg: #3b1416; --chip-must-fg: #ff7b72;
+        --chip-should-bg: #2d2410; --chip-should-fg: #e3b341;
+        --chip-may-bg: #0d2538; --chip-may-fg: #58a6ff;
+      }
+    }
+    html, body { margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+    body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .badges .provenance-reverse-engineered, .badges .provenance-migrated { color: var(--warn); border-color: var(--warn); }
+    .badges .status-draft       { color: var(--neutral); border-color: var(--neutral); }
+    .badges .status-in-review   { color: var(--warn);    border-color: var(--warn); }
+    .badges .status-approved    { color: var(--ok);      border-color: var(--ok); }
+    .badges .status-locked      { color: var(--info);    border-color: var(--info); }
+    .stats { margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
+    .stats .chip { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3, h4 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code, pre { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; }
+    code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre { background: var(--code-bg); padding: 12px; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; padding: 0; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--code-bg); position: sticky; top: 0; z-index: 1; }
+    tbody tr:nth-child(even) td { background: var(--card-bg); }
+    blockquote { border-left: 3px solid var(--accent); margin: 0; padding: 4px 14px; color: var(--muted); }
+    .mermaid { background: var(--bg); text-align: center; margin: 16px 0; }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 32px; }
+
+    /* fragment-shared utilities */
+    .lede { font-size: 1.08rem; color: var(--fg); }
+    section.hero { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; }
+    section.callout { border-left: 4px solid var(--border); padding: 8px 14px; background: var(--card-bg); border-radius: 4px; }
+    section.callout.warn { border-left-color: var(--warn); }
+    section.callout.warn h2::before { content: "⊘ "; color: var(--warn); }
+
+    ol.goal-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+    ol.goal-grid li { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; display: flex; gap: 10px; }
+    ol.goal-grid .num { flex: 0 0 auto; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+    ol.goal-grid p { margin: 0; }
+
+    details.role-group { border: 1px solid var(--border); border-radius: 6px; margin: 8px 0; background: var(--card-bg); }
+    details.role-group > summary { cursor: pointer; padding: 8px 12px; font-weight: 600; }
+    details.role-group > summary .count { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+    details.role-group ul.stories { margin: 0; padding: 4px 16px 12px 28px; }
+    ul.stories li { margin: 4px 0; }
+    ul.stories b { color: var(--accent); font-weight: 600; }
+
+    table.ac-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    .chip.prio-must   { background: var(--chip-must-bg);   color: var(--chip-must-fg); border-color: var(--chip-must-fg); }
+    .chip.prio-should { background: var(--chip-should-bg); color: var(--chip-should-fg); border-color: var(--chip-should-fg); }
+    .chip.prio-may    { background: var(--chip-may-bg);    color: var(--chip-may-fg); border-color: var(--chip-may-fg); }
+
+    ul.non-goals { margin: 0; padding-left: 22px; }
+    ul.non-goals li::marker { content: "⊘  "; color: var(--warn); }
+
+    /* definition-list pattern: Purpose / Entry / Exit / Notes */
+    dl.def-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 8px 0; }
+    dl.def-list dt { font-weight: 600; color: var(--muted); }
+    dl.def-list dd { margin: 0; }
+
+    /* ADR */
+    .adr { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card-bg); }
+    .adr > .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+    .adr h2 { margin-top: 0.4em; border-bottom: none; font-size: 1.3rem; }
+    .adr h3 { margin-top: 1.1em; border-bottom: none; font-size: 1.15rem; }
+    .status-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
+    .status-proposed   { color: var(--warn);    border-color: var(--warn); }
+    .status-accepted   { color: var(--ok);      border-color: var(--ok); }
+    .consequences { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .consequences .pros, .consequences .cons { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); }
+    .consequences .pros { background: var(--ok-tint); border-left: 3px solid var(--ok); }
+    .consequences .cons { background: var(--danger-tint); border-left: 3px solid var(--danger); }
+    .consequences h4 { margin: 0 0 4px; font-size: 1rem; color: var(--muted); }
+    .consequences ul { margin: 0; padding-left: 20px; }
+    @media (max-width: 720px) { .consequences { grid-template-columns: 1fr; } }
+    ul.alt-list li { margin: 4px 0; }
+    ul.alt-list li strong { color: var(--fg); }
+
+    /* UX-spec screen references */
+    article.mockup { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card-bg); }
+    article.mockup > h3 { margin-top: 0; }
+    .screen-meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 6px 0 10px; font-size: 0.92rem; }
+    .screen-meta b { color: var(--muted); font-weight: 600; }
+
+    /* Concept */
+    .pillar-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .pillar-grid li { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 10px 12px; }
+    .pillar-grid li strong { display: block; margin-bottom: 4px; color: var(--accent); }
+    .anti-pillar-grid li { border-left-color: var(--danger); }
+    .anti-pillar-grid li strong { color: var(--danger); }
+    ul.user-segments { list-style: none; padding: 0; }
+    ul.user-segments li { padding: 8px 12px; margin: 6px 0; border-left: 3px solid var(--accent); background: var(--card-bg); border-radius: 4px; }
+    ul.user-segments li b { color: var(--accent); }
+    ul.metrics li { margin: 4px 0; }
+    ul.metrics li .target { float: right; color: var(--ok); font-variant-numeric: tabular-nums; }
+
+    /* Stack */
+    table.tech-table .ver { font-variant-numeric: tabular-nums; color: var(--muted); }
+    .principle-list { list-style: none; padding: 0; }
+    .principle-list li { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--info); border-radius: 6px; padding: 8px 12px; margin: 6px 0; }
+    .principle-list li strong { color: var(--info); }
+
+    /* Accessibility */
+    section.a11y-domain { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; margin: 14px 0; }
+    section.a11y-domain h2 { border-bottom: 1px dashed var(--border); }
+    .limitation { background: var(--chip-should-bg); border-left: 3px solid var(--warn); padding: 8px 12px; margin: 6px 0; border-radius: 4px; }
+    .limitation b { color: var(--warn); }
+
+    /* Design system */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .swatch { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+    .swatch .chip-color { height: 80px; border-radius: 4px; border: 1px solid var(--border); }
+    .swatch code { font-size: 0.78rem; }
+    .swatch small { color: var(--muted); }
+    .spacing-scale { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); }
+    .spacing-scale > div { background: var(--accent); width: 24px; border-radius: 2px 2px 0 0; }
+    article.component-preview { border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 14px 0; background: var(--card-bg); }
+    .preview { padding: 16px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg); }
+
+    @media print {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+      a { color: inherit; text-decoration: none; }
+      footer { page-break-before: always; }
+      details.role-group[open] > summary { list-style: none; }
+      details.role-group { break-inside: avoid; }
+      tr, li { break-inside: avoid; }
+    }
+  </style>
+
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc" aria-label="Contents"><h2>Contents</h2><ol><li><a href="#outcome">Outcome</a></li><li><a href="#analysis">Analysis</a></li><li><a href="#actions">Actions</a></li><li><a href="#systemic-proposals">Systemic proposals</a></li><li><a href="#duration">Duration</a></li></ol></nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+          <!-- provenance badge omitted when provenance == original -->
+        </div>
+        <h1>Retrospective — Sprint 040 · Mockups and token optimization</h1>
+        <div class="stats">Updated 2026-11-24</div>
+      </header>
+      <main>
+<!--
+responsibility:
+  owns: retro-phase analysis of the sprint — root cause per F-N entry, then deduplicated findings drafted as guardrail + home, as remediation and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework
+  excludes: the friction entries themselves (friction-log.md), code defects, review verdicts, plan tasks, decisions
+  delegates_to: friction-log.md (entries), test-plan.md (defects), reviews/ (verdicts), decisions-log.md (decisions)
+provenance: original          # original | reverse-engineered | migrated
+source: ""                    # optional path/URL when provenance != original
+-->
+<section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">4 entries analysed, 1 consumer action, 2 framework actions, 3 systemic proposals.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead><tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr></thead>
+    <tbody>
+    <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>Claude Code rejected inference after its local session check. The owner completed the planned edit through its Codex role.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>The local readiness probe does not establish inference access. The account denial reached the next preflight through the negative cache.</td><td><span class="chip area">both</span></td></tr>
+    <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>The full-suite command ran without the process-scoped Git setting required by this checkout. Child Git refused three read-only contract checks.</td><td><span class="chip area">consumer</span></td></tr>
+    <tr id="F-4"><td><a href="#F-4">F-4</a></td><td>Interrupted or reordered dispatch starts fell outside their recorded parent phase intervals.</td><td><span class="chip area">asd</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+    <thead><tr><th>Addresses</th><th>Guardrail</th><th>Acts on</th><th>Home</th></tr></thead>
+    <tbody>
+    <tr id="A-1"><td><a href="#F-1">F-1</a>, <a href="#F-2">F-2</a></td><td>Stop wrapped review on an explicit account-hold denial. Persist the reason and carried scope.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/external-review.md</code></td></tr>
+    <tr id="A-2"><td><a href="#F-3">F-3</a></td><td>Verify read-only child Git access in the same process environment as the full suite.</td><td><span class="chip area">consumer</span></td><td><code>.asd/project/custom-coding-rules.md</code></td></tr>
+    <tr id="A-3"><td><a href="#F-4">F-4</a></td><td>Validate the open phase parent before accepting a new dispatch timing operation.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <table>
+    <thead><tr><th>Guardrail</th><th>Acts on</th><th>Home</th><th>Expected saving</th></tr></thead>
+    <tbody>
+    <tr id="P-1"><td>Record actual completion for each concurrent task and attribute shared context once in the wave summary.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code></td><td>12m 34s above the dispatch median in the slowest pair. Shared timing cannot identify the avoidable share.</td></tr>
+    <tr id="P-2"><td>Bring the smallest failing migration fixture into the migration task brief before dispatch.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md</code></td><td>7m 39s above the dispatch median. The recoverable portion needs a measured trial.</td></tr>
+    <tr id="P-3"><td>Scope a suite revision to remove redundant workflow assertions and retain executable update cases.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/code-style.md</code></td><td>Slowest full suite, including setup failure, 1m 8s against a 48s median. Excess 20s.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="duration">
+  <h2>Duration</h2>
+  <h3>Summary</h3>
+  <table>
+    <thead><tr><th>Measure</th><th>Key</th><th>Time</th></tr></thead>
+    <tbody>
+    <tr><td>wall</td><td>—</td><td>3h 24m 39s</td></tr>
+    <tr><td>machine</td><td>—</td><td>2h 26m 13s</td></tr>
+    <tr><td>user-wait</td><td>—</td><td>50m 56s</td></tr>
+    <tr><td>unaccounted</td><td>—</td><td>7m 30s</td></tr>
+    <tr><td>phase</td><td>scope</td><td>19m 0s</td></tr>
+    <tr><td>phase</td><td>audit</td><td>51m 22s</td></tr>
+    <tr><td>phase</td><td>plan</td><td>1m 33s</td></tr>
+    <tr><td>phase</td><td>impl</td><td>1h 7m 16s</td></tr>
+    <tr><td>phase</td><td>impl-test</td><td>24m 2s</td></tr>
+    <tr><td>phase</td><td>impl-review</td><td>33m 27s</td></tr>
+    <tr><td>phase</td><td>design-promote</td><td>0s</td></tr>
+    <tr><td>phase</td><td>cleanup</td><td>0s</td></tr>
+    <tr><td>phase</td><td>retro</td><td>28s</td></tr>
+    <tr><td>kind</td><td>user-wait</td><td>50m 56s</td></tr>
+    <tr><td>kind</td><td>phase</td><td>3h 17m 9s</td></tr>
+    <tr><td>kind</td><td>dispatch</td><td>3h 8m 5s</td></tr>
+    <tr><td>kind</td><td>suite</td><td>6m 5s</td></tr>
+    <tr><td>kind</td><td>review-iteration</td><td>25m 3s</td></tr>
+    <tr><td>kind</td><td>external-review</td><td>2m 38s</td></tr>
+    <tr><td>rework</td><td>reentries</td><td>1h 30m 22s</td></tr>
+    <tr><td>rework</td><td>iterations</td><td>15m 30s</td></tr>
+    <tr><td>rework</td><td>interrupted</td><td>9m 45s</td></tr>
+    <tr><td>agent/tier/model</td><td>— / — / —</td><td>8s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-advisor / standard / astra</td><td>19m 34s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-dev-escalated / escalated / gpt-6.2-sol</td><td>1h 10m 33s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-dev / standard / gpt-6.2-sol</td><td>17m 57s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-tester / standard / sol</td><td>45m 7s</td></tr>
+    <tr><td>agent/tier/model</td><td>— / — / sonnet</td><td>2m 38s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-reviewer-combined / standard / sol</td><td>25m 4s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-dev / standard / sol</td><td>3m 38s</td></tr>
+    <tr><td>agent/tier/model</td><td>asd-tester-runner / runner / luna</td><td>6m 3s</td></tr>
+    <tr><td>baseline median</td><td>phase · scope (14 sprints)</td><td>37m 9s</td></tr>
+    <tr><td>baseline median</td><td>phase · audit (14 sprints)</td><td>4m 25s</td></tr>
+    <tr><td>baseline median</td><td>phase · plan (14 sprints)</td><td>5m 18s</td></tr>
+    <tr><td>baseline median</td><td>phase · impl (14 sprints)</td><td>44m 44s</td></tr>
+    <tr><td>baseline median</td><td>phase · impl-test (14 sprints)</td><td>25m 21s</td></tr>
+    <tr><td>baseline median</td><td>phase · impl-review (14 sprints)</td><td>24m 12s</td></tr>
+    <tr><td>baseline median</td><td>phase · design-promote (12 sprints)</td><td>12s</td></tr>
+    <tr><td>baseline median</td><td>phase · retro (14 sprints)</td><td>2m 2s</td></tr>
+    <tr><td>baseline median</td><td>phase · pr (13 sprints)</td><td>1m 56s</td></tr>
+    <tr><td>baseline median</td><td>phase · cleanup (12 sprints)</td><td>28s</td></tr>
+    <tr><td>baseline median</td><td>kind · phase (14 sprints)</td><td>3h 15m 17s</td></tr>
+    <tr><td>baseline median</td><td>kind · dispatch (14 sprints)</td><td>1h 54m 16s</td></tr>
+    <tr><td>baseline median</td><td>kind · user-wait (14 sprints)</td><td>1h 24m 41s</td></tr>
+    <tr><td>baseline median</td><td>kind · external-review (14 sprints)</td><td>14m 2s</td></tr>
+    <tr><td>baseline median</td><td>kind · review-iteration (14 sprints)</td><td>23m 0s</td></tr>
+    <tr><td>baseline median</td><td>kind · suite (14 sprints)</td><td>5m 22s</td></tr>
+    <tr><td>full suite</td><td>maximum observed</td><td>1m 8s</td></tr>
+    <tr><td>baseline median</td><td>full suite</td><td>48s</td></tr>
+    </tbody>
+  </table>
+  <h3>Slow set</h3>
+  <table>
+    <thead><tr><th>Operation</th><th>Duration</th><th>Excess</th><th>Cause</th><th>Row</th></tr></thead>
+    <tbody>
+    <tr><td>dispatch · impl#2 · Task 7</td><td>15m 19s</td><td>12m 34s</td><td>Cross-cutting context or workflow edits shared a timed wave. Dispatch duration was recorded at the wave boundary.</td><td><a href="#P-1">P-1</a></td></tr>
+    <tr><td>dispatch · impl#2 · Task 8</td><td>15m 19s</td><td>12m 34s</td><td>Cross-cutting context or workflow edits shared a timed wave. Dispatch duration was recorded at the wave boundary.</td><td><a href="#P-1">P-1</a></td></tr>
+    <tr><td>dispatch · impl#1 · Task 2</td><td>10m 39s</td><td>7m 54s</td><td>Cross-cutting context or workflow edits shared a timed wave. Dispatch duration was recorded at the wave boundary.</td><td><a href="#P-1">P-1</a></td></tr>
+    <tr><td>dispatch · impl#1 · Task 5</td><td>10m 39s</td><td>7m 54s</td><td>Cross-cutting context or workflow edits shared a timed wave. Dispatch duration was recorded at the wave boundary.</td><td><a href="#P-1">P-1</a></td></tr>
+    <tr><td>dispatch · impl#1 · Task 1#1</td><td>10m 23s</td><td>7m 39s</td><td>Compatibility work had to trace both the legacy mockup selector and its UX gate.</td><td><a href="#P-2">P-2</a></td></tr>
+    </tbody>
+  </table>
+  <h3>User waits</h3>
+  <table>
+    <thead><tr><th>Wait</th><th>Duration</th><th>Avoidable</th><th>Cause</th><th>Row</th></tr></thead>
+    <tbody>
+    <tr><td>scope#1 · workflow-choice</td><td>40s</td><td>no</td><td>The user selected the frozen Lite workflow.</td><td>—</td></tr>
+    <tr><td>scope#1 · requirements-interview</td><td>2m 7s</td><td>no</td><td>The user specified compatibility, update timing and Codex-only evidence.</td><td>—</td></tr>
+    <tr><td>scope#1 · approach-choice</td><td>13m 8s</td><td>no</td><td>The user selected measurement before per-file decisions.</td><td>—</td></tr>
+    <tr><td>scope#1 · scope-acceptance</td><td>1m 43s</td><td>no</td><td>The user approved the criteria and prior-retro disposition.</td><td>—</td></tr>
+    <tr><td>audit#1 · wait lifecycle file</td><td>8m 34s</td><td>no</td><td>The user had asked to approve each file individually at this point.</td><td>—</td></tr>
+    <tr><td>audit#1 · wait artifact layout file</td><td>17m 55s</td><td>no</td><td>The user had asked to approve each file individually at this point.</td><td>—</td></tr>
+    <tr><td>audit#1 · wait review policy file</td><td>3m 57s</td><td>no</td><td>The user had asked to approve each file individually at this point.</td><td>—</td></tr>
+    <tr><td>audit#1 · wait core file</td><td>1m 49s</td><td>no</td><td>The user had asked to approve each file individually at this point.</td><td>—</td></tr>
+    <tr><td>audit#1 · wait agent protocol file</td><td>1m 3s</td><td>no</td><td>The user had asked to approve each file individually at this point.</td><td>—</td></tr>
+    </tbody>
+  </table>
+</section></main>
+      <footer>by ASD workflow | 2026-11-24 | sprint 040-mockups-token-optimization</footer>
+    </div>
+  </div>
+</body>
+</html>
