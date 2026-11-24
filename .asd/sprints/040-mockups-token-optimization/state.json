@@ -1,0 +1,58 @@
+{
+  "sprint_id": "040-mockups-token-optimization",
+  "branch": "sprint/040-mockups-token-optimization",
+  "phase": "audit",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user selected lite",
+      "evidence": "decisions-log.md: Workflow choice",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "audit requirements and practices",
+      "decision_actor": "user",
+      "reason": "approved the amended requirements and per-file review practices",
+      "evidence": "decisions-log.md: Audit requirements and practices approved",
+      "artifact_revision": "research.md@requirements-and-practices"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "baseline in Codex, then review files by descending token cost",
+      "evidence": "research.md: Approaches / Chosen",
+      "artifact_revision": "research.md@approach"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "accepted the five criteria and included P-1 as AC-6",
+      "evidence": "decisions-log.md: Scope accepted; AC-1..AC-6 each 0 review iterations and 0 fix rounds",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "include P-1; defer A-2, A-4 and P-2",
+      "evidence": "decisions-log.md: Retro intake accepted",
+      "artifact_revision": "sprint.md@scope"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
+  },
+  "created_at": "2026-11-24T10:44:26Z",
+  "updated_at": "2026-11-24T11:02:45Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}

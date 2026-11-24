@@ -1,0 +1,10 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-24T10:43:53.745Z","attrs":{}}
+{"op":"open","id":"workflow-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:43:53.783Z","attrs":{}}
+{"op":"close","id":"workflow-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:43:53.783Z","end":"2026-11-24T10:44:33.345Z","outcome":"done","attrs":{}}
+{"op":"open","id":"requirements-interview","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:44:45.303Z","attrs":{}}
+{"op":"close","id":"requirements-interview","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:44:45.303Z","end":"2026-11-24T10:46:52.751Z","outcome":"done","attrs":{}}
+{"op":"open","id":"approach-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:47:37.737Z","attrs":{}}
+{"op":"close","id":"approach-choice","kind":"user-wait","parent":"scope#1","start":"2026-11-24T10:47:37.737Z","end":"2026-11-24T11:00:45.276Z","outcome":"done","attrs":{}}
+{"op":"open","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-24T11:01:10.711Z","attrs":{}}
+{"op":"close","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-24T11:01:10.711Z","end":"2026-11-24T11:02:54.188Z","outcome":"done","attrs":{}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-24T10:43:53.745Z","end":"2026-11-24T11:02:54.188Z","outcome":"done","attrs":{}}

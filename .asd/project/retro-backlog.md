@@ -111,3 +111,7 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 038-codex-provider-routing#A-2 | asd | included | 039-figma-codex-prompts | Capture the complete runner report and exit code in the same invocation before printing a bounded summary. |
 | 038-codex-provider-routing#P-1 | asd | included | 039-figma-codex-prompts | Require a recorded red run before accepting a Test-only Task that adds or extends a behavior regression. |
 | 038-codex-provider-routing#P-2 | asd | included | 039-figma-codex-prompts | Exercise the workflow's Git-produced scope list when testing a review-path change. |
+| 039-figma-codex-prompts#A-2 | asd | deferred | 040-mockups-token-optimization | Carry the wrapper host in external-review preflight and use it to select the invocation shell. |
+| 039-figma-codex-prompts#A-4 | asd | deferred | 040-mockups-token-optimization | Check repository discovery in the exact environment used to start the terminal test runner. |
+| 039-figma-codex-prompts#P-1 | asd | included | 040-mockups-token-optimization | Check the existing aggregate standalone-skill byte budget in context-check when a standalone skill changes. |
+| 039-figma-codex-prompts#P-2 | asd | deferred | 040-mockups-token-optimization | Trace an interrupted provider-backed artifact through recovery, reconciliation, and review in the plan's reachability check. |
