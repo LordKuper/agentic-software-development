@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4b117531ae8edb4c704ca236ff2519fed5bd12abdec216fea011379206ba38d1 content_digest=sha256:413070281e3d7a10c59f9e039194b1ee84565f0d91f83653a72e066b8ce22b55 asd_version=14.11.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:efa48f2364ef1632e6aa1b13ec321dbad1709bb2a7fdfb2bde6e6c27fe1bfb2d content_digest=sha256:ba0940f8bba9e8573ab345df5d078de2f093c53a6310ac2b0b0196dd70b15200 asd_version=14.11.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a settings change an active sprint declares (in its sprint.md at scope or its plan at impl). Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -10,7 +10,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Purpose
 
-Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), or apply a sprint-declared settings change (sprint-mediated).
+Initialize ASD or edit its settings in the applicable mode.
 
 ## Preconditions
 
@@ -21,7 +21,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Modes
 
 ```json
-{"fresh": "no .asd/project/config.yaml: full setup", "re-init": "config exists: diff editor", "sprint-mediated": "invoked by asd-phase-impl.md step 6 with an accepted plan's Settings change: pairs (sprint-lifecycle.md Plan file format), or by asd-phase-scope.md before step 3a's freeze with the drafted sprint.md's Settings change: pairs: applies those pairs only"}
+{"fresh": "no .asd/project/config.yaml: full setup", "re-init": "config exists: diff editor", "sprint-mediated": "apply Settings change: pairs from asd-phase-impl.md step 6 or asd-phase-scope.md step 2b", "update-completion": "offer additions for missing paths when the user opts into asd-init from asd-update step 5"}
 ```
 
 ## Steps
@@ -31,7 +31,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 Fresh and re-init only.
 
 0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** per "AGENTS.md sync" in both self-hosting and consumer projects before user choices or aborts. Sprint-mediated writes only `config.yaml`.
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** per "AGENTS.md sync" before user choices or aborts.
 0b. **Require `gh`**: run `gh --version`, then `gh auth status`. Either fails → stop before any further step, naming the fix: install gh (https://cli.github.com), or run `gh auth login`. `pr` opens and merges every sprint PR through it (`git-strategy.md` "PR creation").
 
 ### Fresh
@@ -90,7 +90,7 @@ Fresh and re-init only.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. Do NOT skip or summarise — full values verbatim.
-2a. Run "Config check". For missing fields propose prior effective values (documents and mockups per `sprint-lifecycle.md` "Optional documents"), else template defaults. Require repair of invalid or duplicate entries. Keep valid values unless the user edits them.
+2a. Run "Config check" and propose "Missing settings". Require repair of invalid or duplicate entries. Keep valid values unless the user edits them.
 2b. Read `.asd/project/commands.yaml`. For each of `test_paths`, `test_durations` and `checks.context` still absent, run step 8's detection (fresh) and, found, add it to the pending change-set with the shown proposal: `checks.context` also seeds `.asd/project/context-ceilings.json` when that file is absent. Never rewrite a key already present. Then name the gate-class gaps (step 8; "Gate-class gaps")
 3. Request user decision (multi-select) on which sections to edit, absent fields included
 4. Collect and queue new values by section. Offer the four mockup formats independently of `ux_spec`, preselecting the effective value per `sprint-lifecycle.md` "Optional documents". Write the selection as `project.mockup_format` and remove the legacy key if present.
@@ -109,9 +109,15 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
 6. Re-init step 7 applies when a pair touches `review.external_review`, `review.codex_profile` or `system.tools`
 
+### Update completion
+
+1. Read the installed config and template. Use "Config check" to confirm which passed paths are still missing. If none remain, stop. Otherwise apply "Missing settings" to those paths and show only the proposed additions.
+2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `$asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
+3. On acceptance, insert exactly the approved missing leaves and any needed parent mappings. If the config or template changed during approval, re-check and obtain approval for the current proposal. Configuration is this mode's only write.
+
 ## Rules
 
-- never: dispatch an agent. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
+- never: dispatch an agent. Only sprint-mediated mode reads sprint input, limited to declared pairs.
 - never: produce concept, stack or design system; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
 
 ## Delegates
@@ -133,6 +139,10 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
 
 Validate both mockup keys when present. `project.mockup_format` accepts the four template values. A valid legacy-only config remains accepted. Resolve its effective value per `sprint-lifecycle.md` "Optional documents".
+
+### Missing settings
+
+Propose prior effective values for missing document and mockup fields per `sprint-lifecycle.md` "Optional documents". For other missing leaves propose installed template defaults. Offer only values allowed by the template and "Config check".
 
 ### AGENTS.md sync
 
@@ -176,10 +186,10 @@ Four custom commands emitted only when `documents.design_system: enabled` (else 
 ## Return
 
 ```
-SKILL: asd-init | MODE: <fresh|re-init|sprint-mediated> | REPO: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <none|likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> node=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a> | STATUS: <complete|aborted> | NEXT: <asd-concept|asd-stack|asd-design-system|asd-sprint|none>
+SKILL: asd-init | MODE: <fresh|re-init|sprint-mediated|update-completion> | REPO: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <none|likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> node=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a> | STATUS: <complete|aborted> | NEXT: <asd-concept|asd-stack|asd-design-system|asd-sprint|none>
 ```
 
-Sprint-mediated: `REPO` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config. `NEXT`: the first step-15 suggestion, else `asd-sprint`; sprint-mediated `none`.
+Sprint-mediated and update completion: `REPO` and unprobed `TOOLS` are `n/a`, `NEXT: none`. Read `DECOMP`/`DIAGRAM` from config. Other modes take the first step-15 suggestion, else `asd-sprint`.
 
 Followed by file-creation summary.
 
