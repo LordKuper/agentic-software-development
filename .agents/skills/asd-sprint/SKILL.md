@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:f92640c2fdc99d180d29acc01eb27682587ea10873623ba8bbd130036ed9338c content_digest=sha256:79259438ab86322358452e7f3c0e60a6accc4432a5594ab5cd47b90e4647867c asd_version=14.11.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:80549ff8c90a38155223be06d606e45f8993bac2c5cd1a5fe4725b337bd30cb1 content_digest=sha256:e31e605ad8dd298a695a04958d87d139d5b4331bec6256485f9fafc741f1ff66 asd_version=14.11.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -21,7 +21,7 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Steps
 
 ### Step 0: fast-forward the base branch
-Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
+Read `git-strategy.md` "Branch" before fast-forwarding local `git.base_branch`. A refusal halts and asks the user; an unreachable remote warns and continues on local state. After this step, read `providers.md` "Orchestrator branch references" from disk before sprint detection. Use the current rules, workflows and phase skills from disk for the remaining steps.
 
 ### Step 1: detect active sprint
 - A sprint is active while `state.json.phase != "done"`, its folder at `.asd/sprints/<NNN-slug>/` or, legacy, `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"`
