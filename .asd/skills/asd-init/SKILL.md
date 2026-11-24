@@ -115,7 +115,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
-3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
+3. `accept-all` → rerun the installed config check before writing. On exit 2, relay its diagnostic and stop. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert only approved `missing` leaves and needed parent mappings. Write only `.asd/project/config.yaml`.
 
 ## Rules
 
