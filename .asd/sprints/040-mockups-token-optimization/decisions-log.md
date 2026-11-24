@@ -95,3 +95,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — route impl-review terminal suite retry: runner, dispatch HEAD 372a94acc8c6ecda8632a11329615262c4f9c523
 - 2026-11-24 — Impl-review DoD met. Combined APPROVE and iteration-local External Review availability skip. Fresh terminal full suite 326/326 at 372a94a with process-scoped Git settings, lint and all 77 sync targets green. Adaptive handoff to design-promote.
 - 2026-11-24 — design-promote skipped: no enabled persistent document or mockup in the frozen self-hosting scope.
+- 2026-11-24 — cleanup checkpoint 12d18fb7151fe5a4bd2351a3cc0a5efbf028345c
+- 2026-11-24 — cleanup: removed none; reverted none; verified n/a: no removals
