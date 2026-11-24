@@ -7,14 +7,11 @@ responsibility:
 
 # Custom Coding Rules
 
-Project rules applying only to code and tests. Read by `asd-dev`, `asd-tester`, impl-review reviewers.
-
-Staging: a dispatched agent stages only the paths it authored. The whole-tree commands — `git add -A`/`-u`, `git add --renormalize`, `git commit -a`, `git stash` — are banned for it outright; they belong to the orchestrator, the only role that can see whether a sibling dispatch is in flight. Full contract: `.asd/rules/git-strategy.md` "Commit before review".
+Stage only the named paths you authored. Whole-tree restrictions: `.asd/rules/git-strategy.md` "Commit before review".
 
 Framework repo specifics (`self_hosting: enabled`):
 - No YAML parser dependency in `.asd/sync.js` or `.asd/skills/*/update.js` — stay zero-dependency Node (`fs`, `path`, `crypto` only); config field reads use minimal fail-closed line scanners, never a full YAML library.
-- A dev edits canonical `.asd/` sources only and never runs `node .asd/sync.js --apply`; the orchestrator regenerates the views once per wave or fix round (`.asd/rules/sprint-lifecycle.md` "Self-hosting").
-- Never hand-edit *generated* `.claude/`, `.codex/`, or `.agents/skills/` files — always edit the `.asd/` canonical source. Hand-authored agent memory is the carve-out: `artifact-layout.md` "Agent memory".
+- Edit canonical `.asd/` sources for generated views. The orchestrator alone syncs views once per wave or fix round (`.asd/rules/sprint-lifecycle.md` "Self-hosting"). Hand-authored memory follows `artifact-layout.md` "Agent memory".
 - A Task adding an external command to a workflow step also widens the running skill's tool grant, passes the target repo explicitly, and cites only shipped `.asd/` paths from any step that runs in a consumer project.
 - A `.asd/runtime.js` parser of a `language.docs` artifact checks its structure (column count, id column, machine tokens), never translated heading text.
 - Before COMPLETED, a dev that edited a rule, workflow or agent file runs `node .asd/runtime.js context-check` and keeps every bundle under its ceiling in `.asd/project/context-ceilings.json`; raising a ceiling is a quality waiver (`code-style.md` §5).

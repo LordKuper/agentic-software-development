@@ -7,12 +7,10 @@ responsibility:
 
 # Custom Common Rules
 
-Universal project rules read by every ASD agent in every phase. Put here: domain glossary, naming conventions, compliance requirements, project-wide vocabulary, anything holding across design AND code.
-
 Framework repo (`self_hosting: enabled`): "the project" means the ASD framework itself — no application users, no runtime deployment. Vocabulary: canonical source = `.asd/`; provider view = generated `.claude/`/`.codex/`/`.agents/skills/`; consumer = a project that installed ASD.
 
 Write file content with the file-edit operation, never inside a quoted shell or `node -e` argument.
 
 On Git Bash, run `git show <ref>:<path>` with `MSYS_NO_PATHCONV=1` set.
 
-Phase-scoped rules go elsewhere — design constraints to `custom-design-rules.md`, code/test constraints to `custom-coding-rules.md`. ASD never overwrites this file.
+ASD never overwrites this file.
