@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:47fefb50ba3d2477834c16488ee8e7f2548aaa004cd06dedb550ece7cf945914 content_digest=sha256:90710a67680e45813b688833790a8186f4d2563b467daf2249a47025e2538252 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:dd4298dbc4ac76a40c3b0b7c340257571114a9a114598681f7cd857159d40b22 content_digest=sha256:8b20d99fcfe30e25ad61ded58864c27d63c5bfe73ece4c324e1e3a20b668d772 asd_version=14.11.0 schema=1
 name: asd-reviewer-combined
 description: "One-pass reviewer of standard design-review and lite impl-review: Quality and Efficiency rubrics on every change, documentation entries only when a doc file is in scope, plus overall quality. Not: standard impl-review → asd-reviewer-quality, asd-reviewer-efficiency; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -21,7 +21,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
  "required": ["payload.manifest (its n_a is the section gate)", "payload.iteration", "payload.floor", "return file the payload names", "payload.inputs.requirements (sprint.md AC-N)", "the '## Review rubric' of .asd/agents/asd-reviewer-quality.md, asd-reviewer-efficiency.md"],
  "optional": ["payload.interrupted"],
  "modes": {
-  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "existing docs/ for SSoT cross-check"], "optional": ["payload.diff (from iteration 2)", "payload.inputs.audit (migration plan)", "payload.inputs.ux, only when the manifest does not gate UI conformance out"]},
+  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "existing docs/ for SSoT cross-check"], "optional": ["payload.diff (from iteration 2)", "payload.inputs.audit (migration plan)", "payload.inputs.ux and payload.inputs.mockups when the manifest includes UI conformance"]},
   "impl-review": {"when": "payload.phase is impl-review", "required": ["payload.diff", "<sprint>/plan.md (task-to-AC mapping)", "<sprint>/test-plan.md and its test-plan.entry-NN.md segments, in the manifest, with the manual-verification results recorded beneath its manual spec (asd-phase-impl-test.md step 10)"], "optional": ["per entry not n/a'd: the impl-review inputs its home agent file lists for it"]}}}
 ```
 
@@ -34,10 +34,9 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
 ## Rules
 
 - must: review every scope file read-only — design-review: every listed draft; impl-review: code, tests, `test-plan.md` decisions and docs.
-- must: resolve sections from the manifest's `n_a`, scan each entry not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
+- must: review every entry the manifest's `n_a` leaves active, list findings with severity and return one verdict per `review-policy.md` "Verdict format". Over-engineering/structure categories map to FAIL for `escalate` and CONCERNS for `simplify` and `keep-as-is`.
 - must: compose the rubric as its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates it — the `## Review rubric` entries of `asd-reviewer-quality.md`, `asd-reviewer-efficiency.md`, then its own; read each entry's detail, carve-outs and severity rules from its home agent file.
-- must: mark every entry whose predicate the manifest authorizes `n/a: <predicate>` — `no documentation file in scope` covers every documentation entry — never ABORT.
-- never: review an entry its manifest n/a's.
+- must: record each manifest-authorized `n/a: <predicate>` without reviewing the entry or aborting. `no documentation file in scope` covers every documentation entry.
 - must: in impl-review, judge persistent actuality before promotion — impl-review precedes lite's design-promote (`sprint-lifecycle.md` "Workflows"), so for a doc design-promote writes (`asd-phase-design-promote.md` step 4) judge only a change this sprint's diff itself makes, never drift from the not-yet-promoted implementation; any other persistent doc per its home entry.
 - must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`, the category leading the Description cell (e.g. `simplify:` …), never its own column; each is `critical` and undroppable (`review-policy.md`).
 - must: apply the iteration severity floor (`review-policy.md`); cite file:line per finding, AC-N per coverage finding, checklist item per over-engineering/structure finding, rule or token path per UI finding; suggest a concrete fix per finding.
@@ -76,7 +75,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: the predicates its manifest's `n_a` authorizes per id (`.asd/runtime.js` `emit-manifest`).
+Follow `review-policy.md` "Coverage ledger" and the manifest predicates above.
 
 ## Gate Verdict Format
 

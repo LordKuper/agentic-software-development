@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:4b71de2cbec163c0f15848c7c4ae64e4c72cd7b49119dc517e8d4864081d010d content_digest=sha256:437ac36ecaca8f3b740d50173870f2f930a3a091042d8b387c2d78667961417c asd_version=14.10.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:f805978fdca9a150d49e9a5a0dcb5e6197f308f28298b4898684896df962c6b4 content_digest=sha256:7ec87649d5c5295fe6ffad846c00f9c54baab1500b4af79a7fee962b2663132b asd_version=14.11.0 schema=1
 name = "asd-reviewer-quality"
 description = "AC→code→test trace, bugs, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility; standard impl-review. Not: simplicity, perf, token cost → asd-reviewer-efficiency; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 model = "gpt-6.2-sol"
@@ -14,7 +14,7 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 ```json
 {"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff", "payload.interrupted", "payload.inputs.decisions (contract checks)", "payload.inputs.contracts (stack constraints)", "payload.inputs.ux (no promoted ux-spec: Rules)"],
+ "optional": ["payload.diff", "payload.interrupted", "payload.inputs.decisions (contract checks)", "payload.inputs.contracts (stack constraints)", "payload.inputs.ux and payload.inputs.mockups (UI conformance)"],
  "modes": {
   "impl-review": {"when": "payload.phase is impl-review", "required": ["custom-coding-rules.md forbidden patterns and security policy, in payload.inputs.context", "payload.inputs.requirements", "<sprint>/plan.md (task-to-AC mapping)", "<sprint>/test-plan.md and its test-plan.entry-NN.md segments, in the manifest (artifact-layout.md 'Test plan'), with the manual-verification results recorded beneath its manual spec (asd-phase-impl-test.md step 10)", ".asd/project/stubs.md (stub resolution)", "persistent docs/ to check actuality against implementation"]},
   "self-hosting framework-templates carve-out": {"when": "impl-review, self_hosting enabled and every UI surface in scope is a .asd/templates/*.html file (asd-phase-impl-review.md step 5 UI-surface predicate); replaces payload.inputs.ux, no docs/ux input exists or applies", "required": ["design-system.md and ux-principles.md, named in payload.inputs (providers.md 'Role-scoped context' conditional grants)", "WCAG AA thresholds", "the diffed .asd/templates/t_*.html and t_html-shell.html files"]}}}
@@ -31,10 +31,10 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 - must: review read-only — code, tests, `test-plan.md` decisions and docs against the AC-N, plan Tasks and recorded decisions.
 - must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format").
 - must: mark a section the manifest authorizes `n/a: <predicate>` so in the section-coverage ledger, never as a finding, never ABORT, and never review it this dispatch.
-- must: under the self-hosting framework-templates carve-out (Inputs mode) review UI with the reduced rubric (Review rubric), never ABORT; with no promoted ux-spec, review UI code against `DESIGN.md` and `accessibility.html` directly — absence of a spec never means absence of UI code to review.
+- must: review UI conformance with the available design inputs (Review rubric). The self-hosting framework-templates carve-out uses the reduced rubric without ABORT.
 - must: apply the iteration severity floor (`review-policy.md`); cite file:line (or `test-plan.md` row) per finding, AC-N per coverage finding, the `accessibility.html` rule or `DESIGN.md` token path per UI finding, the home file and the duplicating file per SSoT finding; suggest a concrete fix per finding; mark partial AC implementations explicitly; judge test coverage by risk, never by a percentage target; flag findings requiring escalation (architecture change, new abstraction, contract break, scope expansion).
 - must: take scope from the emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off".
-- must: return per `t_review.md` — Findings table (severity, location/AC-N, description, fix), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
+- must: follow Outputs and `t_review.md`; the orchestrator validates and persists the report, manifest and ledger.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code, tests or docs, re-author or duplicate the `test-plan.md` manual spec, specify manual verification where automation is possible, raise nitpick categories, or raise issues against `accessibility.html` Known Intentional Limitations.
 
@@ -142,10 +142,10 @@ Quality reviewer, dispatched in `standard` impl-review only; `asd-reviewer-combi
 ### Custom rules consistency [design-review, impl-review]
 - custom-common-rules.md domain glossary/naming and the phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review) respected
 
-### UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]
+### UI conformance [design-review — `n/a: outside phase gate` without a UX spec, design-system draft or mockup in scope; impl-review — conditional on a UI surface in scope]
 - **Token usage**: per `design-system.md` §6 for local previews and UI, with raw hex/px/rem/font = `high` finding. For Figma frames, verify bindings and token references per §12.
 - **Token comment**: per `design-system.md` §4
-- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7. For Figma, use frame links and the mockup index. If frame access is unavailable, review the recorded structure, states and references from the index and report visual checks as unverified.
+- **Component fidelity**: review standalone mockups when supplied, including without a UX spec. In impl-review, compare UI with their structure and applicable states (empty, loading, error). Use the UX spec's flows and states when present and apply `DESIGN.md` and `accessibility.html` directly when the spec is absent. Disabled state per `design-system.md` §7. For Figma, use frame links and the mockup index. If frame access is unavailable, review the recorded structure, states and references from the index and report visual checks as unverified.
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
 - **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale is a finding
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`

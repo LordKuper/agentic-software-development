@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-design-review/SKILL.md. source_digest=sha256:dbd1a637132f8453a24217bc8991d83584f5bf10ca4d3b40c713010c06fe1bc9 content_digest=sha256:4fe7c0c9b4945ea68b4c8a0277b07b226891183affef1e9bb26a3ce2d823c4c5 asd_version=14.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-design-review/SKILL.md. source_digest=sha256:3389aca135fbb92774d1d11b6458b0535e527fe5fd3a82e53f39eda66d7e32d2 content_digest=sha256:32c836e9e1641bc5f9e80daaf0c653ecda631e7aa66f7dee58493de646178e6c asd_version=14.11.0 schema=1
 name: asd-phase-design-review
-description: "Runs the ASD design-review phase iteratively until DoD met, scoped to whichever drafts documents.* actually enabled this sprint: always dispatches asd-reviewer-combined for any non-empty draft set (and asd-external-review when enabled) — its UI conformance is n/a unless a ux-spec/design-system draft is in scope, never an agent-level skip — aggregates verdicts, fixes CONCERNS inline, and escalates FAIL to the user after an advisor consult. Never dispatched after a design-block collapse (every design documents.* disabled, effective c4 included); this phase's own no-op path is only a defensive fallback for a direct/explicit re-dispatch. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
+description: "Review Standard ASD sprint drafts with asd-reviewer-combined and optional asd-external-review. Use on asd-sprint design-review dispatch or an explicit request to run or rerun design-review."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion Task"
 ---
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:8674c1a06ee90f24540ebe94aae38f5db346f89614648a6869a79f2c6578a776 content_digest=sha256:49a4786511772eb62f8d84e71b4ecb85b811581a7664cb7eb8e648a77b13ecee asd_version=14.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:6c58f9da04de1a19f4cf71751a54461a1a62c5de248f2e142becf7a9b9626554 content_digest=sha256:c37cb7fa01e42f8c510a15eeee2048cff2589c7b2174d2910aa1c3e6e5df0cd4 asd_version=14.11.0 schema=1
 name: asd-reviewer-efficiency
 description: "Over-engineering, cohesion, complexity-vs-value, duplication/reuse, token cost, doc economy, change size, perf, test-suite cost; standard impl-review. Not: correctness, tests, doc accuracy, UI → asd-reviewer-quality; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep]
@@ -33,14 +33,14 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 ## Rules
 
 - must: assess complexity, structure, reuse, token cost, change size, performance and test-suite cost of code against the over-engineering and structure/cohesion checklists of `review-policy.md`.
-- must: resolve this phase's sections from the manifest's `n_a` (`review-policy.md` "Coverage ledger"), scan each section not gated out, list findings with category and severity, return one verdict (APPROVE | CONCERNS | FAIL — FAIL only for a finding whose fix needs a requirements-changing or architecture-complicating design decision, every other finding CONCERNS: `review-policy.md` "Verdict format"); an over-engineering/structure finding categorised `escalate` is the FAIL case, `simplify` and `keep-as-is` are CONCERNS.
+- must: review the sections the manifest's `n_a` leaves active and return one verdict per `review-policy.md` "Verdict format".
 - must: mark a section the manifest authorizes `n/a: <predicate>` so in the section-coverage ledger and never review it this dispatch.
 - must: when the conjunctive perf predicate (`asd-phase-impl-review.md` step 5) holds, mark all five performance sections `n/a: <predicate>`; with no perf-budgets section but an executable file in scope, Perf budget compliance alone is `n/a: no budgets defined` and the other four apply.
-- must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
+- must: every over-engineering/structure finding is `critical` and undroppable. Lead its Description cell with `keep-as-is:`, `simplify:` or `escalate:` (CONCERNS, CONCERNS or FAIL respectively). Use no separate category column.
 - must: flag any reviewer-proposed fix that adds a new abstraction, layer or dependency for user escalation per Complication Approval format — other reviewers' fixes included (cross-reviewer guard).
 - must: give a concrete simpler alternative per `simplify` finding and a concrete fix per perf finding (algorithm, caching point, batching strategy); cite the checklist item per over-engineering/structure finding, the `custom-coding-rules.md` budget source per budget finding, file:line per finding; apply the iteration severity floor (`review-policy.md`).
 - must: take scope from the emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off".
-- must: return per `t_review.md` — Findings table (severity always `critical` for checklist hits; for over-engineering/structure findings the category keep-as-is/simplify/escalate leads the Description cell, e.g. `simplify:` …, never its own column), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
+- must: follow Outputs and `t_review.md`; the orchestrator validates and persists the report, manifest and ledger.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code or docs, or raise nitpick categories.
 

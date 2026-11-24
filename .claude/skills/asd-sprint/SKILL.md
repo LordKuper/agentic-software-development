@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:407a21764b0ce97c466f251cf49599a33e8d159b76d711a2d6ab7b78eb9ed035 content_digest=sha256:36793796769fe426d3969c5aa5592e1bf3383cba344b376992c9f11ff70220fc asd_version=14.9.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ff83b088e9c99b30580760b8b8c6dc2d1b97db99338edf3300fab6407993fef6 content_digest=sha256:f2121e57320bb4e1219e9bd050c10cf71db6a384d38abeb0159f8149904946ad asd_version=14.11.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill Task"
@@ -47,7 +47,7 @@ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md`
 ### Step 2B: resume flow
 1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition; run `node .asd/runtime.js timing-recover --ledger <sprint>/timing.jsonl`, then "Attribution check"
 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
-3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Workflows"), neither offers `design`, `design-review` or `design-promote`.
+3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Offer only phases of the frozen workflow. Exclude `design`, `design-review` and `design-promote` only under the Standard collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"), which includes the effective mockup format.
 4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update applies **rollback reset** (`sprint-lifecycle.md` "Review iteration counters"), reading the definition's `rollback_reset`.
 
 ### Attribution check
