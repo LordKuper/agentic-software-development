@@ -11,7 +11,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | be1c83b2 | full change surface |
-| 2 | | delta since entry 1 |
+| 2 | 17dae23b | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -49,6 +49,7 @@ Entry 2 added no tests. Test-only Task 9 had already committed the changed contr
 - Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current. `node .asd/runtime.js context-check` reported no exceeded ceilings. The implementation handoff reported agnix at 0 errors and 0 warnings.
 - HEAD: 710d5a8478f4592e3e3d4f5fa5e56e0f1d08d2a2
 - Provenance: `suite impl-test#2` under dispatch `impl-test entry 2`. HEAD matched before and after, with clean relevant paths including untracked files. Eligible for the impacted suite gate while code, tests and stubs are unchanged. No smoke command is configured.
+- Line delta: tests +223/−41 (net 182); other +816/−825 (net -9)
 
 ## Defects
 
