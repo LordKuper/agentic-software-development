@@ -1,6 +1,6 @@
 # UX Principles
 
-Applied during design-phase (ux-spec authoring); verified during design-review + impl-review by the UI conformance verifier — the Quality rubric's UI conformance section, applied by `asd-reviewer-quality` (standard impl-review) or `asd-reviewer-combined` (standard design-review, lite impl-review).
+Apply to UX-spec and mockup authoring. Verify under UI conformance with `asd-reviewer-quality` (Standard impl-review) or `asd-reviewer-combined` (Standard design-review, Lite impl-review).
 
 ## 1. Readability over Decoration
 
@@ -20,12 +20,7 @@ Most prominent ≠ most pretty. Most prominent = most decision-critical. Order:
 
 ## 3. Progressive Disclosure
 
-Surface state first, then reason, then consequence, then action.
-
-Bad: `Error`.
-Good: `Cache full. Old entries evicted. Increase limit in Settings → Storage`.
-
-Pattern: every alert/empty-state/error MUST answer four questions in order — what, why, what next, how to fix.
+For every alert, empty state or error, show state → reason → consequence → action.
 
 ## 4. Cross-Theme Consistency
 

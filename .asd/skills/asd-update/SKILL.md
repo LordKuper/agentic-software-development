@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-update",
-  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and a migration's rewrite of a changed shipped command in commands.yaml or removal of a retired agent's memory directory), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+  "description": "Updates framework-managed files in a consumer project, runs release migrations, and offers values for missing settings. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework or workflow version."
 }
 ---
 
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Pull latest ASD framework files into this consumer project: overwrite **framework-managed** paths only, leave consumer-owned files intact.
+Install the latest ASD framework files and run pending release migrations in a consumer project.
 
 ## Preconditions
 
@@ -29,40 +29,40 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 2. Run command `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js"` (self-locating: works from any repo directory).
    - Preview first: append `--dry-run` (reports the full classification — add/update/delete/conflict — mutates nothing).
 3. Updater flow: fetch tarball from `repo`@`branch` → compute the full classification for every `managed_paths` entry (fail-closed on an unfamiliar `schema_version`, unsafe path, or case-collision) → show every conflict and planned action → only THEN write (add/update/delete) → run pending migrations → rewrite `.asd/release-manifest.json` (`asd_version` + `upstream_hashes`).
-   - Fetch/validation failure, or any conflict left unresolved = that file is skipped, everything else proceeds.
+   - Fetch or validation failure aborts before writes. Skip unresolved conflicts and apply the remaining managed changes. A real retry with no managed file changes still runs pending migrations and records the version reached.
    - A conflict the user explicitly confirms overwriting is re-run with `--force <relPath...>` (one or more of the reported conflict paths) — this is the only way a `conflict`/`conflict-foreign` file is ever written; never force without asking first.
 4. Migrations (`.asd/migrations/<version>.js`): run AFTER the managed-path replacement above, in ascending version order, for every migration strictly newer than the consumer's current `release-manifest.json.asd_version` up to this release's target version. Each already-applied version is skipped (never re-run past its own target). The runner stops at the first failing migration and reports which one failed and what it had already done; the recorded `asd_version` afterward is the last migration that succeeded (never an unrecorded intermediate) — or the release's full target version if every pending migration succeeded, including when none were pending.
    - Script contract (also in each script's own header comment): filename (minus `.js`) is the exact target version it migrates a consumer TO, e.g. `.asd/migrations/3.2.0.js`; `module.exports = (ctx) => void | Promise<void>` with `ctx.repoRoot` = the consumer's project root; zero-dependency Node (may `require` `.asd/sync.js` from `ctx.repoRoot` for helpers); idempotent — re-running an already-applied migration is a no-op, never an error.
-5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
+5. Complete once after the final real attempt in either mode. Proceed if a real attempt printed `Applied <N> change(s).` (including partial updates with a failed migration or declined conflict) or exited successfully with `Already up to date.` Preview, version lookup and failures before either result do not qualify.
+   - Delegate to `asd-sync` to refresh provider views. Report its result and continue with the config check.
+   - At the repo root run `node .asd/runtime.js config-check` against the installed template. Exit 0 needs no prompt. Exit 1: report `missing`, `duplicates`, and `invalid` by dotted path without dumping config. If keys are missing, request user decision: `Run asd-init for missing settings` | `Leave settings`. On opt-in invoke the installed `asd-init` skill's "Update completion" mode with the missing paths. Direct the user to standalone `/asd-init` for invalid or duplicate entries or if the targeted mode is unavailable. On exit 2 or command failure, relay the diagnostic. A declined offer or config diagnostic leaves the framework update result intact.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
-8. After a real update, tell the user `/asd-sprint` checks against the shipped config template and directs incomplete projects to `/asd-init`.
 
 ### Sprint-mediated mode
 
 Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
 
-- That choice is the confirmation: skip step 1; steps 2-8 apply unchanged.
-- Conflicts and `--force` still go to the user — never force without asking.
-- No commit here: the orchestrator commits the result, `asd-sync`'s writes included (left uncommitted with the rest). Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
+- The update choice confirms step 1. Run steps 2–7, including the separate user decisions on conflicts and missing settings.
+- Leave all changes uncommitted, including approved `asd-init` and `asd-sync` writes. Report partial updates to scope, which owns the commit and continuation.
 - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.
 
 ## Rules
 
 - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
-- never: the update run touches `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent, and `commands.yaml`, whose command values a migration may rewrite when a release changes a shipped command), `.claude/agent-memory/**` (except the directory of an agent a release retired, which its migration removes), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`; `asd-sync`'s writes excepted.
+- must: limit direct writes to `managed_paths` and the release manifest. Protect `.asd/project/**`, `.asd/sprints/**`, `docs/**`, custom skills/agents/hooks, provider settings, memory, `AGENTS.md` and `CLAUDE.md`. Migrations follow `core.md` "Invariants" for config and may rewrite shipped command values or remove a retired agent's memory directory. Provider reconciliation and approved settings additions belong to the delegated skills.
 - never: write a diverged (**conflict**) file without explicit confirmation.
 
 ## Delegates
 
 ```json
-{"agents": [], "skills": ["asd-sync"]}
+{"agents": [], "skills": ["asd-sync", "asd-init"]}
 ```
 
 ## Outputs
 
 ```json
-["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", ".asd/project/commands.yaml: migration command-value rewrites only", ".claude/agent-memory/<agent>/: removal of a retired agent's directory by its migration", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/), the managed blocks of AGENTS.md and CLAUDE.md, and its owned entries in .claude/settings.json, .codex/hooks.json"]
+["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", "authorized migration changes (Rules)", "asd-sync's provider reconciliation", "approved additions to .asd/project/config.yaml by asd-init"]
 ```
 
 ## Reference

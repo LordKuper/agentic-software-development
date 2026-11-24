@@ -12,7 +12,7 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   const testerId = ids.find((id) => id.startsWith('impl-test '));
   const suiteId = ids.find((id) => id.startsWith('impl-review '));
   assert.ok(testerId && suiteId, `COR-2/EXT-3: git-strategy.md "Commits" must list an id for impl-test's own commits and for impl-review step 9's in-place test fix. Got: ${JSON.stringify(ids)}`);
-  const failed = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**Failed dispatch**'));
+  const failed = headingBody('.asd/rules/sprint-lifecycle.md', 'Creator dispatch recovery').split('\n').find((line) => line.startsWith('**Failed dispatch**'));
   const anchor = failed && /`(dispatch HEAD <sha>)`/.exec(failed);
   const command = failed && /`(git log [^`]+)`/.exec(failed);
   const reconstruction = failed && /`- YYYY-MM-DD — (reconstruction: [^`]+)`/.exec(failed);
@@ -42,8 +42,9 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   for (const rel of ['.asd/templates/t_decisions-log.md', '.asd/workflows/asd-phase-impl.md', '.asd/workflows/asd-phase-impl-test.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /route <taskIds?>/.test(line) && line.includes(anchor[1])), `${rel}: the routing line must carry \`${anchor[1]}\` - without it a failed dispatch has no anchor and every commit on the branch reads as landed`);
   }
-  for (const rel of ['.asd/workflows/asd-phase-impl.md', '.asd/workflows/asd-phase-impl-test.md']) {
-    assert.ok(canonText(rel).split('\n').some((line) => line.includes('`sprint-lifecycle.md` "State recovery" failed dispatch')), `${rel}: the no-signal branch must hand off to State recovery's failed-dispatch rule before any re-dispatch`);
+  for (const [phase, step] of [['impl', '7'], ['impl-test', '11']]) {
+    const noSignal = stepOf(sectionOf(`.asd/workflows/asd-phase-${phase}.md`, 'Steps'), step);
+    assert.match(noSignal, /(?:returning none|no signal)[^\n]*`sprint-lifecycle.md` "Creator dispatch recovery"/, `${phase}: the no-signal branch must hand off to the granted recovery section`);
   }
   for (const rel of ['.asd/agents/asd-dev.md', '.asd/agents/asd-tester.md']) {
     assert.ok(canonText(rel).includes(`\`${trailer[1]}\` trailer (\`git-strategy.md\` "Commits")`), `${rel}: the agent that commits must be told to write the trailer reconstruction reads`);

@@ -1144,7 +1144,7 @@ const CODEX_QUOTA_MODELS = new Map([
 function codexQuotaFallback(codex, manifest) {
   const alternate = CODEX_QUOTA_MODELS.get(codex?.model);
   const families = manifest.model_families?.codex;
-  return alternate && families && Object.hasOwn(families, alternate.model) ? { ...codex, ...alternate } : null;
+  return alternate && families && Object.prototype.hasOwnProperty.call(families, alternate.model) ? { ...codex, ...alternate } : null;
 }
 
 function agentVariants(meta) {
@@ -1582,8 +1582,8 @@ function runCheck(repoRoot) {
   for (const orphan of findOrphans(repoRoot, plan)) {
     report.push({ target: orphan.target, status: orphanStatus(orphan) });
   }
-  const hasCanonLedger = Object.hasOwn(manifest, 'canon_hashes');
-  const hasUpstreamLedger = Object.hasOwn(manifest, 'upstream_hashes');
+  const hasCanonLedger = Object.prototype.hasOwnProperty.call(manifest, 'canon_hashes');
+  const hasUpstreamLedger = Object.prototype.hasOwnProperty.call(manifest, 'upstream_hashes');
   if ((hasCanonLedger || hasUpstreamLedger) && isSelfHosting(repoRoot)) {
     const { canonChanged, upstreamChanged } = compareHashLedgers(repoRoot, manifest);
     if ((hasCanonLedger && canonChanged) || (hasUpstreamLedger && upstreamChanged)) {

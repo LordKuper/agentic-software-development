@@ -34,23 +34,16 @@ Preflight runs a bounded local `--version` probe, using a fixed PowerShell shim 
 
 On a real-request authentication, quota, reachability, or command failure, phase orchestration calls `node .asd/runtime.js external-record-failure --input <json>` with the preflight fingerprint and the provider's reported reset as retry-after. The runtime caps retry-after at one hour and uses one hour when the provider reported no reset. The cache stores only status and retry-after under a fingerprint of the command, model, local auth status and non-secret generation, with profile selection and file metadata for profile routes. Expiry or a changed identity restores an attempt. Preflight reruns the local checks before honoring a negative cache and sends no inference request.
 
-On a non-ready preflight or an active negative cache — never on a failure after invocation (Outcome contract):
-
-- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in that iteration's `external.md` through `persist-review` (`review-policy.md` "Coverage ledger" Persistence) — its first-line token plus an `Unreviewed files` line naming the `files[]` the scope manifest would have carried ("Iteration semantics"), no other section — appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<id>` (the iteration id, `sprint-lifecycle.md` "Review iteration counters"), and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
-- Continue without external review, no user prompt
-
-An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
+For an availability skip ("Outcome contract"), the workflow persists only the skip token and `Unreviewed files` line in that iteration's `external.md` via `persist-review` (`review-policy.md` "Coverage ledger"). Use the `files[]` the manifest would carry ("Iteration semantics"). Append the exact status and sprint/iteration id to `<sprint>/decisions-log.md` and an `F-N` entry to the friction log. Continue without a user prompt. Dispatch normally on a later ready preflight.
 
 ## Outcome contract
 
-Sole statement of what a dispatched External Review may return — exactly one of two outcomes:
+- **Verdict:** the findings over the whole `files[]` begin `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format").
+- **Availability skip:** `APPROVE (skipped: external review unavailable: <specific status>)` only on a non-ready preflight or active negative cache. Counts for that iteration alone and never creates an APPROVE latch.
+- **Interrupted dispatch:** a real invocation that still fails after its one retry (crash, hang, timeout or unusable output) returns `external review interrupted: <cause>`. Record authentication, quota, reachability or command causes through `external-record-failure` so the re-dispatch's preflight yields the skip. Handle this and empty or unclassified returns via `review-policy.md` "Interrupted dispatch".
+- **Missing precondition:** abort before invocation, e.g. on an absent prompt template. Surface the framework defect to the orchestrator.
 
-- **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format"), over the whole `files[]`
-- **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)`, only on a non-ready preflight or an active negative cache (above)
-
-Nothing else. A dispatch makes one wrapped-CLI invocation over its whole `files[]`, retried once — never batched or split; in impl-review, review waves bound its size (`sprint-lifecycle.md` "Review iteration counters"). The wrapper runs in the foreground with an explicit timeout of at least 10 minutes (`timeout: 600000` on Claude Code Bash) and captures stdout directly ("OS-specific invocation"). Keep PID polling out of dispatch payloads and agent memory. Await the wrapped CLI inside the dispatch, including the completion notification if the host backgrounds the task itself. A failure after invocation — wrapped-CLI crash, hang, timeout, unusable output, the retry exhausted — is an interrupted dispatch, never a skip: the wrapper returns `external review interrupted: <cause>`. An authentication, quota, reachability or command cause is also recorded through `external-record-failure` (above), so the re-dispatch's preflight yields the skip. The contract scopes a dispatch that reached that invocation: a precondition missing before any invocation (prompt template absent) aborts the dispatch instead — a framework defect the orchestrator must see, never an availability skip.
-
-An empty return, or prose carrying no outcome, is not permitted and is not a verdict. Its disposal, like the interrupted return's, is `review-policy.md` "Interrupted dispatch", imported here whole.
+Run the read-only wrapped CLI once over all `files[]` with at most one retry. Never split or batch the scope. Impl-review waves bound size (`sprint-lifecycle.md` "Review iteration counters"). Run in the foreground with a timeout of at least 10 minutes (`timeout: 600000` on Claude Code Bash) and capture stdout directly ("OS-specific invocation"). Await completion inside the dispatch, including host background completion notifications. Keep PID polling out of payloads and agent memory.
 
 ## Phase-scoped payload
 
@@ -105,4 +98,4 @@ If two consecutive verdict iterations produce an identical floored issue set (sa
 
 ## Aggregation
 
-External Review verdict counts as one reviewer in the DoD check. APPROVE from External Review required when `external_review: enabled`; a skip satisfies its own iteration only (Outcome contract).
+When `review.external_review: enabled`, include External Review in the DoD roster and count results per "Outcome contract".

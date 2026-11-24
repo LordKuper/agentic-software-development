@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:4398e7b5033df617a984f8adc30b3aafc565930436ee986506f10a036a4301f3 content_digest=sha256:800a1376fa3ffac0de76c08e57b6afac9c94c507c6972ed56325459fa642832d asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:5306f9805e92f65e400857d5fb8e1a743875617d5d05e12d5c8c867a570c542e content_digest=sha256:a4cb33aadd99c11d4513e49804afe7c057a068a997a9a9a0e0825e43505c3ffd asd_version=14.11.0 schema=1
 name: asd-phase-impl-test
-description: "Runs the ASD impl-test phase: dispatches asd-tester to run the existing impacted tests first, pick the test approach for the whole change scope after the code exists, prune redundant tests, author missing ones, and run the impacted set (never the full suite, which runs once at the end of impl-review) as its suite gate. Green routes to impl-review; code defects are recorded in test-plan.md and route back to impl test-fix mode. Use when asd-sprint dispatches the impl-test phase, or when the user explicitly asks to run or re-run impl-test for the active sprint."
+description: "Run, prune and author impacted tests for the active ASD sprint. Use on asd-sprint impl-test dispatch or an explicit request to run or rerun impl-test."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion Task"
 ---
 

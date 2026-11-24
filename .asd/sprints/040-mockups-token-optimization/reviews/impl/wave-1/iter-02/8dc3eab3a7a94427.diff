@@ -1,0 +1,689 @@
+diff --git a/.asd/migrations/14.12.0.js b/.asd/migrations/14.12.0.js
+index 00f7dec..9d4f21c 100644
+--- a/.asd/migrations/14.12.0.js
++++ b/.asd/migrations/14.12.0.js
+@@ -2,7 +2,7 @@
+ 
+ const fs = require('fs');
+ const path = require('path');
+-const { configEntries } = require('../runtime.js');
++const { configEntries, projectConfigStat } = require('../runtime.js');
+ 
+ const CONFIG = '.asd/project/config.yaml';
+ const FORMAT = 'project.mockup_format';
+@@ -48,8 +48,7 @@ function insertSelection(lines, entries, project, mode, defaultEnding) {
+   lines.splice(insertion, 0, additions.join(ending) + (atUnterminatedEnd ? '' : ending));
+ }
+ 
+-function replaceConfig(file, text) {
+-  const mode = fs.statSync(file).mode;
++function replaceConfig(file, text, mode) {
+   const tempDir = fs.mkdtempSync(path.join(path.dirname(file), '.asd-migration-'));
+   const tempFile = path.join(tempDir, path.basename(file));
+   try {
+@@ -61,16 +60,15 @@ function replaceConfig(file, text) {
+   }
+ }
+ 
+-/** Retires the legacy selector while preserving the old UX-gated effective mode. */
++/** Retires the legacy selector while preserving the old UX-gated mode and unrelated settings and comments. */
+ module.exports = function migrate({ repoRoot }) {
+   const configPath = path.join(repoRoot, CONFIG);
+-  if (!fs.existsSync(configPath)) return { status: 'absent', changes: [] };
++  const config = projectConfigStat(repoRoot);
++  if (!config) return { status: 'absent', changes: [] };
+   const raw = fs.readFileSync(configPath, 'utf8');
+   const bom = raw.startsWith('\uFEFF') ? '\uFEFF' : '';
+   const body = raw.slice(bom.length);
+ 
+-  // Use the same block-style YAML subset and line numbers as config-check. Fail before writing if
+-  // the relevant settings cannot be resolved. Unrelated settings are never reserialized.
+   const relevant = ['<root>', 'project', 'documents', FORMAT, LEGACY, UX];
+   const entries = configEntries(body, CONFIG, ({ path: key, line, reason }) => {
+     if (relevant.includes(key)) throw new Error(`${CONFIG}:${line}: ${key}: ${reason}`);
+@@ -112,7 +110,7 @@ module.exports = function migrate({ repoRoot }) {
+ 
+   const next = bom + lines.join('');
+   if (next === raw) return { status: 'unchanged', changes: [] };
+-  replaceConfig(configPath, next);
++  replaceConfig(configPath, next, config.mode);
+   const changes = [`${FORMAT}: ${mode}`];
+   if (legacy) changes.push(`removed ${LEGACY}`);
+   return { status: 'migrated', changes };
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index df365d3..3d2593c 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,11 +32,11 @@
+     "agents/asd-external-review.md": "sha256:3f538b6d762f2987f6d3a084062910827442f14e71c66b37dece912efaef3374",
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    "skills/asd-init/SKILL.md": "sha256:efa48f2364ef1632e6aa1b13ec321dbad1709bb2a7fdfb2bde6e6c27fe1bfb2d",
++    "skills/asd-init/SKILL.md": "sha256:e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b",
+     "skills/asd-sprint/SKILL.md": "sha256:80549ff8c90a38155223be06d606e45f8993bac2c5cd1a5fe4725b337bd30cb1",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+-    "skills/asd-update/SKILL.md": "sha256:9f76e1f2d670809428f1a7c0002a536d59448368c134c3877608661326969697",
++    "skills/asd-update/SKILL.md": "sha256:0ea87279e88c92a93670701c331642b1a34aa997b17636a8660460e2caa4a7c4",
+     "skills/asd-phase-scope/SKILL.md": "sha256:3775e741d9eb99434f89a54050ed12c5eddc563c5e0d1db24846e071bc496f83",
+     "skills/asd-phase-audit/SKILL.md": "sha256:2cac271a18c3fa6b2faebca394e66347013556f1a7500e66a7812322b4cf7b9f",
+     "skills/asd-phase-design/SKILL.md": "sha256:6ea8e7566d1fc0a435d93273b490f2c2653f233daef84fc2fcdff0ef3a979da3",
+@@ -63,7 +63,7 @@
+     ".asd/rules/artifact-layout.md": "86c188625070ea4be66fe56f9ce9816386f840a80b0d15a7d13c3adc263d2b71",
+     ".asd/rules/checkpoints.md": "cb831a8cd9da1a160a2ec4a0b9fe0487eb3f42a55e45363ab7145ee7032283f1",
+     ".asd/rules/code-style.md": "98639f2dfb9103a436f54a62fdda0156439787ecd9db1e910505d93f7ddb4e85",
+-    ".asd/rules/core.md": "b8e0c1d3a179dab126455cef73fda2253ce1bc1993a779c7a531e77e6769148a",
++    ".asd/rules/core.md": "d92c3838351ac7d3b7b548fe5a8e7293841e5e8de84f83456ec40970174be5de",
+     ".asd/rules/design-principles.md": "604bbea33383661eb14b23eb72c1563280dadf44ee9221c6a1433fdb36d80f36",
+     ".asd/rules/design-system.md": "c48661ceb833778cf3310f5a4af01e2280e2fe2a921ebdb33967a12266b88fd6",
+     ".asd/rules/external-review.md": "991b3bb769152f7b7603abdedb0a46dbdbbd4c1e847edc2cc835330d16886915",
+@@ -71,11 +71,11 @@
+     ".asd/rules/language-policy.md": "8621faf93f6b7fead18845adda2e92b207733d680dc8a343d3796ebaeece4dfe",
+     ".asd/rules/providers.md": "b38da860361c89b2b2d568e631fd02ec976a7caf7cb3d16dd28cc5bc4d331bab",
+     ".asd/rules/review-policy.md": "b119b9ed63a16611f597be9cb2a02dc6103526d1bd7910d7d79cafce15c0cf41",
+-    ".asd/rules/sprint-lifecycle.md": "9a61f2f8a818c05d036edba972ee721999a03037e69757a5ec743cac634a010d",
++    ".asd/rules/sprint-lifecycle.md": "a898dc42495a97e4bb9a90066a8a85aa91afdaf02745d525d5db1d4308ccc588",
+     ".asd/rules/ux-principles.md": "5fe5935f3c835fa6efda040249ebb2144cf2f830009598ea65ebfcc79a5a06da",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    ".asd/skills/asd-init/SKILL.md": "efa48f2364ef1632e6aa1b13ec321dbad1709bb2a7fdfb2bde6e6c27fe1bfb2d",
++    ".asd/skills/asd-init/SKILL.md": "e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b",
+     ".asd/skills/asd-phase-audit/SKILL.md": "2cac271a18c3fa6b2faebca394e66347013556f1a7500e66a7812322b4cf7b9f",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "4fe61838fc42af2c8a2d5eb4e3897af8d2cc25ac102a147f8165d1e45407c2a1",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "3389aca135fbb92774d1d11b6458b0535e527fe5fd3a82e53f39eda66d7e32d2",
+@@ -89,13 +89,13 @@
+     ".asd/skills/asd-sprint/SKILL.md": "80549ff8c90a38155223be06d606e45f8993bac2c5cd1a5fe4725b337bd30cb1",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+-    ".asd/skills/asd-update/SKILL.md": "9f76e1f2d670809428f1a7c0002a536d59448368c134c3877608661326969697",
+-    ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "45436351be21860e9063bf7971071c7e307e99cc818c4d8bb38c058044d7ebc9",
++    ".asd/skills/asd-update/SKILL.md": "0ea87279e88c92a93670701c331642b1a34aa997b17636a8660460e2caa4a7c4",
++    ".asd/skills/asd-update/update.js": "a02a169a45264f1baab6dbbc56671ab4f3c984d9be4b8020ba91590890b74887",
++    ".asd/sync.js": "fd60392612efeb7a6c95f7e9300b0ceb5415b61c2de5223d3feae60478ec339d",
+     ".asd/templates/external-review/t_prompt-external-design.md": "1beb4427ac4ea4743337b19820421fec74066041d4bc4d068a30069b384af82f",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "3db9c60fdec068793141f6fab6cca26e56c12b17fc1f371ba70c6aaa3f36fda3",
+     ".asd/templates/external-review/t_review-report.md": "ee8a4c681bf273574f1490957bb366b612d471dc885786591d0386cffe71870f",
+-    ".asd/templates/t_AGENTS.md": "e45f3ca5be0f5567b719214cd3bf85a9153a03c599223f25a346381134707940",
++    ".asd/templates/t_AGENTS.md": "9ad665b6c6e0fa0af8ceaabe35f67e8f7904219736cf84cde1a66cd4fd758ac8",
+     ".asd/templates/t_CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+     ".asd/templates/t_accessibility.html": "ac188f67b5a5b19dfc0a5e5e4a3f4d940b764df3917fbb6cc75bbaefb32b50f9",
+     ".asd/templates/t_adr.html": "9ac045ee1190cf8ee2a54e19b1d76f7e206c726892583267cfb8a657024aea9d",
+@@ -141,7 +141,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "7c9485498f702378ecde03713678b04c764c63b97be45dd96488d4ae6dbb1fcc",
++    ".asd/runtime.js": "a466b3cfd3ee71b65600cb51be755dbc19aa3ec43469d3811f32380e2b224ec9",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+@@ -164,6 +164,6 @@
+     ".asd/agents/asd-scout.md": "78589e30b959861873bdbc1c059d253b308eb6cb0115587d620333be3009860a",
+     ".asd/migrations/14.5.0.js": "983d48aeaf812e1ccc893cd358cf93b8d9563d041302a7e76fdcc75b703ad192",
+     ".asd/templates/t_reliability-checklist.md": "56fd2b8db735b987c78ae17d522ecd8f826501d180b05a342cf48d59bb608c7c",
+-    ".asd/migrations/14.12.0.js": "2d78b34e3832f7075c295da7639dd2b3acb0a9975397cb0d2e765efe270b29fd"
++    ".asd/migrations/14.12.0.js": "6d63c38be089f25bf37ea6b64db37a85b8fbd09a253f805c7ea8c3da77384a4f"
+   }
+ }
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index 4697bed..7c9f8b5 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -19,7 +19,7 @@
+ 
+ - All project work goes through `/asd-sprint` with paths per `artifact-layout.md`. Archive the active sprint before starting another; a merged sprint is archived by the next scope (`sprint-lifecycle.md` "PR phase").
+ - Infrastructure is read-only in sprints: `.asd/{rules,templates,agents,skills,workflows,hooks,migrations}/`, `.asd/{runtime,sync}.js`, `.claude/`, `.codex/`, `.agents/skills/`, root `AGENTS.md` and `CLAUDE.md`.
+-- Settings writes: user-invoked `/asd-init`, declared scope/plan changes via sprint-mediated `asd-init` (`sprint-lifecycle.md` "Plan file format"), or release-mandated `/asd-update` migrations of renamed/removed keys or values and their necessary mappings, insertions and shipped-comment rewrites.
++- Settings writes: user-invoked `/asd-init`, declared scope/plan changes via sprint-mediated `asd-init` (`sprint-lifecycle.md` "Plan file format"), release-mandated `/asd-update` migrations of renamed/removed keys or values and their necessary mappings, insertions and shipped-comment rewrites, and `asd-init` additions of missing settings after a real update and explicit acceptance of the proposed values (`asd-update` step 5).
+ - Infrastructure exceptions: approved scope-step-1 update of framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode") or the exhaustive canonical allowlist in `sprint-lifecycle.md` "Self-hosting". Never hand-edit generated views.
+ 
+ ## Interaction protocol (QODDA)
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 65ce932..3118d0a 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -188,7 +188,9 @@ At scope gate or audit exit, explicit hard-gate approval can set frozen `prd`/`u
+ 
+ `project.mockup_format` accepts `none | html | claude_design | figma`. Scope freezes the effective mode as the string `state.json.mockup_format`: `none` for a non-UI scope, otherwise the configured mode. An explicit format is independent of `documents.ux_spec`, including a document skip. Block invalid mockup setting values. A config without `mockup_format` retains the legacy UX gate (absent `documents` group enables UX, a present group requires `ux_spec: enabled`), then maps `project.claude_design: enabled` to `claude_design`, `disabled` to `html`, and absence to `claude_design`. The release migration applies that old UX gate even to an explicit pre-upgrade format.
+ 
+-When an in-flight state lacks `mockup_format`, use its frozen legacy UX flag (absent `documents` snapshot enables UX, a present group requires `ux_spec: true`). If enabled, use the affected UI scope and any existing mockup sources, index or publication records. Recover the recorded provider first, then use a configured non-`none` format or the legacy mapping above without the live UX flag. Preserve archived state and let a present snapshot take precedence over live settings and leftover files.
++When an in-flight state lacks `mockup_format`, use its frozen legacy UX flag (absent `documents` snapshot enables UX, a present group requires `ux_spec: true`). Use `none` for a disabled flag or non-UI scope. Otherwise recover the recorded provider first from sprint sources, index or publication records, then use a configured non-`none` format or map the legacy selector if the format key is absent, without the live UX flag. Leave closed snapshots intact and let a present snapshot take precedence over live settings and leftover files.
++
++If the frozen UX flag enables in-scope mockups but live format is `none` and no recorded provider can be recovered, stop before evaluating the collapse test or selecting a provider. HTML previews alone cannot distinguish HTML mode from Claude Design's local fallback. Require an explicit user decision on the provider. Record it in `decisions-log.md` and freeze it in the active `state.json.mockup_format` before continuing.
+ 
+ ### Skip records
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 87b7cef..e94ee3d 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -2793,10 +2793,24 @@ function configValueIssue(field, entry) {
+   return entry.value === '' && field.value !== '' ? 'expected a non-empty string' : null;
+ }
+ 
+-/** Reports actionable config errors without printing setting values. */
+-function configCheckCommand(flags) {
++/** Returns installed config metadata if present, rejecting links and other unexpected path types below the repo root. */
++function projectConfigStat(repoRoot) {
++  for (const relative of ['.asd', '.asd/project']) {
++    const entry = fs.lstatSync(path.join(repoRoot, relative), { throwIfNoEntry: false });
++    if (!entry) return undefined;
++    if (!entry.isDirectory()) throw new Error(`${relative} must be a real directory (symlinks and junctions are rejected)`);
++  }
++  const relative = '.asd/project/config.yaml';
++  const entry = fs.lstatSync(path.join(repoRoot, relative), { throwIfNoEntry: false });
++  if (entry && !entry.isFile()) throw new Error(`${relative} must be a regular file (symlinks are rejected)`);
++  return entry;
++}
++
++/** Reports config errors without setting values. The invoked repo path keeps links visible to the installed-config guard. */
++function configCheckCommand(flags, repoRoot) {
+   const template = path.join(__dirname, 'templates', 't_config.yaml');
+-  const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
++  const config = flags.config ?? path.join(repoRoot, '.asd', 'project', 'config.yaml');
++  const hasInput = flags.config !== undefined || projectConfigStat(repoRoot) !== undefined;
+   const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
+   const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
+   const mockupFormatKey = JSON.stringify(['project', 'mockup_format']);
+@@ -2805,12 +2819,11 @@ function configCheckCommand(flags) {
+   const seen = new Set();
+   const duplicates = new Set();
+   const invalid = [];
+-  let source;
++  let source = '';
+   try {
+-    source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
++    if (hasInput) source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
+   } catch (error) {
+     if (config === '-' || error.code !== 'ENOENT') throw error;
+-    source = '';
+   }
+   for (const entry of configEntries(source, config, ({ path, line, reason, duplicate }) => {
+     if (duplicate) duplicates.add(path);
+@@ -2929,7 +2942,7 @@ function parseFlagArgs(argv, booleanFlags, mergeAttrs = false) {
+   for (let i = 0; i < argv.length; i += 1) {
+     if (!argv[i].startsWith('--')) fail('flags require values');
+     const name = argv[i].slice(2);
+-    const repeated = Object.hasOwn(out, name);
++    const repeated = Object.prototype.hasOwnProperty.call(out, name);
+     const merge = repeated && mergeAttrs && name === 'attrs';
+     if (repeated && !merge) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
+     if (bools.includes(name)) { out[name] = true; continue; }
+@@ -2951,9 +2964,10 @@ async function main(argv) {
+   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
+   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
+   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only', 'nul']);
+-  if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
++  if (Object.prototype.hasOwnProperty.call(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
+   if (command === 'config-check') {
+-    const result = configCheckCommand(flags);
++    const repoRoot = path.resolve(path.dirname(argv[1]), '..');
++    const result = configCheckCommand(flags, repoRoot);
+     process.stdout.write(JSON.stringify(result) + '\n');
+     return result.ok ? 0 : 1;
+   }
+@@ -3095,4 +3109,4 @@ if (require.main === module) {
+   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
+ }
+ 
+-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CAP_STANDALONE_SKILLS_BYTES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, standaloneSkillBytes, standaloneSkillFiles, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
++module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CAP_STANDALONE_SKILLS_BYTES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, projectConfigStat, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, standaloneSkillBytes, standaloneSkillFiles, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index a089d7a..67adc12 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -113,9 +113,9 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
+ 
+ ### Update completion
+ 
+-1. Read the installed config and template. Use "Config check" to confirm which passed paths are still missing. If none remain, stop. Otherwise apply "Missing settings" to those paths and show only the proposed additions.
++1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
+ 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
+-3. On acceptance, insert exactly the approved missing leaves and any needed parent mappings. If the config or template changed during approval, re-check and obtain approval for the current proposal. Configuration is this mode's only write.
++3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
+ 
+ ## Rules
+ 
+@@ -138,7 +138,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
+ 
+ ### Config check
+ 
+-Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
++Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure, including links in the installed config path.
+ 
+ Validate both mockup keys when present. `project.mockup_format` accepts the four template values. A valid legacy-only config remains accepted. Resolve its effective value per `sprint-lifecycle.md` "Optional documents".
+ 
+diff --git a/.asd/skills/asd-update/SKILL.md b/.asd/skills/asd-update/SKILL.md
+index 2b89a35..72226c7 100644
+--- a/.asd/skills/asd-update/SKILL.md
++++ b/.asd/skills/asd-update/SKILL.md
+@@ -29,7 +29,7 @@ Install the latest ASD framework files and run pending release migrations in a c
+ 2. Run command `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js"` (self-locating: works from any repo directory).
+    - Preview first: append `--dry-run` (reports the full classification — add/update/delete/conflict — mutates nothing).
+ 3. Updater flow: fetch tarball from `repo`@`branch` → compute the full classification for every `managed_paths` entry (fail-closed on an unfamiliar `schema_version`, unsafe path, or case-collision) → show every conflict and planned action → only THEN write (add/update/delete) → run pending migrations → rewrite `.asd/release-manifest.json` (`asd_version` + `upstream_hashes`).
+-   - Fetch or validation failure aborts before writes. Skip unresolved conflicts and apply the remaining managed changes.
++   - Fetch or validation failure aborts before writes. Skip unresolved conflicts and apply the remaining managed changes. A real retry with no managed file changes still runs pending migrations and records the version reached.
+    - A conflict the user explicitly confirms overwriting is re-run with `--force <relPath...>` (one or more of the reported conflict paths) — this is the only way a `conflict`/`conflict-foreign` file is ever written; never force without asking first.
+ 4. Migrations (`.asd/migrations/<version>.js`): run AFTER the managed-path replacement above, in ascending version order, for every migration strictly newer than the consumer's current `release-manifest.json.asd_version` up to this release's target version. Each already-applied version is skipped (never re-run past its own target). The runner stops at the first failing migration and reports which one failed and what it had already done; the recorded `asd_version` afterward is the last migration that succeeded (never an unrecorded intermediate) — or the release's full target version if every pending migration succeeded, including when none were pending.
+    - Script contract (also in each script's own header comment): filename (minus `.js`) is the exact target version it migrates a consumer TO, e.g. `.asd/migrations/3.2.0.js`; `module.exports = (ctx) => void | Promise<void>` with `ctx.repoRoot` = the consumer's project root; zero-dependency Node (may `require` `.asd/sync.js` from `ctx.repoRoot` for helpers); idempotent — re-running an already-applied migration is a no-op, never an error.
+diff --git a/.asd/skills/asd-update/update.js b/.asd/skills/asd-update/update.js
+index d4827cd..624f942 100644
+--- a/.asd/skills/asd-update/update.js
++++ b/.asd/skills/asd-update/update.js
+@@ -627,7 +627,9 @@ async function main() {
+   try {
+     const plan = planUpdate(repoRoot, fetched.sourceRoot);
+     printPlan(plan);
+-    if (plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
++    const reachedTarget = compareVersions(plan.oldVersion, plan.newVersion) >= 0;
++    if (reachedTarget && plan.pendingMigrationVersions.length === 0
++      && plan.report.plannedWrites === 0 && plan.report.needsAttention.length === 0) {
+       log('\nAlready up to date.');
+       return;
+     }
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.entry-02.md b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-02.md
+new file mode 100644
+index 0000000..35a83f5
+--- /dev/null
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-02.md
+@@ -0,0 +1,29 @@
++# Test plan entry 02 — sprint 040-mockups-token-optimization
++
++Rotated at entry 3. Entry 2 analysed `17dae23b`.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-5, AC-7, AC-8 · Phase startup, grants and branch references | Missing common or branch rules, stale context, or continuation after bundle build failure | `contract-workflows`, `contract-rules`, `runtime-routing`, `runtime-timing` and context check | none | Task 9 covers sprint startup and all phase entries. Existing context contracts resolve role and phase references and check required sections and phase boundaries. The named AC-8 fail-first test is recorded below. |
++| AC-5, AC-7 · Compacted rules and workflows, rendered sprint skill and release hashes | Changed headings, parsed literals, review contracts or generated targets drift | `contract-agents`, `contract-templates`, `runtime-tools`, `runtime-review`, `sync-render`, `sync-cli`, `update` | none | Existing consumers validate contract shapes, review workflow inputs, runtime command flags, generated views and manifest hashes. No additional test gap surfaced. |
++| AC-8 · Matched Codex usage | One workflow exceeds its threshold or the measurement drops a phase or mixes controls into totals | [Matched Codex probes](./token-baseline.md#AC-8-target-verification) and raw readings | none | At `7f4ec78`, Lite used 430,693 input tokens (30.4% lower) and Standard used 519,800 (32.0% lower). The matched runs count cached input, omit controls and cover every phase once. Control-adjusted totals are reported separately. Only tests and sprint records changed between the probe revision and this suite revision. |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++No existing test qualified for removal in the delta since entry 1.
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++
++Entry 2 added no tests. Test-only Task 9 had already committed the changed contracts in `972c85e`.
++
++## Task 9 regression evidence
++
++`node tests/run.js contract-workflows --filter 'sprint-040 AC-8: sprint startup'` matched one test and exited 1 on the pre-change `1889c3e` snapshot because `Orchestrator phase entry` could not be resolved. The rewording control passed 1/1, exit 0. The implemented test also passed in the impacted run for entry 2.
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.md b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+index 0982648..6d9b827 100644
+--- a/.asd/sprints/040-mockups-token-optimization/test-plan.md
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+@@ -12,44 +12,51 @@ responsibility:
+ |---|---|---|
+ | 1 | be1c83b2 | full change surface |
+ | 2 | 17dae23b | delta since entry 1 |
++| 3 | bcc7edda | delta since entry 2 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-5, AC-7, AC-8 · Phase startup, grants and branch references | Missing common or branch rules, stale context, or continuation after bundle build failure | `contract-workflows`, `contract-rules`, `runtime-routing`, `runtime-timing` and context check | none | Task 9 covers sprint startup and all phase entries. Existing context contracts resolve role and phase references and check required sections and phase boundaries. The named AC-8 fail-first test is recorded below. |
+-| AC-5, AC-7 · Compacted rules and workflows, rendered sprint skill and release hashes | Changed headings, parsed literals, review contracts or generated targets drift | `contract-agents`, `contract-templates`, `runtime-tools`, `runtime-review`, `sync-render`, `sync-cli`, `update` | none | Existing consumers validate contract shapes, review workflow inputs, runtime command flags, generated views and manifest hashes. No additional test gap surfaced. |
+-| AC-8 · Matched Codex usage | One workflow exceeds its threshold or the measurement drops a phase or mixes controls into totals | [Matched Codex probes](./token-baseline.md#AC-8-target-verification) and raw readings | none | At `7f4ec78`, Lite used 430,693 input tokens (30.4% lower) and Standard used 519,800 (32.0% lower). The matched runs count cached input, omit controls and cover every phase once. Control-adjusted totals are reported separately. Only tests and sprint records changed between the probe revision and this suite revision. |
++| AC-1, AC-2 · Update retry | A migration failure leaves current managed files and a pending installed version. A successful-looking zero-write retry or a preview can leave the migration unapplied or mutate the consumer prematurely. | `update` CLI with the real migration and an offline release archive | add | Existing dry-run, migration-runner and `applyPlan` tests bypass the CLI early exit. Exercise failure, repair, zero-write dry preview and real retry in one fixture. Assert the preview names the pending migration and leaves config and manifest byte-identical, then the retry migrates the config and advances the manifest with zero managed writes. Prove the test on the old CLI decision. |
++| AC-1 · Installed config touched by the 14.12 migration | A linked `.asd`, `project` or config path can redirect reading or replacement of YAML. | `migrations` with links into a separate fixture | add | Existing migration fixtures use ordinary paths. Require the linked-path refusal, unchanged link identity and destination bytes, and no new files near either config. Use real junctions for directory paths and a real file symlink on a supported host. Prove the check by restoring the old migration path behavior in isolation. |
++| AC-2 · Installed config diagnostic | The default CLI reads through a linked `.asd`, `project` or config path. Missing regular config and explicit preview inputs must still return the documented results. | `migrations` shared link fixture and `runtime-routing` installed and preview input fixture | add | Current cases exercise explicit `--config <path>` only. Assert exit 2 without leaked linked values or destination changes, exit 1 with missing keys for absent or incomplete plain installed config, and exit 0 for complete plain installed config. Extend explicit file coverage with `--config -` for stdin and prove a failure on the old default CLI path. |
++| AC-2 · Supported Node floor | `config-check` exits before reporting missing keys, or sync's check/render aborts during a real update. | Actual Node `v16.7.0` for a named config CLI check and `node .asd/sync.js --check` | keep | The regular suite uses whichever Node runs it. Run the targeted config case and sync once on the exact floor, with an isolated pre-fix comparison. Keep the regular suite zero-dependency with no package downloads or runtime installation. |
++| AC-2 · Approved missing settings | A wording-dependent test obscures the intended handoff and write restrictions. | Repair the existing `update` workflow assertion | keep | The pre-strategy failure expects adjacent prose now separated by the recheck before writing. Assert the existing approval choices and the restriction to approved leaves and required parent mappings without matching their adjacency. Keep all other completion checks. |
++| AC-1 · Legacy active mockup scope | Frozen UX enables mockups while live format is `none`, so a draftless resume could switch providers. | Trace the updated lifecycle rule and both resume paths | none | This is workflow guidance. Check that a recorded provider is recovered when present and missing evidence stops before provider selection or collapse until an explicit choice is recorded and frozen. The existing contracts cover the frozen format handoff and design collapse. |
++| AC-2, AC-5 · Settings authority and migration comments | The approved update-completion writer is missing from the authority chain, or generated views drift from canon. | Read the invariant and its pointers, inspect the migration and use existing sync/contract checks | none | The authority and comment edits affect guidance. Existing manifest and generated-view checks cover the derived files. |
++| AC-8 · Matched Codex usage after review fixes | The repair delta pushes either workflow above the accepted token limit. | [Matched review-fix probes and raw readings](./token-baseline.md#review-fix-verification) | none | At `ee94c86`, Lite used 430,941 input tokens (30.3% lower) and Standard used 520,232 (31.9% lower). All 24 probes passed. |
+ 
+ ## Removed tests
+ 
+ | Test | Reason | In change scope |
+ |---|---|---|
+ 
+-No existing test qualified for removal in the delta since entry 1.
++No existing test qualified for removal in the delta since entry 2.
+ 
+ ## Added tests
+ 
+ | Test | Gap proof | Regression proof |
+ |---|---|---|
++| `tests/update.test.js:sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. Driver tests missed the CLI early exit. | Fail-first at `bd73e08^`: `node tests/run.js update --filter 'update CLI retries a pending migration'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes`. The preview and real retry both printed `Already up to date.` against an installed version with a pending migration. runs: 2 |
++| `tests/migrations.test.js:sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on isolated pre-fix `bd73e08^`. The existing installed migration and the explicit CLI file checks left linked default paths uncovered. | `node tests/run.js migrations --filter 'installed config migration and check refuse linked paths'` → exit 1, 1 matched, `sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths` on pre-fix `bd73e08^` (default check follows `.asd`, exit 1) and on the same snapshot with only runtime restored to current (migration does not refuse). runs: 2 |
++| `tests/runtime-routing.test.js:sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` | Existing `node tests/run.js migrations runtime-routing update` passed 81/81 on its ordinary Node. Runtime routing exercised explicit files alone. Search `config-check`, `--config` and installed-path fixtures found no default/stdin contract or exact Node floor coverage. | Fail-first at `bd73e08^`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` → exit 1, 1 matched, `sprint-040 AC-2: config-check accepts installed, explicit file and stdin input` because `Object.hasOwn is not a function`. A proof-only preload bootstrapped the test scratch path to reach `config-check` on the old CLI. runs: 1 |
+ 
+-Entry 2 added no tests. Test-only Task 9 had already committed the changed contracts in `972c85e`.
+-
+-## Task 9 regression evidence
+-
+-`node tests/run.js contract-workflows --filter 'sprint-040 AC-8: sprint startup'` matched one test and exited 1 on the pre-change `1889c3e` snapshot because `Orchestrator phase entry` could not be resolved. The rewording control passed 1/1, exit 0. The implemented test also passed in the impacted run below.
++The Windows runner used directory junctions for `.asd` and `project`, and a junction at the config path after Windows refused a file symlink. On a host that permits file symlinks, the same test exercises a real config file symlink. The test runs both installed-config entry points in each case and checks the link, destination bytes and directory listings afterward.
+ 
+ ## Suite run
+ 
+-- Pre-strategy evidence: Task 9 self-check `node tests/run.js contract-rules contract-workflows contract-agents contract-templates runtime-routing runtime-tools runtime-timing sync-render sync-cli` passed 208/208 on its final test diff before commit. Entry 2 ran the expanded selection below on the committed tree before choosing any test work.
+-- Command: `node tests/run.js contract-rules contract-workflows contract-agents contract-templates runtime-routing runtime-tools runtime-timing runtime-review sync-render sync-cli update`
+-- Scope: impacted
+-- Scope evidence: The enabled safety valve traced `.asd/rules/providers.md` and its named Markdown sections through runtime context extraction and the phase and sprint entry contracts. The selection includes all changed tests, phase and review contract readers, generated sprint skill checks and the update tests that compare live release hashes. The runner, shared test support, executable runtime, hooks and migrations have no delta since entry 1. The hook tests use isolated fixtures. Eleven of fourteen areas cover the traced consumers.
+-- Result: pass, exit 0. 290 passed, 0 failed, 0 runner-level skips. Seven existing Windows fixture paths bypassed symlink assertions because the host could not create symlinks. Temporary Git fixtures emitted CRLF warnings.
+-- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current. `node .asd/runtime.js context-check` reported no exceeded ceilings. The implementation handoff reported agnix at 0 errors and 0 warnings.
+-- HEAD: 710d5a8478f4592e3e3d4f5fa5e56e0f1d08d2a2
+-- Provenance: `suite impl-test#2` under dispatch `impl-test entry 2`. HEAD matched before and after, with clean relevant paths including untracked files. Eligible for the impacted suite gate while code, tests and stubs are unchanged. No smoke command is configured.
+-- Line delta: tests +223/−41 (net 182); other +816/−825 (net -9)
++- Entry 3 pre-strategy evidence: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows migrations runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update` under `suite impl-test#3` exited 1. 310 passed, 1 failed, 0 runner-level skips. Seven existing file-link fixture branches bypassed assertions because the Windows host could not create file symlinks. First failure: `FAIL - sprint-040 AC-2: only real update completion offers missing settings through installed asd-init`. `tests/update.test.js:25` still expects `/On acceptance, insert exactly the approved missing leaves/`. The implementation retains both requirements with an installed-config recheck between them. Relevant source, test and stub paths were clean throughout. HEAD moved from `102bbb4` to `bca653a` during the run with only sprint evidence changed. This is pre-strategy evidence only.
++- Entry 3 authoring evidence: `node tests/run.js migrations runtime-routing update` passed 84/84, exit 0, after each test batch (`suite impl-test#4` and `#15`). Node `v16.7.0`: `npx --offline --yes --package node@16.7.0 node tests/run.js runtime-routing --filter 'config-check accepts installed'` passed 1/1 (`#11`). `npx --offline --yes --package node@16.7.0 node .asd/sync.js --check` exited 0 (`#12`), compared with exit 1 and `sync: Object.hasOwn is not a function` on isolated `bd73e08^` (`#9`).
++- Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
++- Command: `node tests/run.js`
++- Scope: full
++- Scope evidence: With the safety valve enabled, `.asd/runtime.js` changes argument parsing shared by phase commands, and `.asd/sync.js` changes agent variant eligibility and ledger checks used by build and update.
++- Result: pass, exit 0. 326 passed, 0 failed, 0 runner-level skips. Seven existing Windows fixture branches bypassed file-symlink assertions because the host could not create them. The new linked-config test ran with junctions on this host, including a junction at the config path.
++- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current.
++- HEAD: 1734f03a97209fb549d4d0f5e45cdc8f6a06ca77
++- Provenance: `suite impl-test#16` under dispatch `impl-test entry 3 author`. HEAD matched before and after. Relevant project settings, generated views, source, tests and stubs were clean, including untracked files. The project defines no smoke command.
++- Line delta: tests +359/−43 (net 316); other +851/−844 (net 7)
+ 
+ ## Defects
+ 
+diff --git a/.asd/sync-state.json b/.asd/sync-state.json
+index 2d36578..9c60cce 100644
+--- a/.asd/sync-state.json
++++ b/.asd/sync-state.json
+@@ -4,7 +4,7 @@
+   "entries": {
+     "AGENTS.md": {
+       "kind": "managed-block",
+-      "content_digest": "sha256:e45f3ca5be0f5567b719214cd3bf85a9153a03c599223f25a346381134707940"
++      "content_digest": "sha256:9ad665b6c6e0fa0af8ceaabe35f67e8f7904219736cf84cde1a66cd4fd758ac8"
+     },
+     "CLAUDE.md": {
+       "kind": "managed-block",
+diff --git a/.asd/sync.js b/.asd/sync.js
+index ecf0c04..9a7ab3b 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -1144,7 +1144,7 @@ const CODEX_QUOTA_MODELS = new Map([
+ function codexQuotaFallback(codex, manifest) {
+   const alternate = CODEX_QUOTA_MODELS.get(codex?.model);
+   const families = manifest.model_families?.codex;
+-  return alternate && families && Object.hasOwn(families, alternate.model) ? { ...codex, ...alternate } : null;
++  return alternate && families && Object.prototype.hasOwnProperty.call(families, alternate.model) ? { ...codex, ...alternate } : null;
+ }
+ 
+ function agentVariants(meta) {
+@@ -1582,8 +1582,8 @@ function runCheck(repoRoot) {
+   for (const orphan of findOrphans(repoRoot, plan)) {
+     report.push({ target: orphan.target, status: orphanStatus(orphan) });
+   }
+-  const hasCanonLedger = Object.hasOwn(manifest, 'canon_hashes');
+-  const hasUpstreamLedger = Object.hasOwn(manifest, 'upstream_hashes');
++  const hasCanonLedger = Object.prototype.hasOwnProperty.call(manifest, 'canon_hashes');
++  const hasUpstreamLedger = Object.prototype.hasOwnProperty.call(manifest, 'upstream_hashes');
+   if ((hasCanonLedger || hasUpstreamLedger) && isSelfHosting(repoRoot)) {
+     const { canonChanged, upstreamChanged } = compareHashLedgers(repoRoot, manifest);
+     if ((hasCanonLedger && canonChanged) || (hasUpstreamLedger && upstreamChanged)) {
+diff --git a/.asd/templates/t_AGENTS.md b/.asd/templates/t_AGENTS.md
+index 708bb6d..43b7754 100644
+--- a/.asd/templates/t_AGENTS.md
++++ b/.asd/templates/t_AGENTS.md
+@@ -16,4 +16,4 @@ Settings are in `.asd/project/config.yaml`. For routing, paths and review, see `
+ 
+ ### Hard rules
+ 
+-Keep workflow infrastructure read-only within the boundaries of `.asd/rules/core.md` "Invariants". Only user-invoked `asd-init`, declared scope/impl settings changes via `asd-init`, and limited `asd-update` release migrations may edit settings.
++Follow `.asd/rules/core.md` "Invariants" for infrastructure write boundaries and authorized settings writes.
+diff --git a/AGENTS.md b/AGENTS.md
+index 7104f7b..38d1531 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -17,7 +17,7 @@ Settings are in `.asd/project/config.yaml`. For routing, paths and review, see `
+ 
+ ### Hard rules
+ 
+-Keep workflow infrastructure read-only within the boundaries of `.asd/rules/core.md` "Invariants". Only user-invoked `asd-init`, declared scope/impl settings changes via `asd-init`, and limited `asd-update` release migrations may edit settings.
++Follow `.asd/rules/core.md` "Invariants" for infrastructure write boundaries and authorized settings writes.
+ <!-- asd:end -->
+ 
+ ## This repo (framework source)
+diff --git a/README.md b/README.md
+index 07800b9..9765922 100644
+--- a/README.md
++++ b/README.md
+@@ -88,7 +88,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
+ 
+ The managed set is the SSoT list in `.asd/release-manifest.json`'s `managed_paths` (installed by the steps above), walked recursively file-by-file with a per-file conflict check — a file you hand-edited since the last update is never silently overwritten. Your own custom skills/agents/hooks living beside the managed set are never touched.
+ 
+-After the managed-path replacement, `/asd-update` runs any pending `.asd/migrations/<version>.js` script — one per ASD version — in ascending order, for every version strictly newer than your installed `release-manifest.json.asd_version` up to this release's target. A version already applied is skipped, never re-run. The runner stops at the first failing migration, reports which one failed and what it had already done, and records `asd_version` as the last migration that succeeded (never an unrecorded intermediate) — or the full target version when every pending migration succeeds, including when none were pending.
++After the managed-path replacement, `/asd-update` runs any pending `.asd/migrations/<version>.js` script — one per ASD version — in ascending order, for every version strictly newer than your installed `release-manifest.json.asd_version` up to this release's target. A version already applied is skipped, never re-run. The runner stops at the first failing migration, reports which one failed and what it had already done, and records `asd_version` as the last migration that succeeded (never an unrecorded intermediate) — or the full target version when every pending migration succeeds, including when none were pending. A real retry runs pending migrations even when all managed files are current.
+ 
+ `/asd-sprint` also offers this update at the start of a new sprint: when the remote `release-manifest.json` is newer it asks whether to update now or continue, runs the update on the sprint branch, commits it, and halts so you restart the session and run `/asd-sprint` again. The check is skipped when resuming a sprint and when `self_hosting: enabled`; an unreachable remote only warns.
+ 
+@@ -211,8 +211,8 @@ User-facing commands available at any time. Invocation form differs per provider
+ | `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
+ | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (proposed from the concept; same 4 variants) |
+ | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
+-| `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one after checking the project configuration |
+-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order and `/asd-sync` (also run sprint-mediated by `/asd-sprint`'s new-sprint version check, where choosing to update is the confirmation and the orchestrator commits the result); never touches your config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, the rest of `.asd/project/**` (stubs, custom rules, the retro backlog), persistent docs, or custom skills/agents/hooks |
++| `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
++| `/asd-update` | `$asd-update` | Update framework infrastructure, run pending release migrations, run `/asd-sync`, and offer missing settings via `/asd-init`. See [Updating ASD](#updating-asd) and [authorized settings writes](.asd/rules/core.md#invariants). Also available during `/asd-sprint`'s new-sprint version check. |
+ | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — unedited files are regenerated with no question, a hand-edited one gets a per-file overwrite/keep/diff choice, never a silent overwrite; runs automatically after `/asd-update` |
+ 
+ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
+@@ -338,7 +338,7 @@ git:
+   ai_attribution: enabled             # enabled | disabled; disabled keeps Claude/Codex attribution out of commits and PRs
+ ```
+ 
+-`project.mockup_format` selects standalone HTML, Claude Design, Figma Design or `none` independently of `documents.ux_spec`. Scope freezes the mode for the sprint, using `none` for non-UI work. Lite creates mockups at scope and promotes them after implementation review. Standard creates them at design and includes them in design review and promotion, including mockup-only sprints. UX specs link to available previews. The release migration keeps the previous effective format, including `none` wherever the old UX-spec setting suppressed mockups. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
++`project.mockup_format` selects standalone HTML, Claude Design, Figma Design or `none` independently of `documents.ux_spec`. Scope freezes the mode for the sprint, using `none` for non-UI work. Lite creates mockups at scope and promotes them after implementation review. Standard creates them at design and includes them in design review and promotion, including mockup-only sprints. UX specs link to available previews. The release migration keeps the previous effective format, including `none` wherever the old UX-spec setting suppressed mockups. See [legacy sprint recovery](.asd/rules/sprint-lifecycle.md#mockup-format) and [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival).
+ 
+ Figma needs a connected remote integration and edit access to a Design file you supply or approve creating. ASD records links to editable frames for review, implementation and promotion. If it cannot write, you choose temporary local HTML or wait for access. The project setting stays on Figma. [Figma setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
+ 
+diff --git a/tests/migrations.test.js b/tests/migrations.test.js
+index a968daf..fbfaadc 100644
+--- a/tests/migrations.test.js
++++ b/tests/migrations.test.js
+@@ -2,7 +2,7 @@
+ 
+ // release migrations under .asd/migrations
+ 
+-const { assert, fs, path, sync, update, REPO_ROOT, FIXTURES, tests, test, mkTempDir, loadManifest, GOOD_AGENT_CANON, writeFile, markedFileContent, canonText, readRemovedConfigKeys, migrateConfig900, canonAgents, retiredAgentNames1400, legacyReviewerKeys1400 } = require('./lib.js');
++const { assert, fs, path, spawnSync, sync, update, REPO_ROOT, FIXTURES, tests, test, mkTempDir, loadManifest, GOOD_AGENT_CANON, writeFile, markedFileContent, canonText, readRemovedConfigKeys, migrateConfig900, canonAgents, retiredAgentNames1400, legacyReviewerKeys1400 } = require('./lib.js');
+ 
+ const migration400 = require('../.asd/migrations/4.0.0.js');
+ 
+@@ -74,6 +74,49 @@ test('sprint-040 AC-1: migration rejects unresolved legacy settings without rewr
+   }
+ });
+ 
++test('sprint-040 AC-1 and AC-2: installed config migration and check refuse linked paths', () => {
++  const migrate = require('../.asd/migrations/14.12.0.js');
++  const input = 'project:\n  claude_design: disabled\n  diagram_tool: private-fixture-value\n';
++  const runtime = '.asd/runtime.js';
++  const template = '.asd/templates/t_config.yaml';
++  for (const relative of ['.asd', '.asd/project', MOCKUP_CONFIG]) {
++    const repoRoot = mkTempDir();
++    const outside = mkTempDir();
++    const link = path.join(repoRoot, relative);
++    const real = path.join(outside, relative);
++    writeFile(outside, MOCKUP_CONFIG, input);
++    const cliRoot = relative === '.asd' ? outside : repoRoot;
++    writeFile(cliRoot, runtime, canonText(runtime));
++    writeFile(cliRoot, template, canonText(template));
++    fs.mkdirSync(path.dirname(link), { recursive: true });
++    if (relative === MOCKUP_CONFIG) {
++      try {
++        fs.symlinkSync(real, link, 'file');
++      } catch (error) {
++        if (process.platform !== 'win32' || error.code !== 'EPERM') throw error;
++        fs.symlinkSync(path.dirname(real), link, 'junction');
++      }
++    } else {
++      fs.symlinkSync(real, link, 'junction');
++    }
++
++    const refusal = `${relative} must be`;
++    const snapshot = () => [
++      fs.readlinkSync(link),
++      fs.readFileSync(path.join(outside, MOCKUP_CONFIG), 'utf8'),
++      fs.readdirSync(path.join(outside, '.asd/project')).sort(),
++      fs.readdirSync(path.join(repoRoot, '.asd/project')).sort(),
++    ];
++    const before = snapshot();
++    const check = spawnSync(process.execPath, [path.join(repoRoot, runtime), 'config-check'], { encoding: 'utf8' });
++    assert.strictEqual(check.status, 2, `${relative}: ${check.stdout}${check.stderr}`);
++    assert.ok(check.stderr.includes(refusal), check.stderr);
++    assert.doesNotMatch(check.stdout + check.stderr, /private-fixture-value/);
++    assert.throws(() => migrate({ repoRoot }), (error) => error.message.includes(refusal));
++    assert.deepStrictEqual(snapshot(), before);
++  }
++});
++
+ function makeMigrationFixtureRepo() {
+   const root = mkTempDir();
+   fs.mkdirSync(path.join(root, '.asd'), { recursive: true });
+diff --git a/tests/runtime-routing.test.js b/tests/runtime-routing.test.js
+index 843876b..fda28ca 100644
+--- a/tests/runtime-routing.test.js
++++ b/tests/runtime-routing.test.js
+@@ -2,7 +2,7 @@
+ 
+ // runtime.js task routing, external-review preflight, negative cache and command invocation
+ 
+-const { assert, fs, path, execFileSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
++const { assert, fs, path, execFileSync, spawnSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, writeFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
+ 
+ /** A path to the host's node under a second spelling, so a fingerprint over the command differs while the same executable runs. */
+ const NODE_ALTERNATE_SPELLING = `${path.dirname(process.execPath)}${path.sep}${path.sep}${path.basename(process.execPath)}`;
+@@ -260,6 +260,36 @@ test('Sprint 038 AC-1/AC-2, sprint-040 AC-1: config-check requires valid values,
+   );
+ });
+ 
++test('sprint-040 AC-2: config-check accepts installed, explicit file and stdin input', () => {
++  const root = mkTempDir();
++  const templateFile = '.asd/templates/t_config.yaml';
++  const template = canonText(templateFile);
++  const config = '.asd/project/config.yaml';
++  const cli = '.asd/runtime.js';
++  writeFile(root, cli, canonText(cli));
++  writeFile(root, templateFile, template);
++  writeFile(root, 'preview.yaml', template);
++  const check = (args = [], input) => {
++    const result = spawnSync(process.execPath, [path.join(root, cli), 'config-check', ...args], {
++      cwd: root, encoding: 'utf8', input,
++    });
++    assert.ok(result.stdout, result.stderr);
++    return [result.status, JSON.parse(result.stdout)];
++  };
++
++  const [absentStatus, absent] = check();
++  assert.deepStrictEqual([absentStatus, absent.ok], [1, false]);
++  assert.ok(absent.missing.includes('project.mockup_format'));
++  writeFile(root, config, template.replace(/^  mockup_format:.*$/m, ''));
++  const [status, incomplete] = check();
++  assert.deepStrictEqual([status, incomplete.missing], [1, ['project.mockup_format']]);
++  const complete = [0, { ok: true, missing: [], duplicates: [], invalid: [] }];
++  assert.deepStrictEqual(check(['--config', 'preview.yaml']), complete);
++  assert.deepStrictEqual(check(['--config', '-'], template), complete);
++  writeFile(root, config, template);
++  assert.deepStrictEqual(check(), complete);
++});
++
+ test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
+   const mechanicalEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }] };
+   assert.deepStrictEqual(
+diff --git a/tests/update.test.js b/tests/update.test.js
+index 6c24a56..e90752c 100644
+--- a/tests/update.test.js
++++ b/tests/update.test.js
+@@ -2,7 +2,7 @@
+ 
+ // update.js state machine, driver and migration runner; release-manifest integrity
+ 
+-const { assert, fs, path, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
++const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
+ 
+ test('sprint-040 AC-2: only real update completion offers missing settings through installed asd-init', () => {
+   const skill = '.asd/skills/asd-update/SKILL.md';
+@@ -22,7 +22,9 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
+   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
+   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
+   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
+-  assert.match(adoption, /On acceptance, insert exactly the approved missing leaves/);
++  const write = stepOf(adoption, '3');
++  assert.match(write, /\bacceptance\b/i);
++  assert.match(write, /\bexactly\b[^\n]*\bapproved missing leaves\b/i);
+ });
+ 
+ test('update state machine: upstream unchanged / local untouched -> noop', () => {
+@@ -118,6 +120,65 @@ function hashOf(text) {
+   return sync.sha256Hex(sync.normalizeText(text));
+ }
+ 
++test('sprint-040 AC-1 and AC-2: update CLI retries a pending migration with zero managed writes', () => {
++  const localRoot = mkTempDir();
++  const releaseRoot = mkTempDir();
++  const upstreamRoot = path.join(releaseRoot, 'upstream');
++  const config = '.asd/project/config.yaml';
++  const manifest = '.asd/release-manifest.json';
++  const migration = '.asd/migrations/14.12.0.js';
++  const oldVersion = '14.11.0';
++  const targetVersion = '14.12.0';
++  const metadata = { repo: 'https://github.com/fixture/upstream', managed_paths: [migration] };
++  const input = 'project:\n  claude_design: disabled\n';
++  const invalid = input.replace('disabled', 'unknown');
++  const readLocal = (relative) => fs.readFileSync(path.join(localRoot, relative), 'utf8');
++  const archive = path.join(releaseRoot, 'upstream.tar.gz');
++  const preload = path.join(releaseRoot, 'local-download.js');
++  const cli = path.join(REPO_ROOT, '.asd/skills/asd-update/update.js');
++
++  writeManifest(localRoot, { ...metadata, asd_version: oldVersion });
++  writeManifest(upstreamRoot, { ...metadata, asd_version: targetVersion });
++  writeFile(localRoot, config, invalid);
++  for (const relative of ['.asd/runtime.js', '.asd/sync.js']) writeFile(localRoot, relative, canonText(relative));
++  writeFile(upstreamRoot, migration, canonText(migration));
++  execFileSync('tar', ['-czf', archive, 'upstream'], { cwd: releaseRoot });
++  writeFile(releaseRoot, 'local-download.js', `
++require('node:https').get = (_url, _options, receive) => {
++  const response = require('node:fs').createReadStream(${JSON.stringify(archive)});
++  response.statusCode = 200;
++  queueMicrotask(() => receive(response));
++  return response;
++};
++`);
++  const run = (...args) => spawnSync(process.execPath, ['--require', preload, cli, ...args], {
++    cwd: localRoot, encoding: 'utf8', timeout: 10_000,
++  });
++
++  const failed = run();
++  assert.strictEqual(failed.status, 1, failed.stderr);
++  assert.match(failed.stderr, /migration 14\.12\.0 failed/);
++  assert.strictEqual(readLocal(config), invalid);
++  assert.strictEqual(JSON.parse(readLocal(manifest)).asd_version, oldVersion);
++  assert.strictEqual(readLocal(migration), canonText(migration));
++
++  writeFile(localRoot, config, input);
++  const before = readLocal(manifest);
++  const preview = run('--dry-run');
++  assert.strictEqual(preview.status, 0, preview.stderr);
++  assert.match(preview.stdout, /^Planned writes: 0$/m);
++  assert.match(preview.stdout, /^Migrations that will run: 14\.12\.0$/m);
++  assert.strictEqual(readLocal(manifest), before);
++  assert.strictEqual(readLocal(config), input);
++
++  const retried = run();
++  assert.strictEqual(retried.status, 0, retried.stderr);
++  assert.match(retried.stdout, /^Applied 0 change\(s\)\.$/m);
++  assert.strictEqual(readLocal(config), 'project:\n  mockup_format: html\n');
++  assert.strictEqual(JSON.parse(readLocal(manifest)).asd_version, targetVersion);
++  assert.match(preview.stdout, /^\[dry-run\] no files written\.$/m);
++});
++
+ test('update driver: new upstream file with nothing local -> add, written on apply', async () => {
+   const localRoot = mkTempDir();
+   const upstreamRoot = mkTempDir();

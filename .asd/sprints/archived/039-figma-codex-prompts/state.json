@@ -1,7 +1,7 @@
 {
   "sprint_id": "039-figma-codex-prompts",
   "branch": "sprint/039-figma-codex-prompts",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -69,6 +69,13 @@
       "reason": "combined approved and full suite green after portable fixture repair",
       "evidence": "wave-1/iter-05 combined APPROVE; external skip; 316/316 at 4ea1a103",
       "artifact_revision": "reviews/impl/wave-1/iter-05"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "merged PR and published release verified",
+      "evidence": "e112becaa3591dffe5c832fbc52c8cbdce6a7543",
+      "artifact_revision": "state.json@done"
     }
   ],
   "task_routing": {
@@ -90,14 +97,14 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 5, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-02": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-03": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-04": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" }, "iter-05": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))" } }, "iteration_heads": { "iter-01": "7ec60b41a7c6b185679150dbeea51853d80a3bcc", "iter-02": "7e0bef6baaf0ed45844c4acda19329695321e283", "iter-03": "eb7a625fea6c3a58092123e718fe4bbbe8655280", "iter-04": "31b8cab698b550b1cc28302ca7307466af955ea0", "iter-05": "72c1714b031da2959635577e3e564820c42ac9c3" }, "latched": {} } ] }
   },
   "created_at": "2026-11-22T10:40:41.832Z",
-  "updated_at": "2026-11-22T12:26:50Z",
+  "updated_at": "2026-11-24T10:43:19Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 147,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/147",
-    "state": "open",
-    "merge_commit": null
+    "state": "merged",
+    "merge_commit": "e112becaa3591dffe5c832fbc52c8cbdce6a7543"
   },
-  "archived_at": null
+  "archived_at": "2026-11-24T10:43:19Z"
 }

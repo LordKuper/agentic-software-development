@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:4bf2fa7042334fc5358e6287eebb3d4b2a441bd211e781921c386d2c8983e291 content_digest=sha256:fc1e68cee0b7dbc67d52aaf9ea0c8c4ff9c202c7cb9c8b1e287b96f4e57da302 asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:4fe61838fc42af2c8a2d5eb4e3897af8d2cc25ac102a147f8165d1e45407c2a1 content_digest=sha256:2e03887d79336caa076ca7f60225f13c46cfd1d635518d7f018d96b54ab997c6 asd_version=14.11.0 schema=1
 name: asd-phase-design-promote
-description: "Runs the ASD design-promote phase: the main orchestrator handles decomposition and gates and promotes persistent docs itself — from approved drafts after design-review (standard workflow), or from the accepted implementation after impl-review with no draft and no review (lite workflow), where it runs before cleanup. Standard continues to plan. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
+description: "Promote ASD sprint results into persistent docs. Use on asd-sprint design-promote dispatch or an explicit request to run or rerun design-promote."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

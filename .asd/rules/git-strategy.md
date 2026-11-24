@@ -39,15 +39,23 @@ An accepted-debt entry whose review date has passed, is missing or is not a vali
 
 ## Commit before review
 
-`impl` (and its review-fix/test-fix modes) and `impl-test` each commit all work before the sprint advances to `impl-review` — the clean-worktree precondition there (`sprint-lifecycle.md` "Impl-review clean-worktree precondition") blocks entry on any uncommitted change, since the reviewed diff is computed from commits. `impl-test`'s own commit obligation is stated once, in `sprint-lifecycle.md` "Impl-test commits its own output".
+`impl` in all modes and `impl-test` commit before `impl-review`, whose diff uses commits and requires a clean worktree (`sprint-lifecycle.md` "Impl-review clean-worktree precondition"). The Tester obligation is in "Impl-test commits its own output" there. In-place test fixes in `impl-review` also commit before the phase's `Suite run` records `HEAD` and before PR open-mode's `git diff --quiet` check.
 
-`impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix lands as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check.
+### Author commits
 
-The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md`, the timing ledger `timing.jsonl`, and any agent-memory writes whose author cannot commit them (a reviewer holds no commit tool; a concurrent co-author holds the file mid-edit, so neither author may stage it, per `artifact-layout.md` "Agent memory"; `review-policy.md` "Change-surface rule") — at phase exit, same precedent as `impl-test` above. "Holding a commit tool" is role policy, not tool grant: `asd-dev` and `asd-tester` hold one; reviewers and `asd-advisor` do not. A dispatched agent holding a commit tool stages only the paths it authored (never a whole-tree command — `git add -A`/`-u`, `git add --renormalize`, `commit -a`, `git stash` — even where it is the only form: a whole-tree stage sweeps a sibling's edit into the wrong commit, a stash takes it off disk), commits every path it authored before signalling completion, and never commits orchestrator-owned files it did not author. It writes its commit message (trailer paragraph per "Commits") to `<scratch-dir>/<NNN-slug>-<dispatch id>.commit-msg` with the file-write operation, then stages and commits in one compound command, so no path stays staged between commands: `git add -- <paths> && git diff --cached --check -- <paths> && node .asd/runtime.js commit-check --message-file <file> -- <paths> && git commit --only -F <file> -- <paths>` (`commit-check` exits 1 on a header over 50 chars, a misplaced `ASD-Task:` line or a `memory-check` hit among the named staged paths), one `<paths>` list covering never-tracked paths and both paths of a rename; it deletes the file afterwards; if the command fails, `git reset -q -- <paths>`. A trailer-less commit takes `--subject "<header>"` and `-m "<header>"` in place of the file. Its own agent-memory writes are paths it authored, so it commits them. The whole-tree ban is unconditional for a dispatched agent; the main orchestrator runs such a command only when no sibling dispatch is in flight.
+"Holding a commit tool" is role policy: `asd-dev` and `asd-tester` hold one; reviewers and `asd-advisor` do not. Dispatched authors stage and commit only their own paths, including their own memory writes, before signalling completion. Whole-tree operations (`git add -A`/`-u`, `git add --renormalize`, `commit -a`, `git stash`) are always forbidden for a dispatched agent.
+
+Write the message and trailer ("Commits") to `<scratch-dir>/<NNN-slug>-<dispatch id>.commit-msg` with the file-write operation. Stage, lint, validate and commit in one compound command: `git add -- <paths> && git diff --cached --check -- <paths> && node .asd/runtime.js commit-check --message-file <file> -- <paths> && git commit --only -F <file> -- <paths>`. Use one list including never-tracked paths and both sides of a rename. Delete the message file after use; if the command fails, `git reset -q -- <paths>`. For a trailer-less commit replace the respective file flags with `--subject "<header>"` and `-m "<header>"`.
+
+### Orchestrator commits
+
+At phase exit, commit bookkeeping (`state.json`, `decisions-log.md`, review files, `friction-log.md`) and memory writes their authors cannot commit: reviewer writes and memory files held mid-edit by a concurrent co-author (`artifact-layout.md` "Agent memory"; `review-policy.md` "Change-surface rule"). Use whole-tree commands only with no sibling dispatch in flight.
 
 **Timing ledger**: a dirty `timing.jsonl` is committed by the orchestrator alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before any clean-tree check or diff-reading gate, so those never see it; an agent never stages it (`sprint-lifecycle.md` "Operation timing").
 
-**Named path check.** Stage each candidate before invoking `commit-check` from the repository root. The check exits 1 when any named path has unstaged changes or no staged change. It reports the path and the failing conditions under `path_errors`. Git lists a rename's staged source deletion and destination addition separately. A directory covers the files under it. With no named paths the check keeps the existing all-staged behavior.
+### Path and memory checks
+
+**Named path check.** From the repo root, stage each candidate before `commit-check`. A named path with unstaged changes or no staged change exits 1 and appears in `path_errors`. Rename source and destination are separate staged paths. Directory pathspecs cover their files; no pathspec checks all staged files. A header over 50 chars, misplaced `ASD-Task:` or `memory-check` hit also exits 1.
 
 **Memory content check**: every commit of agent-memory writes, the orchestrator's or a dev's or tester's own, uses the form above, whose `commit-check` runs `node .asd/runtime.js memory-check` over the named staged paths only; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (`artifact-layout.md` "Agent memory"). A violating orchestrator-committed write is unstaged and not committed; it returns to its owner's memory-fix dispatch in the current phase, before that phase's COMPLETED (`review-policy.md` "Memory-fix dispatch"). A dev or tester fixes a hit in its own write before committing. Legacy memory text is not swept.
 
@@ -55,10 +63,8 @@ The main orchestrator commits its own bookkeeping — `state.json`, `decisions-l
 
 The main orchestrator confirms before opening PR:
 
-- Studied existing code in touched areas
-- Can explain every changed line
-- PR scoped to requested feature; no unrelated improvements
-- Commit messages describe why, not what
+- Reviewed surrounding code and can explain every changed line against the requested scope
+- Commit messages explain why
 - Full test suite green, once, at the end of `impl-review` (per `test-plan.md` `Suite run`; `sprint-lifecycle.md` "Impacted test set")
 - Every reviewer `review-policy.md` "DoD per review phase" requires for the frozen workflow = APPROVE
 

@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2 content_digest=sha256:1fcf6ec18fb0d022db8eb3be22fbcb871f0c58c7dc570c2debdb2ce93ebe7138 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:5306f9805e92f65e400857d5fb8e1a743875617d5d05e12d5c8c867a570c542e content_digest=sha256:72668f01ae7c27af36f6d80820774ef5fd90f81ed94e4b16eca60e768ddd4282 asd_version=14.11.0 schema=1
 name: asd-phase-impl-test
-description: "Runs the ASD impl-test phase: dispatches asd-tester to run the existing impacted tests first, pick the test approach for the whole change scope after the code exists, prune redundant tests, author missing ones, and run the impacted set (never the full suite, which runs once at the end of impl-review) as its suite gate. Green routes to impl-review; code defects are recorded in test-plan.md and route back to impl test-fix mode. Use when asd-sprint dispatches the impl-test phase, or when the user explicitly asks to run or re-run impl-test for the active sprint."
+description: "Run, prune and author impacted tests for the active ASD sprint. Use on asd-sprint impl-test dispatch or an explicit request to run or rerun impl-test."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

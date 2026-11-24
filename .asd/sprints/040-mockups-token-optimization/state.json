@@ -1,0 +1,265 @@
+{
+  "sprint_id": "040-mockups-token-optimization",
+  "branch": "sprint/040-mockups-token-optimization",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user selected lite",
+      "evidence": "decisions-log.md: Workflow choice",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "audit requirements and practices",
+      "decision_actor": "user",
+      "reason": "approved the amended requirements and per-file review practices",
+      "evidence": "decisions-log.md: Audit requirements and practices approved",
+      "artifact_revision": "research.md@requirements-and-practices"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "baseline in Codex, then review files by descending token cost",
+      "evidence": "research.md: Approaches / Chosen",
+      "artifact_revision": "research.md@approach"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "accepted the five criteria and included P-1 as AC-6",
+      "evidence": "decisions-log.md: Scope accepted; AC-1..AC-6 each 0 review iterations and 0 fix rounds",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "include P-1; defer A-2, A-4 and P-2",
+      "evidence": "decisions-log.md: Retro intake accepted",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "file approval: .asd/rules/sprint-lifecycle.md",
+      "decision_actor": "user",
+      "reason": "approved all three lifecycle proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: sprint-lifecycle.md",
+      "artifact_revision": "audit.md@lifecycle-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/artifact-layout.md",
+      "decision_actor": "user",
+      "reason": "approved all three artifact layout proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: artifact-layout.md",
+      "artifact_revision": "audit.md@artifact-layout-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/review-policy.md",
+      "decision_actor": "user",
+      "reason": "approved all three review policy proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: review-policy.md",
+      "artifact_revision": "audit.md@review-policy-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/core.md",
+      "decision_actor": "user",
+      "reason": "approved all three core rule proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: core.md",
+      "artifact_revision": "audit.md@core-verdict"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "standing authorization to accept advisor file recommendations",
+      "evidence": "decisions-log.md: Scope amendment AC-7; 0 review iterations, 0 fix rounds",
+      "artifact_revision": "sprint.md@AC-7"
+    },
+    {
+      "gate": "advisor recommendation: .asd/rules/agent-protocol.md",
+      "decision_actor": "orchestrator",
+      "reason": "accepted all four protocol proposals under AC-7",
+      "evidence": "decisions-log.md: Accepted all four; audit.md: agent-protocol.md",
+      "artifact_revision": "audit.md@agent-protocol-verdict"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "complete tracked inventory, validated Codex evidence and accepted file verdicts under AC-7",
+      "evidence": "audit.md; token-baseline.md; context-priority.csv; 46/46 impacted baseline checks",
+      "artifact_revision": "audit.md@complete"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "task boundaries implement accepted scope and advisor recommendations under standing authorization",
+      "evidence": "plan.md; audit.md; baseline sync-check green",
+      "artifact_revision": "plan.md@accepted"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all plan tasks completed with scoped proof and current generated views",
+      "evidence": "plan.md; Task 6 6f65ff7; context-check; sync-check 77/77; agnix 0 errors 0 warnings",
+      "artifact_revision": "plan.md@impl-complete"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "required at least 25 percent Codex input reduction",
+      "evidence": "decisions-log.md: AC-8; 0 review iterations, 0 fix rounds; floor_base=wave-1/0",
+      "artifact_revision": "sprint.md@AC-8"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "AC-8 measured 30.4 percent Lite and 32.0 percent Standard; implementation and Task 9 verified",
+      "evidence": "token-baseline.md: AC-8 target verification; 972c85e; targeted tests 208/208",
+      "artifact_revision": "plan.md@ac8-impl-complete"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "accepted scope and plan are covered by a validated Combined verdict and green terminal suite; wrapped review has a documented availability skip",
+      "evidence": "wave-1/iter-04; terminal full suite 326/326 at 372a94a; 30.3% Lite and 31.9% Standard",
+      "artifact_revision": "test-plan.md@terminal-green"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "approved public PR creation and merge in response to the publication request",
+      "evidence": "decisions-log.md: Public PR #148",
+      "artifact_revision": "cb32515"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:migration",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:section and literal contract",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "artifact-risk:provider discovery contract",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:broad-reasoning",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:broad-reasoning",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:broad-reasoning",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:broad-reasoning",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "review-fix wave-1/iter-01": {
+      "execution": "agent",
+      "tier": "escalated",
+      "reason": "risk:migration",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "review-fix wave-1/iter-02": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    },
+    "review-fix wave-1/iter-03 skill": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "raise_effort": false,
+      "resolved_model": "gpt-6.2-sol"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 4,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
+            },
+            "iter-04": {
+              "combined": "APPROVE",
+              "external": "APPROVE (skipped: external review unavailable: negative-cache (authentication))"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "ebc18c274ed85a70219213903730bffbd59bf7e9",
+            "iter-02": "dc5513b0991b0bc9c615ea5334ba1404b3e343b5",
+            "iter-03": "98809e7c599764a38a6d8795de88fc10ba6bc503",
+            "iter-04": "464948245970becfe18d75d947c81fa087570f59"
+          },
+          "latched": {}
+        }
+      ]
+    }
+  },
+  "created_at": "2026-11-24T10:44:26Z",
+  "updated_at": "2026-11-24T14:08:52.987Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": { "number": 148, "state": "open", "url": "https://github.com/LordKuper/agentic-software-development/pull/148" },
+  "archived_at": null
+}

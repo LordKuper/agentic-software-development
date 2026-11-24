@@ -2,7 +2,7 @@
 
 // runtime.js task routing, external-review preflight, negative cache and command invocation
 
-const { assert, fs, path, execFileSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, runtimeCli, runtimeCliResult, readRepoFile, writeFile, canonText, sectionOf, stepOf, spans, runtimeSpawnAsync } = require('./lib.js');
 
 /** A path to the host's node under a second spelling, so a fingerprint over the command differs while the same executable runs. */
 const NODE_ALTERNATE_SPELLING = `${path.dirname(process.execPath)}${path.sep}${path.sep}${path.basename(process.execPath)}`;
@@ -202,8 +202,8 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
   }
 });
 
-// Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
-test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys', async () => {
+// Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass config-check.
+test('Sprint 038 AC-1/AC-2, sprint-040 AC-1: config-check requires valid values, including none, and names missing, duplicate and invalid keys', async () => {
   const root = mkTempDir();
   const config = path.join(root, 'config.yaml');
   const template = canonText('.asd/templates/t_config.yaml');
@@ -225,7 +225,7 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
     assert.deepStrictEqual(
       [outcome.status, JSON.parse(outcome.stdout).invalid.map(({ path: key }) => key)],
       [1, ['git.ai_attribution']],
-      'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
+      'config-check rejects opt-out spellings the attribution reader treats as enabled'
     );
   }
   const incomplete = await check(template
@@ -237,6 +237,7 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
 
   const withMockupSettings = (...settings) => template.replace(/^  mockup_format:.*$/m, settings.map((setting) => `  ${setting}`).join('\n'));
   for (const settings of [
+    ['mockup_format: none'],
     ['mockup_format: html'],
     ['mockup_format: claude_design'],
     ['mockup_format: figma'],
@@ -257,6 +258,36 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
     [badLegacy.status, legacyResult.duplicates, legacyResult.invalid.map(({ path: key }) => key)],
     [1, ['project.claude_design'], ['project.claude_design']]
   );
+});
+
+test('sprint-040 AC-2: config-check accepts installed, explicit file and stdin input', () => {
+  const root = mkTempDir();
+  const templateFile = '.asd/templates/t_config.yaml';
+  const template = canonText(templateFile);
+  const config = '.asd/project/config.yaml';
+  const cli = '.asd/runtime.js';
+  writeFile(root, cli, canonText(cli));
+  writeFile(root, templateFile, template);
+  writeFile(root, 'preview.yaml', template);
+  const check = (args = [], input) => {
+    const result = spawnSync(process.execPath, [path.join(root, cli), 'config-check', ...args], {
+      cwd: root, encoding: 'utf8', input,
+    });
+    assert.ok(result.stdout, result.stderr);
+    return [result.status, JSON.parse(result.stdout)];
+  };
+
+  const [absentStatus, absent] = check();
+  assert.deepStrictEqual([absentStatus, absent.ok], [1, false]);
+  assert.ok(absent.missing.includes('project.mockup_format'));
+  writeFile(root, config, template.replace(/^  mockup_format:.*$/m, ''));
+  const [status, incomplete] = check();
+  assert.deepStrictEqual([status, incomplete.missing], [1, ['project.mockup_format']]);
+  const complete = [0, { ok: true, missing: [], duplicates: [], invalid: [] }];
+  assert.deepStrictEqual(check(['--config', 'preview.yaml']), complete);
+  assert.deepStrictEqual(check(['--config', '-'], template), complete);
+  writeFile(root, config, template);
+  assert.deepStrictEqual(check(), complete);
 });
 
 test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
@@ -370,14 +401,13 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class h
   assert.ok(/review-fix mode first.*initial mode over the plan's unticked Tasks only.*one `NEXT: impl-test`/.test(amendment), 'AC-6: "Scope amendment" must run review-fix first, then initial mode over unticked Tasks only (never a ticked one again), before one NEXT: impl-test');
   const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
   const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
-  assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
+  assert.ok(/skip fully ticked waves|wave whose Tasks are all ticked is skipped/i.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
 
   const gate = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
-  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => /flagged choice/i.test(sentence) && sentence.includes('plan decision')) || '';
-  const scopeClass = 'new or changed scope';
-  assert.ok(unmet.includes(`\`${scopeClass}\``), `AC-8: "Gate policy" must carry a flagged-choice sentence about an unmeetable plan decision that names the ${scopeClass} class`);
-  assert.ok(gate.includes(`Hard in both modes: ${scopeClass}`), `AC-8: the ${scopeClass} class the flagged-choice sentence names must be the hard class "Gate policy" lists`);
+  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => /unmeetable plan/.test(sentence)) || '';
+  assert.match(unmet, /widen.*needed files.*(?:seek a scope decision to drop|dropping.*new or changed scope)/i, 'AC-8: widen an unmeetable plan fix or get a scope decision before dropping the requirement');
+  assert.match(gate, /Hard in both modes: (?:unauthorized scope|new or changed scope).*"Scope amendment"/, 'AC-8: changing scope stays a hard gate');
   const mutation = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
   assert.ok(mutation.includes('superseded') && mutation.includes('citation'), 'AC-9: code-style.md §17 must bound the representative mutation of a changed-rule pin (superseded text, new clause removed with its citation kept)');
 });

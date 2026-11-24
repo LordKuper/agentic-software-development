@@ -1,50 +1,50 @@
 # Design Principles
 
-Applied during design-shaping phases (design, design-review, design-promote); verified against during impl-review.
+Apply in design, design-review and design-promote. Verify in impl-review.
 
 ## 1. Evidence over Speculation
 
-Don't build systems before user-facing need is validated. Prefer vertical slice over horizontal scaffolding. New system/layer/module in ADR requires concrete usage evidence: a PRD scenario, measured pain, a named consumer. "Might need it later" does not qualify.
+Validate the user-facing need first. Prefer vertical slices. An ADR for a new system, layer or module cites concrete usage evidence such as a PRD scenario, measured pain or named consumer.
 
 ## 2. KISS — Simple Core
 
-Simplest design that solves the validated problem. Three similar lines beat a premature abstraction. Any complication needs user approval — see `core.md` Simplicity Default + Complication Approval.
+Choose the simplest design that meets the validated need. Classify and approve complications per `core.md` "Simplicity Default".
 
 ## 3. Separation of Concerns
 
-Identify natural layers (presentation / domain / data / integration). Each gets its own module with explicit contracts in the ADR. Cross-layer calls only through those contracts. No domain logic in UI, no persistence in domain code, no business rules in transport adapters.
+Give each natural layer (presentation, domain, data, integration) its own module and explicit ADR contract. Route cross-layer calls through those contracts. Keep domain logic in the domain, persistence in data and transport in adapters.
 
 ## 4. Loose Coupling / High Cohesion
 
-Module groups things that change together (cohesion); modules depend through narrow contracts (coupling). Test: replacing one module must not require editing unrelated ones. One change touching many unrelated places signals broken cohesion or leaked coupling.
+Group what changes together. Depend through narrow contracts so replacing a module leaves unrelated modules intact.
 
 ## 5. Single Source of Truth
 
-Each fact has exactly one home file or module. Other places link or import, never copy. Applies to code as to docs (`artifact-layout.md` SSoT iron rule): one config source, one schema source, one constant source.
+Give each fact one home, including config, schemas and constants. Link or import it elsewhere (`artifact-layout.md` SSoT iron rule).
 
 ## 6. Fail Fast on Load
 
-Validate content, data, config at load time, not in runtime hot paths. Crash beats corrupt save. Crash beats silent fallback masking broken state.
+Validate content, data and config at load. Stop on invalid state before any save or silent fallback.
 
 ## 7. Observability by Design
 
-Every long-lived component ships from day one: structured logs (with context), metrics counters, traces, a health/readiness endpoint, inspectable runtime state. Add at design time.
+Design every long-lived component to ship with structured contextual logs, metric counters, traces, a health/readiness endpoint and inspectable runtime state.
 
 ## 8. Backward Compatibility
 
-Persisted formats (DB schema, on-disk state, public API, wire protocol) are versioned. A breaking change requires an ADR, a migration plan, a version bump. Additive changes preferred. A release must not invalidate existing user data or integrations without a migration path. Gated by `config.backward_compat` (`strict` | `migration` | `none`).
+Version persisted formats, public APIs and wire protocols. Prefer additive changes. Per `config.backward_compat` (`strict` | `migration` | `none`), require an ADR, migration plan and version bump for a breaking change. Provide a migration path for any affected user data and integrations.
 
 ## 9. Evolutionary Architecture
 
-Defer commitment where cost of reversal is high. Every ADR documents reversibility (easy / moderate / hard) and the trigger condition for re-evaluation. Architecture is grown, not poured.
+Defer costly-to-reverse commitments. Every ADR records reversibility (easy / moderate / hard) and a re-evaluation trigger.
 
 ## 10. Over-Engineering & Structure Smells
 
-Apply the over-engineering checklist AND the structure/cohesion checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. The structure checklist (god/sprawling type) enforces #3 and #4 at the type level.
+Apply both `review-policy.md` checklists (over-engineering, structure/cohesion) when drafting ADRs.
 
 ## 11. Research Current Best Practices
 
-Every design decision researches current best practices for implementing such a solution (cite sources, verify currency via web search and fetch). On doubt between approaches: document each option with detailed pros/cons, mark the recommended one, and return them as `QUESTION` for the user's final choice (`core.md` "Request user decision"). Don't pick silently when alternatives are real.
+Verify current best practices via web search and fetch for every design decision. Cite sources. For unresolved alternatives, document each option's tradeoffs and the recommendation, then return `QUESTION` for the user's choice (`core.md` "Request user decision").
 
 ## See also
 

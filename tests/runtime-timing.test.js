@@ -2,7 +2,7 @@
 
 // runtime.js operation timing, agent liveness, context bundles and ceilings
 
-const { assert, fs, path, spawnSync, sync, runtime, REPO_ROOT, test, mkTempDir, runtimeCli, runtimeCliResult, readWorkflowDefinitions, readRepoFile, grantRows, sectionOf, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync } = require('./lib.js');
+const { assert, fs, path, spawnSync, sync, runtime, REPO_ROOT, test, mkTempDir, runtimeCli, runtimeCliResult, readWorkflowDefinitions, readRepoFile, grantRows, sectionOf, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync, writeFile } = require('./lib.js');
 
 test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into running, done or a stall with its reason, and agent-liveness prints one STALL line per stalled agent and fails when it finds no transcript', async () => {
   const minute = (n) => Date.UTC(2026, 8, 29, 12, n);
@@ -578,6 +578,48 @@ test('sprint-036 AC-14: agent-liveness --returns reports an agent whose return f
 const CONTEXT_CEILINGS_FILE = '.asd/project/context-ceilings.json';
 
 const BUNDLE_KEY = /@/;
+
+test('sprint-040 AC-6: context-check allows the exact standalone byte cap, excludes phase shims and reports overflow', () => {
+  const root = mkTempDir();
+  const runtimeFile = path.join(root, '.asd', 'runtime.js');
+  writeFile(root, '.asd/runtime.js', fs.readFileSync(RUNTIME_JS, 'utf8'));
+  writeFile(root, CONTEXT_CEILINGS_FILE, '{}');
+  const { CAP_STANDALONE_SKILLS_BYTES: cap } = runtime;
+  assert.strictEqual(cap, 62351);
+  const skill = '.asd/skills/asd-example/SKILL.md';
+  const text = 'é\r\n';
+  writeFile(root, skill, text.padEnd(cap, 'a'));
+  writeFile(root, '.asd/skills/asd-phase-example/SKILL.md', 'a'.repeat(cap + 1));
+  assert.deepStrictEqual(runtime.standaloneSkillFiles(root), [skill]);
+  assert.strictEqual(runtime.standaloneSkillBytes(root), cap);
+
+  const check = () => {
+    const { status, stdout } = spawnSync(process.execPath, [runtimeFile, 'context-check'], { encoding: 'utf8', cwd: root });
+    return [status, JSON.parse(stdout)];
+  };
+  assert.deepStrictEqual(check(), [0, { over: [] }]);
+  fs.appendFileSync(path.join(root, skill), 'a', 'utf8');
+  assert.deepStrictEqual(check(), [1, { over: [{ key: 'standalone-skills', bytes: cap + 1, ceiling: cap }] }]);
+});
+
+test('sprint-040 AC-5: split recovery and plan grants reach only their consuming phases', () => {
+  const providers = readRepoFile('.asd/rules/providers.md');
+  const lifecycle = '.asd/rules/sprint-lifecycle.md';
+  const phases = [...new Set(readWorkflowDefinitions().flatMap(({ phases }) => phases))];
+  for (const [section, consumers] of [
+    ['Creator dispatch recovery', ['impl', 'impl-test']],
+    ['Review verdict recovery', ['design-review', 'impl-review', 'pr']],
+    ['Plan author checklist', ['plan']],
+  ]) {
+    const holding = phases.filter((phase) => {
+      const refs = runtime.contextRefs(providers, 'orchestrator', phase);
+      const lifecycleRefs = refs.filter((ref) => ref.split('#')[0] === lifecycle);
+      const bundle = runtime.contextBundle(lifecycleRefs, { [lifecycle]: readRepoFile(lifecycle) });
+      return new RegExp(`^#+ ${section}$`, 'm').test(bundle);
+    });
+    assert.deepStrictEqual(holding.sort(), consumers.sort(), section);
+  }
+});
 
 test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 1 naming the one bundle whose ceiling a seeded edit lowered below its size, and --seed --bundles writes a ceiling for the same role-phase keys the committed file holds, which a clean check then passes', async () => {
   const committed = JSON.parse(readRepoFile(CONTEXT_CEILINGS_FILE));

@@ -4,6 +4,7 @@
   "phase": "scope",
   "workflow": "{{WORKFLOW}}",
   "documents": { "audit": "{{DOC_AUDIT}}", "prd": "{{DOC_PRD}}", "ux_spec": "{{DOC_UX_SPEC}}", "design_system": "{{DOC_DESIGN_SYSTEM}}", "adr": "{{DOC_ADR}}", "c4": "{{DOC_C4}}" },
+  "mockup_format": "{{MOCKUP_FORMAT}}",
   "cleanup": "{{CLEANUP}}",
   "user_gates": "{{USER_GATES}}",
   "gate_decisions": [],

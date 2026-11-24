@@ -2,7 +2,7 @@
 
 // content contracts of the phase workflows, skills and their chains
 
-const { assert, fs, path, sync, update, runtime, REPO_ROOT, tests, test, readWorkflowDefinitions, workflowReviewerAgents, arrowChain, readRepoFile, internalReviewers, canonText, sectionOf, jsonOf, stepOf, spans, canonMarkdownFiles, canonAgents, FORM_CATEGORIES, scriptedWait } = require('./lib.js');
+const { assert, fs, path, sync, update, runtime, REPO_ROOT, tests, test, readWorkflowDefinitions, workflowReviewerAgents, arrowChain, readRepoFile, internalReviewers, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, canonMarkdownFiles, canonAgents, FORM_CATEGORIES, scriptedWait } = require('./lib.js');
 
 test('AC-2/4/6/8: the External Review CLI command settings exist in the config template and asd-init, and each provider view carries its own key and the unavailable-status literal', () => {
   const init = fs.readFileSync(path.join(REPO_ROOT, '.asd', 'skills/asd-init/SKILL.md'), 'utf8');
@@ -134,13 +134,17 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
     assert.ok(block, `sprint-lifecycle.md "Workflows" must carry a **\`${name}\`** block - it is the one home of that workflow's deltas`);
     assert.deepStrictEqual(arrowChain(block), chain, `sprint-lifecycle.md "Workflows" states ${name}'s chain in prose, and it drifted from ${name}.json`);
     if (chain.indexOf('design-promote') > chain.indexOf('impl-review')) {
-      const designDocs = Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((doc) => doc !== 'audit');
       const promote = block.split('\n').find((line) => line.startsWith('- design-promote')) || '';
-      assert.ok(/\bNo-op\b/.test(promote) && designDocs.every((doc) => promote.includes(`\`${doc}\``)), `sprint-020 AC-5: ${name} promotes after impl-review, so its "Workflows" design-promote bullet must state the no-op over every frozen design document (${designDocs.join(', ')}) - a dropped one runs creators for a document the sprint disabled, or skips one it enabled`);
-      const inputsOf = (text) => [...text.slice(0, text.indexOf('in place of drafts')).replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
-      const promoteInputs = inputsOf(promote);
-      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && rel !== '.asd/workflows/asd-phase-design-promote.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
-      assert.ok(promoteInputs.length > 0, `sanity: the "Workflows" design-promote bullet must name the files read "in place of drafts", or the input comparison below compares nothing`);
+      const designDocs = Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((doc) => doc !== 'audit');
+      const optionalDocs = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents');
+      const noOpRow = /^\| design \| (.*?) \|$/m.exec(optionalDocs)?.[1] ?? '';
+      assert.ok(designDocs.every((doc) => spans(noOpRow).includes(doc)), 'the no-op table identifies every frozen design document');
+      assert.match(promote, /\bNo-op (?:when|with) all five design doc(?:ument)?s (?:are )?disabled and (?:there are )?no in-scope mockups\b/, `sprint-020 AC-5, sprint-040 AC-1: ${name} promotes a mockup-only sprint and skips only empty combined scope`);
+      assert.strictEqual(designDocs.length, 5, 'the Lite no-op clause counts every design document');
+      const inputsOf = (text) => [...text.replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
+      const promoteInputs = inputsOf(promote.split(/\.(?=\s)/).find((sentence) => sentence.includes('"Design-promote phase"')) || '');
+      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && rel !== '.asd/workflows/asd-phase-design-promote.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts')), line.indexOf('in place of drafts')))]));
+      assert.ok(promoteInputs.length > 0, 'sanity: the "Workflows" design-promote bullet must name the files it reads');
       const promoteItem = jsonOf('.asd/workflows/asd-phase-design-promote.md', 'Inputs').find((item) => item.startsWith(`${name}:`)) || '';
       inputSites.push(['.asd/workflows/asd-phase-design-promote.md Inputs', [...promoteItem.matchAll(/([\w-]+\.md)/g)].map((match) => match[1]).sort()]);
       assert.deepStrictEqual(inputSites.filter(([, inputs]) => inputs.join() !== promoteInputs.join()), [], `documentation.md F-3 (wave-1/iter-01): every site stating what ${name}'s design-promote reads in place of drafts must name the same files as its "Workflows" home (${promoteInputs.join(', ')}) - a wider acting site reads what its cited rule never grants, a narrower one promotes without it`);
@@ -159,7 +163,7 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
   }
 });
 
-test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEXT: plan is keyed on the documents-only collapse test, lands phase on the chain predecessor of plan, records exactly the phases between audit and plan as skipped in the one exit write that also carries a skipped audit and logs the skip, and the plan precondition, checkpoints chain and resume flow accept that state through the same frozen collapse test', () => {
+test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14, sprint-040 AC-1: audit, plan and resume agree on the frozen design-block collapse and audit records every skip in one exit write', () => {
   const definitions = readWorkflowDefinitions();
   const chain = definitions.find((definition) => definition.name === 'standard').phases;
   const between = chain.slice(chain.indexOf('audit') + 1, chain.indexOf('plan'));
@@ -207,8 +211,10 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   const collapseTest = collapseBody.split(/\.\s+/).find((sentence) => designDocs.every((doc) => new RegExp(`\\b${doc}\\b`).test(sentence)));
   assert.ok(collapseTest, `${citation} must state one collapse test naming every design document [${designDocs.join(', ')}] - resume and plan decide from it, so a dropped document resumes a collapsed sprint into design-promote`);
   const condition = collapseTest.slice(collapseTest.lastIndexOf(':') + 1);
+  assert.match(condition, /all `false` and the effective mockup format is `none`/, 'a Standard sprint with standalone mockups still goes through design, review and promotion');
+  assert.ok(spans(designRow[1]).includes('none'), 'the no-op table also requires that mockups are disabled');
   assert.ok(!condition.includes('skipped_phases'), `the collapse test's condition in ${citation} must not read skipped_phases - that array is a historical record, so a stale entry left by a rollback would pass a real, interrupted promotion as collapsed (COR-2)`);
-  assert.ok(!condition.includes('skip_design_phases'), `sprint-013 AC-14: the collapse test's condition in ${citation} is documents-only - the removed setting may survive only as a legacy state field the rule ignores`);
+  assert.ok(!condition.includes('skip_design_phases'), `sprint-013 AC-14: the collapse test's condition in ${citation} ignores the removed legacy setting`);
 
   const promoted = jsonOf('.asd/workflows/asd-phase-plan.md', 'Entry').requires.find((item) => item.includes(`sprint-lifecycle.md '${collapseLabel}'`));
   assert.ok(promoted, `asd-phase-plan.md preconditions must accept the collapse test by citing ${citation} - the collapse promotes nothing, so without it plan ABORTs on the state audit just wrote`);
@@ -463,19 +469,15 @@ test('sprint-026 AC-13 (E1/E2): no agent lists a conditional input key (decision
   }
 });
 
-const CAP_STANDALONE_SKILLS_BYTES = 62351;
-
-/** Committed (LF) bytes of the canon files `rels` summed. */
-function lfBytes(rels) {
-  return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
-}
-
-test('sprint-026 AC-15: the standalone skills total at most their baseline of 62,351 bytes (61,051 on main plus the asd-init adoption text of sprint 037)', () => {
+test('sprint-026 AC-15, sprint-040 AC-6: the standalone skills stay within the shared context-check cap', () => {
   const skills = FORM_CATEGORIES.skills.files();
   const workflows = FORM_CATEGORIES.workflows.files();
+  const { CAP_STANDALONE_SKILLS_BYTES, standaloneSkillBytes, standaloneSkillFiles } = runtime;
   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
   assert.ok(workflows.length >= 11, 'the phase workflows');
-  assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
+  assert.deepStrictEqual(standaloneSkillFiles(), [...skills].sort(), 'the context check and skill form use the same canonical files');
+  const bytes = standaloneSkillBytes();
+  assert.ok(bytes <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${bytes} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
 });
 
 test('sprint-028 AC-2: the cleanup workflow Owner line names exactly the agents its Dispatch section lists', () => {
@@ -494,6 +496,64 @@ test('sprint-028 AC-6 (D6/D14): scope step 3a fills the placeholders t_state.jso
     assert.ok(placeholder, `t_state.json must freeze ${key} as a placeholder`);
     assert.ok(seed.includes(placeholder[1]), `scope step 3a must fill ${placeholder[1]}, or the literal survives into state.json and reads as an enabled ${key} whatever the config says`);
   }
+});
+
+test('sprint-040 AC-1: frozen mockup selection reaches Standard drafts and Lite promotion independently of the UX spec', () => {
+  const state = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
+  assert.strictEqual(state.mockup_format, '{{MOCKUP_FORMAT}}');
+  const steps = (phase) => sectionOf(`.asd/workflows/asd-phase-${phase}.md`, 'Steps');
+  const scope = steps('scope');
+  assert.ok(stepOf(scope, '3a').includes(state.mockup_format));
+  const rule = headingBody('.asd/rules/sprint-lifecycle.md', 'Mockup format');
+  assert.match(rule, /`none \| html \| claude_design \| figma`/);
+  assert.match(rule, /`none` for a non-UI scope/);
+  assert.match(rule, /lacks `mockup_format`[^\n]*frozen legacy UX flag[^\n]*ux_spec: true/);
+  assert.match(rule, /recorded provider first[^\n]*configured non-`none` format[^\n]*snapshot take precedence/);
+  const lite = stepOf(scope, '3b');
+  assert.match(lite, /`lite` mockups[^\n]*frozen mockup format[^\n]*`none`/);
+  assert.doesNotMatch(lite, /ux_spec/);
+  const design = steps('design');
+  assert.match(stepOf(design, '2'), /all five design documents are disabled and the effective mockup format is `none`/);
+  const authoring = stepOf(design, '8');
+  assert.match(authoring, /Mockups:[^\n]*other than `none`[^\n]*<sprint>\/design\/mockups\//);
+  assert.match(authoring, /UX-spec:[^\n]*`ux_spec` is enabled[^\n]*link available mockups/);
+  assert.match(stepOf(steps('design-review'), '1'), /other than `none`[^\n]*every file under `<sprint>\/design\/mockups\//);
+  const promote = steps('design-promote');
+  assert.match(stepOf(promote, '1'), /other than `none`[^\n]*include existing mockups[^\n]*Empty combined scope/);
+  assert.match(stepOf(promote, '4'), /Copy the mockups[^\n]*independently of UX-spec/);
+  assert.ok(jsonOf('.asd/workflows/asd-phase-design-promote.md', 'Exit').writes.includes('docs/ux/mockups/ (in-scope mockups)'));
+
+  const ux = canonText('.asd/templates/t_ux-spec.html');
+  assert.match(ux, /<a href="\{\{relative mockup path or stable remote URL\}\}">/);
+  assert.doesNotMatch(ux, /<iframe\b|\bsrcdoc=/i);
+});
+
+test('sprint-040 AC-8: sprint startup and direct phase entry reach the shared context and fail closed', () => {
+  const providerPath = '.asd/rules/providers.md';
+  const protocolPath = '.asd/rules/agent-protocol.md';
+  const branch = 'Orchestrator branch references';
+  const entry = 'Orchestrator phase entry';
+  const sprintSteps = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Steps');
+  const phases = [...new Set(readWorkflowDefinitions().flatMap(({ phases }) => phases))];
+  const providers = readRepoFile(providerPath);
+  const procedure = headingBody(protocolPath, entry);
+  const branchRules = headingBody(providerPath, branch);
+  const gaps = [];
+
+  if (!sprintSteps.split('### Step 1:')[0].includes(`\`providers.md\` "${branch}"`)) gaps.push('sprint startup before sprint detection');
+  if (!/context --role orchestrator --phase <phase> --out /.test(procedure) ||
+      !procedure.includes('orchestrator-scope.context.md') ||
+      !/build failure.*`FAILED`.*before executing phase steps/i.test(procedure)) gaps.push('phase bundle and build failure guard');
+  if (!procedure.includes('section --file <path> --heading <text>') ||
+      !/missing required text blocks/i.test(branchRules)) gaps.push('required section failure guard');
+
+  for (const phase of phases) {
+    const refs = runtime.contextRefs(providers, 'orchestrator', phase);
+    const { ops } = jsonOf(`.asd/workflows/asd-phase-${phase}.md`, 'Entry');
+    if (!ops.some((op) => op.startsWith(`context: agent-protocol.md '${entry}'`))) gaps.push(`${phase}: entry operation`);
+    if (!refs.includes(`${providerPath}#${branch}`)) gaps.push(`${phase}: branch bundle`);
+  }
+  assert.deepStrictEqual(gaps, [], 'both sprint workflows and direct phase runs must reach the shared failure guards before acting');
 });
 
 test('sprint-031 AC-1/AC-2/AC-3: standard dispatches combined and External Review in design-review while impl-review rosters stay, the design-review workflow and its skill dispatch the agents of that roster under its keys, and a reviewer carries design-review inputs only where a roster dispatches it there', () => {

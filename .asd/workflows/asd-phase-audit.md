@@ -5,25 +5,25 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries 
 ## Entry
 
 ```json
-{"requires": ["state.json phase advanced from scope"], "ops": ["context: node .asd/runtime.js context --phase audit --role orchestrator at entry, read it; --role <agent> before each ## Dispatch delegation, passed as inputs.context; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["state.json phase advanced from scope"], "ops": ["context: agent-protocol.md 'Orchestrator phase entry'; agent bundles per 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
 
 ```json
-["state.json frozen workflow and documents.*", "sprint.md", "research (sprint-lifecycle.md 'Input sources')", "touched areas: source, every docs/ document bearing on them, other documentation, stubs", "docs/architecture/subsystems.md and touched <id>.md (subsystem_decomposition enabled)", "t_audit.md"]
+["state.json frozen workflow, documents.* and mockup_format", "sprint.md", "research (sprint-lifecycle.md 'Input sources')", "touched areas: source, every docs/ document bearing on them, other documentation, stubs", "docs/architecture/subsystems.md and touched <id>.md (subsystem_decomposition enabled)", "t_audit.md"]
 ```
 
 ## Steps
 
 1. Read frozen `workflow` and `documents.*`. A false audit is a mechanical skip: go to step 5, whose write carries its record.
 2. Audit per `## Rules`, writing every `t_audit.md` section to `audit.md`, plus a registry proposal beside them when decomposition is enabled and the registry is absent. When `git ls-files -- <touched areas>` counts more than `.asd/runtime.js` `AUDIT_BATCH_THRESHOLD_FILES`, follow a batched-read plan: grep the touched areas first, then read only the matched sections, never whole files in bulk. A scan may be delegated to `asd-scout` (a question plus paths; read-only, returns a `path:line`-cited summary); the orchestrator reads every section a summary cites that it relies on before it decides, and every artifact stays its own.
-3. Resolve product/domain ambiguity a source can settle inline. Ambiguity only authority or preference can settle goes straight to the user (step 3c; `sprint-lifecycle.md` "Orchestration and adaptive gates").
+3. Resolve product/domain ambiguity from evidence. Route authority or preference gaps through step 3c.
 3a. Registry migration (decomposition enabled): request explicit user confirmation per proposed subsystem [GATE hard: new subsystem]; write the registry (with any migrated diagram) and `<id>.md` of confirmed subsystems and backfill missing `<id>.md`, before the audit gate. Then, for a redundant legacy `docs/architecture/c4/` (`project.diagram_tool` other than `likec4`), request user decision [GATE hard: migration deletion] and on approval delete it, its `.gitignore` entries and `commands.yaml` `c4-build` inline; declined keeps it. Record each decision.
 3b. Per unsettled `audit.md` "Contradictions" entry — canonical vs canonical, no canonical side, or an undeliverable or conflicting criterion — request user decision before the audit gate [GATE hard: audit contradiction]; record the answer in `decisions-log.md` and in that entry. An answer changing a sprint criterion goes through `sprint-lifecycle.md` "Scope amendment" with a new id, never an in-place edit, `plan` carrying its Task.
 3c. Step 3's authority- or preference-only ambiguity → request user decision, the answer recorded in `decisions-log.md`; an audit check that could not run is a failure, put to the user after an escalation consult.
 4. Apply `checkpoints.md` [GATE adaptive: audit]: in adaptive mode record valid evidence and advance; otherwise present the audit and await the applicable decision. Record actor, evidence and revision.
-5. The per-sprint document skip of a frozen-`true` `prd`/`ux_spec`/`design_system`/`adr`/`c4` with no draft yet [GATE hard: document skip] (`sprint-lifecycle.md` "Optional documents") applies here only on user request or inside a decision step 4 already awaits — never a standalone prompt on an adaptive or mechanical exit. Exit in at most one inline mechanical write (no further gate), the only write for any skip; when step 1 skipped audit, it first appends `"audit"` to `skipped_phases` with that skip's decisions-log line; each accepted document skip sets its frozen `false` with its decisions-log line, before the collapse test reads it. Under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Design/design-review/design-promote collapse"), the write sets `phase="design-promote"`, appends `["design", "design-review", "design-promote"]` to `skipped_phases` and one decisions-log line "design/design-review/design-promote skipped (no documents enabled)". Otherwise it sets `phase="audit"`. Exit per `## Exit`.
+5. [GATE hard: document skip] Apply `sprint-lifecycle.md` "Per-sprint document skip" only on user request or within step 4's pending decision. No skip prompt on adaptive/mechanical exit. One ungated exit write: append `"audit"` to `skipped_phases` if skipped, set approved document skips to false, and log each skip. On collapse (`standard` only, `sprint-lifecycle.md` "Design/design-review/design-promote collapse"), set `phase="design-promote"`, append `["design", "design-review", "design-promote"]` and add decisions-log line "design/design-review/design-promote skipped (no documents enabled)". Otherwise set `phase="audit"`. Exit per `## Exit`.
 
 ## Rules
 

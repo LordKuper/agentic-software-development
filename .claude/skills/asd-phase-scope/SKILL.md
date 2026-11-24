@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-scope/SKILL.md. source_digest=sha256:2d1f9c45dc4a88a6b9001baca727ab47e71a63a038dce71007c8aab847651cb2 content_digest=sha256:58478791a813f2acb0a46fac28b7f11f1e91ebeaa6a43cd5b3f180773c82831f asd_version=14.5.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-scope/SKILL.md. source_digest=sha256:3775e741d9eb99434f89a54050ed12c5eddc563c5e0d1db24846e071bc496f83 content_digest=sha256:21b4782fb585665108508da8c22f91b8e7da084dc7d54cfb523281b503de2445 asd_version=14.11.0 schema=1
 name: asd-phase-scope
-description: "Runs the ASD scope phase of a sprint: the main orchestrator asks the user to choose the sprint workflow (standard or lite, frozen into state.json), creates the sprint folder, state.json and branch, runs staged solution design (requirements interview, its own best-practice research, approach choice into research.md), and refines scope under the active gate policy; at the retro intake it triages the project's own open GitHub issues in every project, and under self-hosting the open ASD retro issues too. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint."
+description: "Scope an ASD sprint with research and acceptance criteria. Use on asd-sprint scope dispatch or an explicit request to run or rerun scope."
 allowed-tools: "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task Skill"
 ---
 

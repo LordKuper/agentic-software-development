@@ -61,8 +61,8 @@ project:
   # registered in docs/architecture/subsystems.md. When disabled, single project-wide docs.
   subsystem_decomposition: enabled # enabled | disabled
 
-  # Format for UI mockups when they are enabled.
-  mockup_format: html # html | claude_design | figma
+  # UI mockup format, independent of documents.ux_spec. Use none to skip mockups.
+  mockup_format: html # none | html | claude_design | figma
 
   # Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.
   # none — no diagram written; the subsystem registry is unaffected

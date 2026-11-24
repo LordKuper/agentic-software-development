@@ -1,110 +1,54 @@
 <!-- asd:begin v=1 -->
-### Core rules
+### Required reading
 
-Read `.asd/rules/core.md` before any workflow action (model, interaction protocol, invariants). Codex does not support `@file` imports (plain concatenation only, `project_doc_max_bytes` capped) — this is a "read the file" instruction for every agent/provider, not an automatic include.
+- Every agent reads `.asd/rules/core.md`, `.asd/project/custom-common-rules.md` and `.asd/rules/language-policy.md` before any workflow action.
+- Read `.asd/project/custom-design-rules.md` in design/design-review and `.asd/project/custom-coding-rules.md` in impl/impl-test/impl-review.
 
-### Project-specific rules
+### Entry points
 
-Read `.asd/project/custom-common-rules.md` — universal, every agent, every phase.
+- Initialize or edit settings with `/asd-init` (Claude Code) or `$asd-init` (Codex).
+- Start or resume a sprint with `/asd-sprint` (Claude Code) or `$asd-sprint` (Codex). All project work goes through a sprint. A new sprint waits for archival, except that its scope archives a merged sprint.
 
-Phase-scoped rules (read per phase, not globally): `.asd/project/custom-design-rules.md` (design / design-review), `.asd/project/custom-coding-rules.md` (impl / impl-test / impl-review).
-
-### Language policy
-
-Read `.asd/rules/language-policy.md`.
-
-### Slash commands / skills
-
-Invocation form differs per provider — same skill either way:
-
-| Skill | Claude Code | Codex |
-|---|---|---|
-| Initialize workflow or edit settings | `/asd-init` | `$asd-init` |
-| Start new sprint or continue active one | `/asd-sprint` | `$asd-sprint` |
-
-Codex also supports `/skills` (picker) and implicit invocation by matching the skill's description; see `.asd/rules/providers.md` for the full semantic-operation → host-convention map.
+Host conventions and skill discovery are in `.asd/rules/providers.md`.
 
 ### Configuration
 
-Workflow settings: `.asd/project/config.yaml`.
-
-Deterministic routing, external readiness and coverage validation: `.asd/runtime.js`.
-
-External Review uses the other provider's CLI by default. With Codex as the main harness, `review.codex_profile` selects a separate Codex profile. The selected CLI's `system.tools` command override applies to both the probe and the review (`.asd/rules/external-review.md`).
-
-### Folder structure
-
-Authoritative path map: `.asd/rules/artifact-layout.md`.
-
-When subsystem decomposition is enabled (`project.subsystem_decomposition`), persistent docs are organized per subsystem.
-
-### Rule docs (`.asd/rules/`)
-
-`core.md` "See also" indexes every rule doc with its scope — not restated here.
+Settings are in `.asd/project/config.yaml`. For routing, paths and review, see `.asd/runtime.js`, `.asd/rules/artifact-layout.md` and `.asd/rules/external-review.md`.
 
 ### Hard rules
 
-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `scope`/`impl` for a sprint- or plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
-- All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
-- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint, which the next sprint's scope archives.
+Follow `.asd/rules/core.md` "Invariants" for infrastructure write boundaries and authorized settings writes.
 <!-- asd:end -->
 
-## This repo (framework source) — deltas from the block above
+## This repo (framework source)
 
-The block above is synced from `.asd/templates/t_AGENTS.md` and applies here in full: this repo is also a project developed with ASD. Everything below states only what differs or what the block does not cover. On conflict, this section wins.
+ASD develops its own workflow infrastructure here with `self_hosting: enabled`. This tail overrides the managed block where they conflict. `.asd/rules/sprint-lifecycle.md` "Self-hosting" defines the canonical write allowlist and sync timing. `asd-update` is consumer-only. The lean document profile lives in `.asd/project/config.yaml`; apply the lifecycle's "Optional documents" rules.
 
-### What this repo is
+### Source and generated views
 
-This repo **IS the ASD (Agentic Software Development) framework** — its source, not a project that *uses* ASD. No application code: every file is workflow infrastructure (rules, templates, agent/skill defs, hooks). Work = authoring/editing that infrastructure.
+- Edit canonical sources. Generated `.claude/`, `.codex/`, `.agents/skills/` and full-file ownership markers stay read-only. Sync owns this file's managed block from `.asd/templates/t_AGENTS.md`; the tail is author-owned.
+- The orchestrator syncs once per wave or fix round with `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>`. Dev agents never run `--apply`. See `providers.md` for the provider map, invocation conventions and role-scoped context.
+- `.asd/skills/asd-phase-*/SKILL.md` are discovery shims. Orchestration and shared agent Rules live in `.asd/workflows/asd-phase-*.md`. Keep canonical agent, skill and workflow bodies provider-neutral. Use semantic operations and the dispatch placeholders in `core.md`. Codex loads project skills from `.agents/skills/`.
 
-`self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the chosen workflow's phases (`sprint-lifecycle.md` "Workflows": twelve for `standard`, ten for `lite`). `documents.*` is a lean profile (`audit: auto`, `prd`/`ux_spec`/`adr` disabled, `design_system` following `ux_spec`) plus `project.diagram_tool: none` — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`, and design/design-review/design-promote collapse at the audit exit (`sprint-lifecycle.md` "Optional documents"); `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` still run in full, and `cleanup` runs unless `cleanup: disabled`. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
+### Verification
 
-### Override: infrastructure is the work, not read-only
+- Per `.asd/project/commands.yaml`, build is `node .asd/sync.js --check` and lint is `git diff --cached --check`. Dev runs both before COMPLETED.
+- The zero-dependency suite `node tests/run.js` must pass for all canonical edits. Pass `<area>…` for `tests/<area>.test.js` or `--filter <name>` to select tests. Shared helpers live in `tests/lib.js`. Hooks exit 0 and fail silently. Edited YAML/JSON must parse, and HTML templates must preserve their structure.
 
-The block's "never modify workflow infrastructure" hard rule is **lifted** for exactly the canonical paths named in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — editing them IS the work here. Unchanged: generated `.claude/`, `.codex/`, `.agents/skills/` (and any full-file target's ownership-marker comment) stay read-only always. Never hand-edit a generated file — edit its `.asd/` canonical source, dev agents stop there and never run `sync.js --apply`; the orchestrator syncs once per wave or fix round, passing generated view paths (never `.asd/` canon) in the absolute self-locating form `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` (`sprint-lifecycle.md` "Self-hosting"). Canon changes ripple across the framework and across both provider views, so make them deliberately and check every mirror in "Cross-file consistency" below.
+### Cross-file consistency
 
-Root `AGENTS.md`'s managed block is generated from `t_AGENTS.md` exactly as in any consumer project; this repo's own prose lives below `<!-- asd:end -->`, where sync never reaches it.
-
-### Build and lint are sync checks; one test suite
-
-Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json or compiler. Per `.asd/project/commands.yaml`, build is `node .asd/sync.js --check` and lint is `git diff --cached --check`; a dev runs both before reporting COMPLETED. `tests/run.js` is a zero-dependency runner loading the per-area files `tests/<area>.test.js` (shared helpers `tests/lib.js`; `node tests/run.js <area>…` runs only those areas, `--filter` narrows by test name, no argument runs all), covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
-
-- `node tests/run.js` stays green for any canonical edit — Node source, rule doc, README, template, skill, workflow, hook.
-- Hooks run clean: exit 0, never throw (designed to fail silently).
-- Edited YAML/JSON parses; edited HTML templates keep structure.
-- Cross-file consistency holds (below).
-
-### Architecture
-
-ASD drives a consumer project through phases per sprint, for **both Claude Code and Codex** from one canonical source under `.asd/`. `.asd/sync.js` generates each provider's own view and keeps it in sync (`--check`/`--apply`). Path map, semantic-operation → host-tool mapping, orphan-detection contract and model-family table: `.asd/rules/providers.md`.
-
-- **Rules** (`.asd/rules/*.md`) — SSoT for workflow behavior; `core.md` is the hub. Which rules a role loads: `providers.md` "Role-scoped context".
-- **Skills** (`.asd/skills/<name>/SKILL.md`, canonical) — the 12 `asd-phase-*` skills are thin triggers delegating to `.asd/workflows/asd-phase-*.md`, which hold the orchestration and the agent-facing phase rules (`## Rules`, granted by `providers.md` "Role-scoped context") so they are not duplicated per provider. Codex reads project skills only from `.agents/skills/`, never `.codex/`.
-- **Agents** (`.asd/agents/*.md`, canonical) — 8: 2 creators (Dev, Tester), 4 reviewers (Quality, Efficiency, Combined, External Review), 1 advisor, 1 scout (read-only, haiku). The main orchestrator is a role, not a spawned agent: it performs all other sprint work inline (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Task variants (`asd-dev` `escalated`/`mechanical`, `asd-tester` `runner`) are generated from declared tier metadata, sharing the canonical role body and permissions. `model` is a family alias resolved to a concrete ID only by `.asd/release-manifest.json`'s `model_families`; never put a concrete ID in canon.
-- **Templates** (`.asd/templates/t_*`) — deliberate exceptions with no template: API contracts and other Complication-Approval fold targets (folded into whichever persistent doc absorbs them, per `sprint-lifecycle.md` "Design-promote phase").
-
-Canonical bodies (agents, skills, workflows) are provider-neutral — no host-tool names, no `@`-imports (Codex doesn't support them, plain concatenation only) — written as semantic operations mapped per-provider in `providers.md`.
-
-### Cross-file consistency (main editing hazard)
-
-These artifacts mirror/reference each other. A change in one usually needs matching edits — verify all:
-
-- **README.md** mirrors phase list, agent roster + model tiers (both Claude and Codex columns), config schema, folder map. Keep synced with `.asd/rules/` and actual agent/skill files.
-- **`core.md` "See also"** lists every rule doc — add/remove a rule doc → update list.
-- **Reviewer verdict token**: first-line `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, `<phase>` = `design` or `impl`. Aggregating phase workflow, `review-policy.md`, and agent file must agree.
-- **Phase chain**: every chain assertion names the same phases in the same order for its workflow — twelve for `standard`, ten for `lite` (`.asd/workflows/<name>.json`, `sprint-lifecycle.md` "Workflows"). `tests/contract-workflows.test.js` and `tests/contract-templates.test.js` machine-check the mirrors they reach (skill/workflow file set, workflow `NEXT:`, rule-doc chain lines, README table/flowchart/count words); for prose it cannot reach, grep the phase names and update every hit together.
-- **Agent ↔ skill/workflow dispatch**: a phase workflow names agents it dispatches; those agent files must exist with matching capabilities. An agent's `description` (≤300 chars; generated variant suffixes exempt) reads `<what it does>; <phase/dispatch purpose>. Not: <x> → <agent>; …` — keep delegation targets real.
-- **Template variables** `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` resolve at dispatch; use only these in skill/agent/workflow bodies.
-- **`.asd/release-manifest.json`**: `managed_paths` must list every canonical tree/file update.js should track; `model_families` mirrors `providers.md`'s table; a new canonical agent or skill (the render sources `computeCanonHashes` walks) needs a `canon_hashes` entry — non-render canon (e.g. `.asd/migrations/`) is tracked via `managed_paths` + `upstream_hashes` only, no `canon_hashes` entry.
+- Add or remove a rule doc in `core.md` "See also". Agree on `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL` in the agent, workflow and `review-policy.md`, using `design` or `impl` for the phase.
+- Keep every phase-chain mirror in workflow order per `.asd/workflows/<name>.json` and `sprint-lifecycle.md` "Workflows". `tests/contract-workflows.test.js` and `tests/contract-templates.test.js` check machine-facing mirrors. Search and update affected prose too.
+- Match phase dispatches to actual agents and their grants. An agent description (≤300 chars, generated variant suffixes exempt) reads `<what it does>; <phase/dispatch purpose>. Not: <x> → <agent>; …`. Keep delegation targets real.
+- In `.asd/release-manifest.json`, list every update-managed canonical path in `managed_paths`. Keep `model_families` aligned with the `providers.md` table. New render-source agents or skills need `canon_hashes`; non-render canon uses `managed_paths` and `upstream_hashes`.
 
 ### Conventions
 
-- Skill/agent files use JSON frontmatter (not YAML) between `---` fences — `name`/`description` required, provider-specific config under `claude`/`codex` keys. Description is the trigger, must be specific.
-- Templates carry `t_` prefix, live only in `.asd/templates/`.
-- Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written by consumer dev agents AND this repo's own Node code (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, `tests/**`, hooks) — no exemption for framework code.
-- HTML artifact templates share the `t_html-shell.html` shell (sticky TOC sidebar, conditionally trimmed below a section-count threshold; mermaid script likewise conditional on diagram presence — self-contained single file, no sibling stylesheet); keep that structure when editing other `t_*.html`.
+- Skill and agent definitions use fenced JSON frontmatter with `name`, specific `description` and provider config under `claude`/`codex`. Use model family aliases in canon. Generated task variants share the role body and grants.
+- Place `t_*` templates in `.asd/templates/`. API contracts and other Complication Approval fold targets use the persistent doc that absorbs them. HTML artifacts share `t_html-shell.html`, with conditional sticky TOC and Mermaid script in a self-contained file.
+- Write terse, imperative rules. `.asd/rules/code-style.md` also governs this framework's Node sources and tests.
 
 ### Hard rules (in addition to the block's)
 
-- **Every workflow change checked against README.md.** After editing any rule/skill/agent/workflow/template/hook/config schema — including a change to `.asd/workflows/<name>.json`'s workflow set — update README.md if affected (phase list, agent roster, model tiers — both providers, config schema, folder map, command list) in the same change. Not complete until README.md confirmed accurate. Changing an agent's frontmatter `model`/`codex.model` tier requires updating the README model-tier table same change.
-- **Every change must minimize runtime tokens** — `.asd/rules/artifact-layout.md` "Documentation economy" holds the exclusions, the three tests and the preserve-list. Repo-local addition: the cross-file syncs above are the only mirrors it permits.
+- Check README.md on every workflow change. Update affected phase lists, agent roster, both providers' model tiers, config schema, folder map and commands in the same change. Any agent model-tier change updates the README table.
+- Minimize runtime tokens per `artifact-layout.md` "Documentation economy". Only the cross-file contracts above and README's required mirrors may duplicate information.

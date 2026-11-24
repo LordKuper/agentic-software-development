@@ -1,6 +1,6 @@
 # Code Style
 
-Implementation-level rules for code-writing agents (Dev, Tester). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
+Dev and Tester follow these rules in `impl` and `impl-test`. Verify them at `impl-review`. Write code in English.
 
 ## 1. Engineering Principles
 
@@ -8,7 +8,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 - Small atomic functions, single clear responsibility.
 - Readability over cleverness.
 - No hidden coupling, global state, or action at a distance.
-- Apply the over-engineering AND structure/cohesion checklists (`review-policy.md`) and both `artifact-layout.md` iron rules — SSoT and documentation economy — PROACTIVELY while authoring, not only at review — the same items impl-review judges against.
+- While authoring, apply both `review-policy.md` checklists (over-engineering, structure/cohesion) and both `artifact-layout.md` iron rules (SSoT, documentation economy).
 
 ## 2. Naming
 
@@ -26,7 +26,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 4. Functions and Modules
 
-- Guard clauses over deep nesting. Keep nesting shallow.
+- Prefer guard clauses to deep nesting.
 - Pass explicit parameters; no implicit globals or ambient state.
 - A function needing a paragraph to explain itself is too big — split it.
 
@@ -38,27 +38,26 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 6. Error Handling
 
-- No swallowed errors. Empty catch block forbidden.
+- Propagate or handle errors. Empty catches are forbidden.
 - Validate input at system boundaries; reject bad state early.
 - Errors carry context (what failed, with which inputs).
 - Do not use errors/exceptions as control flow for expected cases.
 
 ## 7. Comments and Documentation
 
-- No comments inside method/function bodies, ever. Meaning belongs in the name, the signature, or the member's doc comment — a body that needs narration is renamed, split, or rewritten instead of commented. The sole permitted in-body marker is `// TODO(sprint-<NNN-slug>): <reason>` (see below).
-- Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry. Doc comments explain WHY, not WHAT — this WHY allowance applies to doc comments only, never to in-body comments (which are banned above).
+- Keep method/function bodies comment-free except `// TODO(sprint-<NNN-slug>): <reason>` markers. Rename, split or rewrite code that needs narration.
+- Document every public/exported type and member. For internal code, document only what a clear name cannot carry. Use doc comments for rationale.
 - Type-level doc: short, states the type's purpose ONLY — never duplicates or summarizes its members' docs. Member-level doc: short, states the member's purpose, never its implementation. Each member carries its own doc; state each fact once.
-- Comments concise and clear — the economy rule for agent-facing text (`artifact-layout.md` "Documentation economy") governs comment text too.
+- Apply `artifact-layout.md` "Documentation economy" to comments.
 - Inherit docs (`<inheritdoc/>`, `@inheritDoc`, etc.) wherever an override or implementation matches the base contract; do not restate inherited text.
 - Use the language-native doc format (XML-doc C#, docstrings Python, JSDoc TypeScript, etc.).
 - Update doc comments when code changes.
 - No commented-out code, no dead code kept "in case".
-- A `TODO` uses marker `// TODO(sprint-<NNN-slug>): <reason>` with a matching entry in the project stub registry.
+- Register each `TODO` marker in the project stub registry.
 
 ## 8. References to Project Documents
 
 - Code (comments, doc strings, string literals) must not reference project documents (rules, ADR, PRD, UX spec, decisions log, sprint files).
-- Code is the SSoT for behavior; in-code document references rot once those documents move.
 - Do not quote or paraphrase document text in code; replace with a brief standalone rationale (e.g. `not deterministic by design`).
 - Exception: `TODO` markers may carry a reference, since they are tracked and removed.
 - Exception: a test file's name or path may carry an `AC-N` id (the impacted-set AC-citation convention, `sprint-lifecycle.md` "Impacted test set") — an id only, never prose referencing a document.
@@ -111,25 +110,20 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 17. Tests
 
-Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declared `Test-only` Task is dispatched to `asd-tester` (shape: `sprint-lifecycle.md` "Plan file format"). Selection happens **after** the implementation is accepted, against the real change surface.
+Write and run tests in `impl-test` after implementation acceptance. In `impl`, only `asd-tester` handles a plan-declared `Test-only` Task (`sprint-lifecycle.md` "Plan file format").
 
-- Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
-- Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
-- Tests verify observable behavior, not implementation detail.
-- For review scope selection changes, exercise the applicable path cases with the Git-generated file list the workflow supplies to manifest generation.
-- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists. Authoring is never the default: absent a qualifying risk, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
-- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
-- Admission: a test is added only with a gap proof in its `Added tests` row — the seeded defect it targets leaves the unit's existing tests green, or a search found no test of the unit. When an existing test already fails on the seeded defect, the decision is `none`, citing that test. A new case for a contract an existing test owns extends that test; a new test function only for a contract no test owns.
+- Cover every acceptance criterion with the cheapest reliable check for its material risk: static/architecture → focused unit or property → component or boundary contract → essential e2e journey. Verify observable behavior. For review scope selection, exercise applicable path cases with the Git-generated file list passed to manifest generation.
+- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** require a material risk on the change surface evidenced by actual behavior, a named failure mode or a stated requirement. Hypothetical, already-covered or coverage-only checks are ineligible additions and removal candidates. Reject trivial, implementation-coupled, mock-confirming and flaky tests. Delete duplicates. Coverage numbers help locate gaps and do not gate or set a quota.
+- **Admission:** record gap proof in `Added tests`: the seeded defect leaves the unit's existing tests green, or search found no test of the unit. With no qualifying gap, record `none` and why in `test-plan.md` (cite any existing test that fails on the seeded defect). Extend the existing test for its contract. Add a function only for an unowned contract.
 - Every fixed behaviour defect reproducible by running code leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation. A fix to prose, a rule or a document adds a test only when it changes a token a machine parses. The record names the exact command, its non-zero exit code and the runner-reported name of the failing test; a mutation proof records the same for the mutated run. A bare claim ("proved", "fails without the fix") is no proof. A mutation made to prove fail-first is restored before the agent's next tool call. A mutation left on disk is a defect regardless of what the suite reports.
 - A sprint adding or changing a deterministic check (a `commands.yaml` command, lint rule, validator) records one run with a seeded violation exiting non-zero, in that record shape, the violation restored as above.
-- Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
 - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
 - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
-- A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
+- Derive a test or rule's named set from its source when available.
 - A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose, and is added only for a changed token a machine parses. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); for a pin of a changed rule the representative mutation restores the superseded rule text, or removes the new clause while keeping its citation, never a token rename the old rule would also satisfy; each mutation and control run executes only the asserting test, through the runner's test-name filter (ASD's own `tests/run.js`: `--filter <substring>`), never the whole suite, its record adding the matched test count; the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
-- A test guarding a one-time change (a sweep or migration assertion valid only against the sprint that made it) is named `temporary(<NNN>): …`, `<NNN>` the sprint number; a later sprint's prune pass removes it.
+- Name a one-sprint sweep or migration test `temporary(<NNN>): …` with the sprint number. Remove it in a later sprint's prune pass.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.
 
@@ -143,9 +137,9 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
 
 - The project formatter and linter decide style; no manual style debate.
 - Style consistent within a file.
-- Preserve a file's existing line endings. A scripted or regex edit anchors on the file's actual EOL, never an assumed `\n` — assuming the wrong one strips or orphans the `\r` on every line it rewrites. Symptom: a whole-file diff for a small edit. Prefer an editing tool that keeps EOL; verify the diff is the size of the change before staging.
+- Preserve existing line endings. Anchor scripted edits on the file's actual EOL. Prefer an EOL-preserving editor and check diff size before staging.
 - Build and lint must pass before any commit; the impacted test set (`sprint-lifecycle.md` "Impacted test set") gates `impl-test`, not each commit — the full suite runs once, at the end of `impl-review`.
-- Run the pre-commit lint against staged content: `git diff --check` inspects unstaged changes only and exits 0 once the damage is staged, so a stage → lint → commit sequence passes blind. Use `git diff --cached --check`. `git diff --check HEAD` is a superset, not an equivalent — it compares worktree against HEAD, so it also flags unstaged content nobody is committing (in a shared worktree, a sibling's edits); acceptable only when the tree holds nothing but the staged change, and a project's configured `lint` command must be the staged form and must not flag generated review diff files (`.asd/sprints/**/reviews/**/*.diff`), e.g. via a `-whitespace` gitattribute.
+- Configure pre-commit lint as `git diff --cached --check` and exempt generated review diff files (`.asd/sprints/**/reviews/**/*.diff`), e.g. via the `-whitespace` gitattribute. `git diff --check` checks unstaged edits alone. Use `git diff --check HEAD` only when the worktree holds exclusively the staged change.
 
 ## 20. Per-Language Rules
 

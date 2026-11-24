@@ -88,7 +88,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
 
 The managed set is the SSoT list in `.asd/release-manifest.json`'s `managed_paths` (installed by the steps above), walked recursively file-by-file with a per-file conflict check — a file you hand-edited since the last update is never silently overwritten. Your own custom skills/agents/hooks living beside the managed set are never touched.
 
-After the managed-path replacement, `/asd-update` runs any pending `.asd/migrations/<version>.js` script — one per ASD version — in ascending order, for every version strictly newer than your installed `release-manifest.json.asd_version` up to this release's target. A version already applied is skipped, never re-run. The runner stops at the first failing migration, reports which one failed and what it had already done, and records `asd_version` as the last migration that succeeded (never an unrecorded intermediate) — or the full target version when every pending migration succeeds, including when none were pending.
+After the managed-path replacement, `/asd-update` runs any pending `.asd/migrations/<version>.js` script — one per ASD version — in ascending order, for every version strictly newer than your installed `release-manifest.json.asd_version` up to this release's target. A version already applied is skipped, never re-run. The runner stops at the first failing migration, reports which one failed and what it had already done, and records `asd_version` as the last migration that succeeded (never an unrecorded intermediate) — or the full target version when every pending migration succeeds, including when none were pending. A real retry runs pending migrations even when all managed files are current.
 
 `/asd-sprint` also offers this update at the start of a new sprint: when the remote `release-manifest.json` is newer it asks whether to update now or continue, runs the update on the sprint branch, commits it, and halts so you restart the session and run `/asd-sprint` again. The check is skipped when resuming a sprint and when `self_hosting: enabled`; an unreachable remote only warns.
 
@@ -102,9 +102,9 @@ node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --dry-r
 
 That command is also the manual fallback if you prefer running it outside Claude Code — self-locating, so it works from any directory in the repo. It needs `tar` on PATH (bundled with Windows 10 1803+, macOS, Linux) and Node >= 16.7.
 
-After a successful update, `/asd-update` runs `/asd-sync` itself, because canon files changed upstream leave the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) stale. Running `update.js` directly only runs `node .asd/sync.js --check`, so follow it with `/asd-sync`, or `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), to regenerate them.
+After a real run, `/asd-update` runs `/asd-sync` and checks `.asd/project/config.yaml` against the installed template. This includes partial updates and successful runs that find ASD already current. Preview and version lookup stay read-only. The raw `update.js` command reports provider drift via `node .asd/sync.js --check`. Follow a direct update with `/asd-sync` or `node .asd/sync.js --apply <generated-view-path...>` to regenerate the named views.
 
-Run `/asd-init` if an upgrade leaves missing or invalid settings. It proposes the missing values and keeps valid choices unless you change them.
+The update reports missing, duplicate and invalid settings by dotted path. If you opt into `/asd-init` from the update, it proposes only missing values and applies the additions you approve. Run `/asd-init` separately to repair invalid or duplicate settings.
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
@@ -186,7 +186,7 @@ flowchart TD
 |---|---|
 | **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, best-practice web research, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; one triage-authorisation request precedes the first GitHub write; creates the sprint branch and folder |
 | **audit** | Orchestrator reads every existing doc bearing on the touched areas, plus the code; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks and stubs to resolve. Before declaring a missing check or bound, search tests for the concern's identifiers and cite the result. |
-| **design** | Orchestrator writes PRD, UX-spec and UI mockups, ADRs and C4 schema, each section locked in on disk before the next and then one artifact-level accept |
+| **design** | Orchestrator produces enabled document drafts and standalone UI mockups, with section lock-in and artifact acceptance where applicable |
 | **design-review** | 1 combined internal reviewer (Quality and Efficiency rubrics in one pass) plus External Review iterate to APPROVE |
 | **design-promote** | Orchestrator decomposes approved sprint drafts per subsystem and promotes them to persistent `docs/` |
 | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave; maps each user decision to an AC/Task or Out of scope, and runs the `commands.yaml` build once (`FAILED` names the failing command). Schedules compile-only test adaptations first in the next wave and keeps each wave build green. Verifies infrastructure command references and pinned deployment images, and records alert-key behavior under retention, threshold changes, recovery without new data and clock rollback. |
@@ -211,8 +211,8 @@ User-facing commands available at any time. Invocation form differs per provider
 | `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
 | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (proposed from the concept; same 4 variants) |
 | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
-| `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one after checking the project configuration |
-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order and `/asd-sync` (also run sprint-mediated by `/asd-sprint`'s new-sprint version check, where choosing to update is the confirmation and the orchestrator commits the result); never touches your config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, the rest of `.asd/project/**` (stubs, custom rules, the retro backlog), persistent docs, or custom skills/agents/hooks |
+| `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
+| `/asd-update` | `$asd-update` | Update framework infrastructure, run pending release migrations, run `/asd-sync`, and offer missing settings via `/asd-init`. See [Updating ASD](#updating-asd) and [authorized settings writes](.asd/rules/core.md#invariants). Also available during `/asd-sprint`'s new-sprint version check. |
 | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — unedited files are regenerated with no question, a hand-edited one gets a per-file overwrite/keep/diff choice, never a silent overwrite; runs automatically after `/asd-update` |
 
 Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
@@ -288,7 +288,7 @@ Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-proto
 
 All settings live in `.asd/project/config.yaml`. `/asd-init` writes explicit values for the complete shipped schema, including settings inactive under the selected configuration. Re-initialization proposes values for missing keys and preserves valid choices unless you edit them.
 
-Every `/asd-sprint` call runs `node .asd/runtime.js config-check` before changing Git refs or dispatching a phase. Missing, duplicate and invalid settings are reported by dotted path. Run `/asd-init` to complete or repair the configuration, then retry. Explicit empty and disabled values count where the schema allows them. To disable AI attribution, use the unquoted `ai_attribution: disabled` under `git:`. Sprint-mediated init applies only the approved settings and still checks completeness.
+`/asd-update` checks config completeness at completion. Explicit empty and disabled values count where the schema allows them. To disable AI attribution, use the unquoted `ai_attribution: disabled` under `git:`. Sprint-mediated init validates completeness before applying the approved settings.
 
 ```yaml
 user_gates: strict        # adaptive | strict — hard gates always require user approval
@@ -314,7 +314,7 @@ language:
 
 project:
   subsystem_decomposition: enabled    # enabled | disabled
-  mockup_format: html                 # html | claude_design | figma
+  mockup_format: html                 # none | html | claude_design | figma
   diagram_tool: likec4                # none | likec4 | mermaid (any diagram also needs decomposition enabled)
 
 backward_compat: migration            # strict | migration | none
@@ -338,7 +338,7 @@ git:
   ai_attribution: enabled             # enabled | disabled; disabled keeps Claude/Codex attribution out of commits and PRs
 ```
 
-When `documents.ux_spec` is enabled, `project.mockup_format` selects local HTML, Claude Design, or Figma Design for Lite scope and Standard design. In existing configs without `mockup_format`, `project.claude_design: enabled` selects Claude Design and `disabled` selects HTML. Claude Design uses local previews when unavailable and can retry a deferred Lite publication at design-promote. [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival)
+`project.mockup_format` selects standalone HTML, Claude Design, Figma Design or `none` independently of `documents.ux_spec`. Scope freezes the mode for the sprint, using `none` for non-UI work. Lite creates mockups at scope and promotes them after implementation review. Standard creates them at design and includes them in design review and promotion, including mockup-only sprints. UX specs link to available previews. The release migration keeps the previous effective format, including `none` wherever the old UX-spec setting suppressed mockups. See [legacy sprint recovery](.asd/rules/sprint-lifecycle.md#mockup-format) and [UI mockup rules](.asd/rules/design-system.md#12-authoring-token-decisions-rule-survival).
 
 Figma needs a connected remote integration and edit access to a Design file you supply or approve creating. ASD records links to editable frames for review, implementation and promotion. If it cannot write, you choose temporary local HTML or wait for access. The project setting stays on Figma. [Figma setup](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
 
@@ -366,7 +366,7 @@ your-project/
 │   ├── project/
 │   │   ├── config.yaml              # workflow settings
 │   │   ├── commands.yaml            # build/test/lint/run + optional smoke, test_paths, test_durations, `checks` map + design.md lint
-│   │   ├── context-ceilings.json    # byte ceilings `runtime.js context-check` enforces (seeded by `--seed`)
+│   │   ├── context-ceilings.json    # seeded project and bundle byte ceilings for `runtime.js context-check`, which also enforces the fixed 62,351-byte LF-normalized standalone skill total
 │   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
 │   │   ├── custom-design-rules.md   # design / design-review rules
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
@@ -402,7 +402,7 @@ your-project/
 │       ├── DESIGN.md                # Google Labs format token source
 │       ├── design-system.html       # rendered live preview
 │       ├── accessibility.html
-│       ├── mockups/                 # promoted from the sprint's design/mockups/; ux_spec enabled only
+│       ├── mockups/                 # promoted from the sprint's design/mockups/
 │       └── <subsystem>.html         # ux-spec per subsystem
 ├── .agnix.toml                      # this repo only (self-hosting): agnix config for `checks.agnix`, CC-SK-007 disabled with its reason
 ├── AGENTS.md                        # SSoT rules hub, read by both providers
@@ -517,7 +517,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
 
 **Can I skip PRD/UX-spec/design system/ADR/C4/cleanup for a lean sprint?**
-Yes. PRD, UX-spec, design system and ADR are independently toggleable under `documents.*` in `config.yaml` (`ux_spec` gates only the sprint ux-spec and persistent ux-spec docs; `design_system` gates the design-system gate, `design-md-delta.yaml` and DESIGN.md/design-system.html/accessibility.html promotion); the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. In the `standard` workflow, when `prd`/`ux_spec`/`design_system`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run, and `cleanup` runs unless the top-level `cleanup: disabled` (also frozen at scope) makes it a no-op; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. For a sprint with no design phases at all, pick the `lite` workflow at scope: `design-promote` then runs after `impl-review`, writing the enabled docs from the implementation. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
+Yes. PRD, UX-spec, design system and ADR are independently toggleable under `documents.*` in `config.yaml`. The diagram is off with `project.diagram_tool: none` or decomposition disabled. Scope freezes these settings and the effective mockup format in `state.json`. Before an optional document has a draft, ask to skip it at the scope gate or audit exit. A hard gate flips its frozen value for that sprint. `documents.audit` resolving to off makes audit a no-op and records one skip line. Standard collapses `design`, `design-review` and `design-promote` in one write at the audit exit when all five design documents are off and the effective mockup format is `none`, advancing to `plan`. `plan`, `impl`, `impl-test`, `impl-review`, `retro` and `pr` always run. `cleanup: disabled` skips cleanup. When PRD is disabled, `sprint.md` supplies the `AC-N` criteria. Lite runs `design-promote` after `impl-review`, using the accepted implementation for enabled docs and promoting existing in-scope mockups. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
 
 **Do my retro findings about ASD reach the framework?**
 Yes. A consumer project's retro publishes each open `asd` row as an `[asd-retro]` issue on the ASD repo, in English, containing only the guardrail, cause or saving, the framework path, provider and ASD version; `gh` unavailable skips it, `upstream_issues: disabled` turns it off. ASD's own sprints triage those issues at scope, put the open ones to you for include/reject/defer, and close the included ones once the release is published.

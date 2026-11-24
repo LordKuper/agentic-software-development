@@ -40,3 +40,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-22 — PR publication approved under adaptive policy. The user started the full sprint, accepted all criteria and the implementation plan. Review, full suite, build, lint and retrospective evidence passed, with the configured external-review availability skip recorded. GitHub access is ADMIN. Feature commits select v14.11.0.
 - 2026-11-22 — Opened [PR #147](https://github.com/LordKuper/agentic-software-development/pull/147) for the accepted scope and recorded its number before squash merge.
+- 2026-11-24 — Archived after verifying that PR #147 merged at `e112becaa3591dffe5c832fbc52c8cbdce6a7543` and release v14.11.0 was published.

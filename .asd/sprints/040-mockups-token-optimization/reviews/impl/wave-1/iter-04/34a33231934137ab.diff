@@ -1,0 +1,154 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index d9fc6d3..6ba27f1 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -32,7 +32,7 @@
+     "agents/asd-external-review.md": "sha256:3f538b6d762f2987f6d3a084062910827442f14e71c66b37dece912efaef3374",
+     "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    "skills/asd-init/SKILL.md": "sha256:e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b",
++    "skills/asd-init/SKILL.md": "sha256:e4efe1a859ddb68471db6f3d77a6dab9082fababef934cc26a1711867b594642",
+     "skills/asd-sprint/SKILL.md": "sha256:80549ff8c90a38155223be06d606e45f8993bac2c5cd1a5fe4725b337bd30cb1",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:d895da12631220382c62e432a130f066c2834bc87399d1602d19113a3dd3f21a",
+@@ -75,7 +75,7 @@
+     ".asd/rules/ux-principles.md": "5fe5935f3c835fa6efda040249ebb2144cf2f830009598ea65ebfcc79a5a06da",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04",
+-    ".asd/skills/asd-init/SKILL.md": "e75e41cfb870f3fff276ff07a04b794c302f7fdf2c62733a7fad3367d439368b",
++    ".asd/skills/asd-init/SKILL.md": "e4efe1a859ddb68471db6f3d77a6dab9082fababef934cc26a1711867b594642",
+     ".asd/skills/asd-phase-audit/SKILL.md": "2cac271a18c3fa6b2faebca394e66347013556f1a7500e66a7812322b4cf7b9f",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "4fe61838fc42af2c8a2d5eb4e3897af8d2cc25ac102a147f8165d1e45407c2a1",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "3389aca135fbb92774d1d11b6458b0535e527fe5fd3a82e53f39eda66d7e32d2",
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index 67adc12..973e1f3 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -115,7 +115,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
+ 
+ 1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
+ 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
+-3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
++3. `accept-all` → rerun the installed config check before writing. On exit 2, relay its diagnostic and stop. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert only approved `missing` leaves and needed parent mappings. Write only `.asd/project/config.yaml`.
+ 
+ ## Rules
+ 
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.entry-04.md b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-04.md
+new file mode 100644
+index 0000000..0347668
+--- /dev/null
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.entry-04.md
+@@ -0,0 +1,31 @@
++# Test plan entry 04 — sprint 040-mockups-token-optimization
++
++Rotated at entry 5. Entry 4 analysed `7ee837fe`.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-1, AC-2 · Current-version shortcut and release hash | Removing the duplicate predicate could let an older installed version bypass a pending migration or leave the recorded updater hash stale. | Existing `update` CLI retry and manifest checks, `contract-rules`, `contract-workflows`, `sync-cli`, `sync-render` and sync build | none | A pending migration must be strictly newer than the installed version and at most the target. No version can meet both when installed is at or above target. The existing CLI test still exercises zero managed writes with a pending migration, including dry preview and the real retry. |
++| AC-2 · Approval contract test | An ordinary rewording can break the contract test despite preserving permission to write. | Existing `update` contract test and trace to `core.md` | none | `41eea73` removed two prose assertions. The heading, literal approval choices, real, preview and partial outcome checks, and executable retry coverage remain. `asd-init` Update completion step 3 and the Settings writes invariant still require approval and limit the write to approved missing values. |
++| AC-7, AC-8 · Combined reviewer memory index | Shortened cues could make a method hard to locate or break a link in the Claude reviewer's project memory. | `contract-agents` live memory-index bijection plus comparison of link labels, targets and order | none | The Claude view declares `memory: project` and is a live consumer. Both revisions have the same 44 ordered link identities and all targets exist. The owner's commit check passed and the 22 measured Codex phase bundles still match their probe inputs. |
++| AC-2 · Review finding `combined.md 1`, iteration 03 | The approval menu can survive while the write step loses its approval route or its scope tied to the missing-settings diagnostic. | Extend the existing `update` content-contract test | add | Check the leading `accept-all` route token and the exact `missing` field separately in Update completion step 3. A change to other wording remains valid. |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++The review-fix removed two assertions from an existing test. No tests were removed or proposed for removal.
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++| `tests/update.test.js:sprint-040 AC-2: only real update completion offers missing settings through installed asd-init` (extended) | The entry 4 impacted run passed 152/152 at `c5b1fed` before step 3 named the decision route or the diagnostic field. The existing menu and other diagnostic references did not cover step 3. | `node --require ./.asd/tmp/040-mockups-token-optimization-review-test-fix-wave-1-iter-03-proof.cjs tests/run.js update --filter 'only real update completion'` with a process-only read substitution. `ASD_040_APPROVAL_PROOF=approval` drops the leading `accept-all` token while keeping the choice menu and arrow. `scope` replaces only step 3's backticked `missing` with ordinary prose. Each matched 1/38 and exited 1 in `sprint-040 AC-2: only real update completion offers missing settings through installed asd-init`, at the approval-route and diagnostic-field assertions respectively (`suite impl#20` and `#21`). `reword` replaced step 3's prose while retaining both tokens and the route syntax, matched 1/38 and exited 0 (`#22`). runs: 3 |
++
++Entry 4 added no tests.
++
++## Entry 4 suite evidence
++
++The impacted suite passed 152/152 at `c5b1fed` (`suite impl-test#17`), with lint and build passing. The subsequent review-fix ran the `update` area at `1f9b5cf` (`suite impl#19`), passing 38/38 after extending the write-step contract. Its three targeted proofs are in Added tests above.
+diff --git a/.asd/sprints/040-mockups-token-optimization/test-plan.md b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+index d190857..6e5da3b 100644
+--- a/.asd/sprints/040-mockups-token-optimization/test-plan.md
++++ b/.asd/sprints/040-mockups-token-optimization/test-plan.md
+@@ -14,41 +14,41 @@ responsibility:
+ | 2 | 17dae23b | delta since entry 1 |
+ | 3 | bcc7edda | delta since entry 2 |
+ | 4 | 7ee837fe | delta since entry 3 |
++| 5 | 05e1d71f | delta since entry 4 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-1, AC-2 · Current-version shortcut and release hash | Removing the duplicate predicate could let an older installed version bypass a pending migration or leave the recorded updater hash stale. | Existing `update` CLI retry and manifest checks, `contract-rules`, `contract-workflows`, `sync-cli`, `sync-render` and sync build | none | A pending migration must be strictly newer than the installed version and at most the target. No version can meet both when installed is at or above target. The existing CLI test still exercises zero managed writes with a pending migration, including dry preview and the real retry. |
+-| AC-2 · Approval contract test | An ordinary rewording can break the contract test despite preserving permission to write. | Existing `update` contract test and trace to `core.md` | none | `41eea73` removed two prose assertions. The heading, literal approval choices, real, preview and partial outcome checks, and executable retry coverage remain. `asd-init` Update completion step 3 and the Settings writes invariant still require approval and limit the write to approved missing values. |
+-| AC-7, AC-8 · Combined reviewer memory index | Shortened cues could make a method hard to locate or break a link in the Claude reviewer's project memory. | `contract-agents` live memory-index bijection plus comparison of link labels, targets and order | none | The Claude view declares `memory: project` and is a live consumer. Both revisions have the same 44 ordered link identities and all targets exist. The owner's commit check passed and the 22 measured Codex phase bundles still match their probe inputs. |
++| AC-2 · Update completion write route | The approval menu can exist while the write branch loses the decision guard or stops using the missing-settings diagnostic. | Existing `update` content-contract and CLI regression | none | Review-fix commit `1f9b5cf` already checks the leading `accept-all` route and exact `missing` field separately in step 3. Each missing token failed the targeted test and the rewording control passed. The trace from `asd-update` step 5 through `asd-init` step 3 to the core settings-write invariant confirms the approved-missing-only write authority. |
++| AC-5, AC-6, AC-8 · Installed skill integrity | The canonical skill, provider views, release hashes or standalone context limit may drift after the repair. | Existing skill, rules, template, release and sync contracts, plus context-check | none | The skill shape, canonical references, live standalone byte limit, updated hash entries and current generated views are already checked. The 22 measured Codex phase bundles still match their probe inputs, as recorded in the review-fix handoff. |
+ 
+ ## Removed tests
+ 
+ | Test | Reason | In change scope |
+ |---|---|---|
+ 
+-The review-fix removed two assertions from an existing test. No tests were removed or proposed for removal.
++No tests were removed or proposed for removal.
+ 
+ ## Added tests
+ 
+ | Test | Gap proof | Regression proof |
+ |---|---|---|
+ 
+-Entry 4 added no tests.
++Entry 5 added no tests. The review-fix extension and its proofs are in [entry 4](./test-plan.entry-04.md#added-tests).
+ 
+ ## Suite run
+ 
+-- Pre-strategy evidence: The command below ran before strategy. It passed all six selected areas and is eligible for the impacted gate because this entry needs no test edits and the numbered suite captured the complete affected set.
+-- Command: `node tests/run.js contract-agents contract-rules contract-workflows sync-cli sync-render update`
++- Pre-strategy evidence: The initial seven-area run passed 175/175 (`suite impl-test#18`). The complete selection below added `contract-templates` after tracing its canonical Markdown scan, and ran before strategy. The complete run is eligible for the impacted gate because this entry needs no test edits.
++- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-timing sync-cli sync-render update`
+ - Scope: impacted
+-- Scope evidence: The enabled safety valve bounds the executable change to the updater's no-op predicate. `update` covers the real CLI and live ledger hash. `contract-rules` and `contract-workflows` scan the changed updater. `sync-cli` and `sync-render` exercise release-ledger checking and loading. `contract-agents` directly checks the live, changed Claude memory index. Shared runtime, sync, test harness, hook and migration code did not change.
+-- Result: pass, exit 0. 152 passed, 0 failed, 0 runner-level skips. Four existing Windows fixture branches bypassed file-symlink assertions.
+-- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets were current.
+-- HEAD: c5b1feda4d9eebce86b0af681590106044f0c658
+-- Provenance: `suite impl-test#17` under dispatch `impl-test entry 4 strategy`. HEAD matched before and after. Relevant source, generated views, agent memory, tests and stubs were clean, including untracked files. No smoke command is configured.
++- Scope evidence: The enabled safety valve bounds the delta to the init approval clause, its content-contract test and the corresponding views and release hashes. `contract-agents`, `contract-rules` and `contract-templates` scan canonical skills. `contract-workflows` reads this skill and checks the standalone cap. `runtime-timing` verifies enforcement at the cap boundary. `sync-cli`, `sync-render` and `update` exercise release and sync checks, and `update` runs both the repaired contract and CLI retry. Shared runtime, sync and test setup are outside the delta.
++- Result: pass, exit 0. 189 passed, 0 failed, 0 runner-level skips. Four existing Windows fixture branches bypassed file-symlink assertions.
++- Lint / build: pass. `git diff --cached --check` and `node .asd/sync.js --check` exited 0. All 77 sync targets are current. `node .asd/runtime.js context-check` reported no exceeded ceilings.
++- HEAD: 9eb5a8ec562230421cf95387f033a14388fc96ca
++- Provenance: `suite impl-test#19` under dispatch `impl-test entry 5 strategy`. HEAD matched before and after. Relevant source, generated views, agent memory, tests and stubs were clean, including untracked files. No smoke command is configured.
+ - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
+-- Line delta: tests +356/−43 (net 313); other +894/−888 (net 6)
++- Line delta: tests +359/−43 (net 316); other +894/−888 (net 6)
+ 
+ ## Defects
+ 
+diff --git a/tests/update.test.js b/tests/update.test.js
+index 7fdc8dc..1ca7103 100644
+--- a/tests/update.test.js
++++ b/tests/update.test.js
+@@ -2,7 +2,7 @@
+ 
+ // update.js state machine, driver and migration runner; release-manifest integrity
+ 
+-const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
++const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf, spans } = require('./lib.js');
+ 
+ test('sprint-040 AC-2: only real update completion offers missing settings through installed asd-init', () => {
+   const skill = '.asd/skills/asd-update/SKILL.md';
+@@ -22,6 +22,9 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
+   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
+   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
+   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
++  const write = stepOf(adoption, '3');
++  assert.match(write, /^3\.\s+`accept-all`\s+→/, 'The write branch starts with the accept-all decision route');
++  assert.ok(spans(write).includes('missing'), 'The write branch uses the missing diagnostic field');
+ });
+ 
+ test('update state machine: upstream unchanged / local untouched -> noop', () => {
