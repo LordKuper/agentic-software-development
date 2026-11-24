@@ -243,7 +243,7 @@ A `cleanup` no-op appends `"cleanup"` to `skipped_phases`, advances `phase` and 
 
 ## Design-promote phase
 
-Promotion from drafts (`standard`); from the accepted implementation: "Workflows". No-op when the design phase produced zero drafts (see "Optional documents"). Otherwise the orchestrator promotes only the draft(s) that exist.
+`standard` promotes approved drafts. `lite` promotes enabled docs from the accepted implementation ("Workflows"). Both include in-scope mockups and pending publication recovery. Empty combined scope is a no-op ("Optional documents").
 
 The main orchestrator handles gates and writes every promotion itself:
 
@@ -340,9 +340,15 @@ Unlike `Material risk`, an absent `Reachability` line asserts the task has no cr
 
 Public contract changes schedule compile-only test callers in the immediately following wave. Verify the build of each such wave and keep build-dependent work after the applicable check. Sequencing and exceptions: `asd-phase-plan.md` step 4; combined-tree build check: `asd-phase-impl.md` step 7.
 
-**Rename map declaration** (plan-level, optional, one plain-text line outside every `### Task N:` block, never a checkbox): `Rename map: <sprint-relative JSON path>`, a plan-author JSON object of old text to new text (`.asd/runtime.js` `readRenameMap`). `asd-phase-impl-review.md` step 1c passes it to `review-waves` and `emit-manifest`, so a hunk that only applies its substitutions collapses in the reviewed diff to one line per file with the substitution count.
+**Standing Definition of Done** (constant, never restated in `plan.md`): all AC-N of the `requirements` input ("Input sources") covered by Tasks; impacted test set green at `impl-test` ("Impacted test set"); full test suite green once, at the end of `impl-review`; all required reviewers green in every `impl-review` wave. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set.
 
-**Decomposition rules** (checked before plan acceptance; acting site `asd-phase-plan.md` step 4):
+### Rename map declaration
+
+Optional plan line outside every `### Task N:` block, never a checkbox: `Rename map: <sprint-relative JSON path>`. The plan author writes a JSON object of old text to new text (`.asd/runtime.js` `readRenameMap`). `asd-phase-impl-review.md` step 1c passes it to `review-waves` and `emit-manifest`, collapsing a hunk that only applies those substitutions to one line per file with the substitution count.
+
+## Plan author checklist
+
+**Decomposition rules** (before plan acceptance, `asd-phase-plan.md` step 4):
 - A plan changing a rule other files restate lists every restating site a repo grep finds, each assigned to exactly one Task.
 - A plan removing or renaming a name lists the grep forms its universal-reach sweep covers — verdict token, `<key>.md` file name, prose role name, retired tier wording — not the token alone.
 - Tasks in one wave that cite each other's new rule homes name each home by exact file and section heading, listed once in `## Overview`.
@@ -357,8 +363,6 @@ Public contract changes schedule compile-only test callers in the immediately fo
 - A plan decision defining a computed metric or a bounded fetch states its edge semantics — interval overlap, nesting versus concurrency, re-entry of an open operation, total versus idle deadline — before acceptance.
 - A plan moving a responsibility between roles, adding a delegation or removing a routing clause lists, per affected file, each sentence attributing it to a role, the delegate's write classes read from its definition, and each case the clause routed.
 - A stub offered for inclusion states its verified cost and behaviour change. A stub whose files are tests only routes to `impl-test`, never to a Task.
-
-**Standing Definition of Done** (constant, never restated in `plan.md`): all AC-N of the `requirements` input ("Input sources") covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green in every `impl-review` wave. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
 
 ## Scope amendment
 
@@ -377,7 +381,11 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. The arch
 
 ## State recovery
 
+### Sprint state recovery
+
 `state.json` is the single recovery point. The dispatching main orchestrator is its sole writer for transitions, verdicts and gate evidence; no delegated agent writes it. A merged sprint keeps its recorded `phase` and `pr` (after merge mode: `phase="pr"`, `pr.state="open"`) until the closure write ("PR phase"), the only writer of the terminal state and archive move; no merged-but-unclosed record exists, the state is detected ("PR phase" "Merged-unclosed"), and so is a missing self-hosting release or a still-open included issue (its release retry). On resume, `asd-sprint` Step 2B runs `timing-recover` before the resume menu ("Operation timing").
+
+### Creator dispatch recovery
 
 **Failed dispatch**: an `asd-dev` or `asd-tester` dispatch that ends without a completion signal — a stall stop ("Agent liveness") included — is never read as done; its task is re-dispatched fresh. An `impl` (initial, review-fix, test-fix) or `impl-test` dispatch is reconstructed before that re-dispatch. Anchor: the `dispatch HEAD <sha>` of the latest decisions-log routing line naming that dispatch's ids, whichever routed tier it ran on; a `Test-only` Task uses its authoring anchor below. Run `git status --porcelain` and `git log --format='%h %s%n%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD`. Ids named by an `ASD-Task` trailer (`git-strategy.md` "Commits") landed and are dropped from the re-dispatch — except `impl-test entry N`, which never marks the entry landed: the re-dispatched tester resumes the interrupted current entry from on-disk evidence (`asd-phase-impl-test.md` step 1), re-running each step lacking its output (e.g. no `Suite run` for the entry); `D-N`, which lands only once its `test-plan.md` `Defects` row reads `fixed` with its fix commit — otherwise the re-dispatch carries that `D-N` only to set the row from the trailer commit's sha, no second fix; and a `Test-only` Task (see below). The payload names each uncommitted leftover path the failed dispatch was authorised to touch — never orchestrator-owned bookkeeping or an in-flight sibling dispatch's paths — for the agent to finish or revert; the orchestrator never stages, commits or discards them. Append one decisions-log line `- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>`. One cause (session-wide limit, host outage) ending every dispatch then in flight is one event: one reconstruction covers them all and no stall count rises ("Agent liveness"; `review-policy.md` "Correlated interruption"); anything narrower stays per-dispatch.
 
@@ -385,18 +393,22 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. The arch
 
 Area-run dispatches reconstruct from committed `Area runs` evidence that still matches the current relevant paths (`asd-phase-impl-test.md` "Rules"). A route or trailer alone never completes an area or its entry.
 
+### Review verdict recovery
+
 `iteration_heads["iter-NN"]` of impl-review wave K's node (`t_state.json` schema) holds the `git rev-parse HEAD` sha recorded when that wave's iteration NN starts (the same `asd-phase-impl-review.md` step 2 write that increments its counter); it anchors the incremental ranges of "Review iteration counters" above. An absent or empty `iter-(NN-1)` key (a sprint in flight when this field shipped) falls back to `<base_branch>` — never an empty left operand — with the widened scope noted in that iteration's decisions-log entry.
 
-Each impl-review wave node's `verdicts["iter-NN"]` (`t_state.json` schema) holds one entry per reviewer key of the frozen workflow's `reviewers.impl` ("Workflows") — every one of these reviewers is always dispatched (`review-policy.md` "DoD per review phase") UNLESS the APPROVE latch above skips it, and per that section's invariant a latch-skipped reviewer still gets its inherited `APPROVE` written here. Each value is one of five distinct things:
+The review node's `verdicts["iter-NN"]` (`reviews.design` in design-review, each wave node in impl-review) holds one entry per required reviewer key of the frozen workflow's `reviewers.design` or `reviewers.impl` ("Workflows"). Apply `review-policy.md` "DoD per review phase" and "APPROVE latch" for dispatch. Values:
 - a bare verdict token string (`"APPROVE"`/`"CONCERNS"`/`"FAIL"`, parsed from that reviewer's written review file, covering whatever rubric sections it reviewed that dispatch — a section the reviewer marked `n/a: <predicate>` in its section-coverage ledger (`review-policy.md` "Diff-scoped impl-review fan-out") is internal to its file, never a separate state value);
 - External Review's availability-skip verdict, `"APPROVE (skipped: <reason>)"` — never the bare token — written when the phase-supplied preflight returns a non-ready status (unavailable command/auth, or active negative cache; `external-review.md` "Detection and negative cache"); satisfies DoD identically to a bare `"APPROVE"` but is never written to `latched` ("APPROVE latch" "Availability-skip carve-out" above);
 - a legacy External Review partial outcome, `"APPROVE (partial: <n>/<m> files; <cause>)"` (legacy, never written now) — satisfied for its iteration, never latched (same carve-out);
 - a legacy `"skipped: <predicate>"` string (no `APPROVE` prefix, never written now; a mid-sprint upgrade from a pre-4.0.0 `scoped_fan_out` dispatch skip may carry it) — every consumer of this map (`asd-phase-pr.md` open mode step 1 included) treats it as **satisfied**, identically to `APPROVE`;
 - an absent key for the current iteration — the reviewer was required, dispatched, and its dispatch was lost, crashed, or ledger-rejected without ever producing a recorded verdict. Always **blocking**, no exception: the APPROVE latch invariant above guarantees a latch-skipped reviewer's key is written anyway, so an absent key never has a second, satisfied meaning.
 
-**User-resolved findings**: a finding resolved outside review-fix — by the user without a fix (a FAIL override, a stalemate **stop** (`external-review.md` "Stalemate detection"), an iteration-cap accept), by impl-review's in-place tester fix (`review-policy.md` "Minor test-only findings"), by an in-phase memory-fix (`review-policy.md` "Memory-fix dispatch"), or, for a pre-existing finding, by an issue filed for it (kind `issue`, written `issue #<N>`) — is recorded by the orchestrator as one line appended to that reviewer's review file: `resolved: <finding id, …> — <override | stop | cap-accept | test-fix | memory-fix | issue>, <YYYY-MM-DD>`. The review-fix collector skips each named finding. A bare `"CONCERNS"`/`"FAIL"` whose file names every one of its findings so is **satisfied** for both gating consumers below and for each review phase's own aggregation — the one case they read the review file behind a state value.
+Both review phases and the PR gate treat a missing required key as blocking and ignore `latched` for aggregation. `.asd/hooks/session-start.js`'s `lastReviewVerdict` is display-only: it reads `verdicts["iter-NN"]` for the relevant review node (impl-review: the current wave's, legacy shape included), ignores `latched`, and counts values starting with `"APPROVE"` or a legacy `"skipped: ..."` as satisfied.
 
-Two gating consumers of this map — `asd-phase-pr.md` open mode step 1, and impl-review's own DoD aggregation (this rule's "Impl-review" phase-table row / `review-policy.md` "DoD per review phase") — treat an absent key for a required reviewer as blocking, full stop; neither consults `latched`. `.asd/hooks/session-start.js`'s `lastReviewVerdict` is a third, display-only consumer (never a gate): it reads only `verdicts["iter-NN"]` for the relevant review node (impl-review: the current wave's, legacy shape included), ignores `latched`, counts any value starting with `"APPROVE"` or a legacy `"skipped: ..."` string as satisfied.
+#### User-resolved findings
+
+For each finding resolved outside review-fix, append to its review file: `resolved: <finding id, …> — <override | stop | cap-accept | test-fix | memory-fix | issue>, <YYYY-MM-DD>`. Record a FAIL override, stalemate **stop** (`external-review.md` "Stalemate detection"), iteration-cap accept, in-place tester fix (`review-policy.md` "Minor test-only findings"), memory fix ("Memory-fix dispatch") or a filed issue for a pre-existing finding (write `issue #<N>`). The review-fix collector skips every named finding. Both review phases and the PR gate read the file behind a recorded `"CONCERNS"`/`"FAIL"` to count it satisfied when every finding is resolved there.
 
 ## Agent liveness
 

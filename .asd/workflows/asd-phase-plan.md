@@ -17,10 +17,10 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
 ## Steps
 
 1. Read config and `<sprint>/state.json`.
-2. Confirm the predecessor per `## Entry`.
-3. Read the remaining `## Inputs`.
+2. Verify the predecessor (`## Entry`).
+3. Load remaining `## Inputs`.
 4. Write `state.json` (phase=plan) inline, then author `plan.md`:
-   - plan.md skeleton first; per-section discussion in `language.chat` per QODDA (`core.md`) + `core.md`'s "Incremental writing"
+   - write the skeleton first, then apply `core.md` "Incremental writing" with section discussion in `language.chat`
    - **Stub inclusion step** (before task decomposition):
      - if `documents.audit` enabled: read `<sprint>/audit.md` "Related open stubs" section
      - if `documents.audit` disabled: grep touched-area files (from sprint.md scope) directly against `.asd/project/stubs.md` File:Line column for matches
@@ -29,7 +29,7 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
      - per "accepted-debt": edit stubs.md Reason field prepending `(accepted-debt)` inline after its applicable gate
      - decisions-log entry summarising stub decisions
    - Locating the code a Task touches may be delegated to `asd-scout` (a question plus paths; read-only, returns a `path:line`-cited summary); the orchestrator reads every section a summary cites that it relies on before writing a Task, and the plan stays its own.
-   - **Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations, Wave declaration, Decomposition rules), plus:
+   - **Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations and wave table) and "Plan author checklist", plus:
      - one Task per coherent unit of work; each Task cites in its body the AC-N it satisfies
      - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
      - no test-authoring Tasks or subtasks, except a `Test-only` Task; note per Task only its `Material risk` declaration, as input for impl-test
