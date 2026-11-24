@@ -19,6 +19,7 @@ responsibility:
 - **Surface**: provider tool — Claude Code, Combined reviewer memory owner
 - **What happened**: Local login status reported signed in. The read-only owner invocation then returned an account-hold denial. The CLI also indicated that this project was untrusted.
 - **Impact**: The accepted Combined memory-index reduction is blocked on the owner. Codex context measurements and canonical changes can proceed.
+- **Resolution**: The exact Combined owner completed the planned index edit in Codex at d24d80a. All 44 links were preserved.
 - **Refs**: decisions-log.md, audit.md
 
 ## F-2 — Claude Code passed local preflight and refused external review

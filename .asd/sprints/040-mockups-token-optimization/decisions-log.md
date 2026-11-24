@@ -73,3 +73,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — impl-test: impacted set green (326/326, full safety valve), 3/0 tests
 - 2026-11-24 — wave-1/iter-02: Combined CONCERNS (1–2), external availability skip with 69 paths. Finding 1 is an impossible-by-contract pending-list guard: the migration interval is empty once the installed version reaches the target. Search found the only CLI early return at this guard. Finding 2 is a test-file wording pin. Route both to review-fix, Dev then Tester.
 - 2026-11-24 — Советник подтвердил плановое поручение владельцу asd-reviewer-combined в Codex. Правило Claude-only применяется к маршруту Memory-fix для находок ревью, хвостов и memory-check, а не к согласованному сокращению индекса владельцем. Контроль: те же 44 ссылки, меньше текста; отдельный коммит и следующий обзор изменений.
+- 2026-11-24 — route review-fix wave-1/iter-02: standard, dispatch HEAD 2cc248dbad96bd511ed79e68da6e2318a879808a; risk none via CLI and managed-version range check
+- 2026-11-24 — route plan memory owner index: standard, dispatch HEAD 2cc248dbad96bd511ed79e68da6e2318a879808a
+- 2026-11-24 — route combined.md 2: standard, dispatch HEAD 7156ff74df95d4619aef36ae18f4c975317628db
+- 2026-11-24 — F-1 owner path resolved: Combined authored its accepted index reduction in Codex, committed at d24d80a. Verified all 44 labels, targets and order; index 8,246 → 4,747 bytes. Memory check passed. All 22 measured Codex phase bundles still match their probe inputs byte for byte.
+- 2026-11-24 — Review fixes at d7c0795 and 41eea73, build 77 targets current, lint and context checks green, agnix 0 errors and 0 warnings. Focused updater area 38/38 (a51ad16).
+- 2026-11-24 — impl fix for wave-1/iter-02: findings resolved
