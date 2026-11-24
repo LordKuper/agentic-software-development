@@ -10,7 +10,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | | full change surface |
+| 1 | be1c83b2 | full change surface |
 
 ## Risk → check decisions
 
@@ -68,6 +68,7 @@ Task 6 also reworded Lite authoring in isolation. `node tests/run.js contract-wo
 - Provenance: suite timing `suite impl-test#1` under dispatch `impl-test entry 1`. HEAD matched before and after, with clean relevant code, generated views and tests including untracked paths. No smoke command is configured.
 
 The suite checked publication contracts using local sources and fixtures. No live Figma or Claude Design publication occurred in this framework sprint.
+- Line delta: tests +184/−32 (net 152); other +642/−589 (net 53)
 
 ## Defects
 

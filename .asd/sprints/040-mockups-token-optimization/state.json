@@ -1,7 +1,7 @@
 {
   "sprint_id": "040-mockups-token-optimization",
   "branch": "sprint/040-mockups-token-optimization",
-  "phase": "impl",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -97,6 +97,13 @@
       "reason": "task boundaries implement accepted scope and advisor recommendations under standing authorization",
       "evidence": "plan.md; audit.md; baseline sync-check green",
       "artifact_revision": "plan.md@accepted"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all plan tasks completed with scoped proof and current generated views",
+      "evidence": "plan.md; Task 6 6f65ff7; context-check; sync-check 77/77; agnix 0 errors 0 warnings",
+      "artifact_revision": "plan.md@impl-complete"
     }
   ],
   "task_routing": {
@@ -112,7 +119,7 @@
     "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T11:56:07Z",
+  "updated_at": "2026-11-24T12:30:17Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
