@@ -202,8 +202,8 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
   }
 });
 
-// Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass the sprint gate.
-test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and names missing, duplicate and invalid keys', async () => {
+// Sprint 039 AC-1/AC-5: all supported formats and legacy-only configs pass config-check.
+test('Sprint 038 AC-1/AC-2, sprint-040 AC-1: config-check requires valid values, including none, and names missing, duplicate and invalid keys', async () => {
   const root = mkTempDir();
   const config = path.join(root, 'config.yaml');
   const template = canonText('.asd/templates/t_config.yaml');
@@ -225,7 +225,7 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
     assert.deepStrictEqual(
       [outcome.status, JSON.parse(outcome.stdout).invalid.map(({ path: key }) => key)],
       [1, ['git.ai_attribution']],
-      'the sprint gate rejects opt-out spellings the attribution reader treats as enabled'
+      'config-check rejects opt-out spellings the attribution reader treats as enabled'
     );
   }
   const incomplete = await check(template
@@ -237,6 +237,7 @@ test('Sprint 038 AC-1/AC-2: config-check requires explicit valid values and name
 
   const withMockupSettings = (...settings) => template.replace(/^  mockup_format:.*$/m, settings.map((setting) => `  ${setting}`).join('\n'));
   for (const settings of [
+    ['mockup_format: none'],
     ['mockup_format: html'],
     ['mockup_format: claude_design'],
     ['mockup_format: figma'],

@@ -14,6 +14,66 @@ const migration1400 = require('../.asd/migrations/14.0.0.js');
 
 const migration1450 = require('../.asd/migrations/14.5.0.js');
 
+const MOCKUP_CONFIG = '.asd/project/config.yaml';
+
+test('sprint-040 AC-1: migration preserves the old effective mockup mode and is idempotent', () => {
+  const migrate = require('../.asd/migrations/14.12.0.js');
+  const repoRoot = mkTempDir();
+  const file = path.join(repoRoot, MOCKUP_CONFIG);
+  assert.deepStrictEqual(migrate({ repoRoot }), { status: 'absent', changes: [] });
+  const cases = [
+    ['', '', 'claude_design'],
+    ['', '  claude_design: enabled\n', 'claude_design'],
+    ['', '  claude_design: disabled\n', 'html'],
+    ['', '  mockup_format: figma\n  claude_design: disabled\n', 'figma'],
+    ['documents:\n  ux_spec: enabled\n', '  mockup_format: html\n', 'html'],
+    ['documents:\n  ux_spec: disabled\n', '  mockup_format: figma\n', 'none'],
+    ['documents:\n  prd: enabled\n', '  claude_design: enabled\n', 'none'],
+    ['documents:\n  prd: enabled\n', '', 'none'],
+    ['documents:\n  ux_spec: enabled\n', '  mockup_format: none\n', 'none'],
+  ];
+  for (const [documents, settings, mode] of cases) {
+    const input = `${documents}project:\n  diagram_tool: none\n${settings}`;
+    writeFile(repoRoot, MOCKUP_CONFIG, input);
+    const first = migrate({ repoRoot });
+    const result = fs.readFileSync(file, 'utf8');
+    const withoutSelector = (text) => text.replace(/^  (mockup_format|claude_design): .*\n/gm, '');
+    assert.match(result, new RegExp(`^  mockup_format: ${mode}(?: #.*)?$`, 'm'), input);
+    assert.doesNotMatch(result, /^  claude_design:/m, input);
+    assert.strictEqual(withoutSelector(result), withoutSelector(input), input);
+    assert.strictEqual(first.status, result === input ? 'unchanged' : 'migrated', input);
+    assert.deepStrictEqual(migrate({ repoRoot }), { status: 'unchanged', changes: [] }, input);
+    assert.strictEqual(fs.readFileSync(file, 'utf8'), result);
+  }
+
+  const input = '\uFEFFproject:\r\n  claude_design: disabled # team note\n  mockup_format: "figma" # selected provider\r\ndocuments:\n  ux_spec: disabled # avoid spec';
+  writeFile(repoRoot, MOCKUP_CONFIG, input);
+  assert.deepStrictEqual(migrate({ repoRoot }), {
+    status: 'migrated',
+    changes: ['project.mockup_format: none', 'removed project.claude_design'],
+  });
+  assert.strictEqual(fs.readFileSync(file, 'utf8'), input
+    .replace('claude_design: disabled # team note', '# team note')
+    .replace('"figma"', '"none"'));
+});
+
+test('sprint-040 AC-1: migration rejects unresolved legacy settings without rewriting YAML', () => {
+  const migrate = require('../.asd/migrations/14.12.0.js');
+  const repoRoot = mkTempDir();
+  const file = path.join(repoRoot, MOCKUP_CONFIG);
+  for (const [input, key] of [
+    ['project:\n  mockup_format: other\n', 'project.mockup_format'],
+    ['project:\n  claude_design: true\n', 'project.claude_design'],
+    ['documents:\n  ux_spec: maybe\n', 'documents.ux_spec'],
+    ['project:\n  mockup_format: figma\n  mockup_format: html\n', 'project.mockup_format'],
+    ['documents: disabled\n', 'documents'],
+  ]) {
+    writeFile(repoRoot, MOCKUP_CONFIG, input);
+    assert.throws(() => migrate({ repoRoot }), { message: new RegExp(key.replace('.', '\\.')) });
+    assert.strictEqual(fs.readFileSync(file, 'utf8'), input);
+  }
+});
+
 function makeMigrationFixtureRepo() {
   const root = mkTempDir();
   fs.mkdirSync(path.join(root, '.asd'), { recursive: true });

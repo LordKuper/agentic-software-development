@@ -2,7 +2,28 @@
 
 // update.js state machine, driver and migration runner; release-manifest integrity
 
-const { assert, fs, path, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile } = require('./lib.js');
+const { assert, fs, path, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
+
+test('sprint-040 AC-2: only real update completion offers missing settings through installed asd-init', () => {
+  const skill = '.asd/skills/asd-update/SKILL.md';
+  const steps = sectionOf(skill, 'Steps');
+  assert.doesNotMatch(canonText('.asd/skills/asd-sprint/SKILL.md'), /\bconfig-check\b/);
+  const completion = stepOf(steps, '5');
+  assert.match(stepOf(steps, '2'), /--dry-run/);
+  assert.match(stepOf(steps, '3'), /run pending migrations/);
+  assert.match(completion, /final real attempt in either mode[^\n]*`Applied <N> change\(s\)\.`[^\n]*`Already up to date\.`/);
+  assert.match(completion, /partial updates with a failed migration or declined conflict/);
+  assert.match(completion, /Preview, version lookup and failures before either result do not qualify/);
+  assert.match(completion, /node \.asd\/runtime\.js config-check[^\n]*installed template/);
+  assert.match(completion, /`missing`, `duplicates`, and `invalid` by dotted path/);
+  assert.match(completion, /\bIf keys are missing,[^\n]*`Run asd-init for missing settings` \| `Leave settings`[^\n]*On opt-in[^\n]*"Update completion"/);
+  assert.match(headingBody(skill, 'Sprint-mediated mode'), /Run steps 2–7[^\n]*missing settings/);
+  assert.match(sectionOf(skill, 'Reference'), /--check-version` is read-only/);
+  assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
+  const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
+  assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
+  assert.match(adoption, /On acceptance, insert exactly the approved missing leaves/);
+});
 
 test('update state machine: upstream unchanged / local untouched -> noop', () => {
   const h = 'h1';

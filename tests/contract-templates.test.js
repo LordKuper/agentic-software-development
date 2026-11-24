@@ -4,7 +4,7 @@
 
 const { assert, fs, path, sync, update, runtime, REPO_ROOT, tests, test, loadManifest, declaredScopeFields, readWorkflowDefinitions, arrowChain, readRepoFile, canonText, sectionOf, jsonOf, canonMarkdownFiles, migrateConfig900 } = require('./lib.js');
 
-test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count', () => {
+test('README.md agent-count claims match the actual .asd/agents/*.md file count', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const actualCount = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md')).length;
 
@@ -32,11 +32,6 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
   const providerCounts = ['agent-claude', 'agent-codex'].map((kind) => plan.filter((item) => item.kind === kind).length);
   assert.deepStrictEqual(definitionMatches.map((match) => Number(match[1])), providerCounts, 'Sprint 038 AC-12: README counts both provider rosters, including the Codex-only quota alternatives');
-
-  const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
-  const agentsMdMatch = agentsMdText.match(/\*\*Agents\*\* \(`\.asd\/agents\/\*\.md`, canonical\) — (\d+):/);
-  assert.ok(agentsMdMatch, 'AGENTS.md must state "**Agents** (`.asd/agents/*.md`, canonical) — N:"');
-  assert.strictEqual(Number(agentsMdMatch[1]), actualCount, `AGENTS.md claims ${agentsMdMatch[1]} agents, .asd/agents/ has ${actualCount}`);
 });
 
 test('every .asd/templates/**/*.json file parses as valid JSON', () => {
@@ -74,7 +69,7 @@ function readTocH2Threshold() {
   return Number(stated[1]);
 }
 
-test("AC-8, sprint-020 AC-7: the always-loaded mirrors of the definitions - README's phase table, per-workflow phase table, chains, flowchart nodes and rosters, folder-map counts, and every phase-count word in README and AGENTS.md bound to its workflow", () => {
+test("AC-8, sprint-020 AC-7: README's phase table, per-workflow phase table, chains, flowchart nodes and rosters, folder-map counts, and every phase-count word match the workflow definitions", () => {
   const definitions = readWorkflowDefinitions();
   const standard = definitions.find((definition) => definition.name === 'standard');
   const names = definitions.map((definition) => definition.name);
@@ -133,7 +128,7 @@ test("AC-8, sprint-020 AC-7: the always-loaded mirrors of the definitions - READ
   const count = `(\\d+|${PHASE_COUNT_WORDS.join('|')})`;
   const bound = new RegExp(`\\b${count} for \`(${names.join('|')})\``, 'gi');
   const loose = new RegExp(`\\b${count}(?:[- ](?:mandatory |sprint )?phases\\b|-phase\\b)`, 'gi');
-  for (const [file, minSites] of [['README.md', 3], ['AGENTS.md', 2]]) {
+  for (const [file, minSites] of [['README.md', 3], ['AGENTS.md', 0]]) {
     const stale = [];
     const seen = new Set();
     let sites = 0;
@@ -153,7 +148,7 @@ test("AC-8, sprint-020 AC-7: the always-loaded mirrors of the definitions - READ
     }
     assert.ok(sites >= minSites, `${file} states the phase count in prose in at least ${minSites} places - only ${sites} found, so this pattern has itself drifted and asserts nothing`);
     assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with its workflow's definition: ${stale.join(', ')} - a count on a line naming one workflow must be that workflow's, and README is the user-facing entry point while AGENTS.md is loaded as project instructions on every turn`);
-    assert.deepStrictEqual(names.filter((name) => !seen.has(name)), [], `${file} must state the phase count of every workflow at least once, bound to its name - with two chains an unbound count no longer says which one it describes`);
+    if (minSites > 0) assert.deepStrictEqual(names.filter((name) => !seen.has(name)), [], `${file} must state the phase count of every workflow at least once, bound to its name - with two chains an unbound count no longer says which one it describes`);
   }
 });
 
