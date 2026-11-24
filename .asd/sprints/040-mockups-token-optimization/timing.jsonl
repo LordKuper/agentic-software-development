@@ -220,3 +220,11 @@
 {"op":"close","id":"suite impl#22","kind":"suite","parent":"review-test-fix wave-1/iter-03","start":"2026-11-24T13:51:15.454Z","end":"2026-11-24T13:51:15.586Z","outcome":"done","attrs":{"scope":"named"}}
 {"op":"close","id":"review-test-fix wave-1/iter-03","kind":"dispatch","parent":"impl#5","start":"2026-11-24T13:49:36.311Z","end":"2026-11-24T13:52:26.478Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"66092","model":"sol"}}
 {"op":"close","id":"impl#5","kind":"phase","parent":null,"start":"2026-11-24T13:47:41.131Z","end":"2026-11-24T13:52:26.478Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#5","kind":"phase","parent":null,"start":"2026-11-24T13:52:26.944Z","attrs":{}}
+{"op":"open","id":"impl-test entry 5 strategy","kind":"dispatch","parent":"impl-test#5","start":"2026-11-24T13:52:26.995Z","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"open","id":"suite impl-test#18","kind":"suite","parent":"impl-test entry 5 strategy","start":"2026-11-24T13:53:04.106Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#18","kind":"suite","parent":"impl-test entry 5 strategy","start":"2026-11-24T13:53:04.106Z","end":"2026-11-24T13:53:12.030Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#19","kind":"suite","parent":"impl-test entry 5 strategy","start":"2026-11-24T13:53:36.248Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#19","kind":"suite","parent":"impl-test entry 5 strategy","start":"2026-11-24T13:53:36.248Z","end":"2026-11-24T13:53:44.525Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 5 strategy","kind":"dispatch","parent":"impl-test#5","start":"2026-11-24T13:52:26.995Z","end":"2026-11-24T13:55:29.542Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","context_bytes":"65157","model":"sol"}}
+{"op":"close","id":"impl-test#5","kind":"phase","parent":null,"start":"2026-11-24T13:52:26.944Z","end":"2026-11-24T13:55:29.542Z","outcome":"done","attrs":{}}

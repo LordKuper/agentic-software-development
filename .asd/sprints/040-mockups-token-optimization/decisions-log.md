@@ -86,3 +86,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — route combined.md 1: standard, dispatch HEAD 3b186cbeb6138474fa1f696aea2e6179c82db0cc
 - 2026-11-24 — Review fix 1 at 01f4c84 and 1f9b5cf. Views synced at 3b186cb; 77 targets current; lint, context and agnix checks green. Both fail-first guard cases and ordinary reword control recorded in test plan. Updated area 38/38. All 22 measured Codex phase bundles still match.
 - 2026-11-24 — impl fix for wave-1/iter-03: findings resolved
+- 2026-11-24 — route impl-test entry 5 strategy: standard, dispatch HEAD 9eb5a8ec562230421cf95387f033a14388fc96ca
+- 2026-11-24 — impl-test: impacted set green (189/189 reused at 9eb5a8e), 0/0 tests

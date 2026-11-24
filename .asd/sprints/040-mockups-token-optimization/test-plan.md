@@ -14,7 +14,7 @@ responsibility:
 | 2 | 17dae23b | delta since entry 1 |
 | 3 | bcc7edda | delta since entry 2 |
 | 4 | 7ee837fe | delta since entry 3 |
-| 5 | | delta since entry 4 |
+| 5 | 05e1d71f | delta since entry 4 |
 
 ## Risk → check decisions
 
@@ -48,6 +48,7 @@ Entry 5 added no tests. The review-fix extension and its proofs are in [entry 4]
 - HEAD: 9eb5a8ec562230421cf95387f033a14388fc96ca
 - Provenance: `suite impl-test#19` under dispatch `impl-test entry 5 strategy`. HEAD matched before and after. Relevant source, generated views, agent memory, tests and stubs were clean, including untracked files. No smoke command is configured.
 - Allowance: Entry 3 covers the AC-1 and AC-2 zero-write migration retry and dry preview, linked installed-config refusal at both entry points, and default and explicit CLI input on the supported Node floor. The added fixture lines exercise those boundaries through the actual CLIs and the release migration.
+- Line delta: tests +359/−43 (net 316); other +894/−888 (net 6)
 
 ## Defects
 
