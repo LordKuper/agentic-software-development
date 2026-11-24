@@ -94,3 +94,41 @@ Candidate framework snapshot `48e521ad4621ee90ec0f60e0a1b1f8a8fb9a8325`. Same Co
 Totals count each declared phase once and exclude control. The control fell from 31,158 to 28,190 input tokens. The control-adjusted column subtracts the corresponding run's control from each phase and approximates the phase-specific contribution. Cache hits varied between probe sets. These measurements capture context loading in Codex and do not extrapolate to live spend or cache-adjusted billing. The historical execution data has no matched post-change rollout.
 
 Holding the pre-wave-2 inputs constant, Task 5 reduced 56 static bundles. The orchestrator's per-phase bundles shrank by 5,068–14,725 UTF-8 bytes across 12 phases after the reference correction. This byte comparison excludes on-demand provider sections and is separate from measured tokens.
+
+## AC-8 target verification
+
+Candidate snapshot `7f4ec784fcb75a7ce2b35191923988b08d9e12f8`, including the fail-closed phase-entry guard. Repeated all 22 phase probes and both controls with the original Codex CLI, model, effort, prompt construction and one-line read-only response. All 24 trials returned the expected reply, recorded 8 output tokens and made no tool calls. [Raw AC-8 meter readings](./codex-phase-ac8.json).
+
+| Workflow | Phase | Input before → after | Cached input before → after | Input change |
+|---|---|---:|---:|---:|
+| lite | control | 31,158 → 28,190 | 7,552 → 26,240 | -2,968 |
+| lite | scope | 63,739 → 41,530 | 63,616 → 0 | -22,209 |
+| lite | audit | 61,891 → 38,148 | 7,552 → 26,240 | -23,743 |
+| lite | design-promote | 63,100 → 39,826 | 27,520 → 26,240 | -23,274 |
+| lite | plan | 55,191 → 38,482 | 7,552 → 26,240 | -16,709 |
+| lite | impl | 67,879 → 49,643 | 27,520 → 26,240 | -18,236 |
+| lite | impl-test | 63,953 → 45,781 | 27,520 → 0 | -18,172 |
+| lite | impl-review | 78,377 → 56,987 | 27,520 → 26,240 | -21,390 |
+| lite | cleanup | 55,345 → 39,387 | 0 → 26,240 | -15,958 |
+| lite | retro | 50,916 → 37,853 | 18,304 → 28,032 | -13,063 |
+| lite | pr | 58,165 → 43,056 | 0 → 26,240 | -15,109 |
+| standard | control | 31,158 → 28,190 | 27,520 → 18,304 | -2,968 |
+| standard | scope | 63,739 → 41,530 | 27,520 → 0 | -22,209 |
+| standard | audit | 61,891 → 38,148 | 27,520 → 26,240 | -23,743 |
+| standard | design | 62,282 → 39,990 | 27,520 → 26,240 | -22,292 |
+| standard | design-review | 79,259 → 49,117 | 31,104 → 26,240 | -30,142 |
+| standard | design-promote | 63,100 → 39,826 | 7,552 → 26,240 | -23,274 |
+| standard | plan | 55,191 → 38,482 | 0 → 26,240 | -16,709 |
+| standard | impl | 67,879 → 49,643 | 27,520 → 18,304 | -18,236 |
+| standard | impl-test | 63,953 → 45,781 | 0 → 26,240 | -18,172 |
+| standard | impl-review | 78,377 → 56,987 | 27,520 → 26,240 | -21,390 |
+| standard | cleanup | 55,345 → 39,387 | 0 → 26,240 | -15,958 |
+| standard | retro | 54,935 → 37,853 | 0 → 26,240 | -17,082 |
+| standard | pr | 58,165 → 43,056 | 31,104 → 28,032 | -15,109 |
+
+| Workflow | Phases | Input before → after | Reduction | 25% threshold (max) | Control-adjusted before → after |
+|---|---:|---:|---:|---:|---:|
+| lite | 10 | 618,556 → 430,693 | 30.4% | 463,917 | 306,976 → 148,793 |
+| standard | 12 | 764,116 → 519,800 | 32.0% | 573,087 | 390,220 → 181,520 |
+
+Both workflows reach AC-8 independently. Cached input is included in input. The totals exclude controls and include each declared phase once. The phase prompts still carry the common core, language and project rules. Conditional branch instructions have explicit lookup paths. The comparison measures input for context loading and the fixed reply, including the host's startup overhead. It does not estimate entire live sprint usage, external tools, retries or cache-adjusted billing. Cached counts varied by run.

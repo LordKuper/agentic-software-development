@@ -1,7 +1,7 @@
 {
   "sprint_id": "040-mockups-token-optimization",
   "branch": "sprint/040-mockups-token-optimization",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -111,6 +111,13 @@
       "reason": "required at least 25 percent Codex input reduction",
       "evidence": "decisions-log.md: AC-8; 0 review iterations, 0 fix rounds; floor_base=wave-1/0",
       "artifact_revision": "sprint.md@AC-8"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "AC-8 measured 30.4 percent Lite and 32.0 percent Standard; implementation and Task 9 verified",
+      "evidence": "token-baseline.md: AC-8 target verification; 972c85e; targeted tests 208/208",
+      "artifact_revision": "plan.md@ac8-impl-complete"
     }
   ],
   "task_routing": {
@@ -128,7 +135,7 @@
     "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T12:31:53Z",
+  "updated_at": "2026-11-24T12:55:23Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

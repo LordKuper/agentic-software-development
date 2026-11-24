@@ -96,7 +96,7 @@ Test-only: tests/**
 
 AC-5, AC-8. Adapt or extend named tests for the new grant and consumption boundaries after Tasks 7–8.
 
-- [ ] Verify consumer reachability, mandatory rules, normal and exceptional phase behavior, both workflows and generated views. Run the impacted set with regression evidence for changed behavior.
+- [x] Verify consumer reachability, mandatory rules, normal and exceptional phase behavior, both workflows and generated views. Run the impacted set with regression evidence for changed behavior.
 
 Orchestrator-only verification before review: repeat all 22 phase probes and both controls, record raw per-phase counts, and continue reducing if either workflow misses AC-8.
 

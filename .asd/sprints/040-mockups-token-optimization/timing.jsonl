@@ -104,3 +104,17 @@
 {"op":"close","id":"Task 7","kind":"dispatch","parent":"impl#2","start":"2026-11-24T12:33:45.496Z","end":"2026-11-24T12:49:04.242Z","outcome":"done","attrs":{"context_bytes":"83137","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"close","id":"Task 8","kind":"dispatch","parent":"impl#2","start":"2026-11-24T12:33:45.496Z","end":"2026-11-24T12:49:04.242Z","outcome":"done","attrs":{"context_bytes":"83137","agent":"asd-dev-escalated","tier":"escalated","model":"gpt-6.2-sol"}}
 {"op":"open","id":"Task 9","kind":"dispatch","parent":"impl#2","start":"2026-11-24T12:49:04.344Z","attrs":{"agent":"asd-tester","context_bytes":"65811","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl#91","kind":"suite","parent":"Task 9","start":"2026-11-24T12:49:54.124Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#91","kind":"suite","parent":"Task 9","start":"2026-11-24T12:49:54.124Z","end":"2026-11-24T12:50:06.098Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#92","kind":"suite","parent":"Task 9","start":"2026-11-24T12:52:21.705Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#92","kind":"suite","parent":"Task 9","start":"2026-11-24T12:52:21.705Z","end":"2026-11-24T12:52:38.712Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#93","kind":"suite","parent":"Task 9","start":"2026-11-24T12:52:52.277Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#93","kind":"suite","parent":"Task 9","start":"2026-11-24T12:52:52.277Z","end":"2026-11-24T12:52:52.444Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#94","kind":"suite","parent":"Task 9","start":"2026-11-24T12:53:17.462Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#94","kind":"suite","parent":"Task 9","start":"2026-11-24T12:53:17.462Z","end":"2026-11-24T12:53:17.639Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#95","kind":"suite","parent":"Task 9","start":"2026-11-24T12:53:38.104Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#95","kind":"suite","parent":"Task 9","start":"2026-11-24T12:53:38.104Z","end":"2026-11-24T12:54:01.416Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#96","kind":"suite","parent":"Task 9","start":"2026-11-24T12:54:05.140Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#96","kind":"suite","parent":"Task 9","start":"2026-11-24T12:54:05.140Z","end":"2026-11-24T12:54:05.316Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"close","id":"Task 9","kind":"dispatch","parent":"impl#2","start":"2026-11-24T12:49:04.344Z","end":"2026-11-24T12:55:24.322Z","outcome":"done","attrs":{"agent":"asd-tester","context_bytes":"65811","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-24T12:33:45.450Z","end":"2026-11-24T12:55:24.322Z","outcome":"done","attrs":{}}
