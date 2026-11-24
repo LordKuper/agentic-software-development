@@ -64,3 +64,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — impl-test: impacted set green (290/290), 0/0 tests
 - 2026-11-24 — Resumed Lite impl-review at wave-1/iter-01. External Review: negative-cache (authentication) after real Claude Code account-hold denial; full unreviewed scope recorded.
 - 2026-11-24 — wave-1/iter-01: Combined CONCERNS (1–6, two critical). Route to impl review-fix for migration retry, legacy frozen mockup selection, minimum-Node config check, settings-write authority, linked config paths and migration comments. No terminal suite on this iteration.
+- 2026-11-24 — route review-fix wave-1/iter-01: escalated, dispatch HEAD 65888ea494d0d4c05b828e3839debd8b30d3ea27; risk change: migration, change: security
+- 2026-11-24 — Review fixes 1–6 committed at bd73e08 and provider sync at ee94c86. All 77 sync targets current. Build, lint and the context check passed. Agnix reported 0 errors and 0 warnings. Actual Node 16.7 verified default and stdin config diagnostics and sync.
+- 2026-11-24 — impl fix for wave-1/iter-01: findings resolved
