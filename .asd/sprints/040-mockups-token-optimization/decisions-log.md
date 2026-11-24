@@ -39,3 +39,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-11-24 — Plan accepted adaptively. AC-7 supersedes AC-4 and is carried in Tasks 2–6 in waves 1–3. Baseline build is green. The user authorized all in-scope advisor recommendations. The tasks preserve compatibility and run affected contract verification before measured comparison.
+- 2026-11-24 — route Task 1: escalated, dispatch HEAD 474972a83c18c88ae58196f8d4b9a796dbf98cb4; risk migration
+- 2026-11-24 — route Task 3: standard, dispatch HEAD 474972a83c18c88ae58196f8d4b9a796dbf98cb4; risk artifact section and literal contract
+- 2026-11-24 — route Task 4: standard, dispatch HEAD 474972a83c18c88ae58196f8d4b9a796dbf98cb4; risk artifact provider discovery contract
+- 2026-11-24 — Wave 1 verified: Task 1 a8ecb89; Task 3 bf6324b; Task 4 3b689d7; generated views synced in 8473947. Context ceilings and all 77 sync statuses pass.
+- 2026-11-24 — route Task 2: escalated, dispatch HEAD 8473947f3b6cb7f0ae7f0a641dad74380ba2b20e; risk broad-reasoning
+- 2026-11-24 — route Task 5: escalated, dispatch HEAD 8473947f3b6cb7f0ae7f0a641dad74380ba2b20e; risk broad-reasoning

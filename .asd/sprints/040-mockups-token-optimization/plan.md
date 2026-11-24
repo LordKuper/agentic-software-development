@@ -21,9 +21,9 @@ Reachability: scope writes effective mockup format in state.json after refinemen
 
 AC-1. Own config and state templates, migration, mockup rules and lifecycle consumers in wave 1.
 
-- [ ] Add the `none` mode to `t_config.yaml`. Add the release migration and preserve explicit format or legacy boolean interpretation together with the old effective UX flag. Use `none` for projects whose old UX flag suppressed mockups. Preserve unrelated keys and handle idempotent retry.
-- [ ] Freeze the effective mockup format for a UI sprint. Update `t_state.json`, lifecycle, scope, audit, design, design-review, design-promote and the sprint entry skill so Standard handles mockup-only sprints and Lite promotes existing mockups independently. Preserve archived and in-flight legacy state.
-- [ ] Update `design-system.md`, `t_ux-spec.html`, `t_html-shell.html`, the mockup settings in `asd-init`, and the README contract. Keep UX references as links, provider verification and recovery, applicable review coverage and existing HTML consumers.
+- [x] Add the `none` mode to `t_config.yaml`. Add the release migration and preserve explicit format or legacy boolean interpretation together with the old effective UX flag. Use `none` for projects whose old UX flag suppressed mockups. Preserve unrelated keys and handle idempotent retry.
+- [x] Freeze the effective mockup format for a UI sprint. Update `t_state.json`, lifecycle, scope, audit, design, design-review, design-promote and the sprint entry skill so Standard handles mockup-only sprints and Lite promotes existing mockups independently. Preserve archived and in-flight legacy state.
+- [x] Update `design-system.md`, `t_ux-spec.html`, `t_html-shell.html`, the mockup settings in `asd-init`, and the README contract. Keep UX references as links, provider verification and recovery, applicable review coverage and existing HTML consumers.
 
 ### Task 2: Config check after update and early skill cap
 Material risk: change: broad-reasoning
@@ -40,17 +40,17 @@ Material risk: artifact: section and literal contract
 
 AC-5, AC-7. Own `core.md`, `artifact-layout.md`, `review-policy.md`, `agent-protocol.md`, `checkpoints.md`, `git-strategy.md`, `code-style.md`, `language-policy.md`, `external-review.md`, `design-principles.md` and `ux-principles.md` under `.asd/rules/`.
 
-- [ ] Apply the individually approved path, shell, memory, ledger, review context, common rules and protocol changes. Preserve section lookups, tree grammar, JSON, signals, test-visible literals and privileges.
-- [ ] Apply the accepted concise changes for remaining named common rules. Verify current rule reachability before replacing local instructions with links.
+- [x] Apply the individually approved path, shell, memory, ledger, review context, common rules and protocol changes. Preserve section lookups, tree grammar, JSON, signals, test-visible literals and privileges.
+- [x] Apply the accepted concise changes for remaining named common rules. Verify current rule reachability before replacing local instructions with links.
 
 ### Task 4: Shorten discovery and role instructions
 Material risk: artifact: provider discovery contract
 
 AC-5, AC-7 and reviewer/Dev AC-1 handoff. Own canonical phase skills, named agent definitions and root AGENTS authoring sources.
 
-- [ ] Shorten all 12 phase descriptions while retaining discovery triggers, workflow links and tested role tokens.
-- [ ] Apply accepted reductions in Tester, External Review, Quality, Efficiency and Combined. Update Dev/Quality handoff to use the available standalone mockup rather than require a UX spec. Preserve role modes, tool grants, rubric headings, validation and exact verdicts.
-- [ ] Shorten repetitive author-owned AGENTS tail and its canonical managed-block template. Preserve required rule reads, repo-specific exceptions, command and mirror contracts and generated ownership. Let the orchestrator sync generated targets.
+- [x] Shorten all 12 phase descriptions while retaining discovery triggers, workflow links and tested role tokens.
+- [x] Apply accepted reductions in Tester, External Review, Quality, Efficiency and Combined. Update Dev/Quality handoff to use the available standalone mockup rather than require a UX spec. Preserve role modes, tool grants, rubric headings, validation and exact verdicts.
+- [x] Shorten repetitive author-owned AGENTS tail and its canonical managed-block template. Preserve required rule reads, repo-specific exceptions, command and mirror contracts and generated ownership. Let the orchestrator sync generated targets.
 
 ### Task 5: Phase context and workflow economy
 Material risk: change: broad-reasoning
