@@ -2,7 +2,7 @@
 
 // update.js state machine, driver and migration runner; release-manifest integrity
 
-const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, update, REPO_ROOT, test, mkTempDir, loadManifest, writeFile, canonText, headingBody, jsonOf, sectionOf, stepOf, spans } = require('./lib.js');
 
 test('sprint-040 AC-2: only real update completion offers missing settings through installed asd-init', () => {
   const skill = '.asd/skills/asd-update/SKILL.md';
@@ -22,6 +22,9 @@ test('sprint-040 AC-2: only real update completion offers missing settings throu
   assert.deepStrictEqual(jsonOf(skill, 'Delegates').skills, ['asd-sync', 'asd-init']);
   const adoption = headingBody('.asd/skills/asd-init/SKILL.md', 'Update completion');
   assert.match(adoption, /`accept-all` \| `edit-missing-values` \| `abort`/);
+  const write = stepOf(adoption, '3');
+  assert.match(write, /^3\.\s+`accept-all`\s+→/, 'The write branch starts with the accept-all decision route');
+  assert.ok(spans(write).includes('missing'), 'The write branch uses the missing diagnostic field');
 });
 
 test('update state machine: upstream unchanged / local untouched -> noop', () => {
