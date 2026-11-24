@@ -118,7 +118,9 @@
     "Task 3": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:section and literal contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
     "Task 4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:provider discovery contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
     "Task 2": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
-    "Task 5": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
+    "Task 5": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 7": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" },
+    "Task 8": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }
   },
   "skipped_phases": [],
   "reviews": {

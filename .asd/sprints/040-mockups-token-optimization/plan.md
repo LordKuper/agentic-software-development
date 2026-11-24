@@ -78,17 +78,17 @@ Orchestrator-only verification after Task 6: rerun the matched Codex probes, rep
 Material risk: change: broad-reasoning
 Reachability: session or phase bootstrap loads common instructions before workflow actions; each phase receives its necessary local instructions and can resolve exceptional branches before acting.
 
-AC-5, AC-7, AC-8. Own provider grants and reading protocol. Use the advisor verdict and actual per-phase section sizes.
+AC-5, AC-7, AC-8. Own provider grants, reading protocol and the sprint-entry pointer to the branch rules. Use the advisor verdict and actual per-phase section sizes.
 
-- [ ] Reduce repeated full-file and wildcard injection. Preserve safety, role boundaries and expected normal-path rules. Give exceptional branches explicit on-demand references; verify every active consumer and resume path.
-- [ ] Estimate the complete required input, including any newly unconditional reads. Aim for headroom under both Codex limits.
+- [x] Reduce repeated full-file and wildcard injection. Preserve safety, role boundaries and expected normal-path rules. Give exceptional branches explicit on-demand references; verify every active consumer and resume path.
+- [x] Estimate the complete required input, including any newly unconditional reads. Aim for headroom under both Codex limits.
 
 ### Task 8: Compress high-cost rules and phase inputs
 Material risk: change: broad-reasoning
 
 AC-5, AC-7, AC-8. Own canonical rule prose and workflow bodies within the advisor's findings.
 
-- [ ] Shorten the highest recurrent instructions and phase bodies. Preserve authoritative sections, parsed literals, permission boundaries, behavioral contracts and compatible state. Coordinate named references with Task 7.
+- [x] Shorten the highest recurrent instructions and phase bodies. Preserve authoritative sections, parsed literals, permission boundaries, behavioral contracts and compatible state. Coordinate named references with Task 7.
 
 ### Task 9: Verify the 25% changes
 Material risk: none

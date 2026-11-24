@@ -53,3 +53,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — Refreshed all 24 probes after recovery-reference corrections (48e521a). Phase input changed from 618,556 to 551,031 in Lite and 764,116 to 676,213 in Standard; raw evidence and limitations updated in token-baseline.md.
 - 2026-11-24 — impl-test: impacted set green (320/320), 0/0 tests
 - 2026-11-24 — AC-8 scope amendment: user requires at least 25% Codex input reduction. Apply independently to Lite (max 463,917) and Standard (max 573,087), against the original matched baseline. Tasks 7–8 wave 4, Task 9 wave 5. Zero review iterations and fix rounds; floor_base=wave-1/0. Interrupted the undispatched review and returned to implementation. Existing contracts remain in scope.
+- 2026-11-24 — Accepted AC-8 advisor verdicts under AC-7. Compress the ordinary path and defer event-specific instructions with exact references. Keep mandatory bootstrap in the measured context or account for it separately within the same boundary.
+- 2026-11-24 — route Task 7: escalated, dispatch HEAD 1889c3e; risk broad-reasoning
+- 2026-11-24 — route Task 8: escalated, dispatch HEAD 1889c3e; risk broad-reasoning
+- 2026-11-24 — AC-8 wave 4 implementation: canonical compression 8bab6f8, phase-specific grants and startup reference a2ce105, provider sync 206c371. Context ceilings and sync target checks passed. Measuring exact Codex usage.
+- 2026-11-24 — route Task 9: test-only, dispatch HEAD 206c37187417f6e9ca29082ea3d1a83598a4c4f5
