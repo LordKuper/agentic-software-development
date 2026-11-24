@@ -1,0 +1,468 @@
+{
+  "sessions": {
+    "main_or_unknown": 1,
+    "subagent": 25
+  },
+  "phaseWindows": 24,
+  "negativeDeltas": 0,
+  "totals": {
+    "scope#1": {
+      "main_or_unknown": {
+        "samples": 34,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2915148,
+          "cached_input_tokens": 2879488,
+          "output_tokens": 7025,
+          "reasoning_output_tokens": 463
+        }
+      }
+    },
+    "audit#1": {
+      "main_or_unknown": {
+        "samples": 6,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 669998,
+          "cached_input_tokens": 653312,
+          "output_tokens": 2417,
+          "reasoning_output_tokens": 121
+        }
+      }
+    },
+    "plan#1": {
+      "main_or_unknown": {
+        "samples": 9,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1209576,
+          "cached_input_tokens": 1186432,
+          "output_tokens": 4613,
+          "reasoning_output_tokens": 902
+        }
+      }
+    },
+    "impl#1": {
+      "main_or_unknown": {
+        "samples": 61,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 10331583,
+          "cached_input_tokens": 10275968,
+          "output_tokens": 13244,
+          "reasoning_output_tokens": 2688
+        }
+      },
+      "subagent": {
+        "samples": 117,
+        "sessions": 7,
+        "usage": {
+          "input_tokens": 9501592,
+          "cached_input_tokens": 8884608,
+          "output_tokens": 43551,
+          "reasoning_output_tokens": 11203
+        }
+      }
+    },
+    "impl-test#1": {
+      "main_or_unknown": {
+        "samples": 27,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 5701478,
+          "cached_input_tokens": 5664384,
+          "output_tokens": 5949,
+          "reasoning_output_tokens": 1181
+        }
+      },
+      "subagent": {
+        "samples": 33,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2971430,
+          "cached_input_tokens": 2890880,
+          "output_tokens": 10932,
+          "reasoning_output_tokens": 1381
+        }
+      }
+    },
+    "impl#2": {
+      "main_or_unknown": {
+        "samples": 9,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2072139,
+          "cached_input_tokens": 2062208,
+          "output_tokens": 1912,
+          "reasoning_output_tokens": 408
+        }
+      },
+      "subagent": {
+        "samples": 17,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1674614,
+          "cached_input_tokens": 1655168,
+          "output_tokens": 3894,
+          "reasoning_output_tokens": 455
+        }
+      }
+    },
+    "impl-test#2": {
+      "main_or_unknown": {
+        "samples": 9,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2137616,
+          "cached_input_tokens": 2129792,
+          "output_tokens": 1876,
+          "reasoning_output_tokens": 468
+        }
+      },
+      "subagent": {
+        "samples": 20,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1472965,
+          "cached_input_tokens": 1370752,
+          "output_tokens": 6375,
+          "reasoning_output_tokens": 343
+        }
+      }
+    },
+    "impl-review#1": {
+      "main_or_unknown": {
+        "samples": 26,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 6547622,
+          "cached_input_tokens": 6522624,
+          "output_tokens": 8145,
+          "reasoning_output_tokens": 1385
+        }
+      },
+      "subagent": {
+        "samples": 41,
+        "sessions": 4,
+        "usage": {
+          "input_tokens": 3168905,
+          "cached_input_tokens": 2896768,
+          "output_tokens": 20213,
+          "reasoning_output_tokens": 9614
+        }
+      }
+    },
+    "impl#3": {
+      "main_or_unknown": {
+        "samples": 21,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 5746205,
+          "cached_input_tokens": 5728384,
+          "output_tokens": 6393,
+          "reasoning_output_tokens": 1599
+        }
+      },
+      "subagent": {
+        "samples": 31,
+        "sessions": 2,
+        "usage": {
+          "input_tokens": 3719493,
+          "cached_input_tokens": 3600512,
+          "output_tokens": 15430,
+          "reasoning_output_tokens": 4316
+        }
+      }
+    },
+    "impl-test#3": {
+      "main_or_unknown": {
+        "samples": 8,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2263896,
+          "cached_input_tokens": 2256896,
+          "output_tokens": 1737,
+          "reasoning_output_tokens": 481
+        }
+      },
+      "subagent": {
+        "samples": 19,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1481518,
+          "cached_input_tokens": 1417088,
+          "output_tokens": 5418,
+          "reasoning_output_tokens": 269
+        }
+      }
+    },
+    "impl-review#2": {
+      "main_or_unknown": {
+        "samples": 11,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 3202484,
+          "cached_input_tokens": 3189120,
+          "output_tokens": 3411,
+          "reasoning_output_tokens": 741
+        }
+      },
+      "subagent": {
+        "samples": 25,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2382887,
+          "cached_input_tokens": 2286720,
+          "output_tokens": 6562,
+          "reasoning_output_tokens": 2099
+        }
+      }
+    },
+    "impl#4": {
+      "main_or_unknown": {
+        "samples": 13,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 3961555,
+          "cached_input_tokens": 3943040,
+          "output_tokens": 3716,
+          "reasoning_output_tokens": 877
+        }
+      },
+      "subagent": {
+        "samples": 14,
+        "sessions": 2,
+        "usage": {
+          "input_tokens": 1847990,
+          "cached_input_tokens": 1807104,
+          "output_tokens": 9725,
+          "reasoning_output_tokens": 2313
+        }
+      }
+    },
+    "impl-test#4": {
+      "main_or_unknown": {
+        "samples": 7,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2215351,
+          "cached_input_tokens": 2210688,
+          "output_tokens": 1406,
+          "reasoning_output_tokens": 347
+        }
+      },
+      "subagent": {
+        "samples": 17,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1201446,
+          "cached_input_tokens": 1150592,
+          "output_tokens": 5245,
+          "reasoning_output_tokens": 73
+        }
+      }
+    },
+    "impl-review#3": {
+      "main_or_unknown": {
+        "samples": 8,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2566134,
+          "cached_input_tokens": 2560000,
+          "output_tokens": 3805,
+          "reasoning_output_tokens": 1153
+        }
+      },
+      "subagent": {
+        "samples": 16,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1348044,
+          "cached_input_tokens": 1260032,
+          "output_tokens": 4952,
+          "reasoning_output_tokens": 1434
+        }
+      }
+    },
+    "impl#5": {
+      "main_or_unknown": {
+        "samples": 9,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2953840,
+          "cached_input_tokens": 2944896,
+          "output_tokens": 3283,
+          "reasoning_output_tokens": 682
+        }
+      },
+      "subagent": {
+        "samples": 12,
+        "sessions": 2,
+        "usage": {
+          "input_tokens": 1889857,
+          "cached_input_tokens": 1860352,
+          "output_tokens": 8949,
+          "reasoning_output_tokens": 2438
+        }
+      }
+    },
+    "impl-test#5": {
+      "main_or_unknown": {
+        "samples": 5,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1664174,
+          "cached_input_tokens": 1661312,
+          "output_tokens": 1320,
+          "reasoning_output_tokens": 471
+        }
+      },
+      "subagent": {
+        "samples": 18,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1182630,
+          "cached_input_tokens": 1136896,
+          "output_tokens": 4521,
+          "reasoning_output_tokens": 188
+        }
+      }
+    },
+    "impl-review#4": {
+      "main_or_unknown": {
+        "samples": 8,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2689427,
+          "cached_input_tokens": 2684416,
+          "output_tokens": 2974,
+          "reasoning_output_tokens": 485
+        }
+      },
+      "subagent": {
+        "samples": 23,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1909305,
+          "cached_input_tokens": 1803648,
+          "output_tokens": 5846,
+          "reasoning_output_tokens": 2173
+        }
+      }
+    },
+    "impl#6": {
+      "main_or_unknown": {
+        "samples": 8,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 2748235,
+          "cached_input_tokens": 2737920,
+          "output_tokens": 2218,
+          "reasoning_output_tokens": 472
+        }
+      },
+      "subagent": {
+        "samples": 8,
+        "sessions": 2,
+        "usage": {
+          "input_tokens": 1370011,
+          "cached_input_tokens": 1350400,
+          "output_tokens": 4555,
+          "reasoning_output_tokens": 641
+        }
+      }
+    },
+    "impl-test#6": {
+      "main_or_unknown": {
+        "samples": 5,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1750244,
+          "cached_input_tokens": 1747584,
+          "output_tokens": 1164,
+          "reasoning_output_tokens": 247
+        }
+      },
+      "subagent": {
+        "samples": 17,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1155751,
+          "cached_input_tokens": 1108096,
+          "output_tokens": 4708,
+          "reasoning_output_tokens": 190
+        }
+      }
+    },
+    "impl-review#5": {
+      "main_or_unknown": {
+        "samples": 31,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 11223442,
+          "cached_input_tokens": 11197312,
+          "output_tokens": 10081,
+          "reasoning_output_tokens": 2928
+        }
+      },
+      "subagent": {
+        "samples": 65,
+        "sessions": 4,
+        "usage": {
+          "input_tokens": 3861367,
+          "cached_input_tokens": 3654400,
+          "output_tokens": 20262,
+          "reasoning_output_tokens": 4162
+        }
+      }
+    },
+    "design-promote#1": {
+      "main_or_unknown": {
+        "samples": 2,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 747947,
+          "cached_input_tokens": 745984,
+          "output_tokens": 373,
+          "reasoning_output_tokens": 64
+        }
+      }
+    },
+    "cleanup#1": {
+      "main_or_unknown": {
+        "samples": 2,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 749480,
+          "cached_input_tokens": 748544,
+          "output_tokens": 855,
+          "reasoning_output_tokens": 66
+        }
+      }
+    },
+    "retro#1": {
+      "main_or_unknown": {
+        "samples": 3,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1129243,
+          "cached_input_tokens": 1126784,
+          "output_tokens": 2994,
+          "reasoning_output_tokens": 223
+        }
+      }
+    },
+    "pr#1": {
+      "main_or_unknown": {
+        "samples": 4,
+        "sessions": 1,
+        "usage": {
+          "input_tokens": 1526940,
+          "cached_input_tokens": 1523200,
+          "output_tokens": 2494,
+          "reasoning_output_tokens": 481
+        }
+      }
+    }
+  }
+}

@@ -14,7 +14,7 @@ responsibility:
 - Token audit: measure actual Codex token use by phase, establish the baseline before optimization, and compare the same scenarios after changes.
 - Optimization: audit all ASD files and generated artifact types. Propose removing unused or redundant ones. Shorten what stays. Use checklists or structured data where they help.
 - Config completeness: at the end of each real `asd-update`, check the project config against all current settings and offer values for missing keys. Remove the completeness check from `asd-sprint`.
-- Approval order: agree on requirements and practices first. Obtain an ASD advisor verdict for each file, then explicit user approval for each proposed edit or removal.
+- Approval order: agree on requirements and practices first. Obtain an ASD advisor verdict for each file. The orchestrator accepts in-scope recommendations under the user's standing authorization.
 
 ## Findings
 
@@ -32,7 +32,7 @@ responsibility:
 4. Use the shortest clear form. Use checklists, tables or structured data when they improve clarity or validation.
 5. Preserve gates, roles, safety, compatibility, recovery, and parsed contracts. Verify approved changes and retained behavior with contract tests and scenario checks.
 6. Measure both Lite and Standard in Codex. Label phases and modes exercised, including skipped phases and revisits. Compare baseline and candidate with the same model, effort, scenarios, settings and tool availability. Report orchestrator and dispatched-agent usage when separately observable, avoid double counting, and mark missing telemetry. Report per-file or assembled-context estimates separately from observed usage.
-7. For each file, record the advisor's verdict (keep, shorten, consolidate or remove), evidence, affected contracts and expected savings or measurement limits. Obtain explicit approval before each proposed file edit or removal.
+7. Have the advisor write each file verdict in Russian (keep, shorten, consolidate or remove), with evidence, affected contracts and expected savings or measurement limits. Record accepted recommendations under the standing authorization.
 
 ## Approaches
 

@@ -41,6 +41,55 @@
       "reason": "include P-1; defer A-2, A-4 and P-2",
       "evidence": "decisions-log.md: Retro intake accepted",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "file approval: .asd/rules/sprint-lifecycle.md",
+      "decision_actor": "user",
+      "reason": "approved all three lifecycle proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: sprint-lifecycle.md",
+      "artifact_revision": "audit.md@lifecycle-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/artifact-layout.md",
+      "decision_actor": "user",
+      "reason": "approved all three artifact layout proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: artifact-layout.md",
+      "artifact_revision": "audit.md@artifact-layout-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/review-policy.md",
+      "decision_actor": "user",
+      "reason": "approved all three review policy proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: review-policy.md",
+      "artifact_revision": "audit.md@review-policy-verdict"
+    },
+    {
+      "gate": "file approval: .asd/rules/core.md",
+      "decision_actor": "user",
+      "reason": "approved all three core rule proposals",
+      "evidence": "decisions-log.md: File approval; audit.md: core.md",
+      "artifact_revision": "audit.md@core-verdict"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "standing authorization to accept advisor file recommendations",
+      "evidence": "decisions-log.md: Scope amendment AC-7; 0 review iterations, 0 fix rounds",
+      "artifact_revision": "sprint.md@AC-7"
+    },
+    {
+      "gate": "advisor recommendation: .asd/rules/agent-protocol.md",
+      "decision_actor": "orchestrator",
+      "reason": "accepted all four protocol proposals under AC-7",
+      "evidence": "decisions-log.md: Accepted all four; audit.md: agent-protocol.md",
+      "artifact_revision": "audit.md@agent-protocol-verdict"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "complete tracked inventory, validated Codex evidence and accepted file verdicts under AC-7",
+      "evidence": "audit.md; token-baseline.md; context-priority.csv; 46/46 impacted baseline checks",
+      "artifact_revision": "audit.md@complete"
     }
   ],
   "task_routing": {},
@@ -50,7 +99,7 @@
     "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T11:02:45Z",
+  "updated_at": "2026-11-24T11:54:16Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

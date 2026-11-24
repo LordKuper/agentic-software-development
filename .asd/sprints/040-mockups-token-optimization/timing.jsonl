@@ -8,3 +8,33 @@
 {"op":"open","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-24T11:01:10.711Z","attrs":{}}
 {"op":"close","id":"scope-acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-24T11:01:10.711Z","end":"2026-11-24T11:02:54.188Z","outcome":"done","attrs":{}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-24T10:43:53.745Z","end":"2026-11-24T11:02:54.188Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-24T11:02:54.578Z","attrs":{}}
+{"op":"open","id":"lifecycle-file-advice","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:07:24.689Z","attrs":{}}
+{"op":"close","id":"lifecycle-file-advice","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:07:24.689Z","end":"2026-11-24T11:07:32.973Z","outcome":"interrupted","attrs":{}}
+{"op":"open","id":"asd-advisor audit#1","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:07:32.973Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#1","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:07:32.973Z","end":"2026-11-24T11:09:20.527Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"wait lifecycle file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:09:20.527Z","attrs":{"gate":"lifecycle file"}}
+{"op":"close","id":"wait lifecycle file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:09:20.527Z","end":"2026-11-24T11:17:54.569Z","outcome":"done","attrs":{"gate":"lifecycle file"}}
+{"op":"open","id":"asd-advisor audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:17:54.569Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#2","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:17:54.569Z","end":"2026-11-24T11:19:19.509Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"wait artifact layout file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:19:19.509Z","attrs":{"gate":"artifact layout file"}}
+{"op":"close","id":"wait artifact layout file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:19:19.509Z","end":"2026-11-24T11:37:14.870Z","outcome":"done","attrs":{"gate":"artifact layout file"}}
+{"op":"open","id":"asd-advisor audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:37:14.870Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#3","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:37:14.870Z","end":"2026-11-24T11:38:58.111Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"wait review policy file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:38:58.111Z","attrs":{"gate":"review policy file"}}
+{"op":"close","id":"wait review policy file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:38:58.111Z","end":"2026-11-24T11:42:54.670Z","outcome":"done","attrs":{"gate":"review policy file"}}
+{"op":"open","id":"asd-advisor audit#4","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:42:54.670Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#4","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:42:54.670Z","end":"2026-11-24T11:44:44.833Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"wait core file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:44:44.833Z","attrs":{"gate":"core file"}}
+{"op":"close","id":"wait core file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:44:44.833Z","end":"2026-11-24T11:46:33.979Z","outcome":"done","attrs":{"gate":"core file"}}
+{"op":"open","id":"asd-advisor audit#5","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:46:33.979Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#5","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:46:33.979Z","end":"2026-11-24T11:48:22.592Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"wait agent protocol file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:48:22.592Z","attrs":{"gate":"agent protocol file"}}
+{"op":"close","id":"wait agent protocol file","kind":"user-wait","parent":"audit#1","start":"2026-11-24T11:48:22.592Z","end":"2026-11-24T11:49:25.280Z","outcome":"done","attrs":{"gate":"agent protocol file"}}
+{"op":"open","id":"asd-advisor audit#6","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"asd-advisor audit#7","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"open","id":"asd-advisor audit#8","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#6","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","end":"2026-11-24T11:51:57.550Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#7","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","end":"2026-11-24T11:52:26.885Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"asd-advisor audit#8","kind":"dispatch","parent":"audit#1","start":"2026-11-24T11:49:25.280Z","end":"2026-11-24T11:53:23.934Z","outcome":"done","attrs":{"agent":"asd-advisor","context_bytes":"24350","tier":"standard","model":"astra"}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-24T11:02:54.578Z","end":"2026-11-24T11:54:17.069Z","outcome":"done","attrs":{}}
