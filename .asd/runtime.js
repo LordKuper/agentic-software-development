@@ -2793,10 +2793,24 @@ function configValueIssue(field, entry) {
   return entry.value === '' && field.value !== '' ? 'expected a non-empty string' : null;
 }
 
-/** Reports actionable config errors without printing setting values. */
-function configCheckCommand(flags) {
+/** Returns installed config metadata if present, rejecting links and other unexpected path types below the repo root. */
+function projectConfigStat(repoRoot) {
+  for (const relative of ['.asd', '.asd/project']) {
+    const entry = fs.lstatSync(path.join(repoRoot, relative), { throwIfNoEntry: false });
+    if (!entry) return undefined;
+    if (!entry.isDirectory()) throw new Error(`${relative} must be a real directory (symlinks and junctions are rejected)`);
+  }
+  const relative = '.asd/project/config.yaml';
+  const entry = fs.lstatSync(path.join(repoRoot, relative), { throwIfNoEntry: false });
+  if (entry && !entry.isFile()) throw new Error(`${relative} must be a regular file (symlinks are rejected)`);
+  return entry;
+}
+
+/** Reports config errors without setting values. The invoked repo path keeps links visible to the installed-config guard. */
+function configCheckCommand(flags, repoRoot) {
   const template = path.join(__dirname, 'templates', 't_config.yaml');
-  const config = flags.config ?? path.join(__dirname, 'project', 'config.yaml');
+  const config = flags.config ?? path.join(repoRoot, '.asd', 'project', 'config.yaml');
+  const hasInput = flags.config !== undefined || projectConfigStat(repoRoot) !== undefined;
   const schema = configEntries(fs.readFileSync(template, 'utf8'), template, ({ path, line, reason }) => fail(`${template}:${line}: ${path}: ${reason}`));
   const required = new Map(schema.map((field) => [JSON.stringify(field.path), field]));
   const mockupFormatKey = JSON.stringify(['project', 'mockup_format']);
@@ -2805,12 +2819,11 @@ function configCheckCommand(flags) {
   const seen = new Set();
   const duplicates = new Set();
   const invalid = [];
-  let source;
+  let source = '';
   try {
-    source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
+    if (hasInput) source = fs.readFileSync(config === '-' ? 0 : config, 'utf8');
   } catch (error) {
     if (config === '-' || error.code !== 'ENOENT') throw error;
-    source = '';
   }
   for (const entry of configEntries(source, config, ({ path, line, reason, duplicate }) => {
     if (duplicate) duplicates.add(path);
@@ -2929,7 +2942,7 @@ function parseFlagArgs(argv, booleanFlags, mergeAttrs = false) {
   for (let i = 0; i < argv.length; i += 1) {
     if (!argv[i].startsWith('--')) fail('flags require values');
     const name = argv[i].slice(2);
-    const repeated = Object.hasOwn(out, name);
+    const repeated = Object.prototype.hasOwnProperty.call(out, name);
     const merge = repeated && mergeAttrs && name === 'attrs';
     if (repeated && !merge) process.stderr.write(`runtime: flag --${name} given more than once, the last value wins\n`);
     if (bools.includes(name)) { out[name] = true; continue; }
@@ -2951,9 +2964,10 @@ async function main(argv) {
   if (command === 'commit-check') return commitCheckCommand(argv.slice(3));
   if (command === 'attribution-check') return attributionCheckCommand(argv.slice(3));
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single', 'seed', 'bundles', 'green', 'scope-only', 'nul']);
-  if (Object.hasOwn(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
+  if (Object.prototype.hasOwnProperty.call(COMMAND_FLAGS, command)) warnIgnoredFlags(command, flags);
   if (command === 'config-check') {
-    const result = configCheckCommand(flags);
+    const repoRoot = path.resolve(path.dirname(argv[1]), '..');
+    const result = configCheckCommand(flags, repoRoot);
     process.stdout.write(JSON.stringify(result) + '\n');
     return result.ok ? 0 : 1;
   }
@@ -3095,4 +3109,4 @@ if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CAP_STANDALONE_SKILLS_BYTES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, standaloneSkillBytes, standaloneSkillFiles, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CAP_STANDALONE_SKILLS_BYTES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, configEntries, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, checklistHits, isDocumentation, isTest, latchRefresh, loadWorkflow, markdownSection, numstatLines, persistReview, projectConfigStat, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, standaloneSkillBytes, standaloneSkillFiles, timingAppend, timingRecover, timingSummary, triggerMatches, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };

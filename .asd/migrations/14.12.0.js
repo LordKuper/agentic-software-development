@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { configEntries } = require('../runtime.js');
+const { configEntries, projectConfigStat } = require('../runtime.js');
 
 const CONFIG = '.asd/project/config.yaml';
 const FORMAT = 'project.mockup_format';
@@ -48,8 +48,7 @@ function insertSelection(lines, entries, project, mode, defaultEnding) {
   lines.splice(insertion, 0, additions.join(ending) + (atUnterminatedEnd ? '' : ending));
 }
 
-function replaceConfig(file, text) {
-  const mode = fs.statSync(file).mode;
+function replaceConfig(file, text, mode) {
   const tempDir = fs.mkdtempSync(path.join(path.dirname(file), '.asd-migration-'));
   const tempFile = path.join(tempDir, path.basename(file));
   try {
@@ -61,16 +60,15 @@ function replaceConfig(file, text) {
   }
 }
 
-/** Retires the legacy selector while preserving the old UX-gated effective mode. */
+/** Retires the legacy selector while preserving the old UX-gated mode and unrelated settings and comments. */
 module.exports = function migrate({ repoRoot }) {
   const configPath = path.join(repoRoot, CONFIG);
-  if (!fs.existsSync(configPath)) return { status: 'absent', changes: [] };
+  const config = projectConfigStat(repoRoot);
+  if (!config) return { status: 'absent', changes: [] };
   const raw = fs.readFileSync(configPath, 'utf8');
   const bom = raw.startsWith('\uFEFF') ? '\uFEFF' : '';
   const body = raw.slice(bom.length);
 
-  // Use the same block-style YAML subset and line numbers as config-check. Fail before writing if
-  // the relevant settings cannot be resolved. Unrelated settings are never reserialized.
   const relevant = ['<root>', 'project', 'documents', FORMAT, LEGACY, UX];
   const entries = configEntries(body, CONFIG, ({ path: key, line, reason }) => {
     if (relevant.includes(key)) throw new Error(`${CONFIG}:${line}: ${key}: ${reason}`);
@@ -112,7 +110,7 @@ module.exports = function migrate({ repoRoot }) {
 
   const next = bom + lines.join('');
   if (next === raw) return { status: 'unchanged', changes: [] };
-  replaceConfig(configPath, next);
+  replaceConfig(configPath, next, config.mode);
   const changes = [`${FORMAT}: ${mode}`];
   if (legacy) changes.push(`removed ${LEGACY}`);
   return { status: 'migrated', changes };

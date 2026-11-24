@@ -16,4 +16,4 @@ Settings are in `.asd/project/config.yaml`. For routing, paths and review, see `
 
 ### Hard rules
 
-Keep workflow infrastructure read-only within the boundaries of `.asd/rules/core.md` "Invariants". Only user-invoked `asd-init`, declared scope/impl settings changes via `asd-init`, and limited `asd-update` release migrations may edit settings.
+Follow `.asd/rules/core.md` "Invariants" for infrastructure write boundaries and authorized settings writes.

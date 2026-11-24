@@ -19,7 +19,7 @@
 
 - All project work goes through `/asd-sprint` with paths per `artifact-layout.md`. Archive the active sprint before starting another; a merged sprint is archived by the next scope (`sprint-lifecycle.md` "PR phase").
 - Infrastructure is read-only in sprints: `.asd/{rules,templates,agents,skills,workflows,hooks,migrations}/`, `.asd/{runtime,sync}.js`, `.claude/`, `.codex/`, `.agents/skills/`, root `AGENTS.md` and `CLAUDE.md`.
-- Settings writes: user-invoked `/asd-init`, declared scope/plan changes via sprint-mediated `asd-init` (`sprint-lifecycle.md` "Plan file format"), or release-mandated `/asd-update` migrations of renamed/removed keys or values and their necessary mappings, insertions and shipped-comment rewrites.
+- Settings writes: user-invoked `/asd-init`, declared scope/plan changes via sprint-mediated `asd-init` (`sprint-lifecycle.md` "Plan file format"), release-mandated `/asd-update` migrations of renamed/removed keys or values and their necessary mappings, insertions and shipped-comment rewrites, and `asd-init` additions of missing settings after a real update and explicit acceptance of the proposed values (`asd-update` step 5).
 - Infrastructure exceptions: approved scope-step-1 update of framework-managed paths (`.asd/skills/asd-update/SKILL.md` "Sprint-mediated mode") or the exhaustive canonical allowlist in `sprint-lifecycle.md` "Self-hosting". Never hand-edit generated views.
 
 ## Interaction protocol (QODDA)

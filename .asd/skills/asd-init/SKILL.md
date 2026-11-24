@@ -113,9 +113,9 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 ### Update completion
 
-1. Read the installed config and template. Use "Config check" to confirm which passed paths are still missing. If none remain, stop. Otherwise apply "Missing settings" to those paths and show only the proposed additions.
+1. Run "Config check" without `--config` before reading the installed config. Exit 2: relay the diagnostic and stop. If no passed path is still missing, stop. Otherwise read the config and template, apply "Missing settings" to those paths and show only the proposed additions.
 2. Validate the proposed complete YAML per "Config check". If existing entries still need repair, report their paths and direct the user to standalone `/asd-init`. For a valid proposal request `accept-all` | `edit-missing-values` | `abort`; repeat this step for edits.
-3. On acceptance, insert exactly the approved missing leaves and any needed parent mappings. If the config or template changed during approval, re-check and obtain approval for the current proposal. Configuration is this mode's only write.
+3. On acceptance, rerun the installed config check before writing and stop with its diagnostic on exit 2. If the config or template changed during approval, re-check and obtain approval for the current proposal. Insert exactly the approved missing leaves and any needed parent mappings. Configuration is this mode's only write.
 
 ## Rules
 
@@ -138,7 +138,7 @@ Plan acceptance (scope invocation: the scope gate) is the approval of record: no
 
 ### Config check
 
-Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure.
+Run `node .asd/runtime.js config-check` on installed config, or add `--config -` and pipe proposed YAML. Accept exit 0 only. Exit 1 lists `missing`, `duplicates` and `invalid` dotted paths. Exit 2 reports command, schema or read failure, including links in the installed config path.
 
 Validate both mockup keys when present. `project.mockup_format` accepts the four template values. A valid legacy-only config remains accepted. Resolve its effective value per `sprint-lifecycle.md` "Optional documents".
 
