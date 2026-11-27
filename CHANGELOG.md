@@ -2,6 +2,24 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.13.0
+
+### Added
+
+- Delegate research and solution design to a dedicated researcher while keeping user decisions with the orchestrator.
+
+### Changed
+
+- Number decision questions and options in the text fallback; apply issue-triage labels without a separate confirmation.
+- Track concurrent task completion and shared context, and verify the test runner's Git worktree before the terminal suite.
+- Include failing migration fixtures in task briefs and trace provider-backed artifact recovery through review.
+
+### Fixed
+
+- Read external-review metadata correctly with CRLF line endings and preserve the selected Codex provider, model and host in the review route.
+- Stop immediately on an explicit external-review account hold and retain the unreviewed scope.
+- Preserve context measurement on retry and reject a redirected Git worktree even when its commit matches.
+
 ## v14.12.0
 
 ### Changed
