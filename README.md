@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD works with any technology stack. The main orchestrator coordinates 9 specialized agents (Dev, Tester, reviewers, researcher, advisor, scout) and 19 skills.
+ASD works with any technology stack. The main orchestrator dispatches 9 specialized agents (Dev, Tester, reviewers, researcher, advisor, scout) and coordinates 19 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -223,11 +223,11 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Eight specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna/astra) and reasoning effort. `.asd/sync.js` resolves aliases to model IDs via `.asd/release-manifest.json`'s `model_families` table. Effort is shown as `model/effort`. The `haiku` family passes through to Claude Code's `haiku` alias: Haiku 5.5 on the Anthropic API, Haiku 4.5 on Bedrock, Vertex and Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set. [Provider model families](.asd/rules/providers.md#model-family-resolution)
+Nine specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna/astra) and reasoning effort. `.asd/sync.js` resolves aliases to model IDs via `.asd/release-manifest.json`'s `model_families` table. Effort is shown as `model/effort`. The `haiku` family passes through to Claude Code's `haiku` alias: Haiku 5.5 on the Anthropic API, Haiku 4.5 on Bedrock, Vertex and Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set. [Provider model families](.asd/rules/providers.md#model-family-resolution)
 
 **Orchestrator session model.** ASD never sets the main orchestrator's model; it is your session model. Recommended: Opus at `medium` effort as the default, Fable for long unattended or large runs. Raise effort before changing models; the dispatched agents below carry their own tiers.
 
-**Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates 11 `-quota` definitions, one for each of the eight roles and three task variants. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
+**Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates one `-quota` definition for each role and task variant. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
 
 Only the main orchestrator and its inline skills prompt you for a discrete decision. Claude Code uses `AskUserQuestion`. Codex uses the native choice widget when available, with the same choices in chat as a fallback. Both wait for your explicit answer. Creators relay hard or unresolved decisions as `QUESTION`. Reviewers use their `Escalations` or `Stalemate` verdict sections. [Provider mapping](.asd/rules/providers.md#semantic-operations---host-convention), [agent relay](.asd/rules/agent-protocol.md#relay)
 
@@ -368,7 +368,7 @@ your-project/
 │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md, agent-protocol.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md, t_reliability-checklist.md
-│   ├── agents/                      # 8 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+│   ├── agents/                      # 9 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
 │   ├── skills/                      # 19 canonical skill specs (SKILL.md)
 │   ├── workflows/                   # 12 phase orchestration files, each with its agent-facing phase rules (referenced by path, not generated) + 2 workflow definitions (`standard.json`, `lite.json`, see "Workflows")
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
@@ -387,13 +387,13 @@ your-project/
 │       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; decisions-log.md and test-plan.md rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
-│   ├── agents/                      # 11 agent definitions: 8 roles + 3 tier variants (*.md)
+│   ├── agents/                      # 12 agent definitions: 9 roles + 3 tier variants (*.md)
 │   ├── skills/                      # 19 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   ├── agent-memory/<agent>/        # hand-authored, never generated — see "Agent memory" in artifact-layout.md
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
-│   ├── agents/                      # 22 agent definitions: 8 roles + 3 tier variants + 11 quota alternatives (*.toml)
+│   ├── agents/                      # 24 agent definitions: 9 roles + 3 tier variants + 12 quota alternatives (*.toml)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
