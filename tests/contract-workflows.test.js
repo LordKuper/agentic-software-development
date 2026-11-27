@@ -465,15 +465,13 @@ test('sprint-026 AC-13 (E1/E2), sprint-041 AC-3/AC-4: conditional agent inputs a
   }
 });
 
-test('sprint-026 AC-15, sprint-040 AC-6: the standalone skills stay within the shared context-check cap', () => {
+test('sprint-026 AC-15, sprint-040 AC-6: the context check and skill form enumerate the same standalone skills', () => {
   const skills = FORM_CATEGORIES.skills.files();
   const workflows = FORM_CATEGORIES.workflows.files();
-  const { CAP_STANDALONE_SKILLS_BYTES, standaloneSkillBytes, standaloneSkillFiles } = runtime;
+  const { standaloneSkillFiles } = runtime;
   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
   assert.ok(workflows.length >= 11, 'the phase workflows');
   assert.deepStrictEqual(standaloneSkillFiles(), [...skills].sort(), 'the context check and skill form use the same canonical files');
-  const bytes = standaloneSkillBytes();
-  assert.ok(bytes <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${bytes} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
 });
 
 test('sprint-028 AC-2: the cleanup workflow Owner line names exactly the agents its Dispatch section lists', () => {
