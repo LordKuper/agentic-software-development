@@ -13,44 +13,35 @@ responsibility:
 |---|---|---|
 | 1 | c822fed5 | full change surface |
 | 2 | 1b1e8fd2 | delta since entry 1 |
+| 3 | | delta since entry 2 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| D-1 README agent roster | A numeric or word-form count disagrees with the actual roster | README template contract | keep | Existing check validates all README count sites. Add the missing `Nine` fixture and retain every assertion. |
-| D-2 researcher context ceilings | A fresh seed lacks a required key or silently changes existing values | Context CLI contract | keep | Existing checks cover key membership and value preservation. Compare key membership without imposing an order on JSON object properties. |
-| Review finding 1, AC-11 retry context | Preserved payload gets a fresh timing ID and drops known context | Timing CLI contract | add | Extend the existing wave test with a real payload bundle path and distinct timed attempts. The measured bytes remain available and count once. |
-| Review finding 2, AC-9/AC-15 worktree identity | Git reports the expected SHA for another worktree | Git CLI boundary contract | add | Extend the existing terminal runner contract with a valid Git directory and an overridden worktree. Verify Git can still report the expected SHA, then require the guard to refuse the run. |
-| Review finding 3, AC-1/AC-8/AC-14 wrapper handoff | Wrong shell or arguments, an unnecessary retry, or incomplete carried scope | Actual wrapper dispatch against local CLI fixtures | keep | Two `asd-external-review` dispatches consumed genuine runtime preflight output on Codex/Windows. The RouterAI-profile fixture captured exactly one invocation with argv matching `route.args`, including the pinned provider, model and read-only flags. With the default Claude route, the Codex host used PowerShell even though the wrapped provider was Claude and the fixture captured exactly one invocation. Both stdin inputs contained the manifest path without target contents. Both explicit denials returned `external review interrupted: account-hold`, with no additional wrapped invocation. The orchestrator recorded account hold and persisted a skip whose JSON `Unreviewed files` list exactly matched the two manifest paths. Evidence in `.asd/tmp/041-wrapper-fixture/`: preflight JSON, `invocations.jsonl`, `claude-invocations.jsonl` and `review-output-json/external.md`. This is a controlled agent exercise. It verifies the observed wrapper behavior and does not establish live RouterAI authentication. |
+| Review fix 1, AC-11 timing context | A retry silently drops context bytes or double-counts the shared bundle | Timing CLI contract | keep | The prior review-fix pass already extended the owning wave test. It supplies the same real context file to two dispatch IDs, checks one byte contribution and confirms both outcomes. The seeded regression fails in entry 02 evidence. |
+| Review fix 2, AC-9/AC-15 terminal Git guard | The expected SHA is accepted for a different worktree | Git CLI boundary contract | keep | The review-fix test verifies the same SHA under a valid Git directory and a wrong worktree. The runtime guard must reject it. Keep the existing invalid-directory and normal controls. |
+| Review fix 3, AC-1/AC-8/AC-14 external-review wrapper | Wrong provider flags or shell, retried hold or dropped scope | Actual wrapper dispatch against local CLI fixtures | keep | Both controlled dispatches and JSON skip persistence were verified during review-fix. Their evidence is recorded in entry 02. This re-entry adds no wrapper behavior. |
 
 ## Removed tests
 
 | Test | Reason | In change scope |
 |---|---|---|
-| `tests/contract-workflows.test.js`: standalone skill byte-cap assertion | Redundant: survivor `tests/runtime-timing.test.js: context-check exits 0 over the committed ceilings`, branch aggregate standalone skill bytes over the cap | yes — AC-13 |
 
 ## Added tests
 
 | Test | Gap proof | Regression proof |
 |---|---|---|
-| `tests/runtime-timing.test.js`: a wave reports separate completion times and counts identical context once | With `NODE_OPTIONS=--require=./.asd/tmp/041-reviewfix-entry1-proof.cjs` and `ASD_041_FIX_PROOF=retry:gap`, discard the supplied bundle path and run the prior case: `node tests/run.js runtime-timing --filter "a wave reports separate completion times"` → exit 0, one match. | Same preload with `retry:regression` and the retry case enabled: `node tests/run.js runtime-timing --filter "a wave reports separate completion times"` → exit 1, one match, `sprint-041 AC-11: a wave reports separate completion times and counts identical context once`. runs: 1 |
-| `tests/runtime-tools.test.js`: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory | With `NODE_OPTIONS=--require=./.asd/tmp/041-reviewfix-entry1-proof.cjs` and `ASD_041_FIX_PROOF=worktree:gap`, remove the root guard and run the prior case: `node tests/run.js runtime-tools --filter "suite Git check discovers HEAD"` → exit 0, one match. | Same preload with `worktree:regression` and the wrong-worktree case enabled: `node tests/run.js runtime-tools --filter "suite Git check discovers HEAD"` → exit 1, one match, `sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory`. runs: 1 |
 
 ## Suite run
 
-Entry 1 post-authoring evidence: 295/297 (exit 1) at `f7970f63bf4ac9d8c39281a26053c071c0a0d8a4`. D-1 and D-2 were routed from that result. The first entry's test decisions and regression proof are in `test-plan.entry-01.md`.
-
-Entry 2 pre-strategy: 247/249 (exit 1) at `d230fa29a62f162d7beba786e82da592b09e977d`. The roster test omitted the valid word `Nine`, and the ceiling test treated JSON property order as membership. Both test defects are repaired. Isolated runner read mutations changed `Nine` to `Eight` and removed `asd-researcher@scope`. The original filtered roster and context checks each matched one test and failed with exit 1. Proof logs end in `proof-roster.runner.log` and `proof-ceilings.runner.log` in `.asd/tmp/`.
-
 - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update`
 - Scope: impacted
-- Scope evidence: after the suite revision, the gate retains the sprint's direct contract, routing, timing, runtime and sync consumers and the executable update cases. Since entry 1, changes are limited to README roster counts, researcher ceilings and existing test assertions. The runner and its setup are unchanged.
-- Result: pass — 297/297, runner exit 0
+- Scope evidence: the delta from `1b1e8fd2` changes runtime timing context lookup, terminal Git-root checks, their workflow consumers, tests and documentation. The runner and common test setup did not change. The selected areas cover all named consumers and preserve the sprint-wide impacted set without requiring the full suite.
+- Result: pass — 297/297, runner exit 0. Reuse the entry 3 pre-strategy run for the impacted gate at the same checked code and test revision. This entry changes only the test-plan narrative.
 - Lint / build: pass
-- HEAD: 48cfcb9b474bdb8d54b728f32127a5f7c8470103
-- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-suite-impl-test#2-post-revision.runner.log`
-- Line delta: tests +112/−28 (net 84); other +289/−128 (net 161)
+- HEAD: a6148e3c90d789ddd294cf24367a350b50e9852e
+- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-3-suite-impl-test#3-pre-strategy.runner.log`
 
 ## Defects
 
