@@ -13,3 +13,12 @@
 {"op":"close","id":"task2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T14:32:43.927Z","end":"2026-11-27T14:34:28.828Z","outcome":"done","attrs":{"impl_wave":"2"}}
 {"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T14:30:56.488Z","end":"2026-11-27T14:34:28.828Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T14:34:28.935Z","attrs":{}}
+{"op":"open","id":"test-entry1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T14:34:45.372Z","attrs":{"agent":"asd-tester","tier":"standard","model":"gpt-6.2-sol"}}
+{"op":"open","id":"entry1-pre","kind":"suite","parent":"test-entry1","start":"2026-11-27T14:35:08.952Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"entry1-pre","kind":"suite","parent":"test-entry1","start":"2026-11-27T14:35:08.952Z","end":"2026-11-27T14:35:38.608Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"test-entry1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T14:34:45.372Z","end":"2026-11-27T14:36:26.165Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"gpt-6.2-sol"}}
+{"op":"open","id":"suite042","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T14:36:26.214Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"gpt-6-luna"}}
+{"op":"open","id":"suitefull","kind":"suite","parent":"suite042","start":"2026-11-27T14:37:07.873Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suitefull","kind":"suite","parent":"suite042","start":"2026-11-27T14:37:07.873Z","end":"2026-11-27T14:38:25.693Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"suite042","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T14:36:26.214Z","end":"2026-11-27T14:38:25.747Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"gpt-6-luna"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T14:34:28.935Z","end":"2026-11-27T14:39:25.558Z","outcome":"done","attrs":{}}
