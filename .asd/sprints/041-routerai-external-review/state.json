@@ -1,7 +1,7 @@
 {
   "sprint_id": "041-routerai-external-review",
   "branch": "sprint/041-routerai-external-review",
-  "phase": "retro",
+  "phase": "pr",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "mockup_format": "none",
