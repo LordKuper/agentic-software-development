@@ -188,7 +188,7 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
     process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.134.0';
     const ready = runtime.externalPreflight(input);
     assert.deepStrictEqual([ready.status, ready.route], ['local-ready', {
-      provider: 'codex', command, profile: 'routerai', model: '~anthropic/claude-opus-latest',
+      provider: 'codex', command, profile: 'routerai', model: '~anthropic/claude-opus-latest', model_provider: 'routerai',
       args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest', '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'],
     }]);
     assert.deepStrictEqual(fs.readFileSync(trace, 'utf8').trim().split(/\r?\n/), ['--version', '--version']);

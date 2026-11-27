@@ -142,8 +142,10 @@ test('sprint-025 AC-2 (D2): every kind sprint-lifecycle.md "Operation timing" li
   const kindsLine = sectionOf('.asd/rules/sprint-lifecycle.md', 'Operation timing').split('\n').find((line) => line.startsWith('Kinds (attrs):')) || '';
   const kinds = kindsLine.split(';').map((entry) => /^(?:Kinds \(attrs\):)?\s*`([a-z-]+)`/.exec(entry)).filter(Boolean).map((match) => match[1]);
   assert.ok(kinds.length > 0, '"Operation timing" must keep its "Kinds (attrs):" line');
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
   for (const kind of kinds) {
-    assert.doesNotThrow(() => runtime.timingAppend('', { open: 'probe', kind }, minuteAt(0)), `the rule lists kind ${kind}, so the runtime must record it`);
+    const { text } = runtime.timingAppend(kind === 'phase' ? '' : phase, { open: 'probe', kind }, minuteAt(1));
+    assert.strictEqual(ledgerLines(text)[0]?.kind, kind, `the rule lists kind ${kind}, so the runtime must record it`);
   }
   assert.throws(() => runtime.timingAppend('', { open: 'probe', kind: 'bogus' }, minuteAt(0)), /--kind/);
   assert.throws(() => runtime.timingAppend('', { open: 'probe' }, minuteAt(0)), /--kind/);
@@ -376,7 +378,8 @@ test('sprint-034 AC-9 (033#A-4): a dispatch open fills its missing tier and mode
     routed: (id) => { lookupLog.push(`routed ${id}`); return routedHits[id]; },
     agentAttrs: (agent) => { lookupLog.push(`agent ${agent}`); return { tier: 'mechanical', model: 'haiku' }; },
   };
-  const open = (id, attrs, given = lookups, kind = 'dispatch') => runtime.timingAppend('', { open: id, kind, attrs }, minuteAt(0), given);
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
+  const open = (id, attrs, given = lookups, kind = 'dispatch') => runtime.timingAppend(phase, { open: id, kind, attrs }, minuteAt(1), given);
   const attrsOf = (result) => ledgerLines(result.text)[0].attrs;
 
   const routed = open('Task 1', 'agent=asd-dev');
@@ -661,7 +664,8 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
 
 test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle lookup unless the caller gave one - read from the scratch bundle file named by its dispatch id, "/" and spaces as "-" - timing-summary totals bundle bytes per agent and names unsized dispatches, and suite_full holds the sprint\'s longest full suite, a baseline median only from three archived full suites, and over only past 1.5 times it', async () => {
   const lookups = { contextBytes: (id) => (id === 'sized' ? 1000 : undefined) };
-  const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend('', { open: id, kind: 'dispatch', attrs }, minuteAt(0), lookups).text)[0].attrs;
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
+  const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend(phase, { open: id, kind: 'dispatch', attrs }, minuteAt(1), lookups).text)[0].attrs;
   const base = 'agent=asd-dev;tier=standard;model=m';
   assert.strictEqual(Number(attrsOf('sized', base).context_bytes), 1000, 'the bundle size fills a dispatch open');
   assert.strictEqual(Number(attrsOf('sized', `${base};context_bytes=5`).context_bytes), 5, 'a size the caller gave wins');
