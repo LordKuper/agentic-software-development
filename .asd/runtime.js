@@ -294,8 +294,8 @@ function externalRoute(input) {
   if (input.host === 'codex' && input.codexProfile !== undefined && input.codexProfile !== '') {
     return { provider: 'codex', command: input.codexCommand || 'codex', profile: input.codexProfile };
   }
-  const { loadReleaseManifest, parseCanonicalFrontmatter, resolveModelFamily } = require('./sync.js');
-  const { meta } = parseCanonicalFrontmatter(fs.readFileSync(path.join(__dirname, 'agents', 'asd-external-review.md'), 'utf8'));
+  const { loadReleaseManifest, parseCanonicalFrontmatter, readNormalized, resolveModelFamily } = require('./sync.js');
+  const { meta } = parseCanonicalFrontmatter(readNormalized(path.join(__dirname, 'agents', 'asd-external-review.md')));
   const wrapped = meta[input.host];
   const provider = wrapped.wraps_cli;
   const command = (provider === 'codex' ? input.codexCommand : input.claudeCommand) || provider;
@@ -339,7 +339,7 @@ function codexProfileRoute(route) {
   const args = ['exec', '--profile', route.profile, `--model=${model}`,
     '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
     '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
-  return { route: { ...route, model, args }, identity: { ...identity, provider, effort } };
+  return { route: { ...route, model, model_provider: provider, args }, identity: { ...identity, provider, effort } };
 }
 
 /** Checks executable and authentication locally without making a model request; reports the host platform External Review combines with its host shell to pick stdin syntax. */
@@ -350,7 +350,7 @@ function externalPreflight(input) {
   const profile = route.profile === undefined ? null : codexProfileRoute(route);
   const resolved = profile?.route || route;
   const result = localReadiness({ ...input, ...resolved }, profile);
-  return { ...result, ...(input.host !== undefined && { route: resolved }), platform: process.platform };
+  return { ...result, ...(input.host !== undefined && { host: input.host, route: resolved }), platform: process.platform };
 }
 
 /** Probes local readiness. Codex login status covers only OpenAI auth, so named profiles use the version probe alone. */
@@ -384,7 +384,7 @@ function localReadiness(input, profile) {
 /** Stores one sanitized external-model failure for later retry control: retry-after is the provider-reported reset, capped at one hour, and one hour when none was reported, so a quota never reads as reset minutes after it hit. */
 function recordExternalFailure(input) {
   if (!input || !/^[a-f0-9]{64}$/.test(input.fingerprint || '')) fail('valid fingerprint required');
-  if (!['authentication', 'quota', 'reachability', 'command'].includes(input.status)) fail('unsupported external failure status');
+  if (!['authentication', 'account-hold', 'quota', 'reachability', 'command'].includes(input.status)) fail('unsupported external failure status');
   const now = Number.isFinite(input.now) ? input.now : Date.now();
   const cap = now + MAX_NEGATIVE_TTL_MS;
   const reported = input.retryAfter === undefined || input.retryAfter === null ? cap : input.retryAfter;
@@ -1967,13 +1967,14 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
   const children = [...open.values()].filter((child) => child.parent === entry.id);
   const closes = children.flatMap((child) => {
     warnings.push(`close of ${entry.id} closed open child ${child.id}`);
-    return closeWithChildren(open, child, end, outcome, warnings);
+    const childOutcome = child.kind === 'dispatch' && child.attrs?.impl_wave ? 'interrupted' : outcome;
+    return closeWithChildren(open, child, end, childOutcome, warnings);
   });
   open.delete(entry.id);
   return closes.concat(closeEntry(entry, end, outcome));
 }
 
-/** The dispatch `attrs` with a missing `agent`/`tier`/`model` filled from `lookups.routed(id)`, then `tier`/`model` from `lookups.agentAttrs(attrs.agent)`, each returning those attrs it knows or undefined; an attr still missing, or a failing lookup, warns. A missing `context_bytes` is filled from `lookups.contextBytes(id)`, absent when it returns undefined. */
+/** Fill missing routing and bundle attrs. Warn on unresolved routing or a failed lookup. */
 function fillDispatchAttrs(id, attrs, lookups, warnings) {
   const filled = { ...attrs };
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
@@ -1984,8 +1985,12 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
       if (!routed?.agent || filled.agent === undefined || routed.agent === filled.agent) fillFrom(routed);
     }
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
-    const bytes = filled.context_bytes === undefined && lookups.contextBytes ? lookups.contextBytes(id) : undefined;
-    if (bytes !== undefined) filled.context_bytes = bytes;
+    const context = lookups.context?.(id, filled.impl_wave);
+    if (filled.context_bytes === undefined) {
+      const bytes = context?.bytes ?? lookups.contextBytes?.(id);
+      if (bytes !== undefined) filled.context_bytes = bytes;
+    }
+    if (context?.digest && Number(filled.context_bytes) === context.bytes) filled.context_digest = context.digest;
   } catch (error) {
     warnings.push(`open of ${id}: dispatch attrs lookup failed: ${error.message}`);
   }
@@ -2000,7 +2005,7 @@ function nextFreeId(held, id) {
   return `${phaseName(id)}#${ordinal}`;
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC); closes follow `timingCloses`. An open of an id the ledger already holds, open or closed, is skipped and warns with the next free id; so is an open of a phase whose bare name is already open. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. A dispatch open fills its missing `agent`/`tier`/`model` through `lookups` (`fillDispatchAttrs`). */
+/** Process closes before opens and return ledger text to append plus warnings. Reject duplicate opens and dispatches outside an open phase. */
 function timingAppend(text, flags, now, lookups = {}) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
@@ -2020,9 +2025,14 @@ function timingAppend(text, flags, now, lookups = {}) {
       warnings.push(`open of ${id} skipped: id already in the ledger, next free id ${nextFreeId(held, id)}`);
       continue;
     }
+    const parent = openParent(open, request);
+    if (['dispatch', 'external-review'].includes(request.kind) && !hasOpenPhase(open, parent)) {
+      warnings.push(`open of ${id} skipped: ${parent === null ? 'no parent' : `parent ${parent}`} has no open phase`);
+      continue;
+    }
     held.add(id);
     const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
-    const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs };
+    const entry = { op: 'open', id, kind: request.kind, parent, start: now, attrs };
     open.set(id, entry);
     if (request.kind === 'phase') phaseOpens.push(name);
     written.push(entry);
@@ -2040,6 +2050,18 @@ function openParent(open, request) {
   return phase === undefined ? null : phase.id;
 }
 
+/** Validate dispatch ancestry, including nested ops and legacy open records with invalid links. */
+function hasOpenPhase(open, parent) {
+  const seen = new Set();
+  while (open.has(parent) && !seen.has(parent)) {
+    const entry = open.get(parent);
+    if (entry.kind === 'phase') return true;
+    seen.add(parent);
+    parent = entry.parent;
+  }
+  return false;
+}
+
 /** The `{text, warnings}` closing every op a ledger holding `text` leaves open as `interrupted`, at the latest of its start, the ledger's last timestamp and `headDate` (the HEAD commit's ISO 8601 date). */
 function timingRecover(text, headDate) {
   const head = Date.parse(headDate);
@@ -2050,19 +2072,23 @@ function timingRecover(text, headDate) {
   return { text: ledgerAppendText(text, closes), warnings: [] };
 }
 
-/** The size of the context bundle of dispatch `id` of the sprint whose folder holds `ledger`: the file at the scratch path of its id, `/` and spaces as `-`, or of the id without a trailing `#<n>`; undefined when neither exists. */
-function contextBundleBytes(ledger, id) {
+/** Read dispatch bundle size and, for an implementation wave, its content identity. */
+function timingContext(ledger, id, implWave) {
   const slug = path.basename(path.dirname(path.resolve(ledger)));
-  const names = [id, phaseName(id)].map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
+  const ids = implWave === undefined ? [id, phaseName(id)] : [id];
+  const names = ids.map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
   const found = names.map((name) => path.join(scratchDir(), name)).find((candidate) => fs.existsSync(candidate));
-  return found === undefined ? undefined : fs.statSync(found).size;
+  if (found === undefined) return undefined;
+  if (implWave === undefined) return { bytes: fs.statSync(found).size };
+  const bundle = fs.readFileSync(found);
+  return { bytes: bundle.length, digest: crypto.createHash('sha256').update(bundle).digest('hex') };
 }
 
-/** The dispatch-attr lookups for the ledger at `ledger`: `routed(id)` reads `task_routing` of the `state.json` beside it, by `id` without a trailing `#<n>` (an `execution: agent` entry names `asd-dev`, or `asd-dev-<tier>` for a non-standard tier), `agentAttrs(agent)` the agent's canonical frontmatter (variant suffix names the tier, the host the model; `CLAUDECODE=1` marks a Claude Code shell, any other a Codex one), `contextBytes(id)` its context bundle's size. The agent file and `sync.js` are read only when called. */
+/** Read bundle measurement, sprint task routing or the relevant host's canonical agent metadata on demand. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
-    contextBytes: (id) => contextBundleBytes(ledger, id),
+    context: (id, implWave) => timingContext(ledger, id, implWave),
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
@@ -2198,6 +2224,29 @@ function contextByteTotals(ops) {
   return { total: sized.reduce((sum, op) => sum + Number(op.attrs.context_bytes), 0), by_agent: byAgent, dispatches_without: dispatches.filter((op) => !sized.includes(op)).map((op) => op.id) };
 }
 
+/** Implementation wave context counts each measured bundle once. Continued closes supersede an interrupted close for the same dispatch. */
+function implWaveSummaries(open, closed) {
+  const latest = new Map([...closed, ...open.values()].map((entry) => [entry.id, entry]));
+  const waves = new Map();
+  for (const entry of latest.values()) {
+    const wave = String(entry.attrs?.impl_wave ?? '');
+    if (entry.kind !== 'dispatch' || !/^[1-9]\d*$/.test(wave)) continue;
+    if (!waves.has(wave)) waves.set(wave, { context_bytes: 0, context_missing: [], dispatches: [], seen: new Set() });
+    const summary = waves.get(wave);
+    const bytes = Number(entry.attrs.context_bytes);
+    const digest = entry.attrs.context_digest;
+    if (entry.attrs.context_bytes === '' || !Number.isSafeInteger(bytes) || bytes < 0 || !/^[a-f0-9]{64}$/.test(digest)) {
+      summary.context_missing.push(entry.id);
+    } else if (!summary.seen.has(digest)) {
+      summary.seen.add(digest);
+      summary.context_bytes += bytes;
+    }
+    const completed = entry.outcome === 'done' || entry.outcome === 'continued';
+    summary.dispatches.push({ id: entry.id, completed_at: completed ? entry.end : null, outcome: entry.outcome ?? null });
+  }
+  return Object.fromEntries([...waves].map(([wave, { seen, ...summary }]) => [wave, summary]));
+}
+
 /** Milliseconds of the longest closed full-suite `suite` op of `ops`, null when it ran none. */
 function fullSuiteMs(ops) {
   const full = ops.filter((op) => op.kind === 'suite' && op.attrs.scope === 'full');
@@ -2265,6 +2314,7 @@ function timingSummary(text, archivedTexts) {
   const wallMs = stamps.length === 0 ? 0 : Math.max(...stamps) - Math.min(...stamps);
   const waitMs = unionMs(ofKind('user-wait'));
   const totals = phaseAndKindTotals(ops);
+  const implWaves = implWaveSummaries(open, closed);
   return {
     timing: {
       wall_seconds: seconds(wallMs),
@@ -2279,6 +2329,7 @@ function timingSummary(text, archivedTexts) {
       rework: reworkTotals(ops),
       baseline: timingBaseline(archivedTexts),
       context_bytes: contextByteTotals(ops),
+      ...(Object.keys(implWaves).length > 0 && { impl_waves: implWaves }),
       suite_full: suiteFullTotals(ops, archivedTexts),
       gaps: timingGaps(ops, open, unpaired),
     },
@@ -2926,6 +2977,7 @@ const COMMAND_FLAGS = {
   'context-check': ['ceilings', 'seed', 'bundles'],
   'agent-liveness': ['agents', 'interval', 'budget-min', 'returns'],
   'timing-summary': ['ledger', 'archive'],
+  'suite-git-check': [],
   'checks-wait': ['pr', 'repo'],
   timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
   'timing-recover': ['ledger'],
@@ -3095,6 +3147,10 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(timingSummaryCommand(flags)) + '\n');
     return 0;
   }
+  if (command === 'suite-git-check') {
+    process.stdout.write(runGit(['rev-parse', '--verify', '--quiet', 'HEAD^{commit}']));
+    return 0;
+  }
   if (command === 'checks-wait') {
     if (!/^[1-9]\d*$/.test(flags.pr)) fail('--pr <positive integer> required');
     if (flags.repo !== undefined && !/^[\w.-]+(\/[\w.-]+){1,2}$/.test(flags.repo)) fail('--repo must be [<host>/]<owner>/<repo>');
@@ -3102,7 +3158,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify({ checks }) + '\n');
     return checks === 'pass' || checks === 'none' ? 0 : 1;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, config-check, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, commit-check, attribution-check, impl-test-close, test-delta, stubs-due, config-check, design-tokens, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, record-verdicts, latch-refresh, checklist-hits, section, context, context-check, agent-liveness, timing, timing-recover, timing-summary, suite-git-check, or checks-wait');
 }
 
 if (require.main === module) {
