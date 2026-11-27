@@ -35,13 +35,13 @@ responsibility:
 
 ## Suite run
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update`
-- Scope: impacted
-- Scope evidence: the delta from `1b1e8fd2` changes runtime timing context lookup, terminal Git-root checks, their workflow consumers, tests and documentation. The runner and common test setup did not change. The selected areas cover all named consumers and preserve the sprint-wide impacted set without requiring the full suite.
-- Result: pass — 297/297, runner exit 0. Reuse the entry 3 pre-strategy run for the impacted gate at the same checked code and test revision. This entry changes only the test-plan narrative.
+- Command: `node tests/run.js`
+- Scope: full
+- Scope evidence: unscoped configured command ran every test file with no name filter.
+- Result: pass — 331/331, runner exit 0.
 - Lint / build: pass
-- HEAD: a6148e3c90d789ddd294cf24367a350b50e9852e
-- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-3-suite-impl-test#3-pre-strategy.runner.log`
+- Slowest tests: 1,296 ms — sprint-023 AC-2: `git-strategy.md` Branch brings a base branch up to origin and refuses a diverged one; 1,167 ms — sprint-019 AC-8: named-path commit form commits only its paths and resets them after a failed check; 1,109 ms — sprint-036 AC-14: `agent-liveness --returns` classifies valid and invalid returns; 1,069 ms — sprint-021 AC-7: `agentLiveness` classifies transcripts and reports stalls; 773 ms — sprint-020 AC-9: `persist-review` validates and writes a review atomically; 761 ms — Sprint 038 AC-1/AC-2, sprint-040 AC-1: `config-check` validates values and names invalid keys; 757 ms — sprint-027 AC-9: runner filters and area selection validate matches; 750 ms — sprint-017 AC-8, sprint-038 AC-20: `draft-snapshot` and `emit-manifest` patch against prior snapshot; 649 ms — sprint-033 AC-12/AC-21: `commit-check` enforces the named-path commit contract; 613 ms — sprint-017 AC-4/AC-8: `emit-manifest` joins full files and writes external scope.
+- HEAD: a6bd61b96546fc2cc4e4ea241cf744b413ee519e
 - Line delta: tests +139/−28 (net 111); other +312/−135 (net 177)
 
 ## Defects
