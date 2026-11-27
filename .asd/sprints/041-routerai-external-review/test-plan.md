@@ -37,11 +37,11 @@ responsibility:
 
 - Command: `node tests/run.js`
 - Scope: full
-- Scope evidence: unscoped configured command ran every test file with no name filter.
+- Scope evidence: the unscoped configured command ran all tests without a name filter.
 - Result: pass — 331/331, runner exit 0.
-- Lint / build: pass
-- Slowest tests: 1,296 ms — sprint-023 AC-2: `git-strategy.md` Branch brings a base branch up to origin and refuses a diverged one; 1,167 ms — sprint-019 AC-8: named-path commit form commits only its paths and resets them after a failed check; 1,109 ms — sprint-036 AC-14: `agent-liveness --returns` classifies valid and invalid returns; 1,069 ms — sprint-021 AC-7: `agentLiveness` classifies transcripts and reports stalls; 773 ms — sprint-020 AC-9: `persist-review` validates and writes a review atomically; 761 ms — Sprint 038 AC-1/AC-2, sprint-040 AC-1: `config-check` validates values and names invalid keys; 757 ms — sprint-027 AC-9: runner filters and area selection validate matches; 750 ms — sprint-017 AC-8, sprint-038 AC-20: `draft-snapshot` and `emit-manifest` patch against prior snapshot; 649 ms — sprint-033 AC-12/AC-21: `commit-check` enforces the named-path commit contract; 613 ms — sprint-017 AC-4/AC-8: `emit-manifest` joins full files and writes external scope.
-- HEAD: a6bd61b96546fc2cc4e4ea241cf744b413ee519e
+- Lint / build: pass — `git diff --cached --check` and `node .asd/sync.js --check` exited 0.
+- Slowest tests: 1,350 ms — sprint-023 AC-2: `git-strategy.md` Branch brings a base branch up to origin and refuses a diverged one; 1,111 ms — sprint-036 AC-14: `agent-liveness --returns` classifies valid and invalid returns; 1,054 ms — sprint-021 AC-7: `agentLiveness` classifies transcripts and reports stalls; 999 ms — sprint-019 AC-8: named-path commit form commits only its paths and resets them after a failed check; 799 ms — sprint-017 AC-8, sprint-038 AC-20: `draft-snapshot` and `emit-manifest` patch against prior snapshot; 762 ms — Sprint 038 AC-1/AC-2, sprint-040 AC-1: `config-check` validates values and names invalid keys; 742 ms — sprint-027 AC-9: runner filters and area selection validate matches; 724 ms — sprint-017 AC-4/AC-8: `emit-manifest` joins full files and writes external scope; 722 ms — sprint-020 AC-9: `persist-review` validates and writes a review atomically; 694 ms — sprint-033 AC-12/AC-21: `commit-check` enforces the named-path commit contract.
+- HEAD: 385a0f33d64874f7085206a007922ec4643a2971
 - Line delta: tests +139/−28 (net 111); other +312/−135 (net 177)
 
 ## Defects
