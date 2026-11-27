@@ -29,3 +29,11 @@ responsibility:
 - **What happened**: The initial sprint state used a valid but compact reviews object that `record-verdicts` does not accept.
 - **Impact**: Verdict persistence required a formatting-only correction.
 - **Resolution**: Re-rendered the reviews block in the expected multiline shape and persisted both verdicts.
+
+## F-4 — External review remained unavailable
+
+- **Phase**: impl-review
+- **Surface**: external reviewer preflight
+- **What happened**: The account-hold negative cache remained active at iteration 2.
+- **Impact**: External review skipped the 34 carried and changed files.
+- **Resolution**: Persisted the status and complete JSON scope for a later attempt.
