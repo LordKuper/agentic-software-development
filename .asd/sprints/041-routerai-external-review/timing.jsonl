@@ -5,3 +5,9 @@
 {"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T11:22:41.450Z","attrs":{}}
 {"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T11:22:41.450Z","end":"2026-11-27T11:24:09.146Z","outcome":"done","attrs":{}}
 {"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T11:24:09.146Z","attrs":{}}
+{"op":"open","id":"wait plan overview","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:24:48.849Z","attrs":{"gate":"plan overview"}}
+{"op":"close","id":"wait plan overview","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:24:48.849Z","end":"2026-11-27T11:29:03.222Z","outcome":"done","attrs":{"gate":"plan overview"}}
+{"op":"open","id":"wait plan tasks","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:29:43.269Z","attrs":{"gate":"plan tasks"}}
+{"op":"close","id":"wait plan tasks","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:29:43.269Z","end":"2026-11-27T11:45:19.660Z","outcome":"done","attrs":{"gate":"plan tasks"}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T11:24:09.146Z","end":"2026-11-27T11:45:56.606Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T11:45:56.606Z","attrs":{}}
