@@ -51,4 +51,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-27 — route impl-test entry 1: standard, dispatch HEAD 9e615958234fc603184a26d2d3b1401f59698653
 - 2026-11-27 — route impl-test entry 1 author: standard, dispatch HEAD ab834ad9bc8ab53624bbc31f65baae7fb716b896
 - 2026-11-27 — impl-test entry 1 defect digest b694b1006217c4ea65cb6eb35d5620f9daba7203ed0b094d7fd60a698323ca78; D-1 and D-2 route to test-fix. Regression tests and fail-first evidence committed f7970f63; suite 295/297 recorded c822fed5.
+- 2026-11-27 — D-2 fixed by orchestrator in 8d6a0839: seeded 12 missing researcher bundle keys without changing existing ceilings; defect row recorded in 7b971e79.
+- 2026-11-27 — route D-1: standard, dispatch HEAD 7b971e796f243a22a511fd604a79c1218a67bbfe; risk change: README agent roster
+- 2026-11-27 — D-1 fixed ea193353; defect row e976865e. Existing contract-templates test's number-word fixture lacks `Nine`; route its repair to tester in impl-test re-entry. Build and lint passed.
 - 2026-11-27 — impl-test: defects D-1,D-2 -> impl test-fix

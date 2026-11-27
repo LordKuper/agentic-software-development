@@ -67,3 +67,7 @@
 {"op":"close","id":"impl-test entry 1 author","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:17:12.887Z","end":"2026-11-27T12:22:08.009Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
 {"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T12:13:46.961Z","end":"2026-11-27T12:22:22.683Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-27T12:22:22.683Z","attrs":{}}
+{"op":"open","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-27T12:23:20.702Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-27T12:23:20.702Z","end":"2026-11-27T12:25:32.581Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-27T12:22:22.683Z","end":"2026-11-27T12:25:32.636Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-27T12:25:32.636Z","attrs":{}}
