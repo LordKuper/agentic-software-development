@@ -1,7 +1,7 @@
 {
   "sprint_id": "041-routerai-external-review",
   "branch": "sprint/041-routerai-external-review",
-  "phase": "design-promote",
+  "phase": "cleanup",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "mockup_format": "none",
@@ -18,7 +18,7 @@
     { "gate": "impl-review green handoff", "decision_actor": "orchestrator", "reason": "combined APPROVE, external availability skip and terminal suite green", "evidence": "reviews/impl/wave-1/iter-02; test-plan.md: Suite run 331/331", "artifact_revision": "test-plan.md@terminal-green" }
   ],
   "task_routing": { "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }, "Task 3": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }, "D-1": { "execution": "agent", "tier": "standard", "reason": "risk:README agent roster", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }, "review-fix wave-1/iter-01": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" } },
-  "skipped_phases": [],
+  "skipped_phases": ["design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: account-hold; cli=claude; model=sonnet)" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE (skipped: external review unavailable: negative-cache account-hold; cli=claude; model=sonnet)" } }, "iteration_heads": { "iter-01": "956dc0bbb28fc46f0d2de64c08fb77c3cd699273", "iter-02": "02fe92bd251dce964150d3c0daf49dd6fbb5d8e7" }, "latched": { "combined": 2 } } ] }
