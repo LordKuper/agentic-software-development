@@ -693,7 +693,7 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
   assert.deepStrictEqual([missingKey.status, JSON.parse(missingKey.stdout).over.map(({ key, ceiling }) => [key, ceiling])], [1, [[unbounded, null]]], 'a present project rules file with no ceiling key fails the check with a null ceiling');
   assert.strictEqual(seeding.status, 0, '--seed writes the file');
   const seeded = JSON.parse(fs.readFileSync(seededFile, 'utf8'));
-  assert.deepStrictEqual(Object.keys(seeded), Object.keys(committed), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
+  assert.deepStrictEqual(Object.keys(seeded).sort(), Object.keys(committed).sort(), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
   assert.strictEqual(runtimeSpawn(['context-check', '--ceilings', seededFile]).status, 0, 'a seeded file passes the check it was seeded for');
 });
 
