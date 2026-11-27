@@ -38,13 +38,13 @@ Entry 1 post-authoring evidence: 295/297 (exit 1) at `f7970f63bf4ac9d8c39281a260
 
 Entry 2 pre-strategy: 247/249 (exit 1) at `d230fa29a62f162d7beba786e82da592b09e977d`. The roster test omitted the valid word `Nine`, and the ceiling test treated JSON property order as membership. Both test defects are repaired. Isolated runner read mutations changed `Nine` to `Eight` and removed `asd-researcher@scope`. The original filtered roster and context checks each matched one test and failed with exit 1. Proof logs end in `proof-roster.runner.log` and `proof-ceilings.runner.log` in `.asd/tmp/`.
 
-- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-render`
+- Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update`
 - Scope: impacted
-- Scope evidence: README contract readers and context-ceiling checks cover the delta. Changes are bounded to roster documentation, researcher keys and two existing assertions. Runtime and runner setup are unchanged in this entry.
-- Result: pass — 249/249, runner exit 0
+- Scope evidence: after the suite revision, the gate retains the sprint's direct contract, routing, timing, runtime and sync consumers and the executable update cases. Since entry 1, changes are limited to README roster counts, researcher ceilings and existing test assertions. The runner and its setup are unchanged.
+- Result: pass — 297/297, runner exit 0
 - Lint / build: pass
-- HEAD: 92994e99604ffd26524841d380e8a953ff8b4033
-- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-impl-test#2-post-repair.runner.log`
+- HEAD: 48cfcb9b474bdb8d54b728f32127a5f7c8470103
+- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-suite-impl-test#2-post-revision.runner.log`
 
 ## Defects
 
