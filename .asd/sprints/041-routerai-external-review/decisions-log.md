@@ -59,5 +59,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-27 — route impl-test suite revision 1: standard, dispatch HEAD ebcb77b193237f3efc467725f4e04966133a9a8b
 - 2026-11-27 — suite revision AC-13 committed 48cfcb9b: two areas done, no pending removals; one redundant cap assertion removed and surviving `context-check` failed a seeded overflow. Selected checks 97/97, including 38 executable update cases; post-commit impacted gate required.
 - 2026-11-27 — route impl-test entry 2 suite: standard, dispatch HEAD 48cfcb9b474bdb8d54b728f32127a5f7c8470103
+- 2026-11-27 — impl-review wave-1/iter-01 external skipped: account-hold; cli=claude; model=sonnet. All 32 scope files carried unreviewed. F-2.
+- 2026-11-27 — impl-review wave-1/iter-01: Combined CONCERNS (three high findings); external availability skip, no latch. Route findings 1–3 to impl review-fix. Initial Combined manifest lacked self-hosting; corrected and fresh review completed (F-1). Reformatted sprint reviews block to the runtime's expected multiline layout after record-verdicts refused the compact seed.
 - 2026-11-27 — impl-test: defects D-1,D-2 -> impl test-fix
 - 2026-11-27 — impl-test: impacted set green (297/297), 5 added and 3 removed tests

@@ -95,3 +95,13 @@
 {"op":"close","id":"impl-test entry 2 suite","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:32:52.503Z","end":"2026-11-27T12:34:26.203Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
 {"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-27T12:25:32.636Z","end":"2026-11-27T12:34:34.753Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T12:34:34.753Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T12:35:32.682Z","attrs":{}}
+{"op":"open","id":"combined wave-1/iter-01","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.571Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"open","id":"external wave-1/iter-01","kind":"external-review","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.621Z","attrs":{"model":"sonnet"}}
+{"op":"close","id":"combined wave-1/iter-01","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.571Z","end":"2026-11-27T12:37:03.140Z","outcome":"interrupted","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"open","id":"combined wave-1/iter-01#2","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:37:03.191Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"external wave-1/iter-01","kind":"external-review","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.621Z","end":"2026-11-27T12:38:16.975Z","outcome":"interrupted","attrs":{"model":"sonnet"}}
+{"op":"close","id":"combined wave-1/iter-01#2","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:37:03.191Z","end":"2026-11-27T12:42:41.137Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T12:35:32.682Z","end":"2026-11-27T12:42:41.137Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T12:34:34.753Z","end":"2026-11-27T12:43:31.649Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-27T12:43:31.649Z","attrs":{}}
