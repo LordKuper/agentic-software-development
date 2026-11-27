@@ -2,7 +2,7 @@
 
 ## Orchestration and adaptive gates
 
-The orchestrator owns scope through release and archival, including judgment on scout findings, state, gates, manual-step validation and fixes outside Dev's allowlist. Delegate only production code, tests, review, advice, owner memory fixes and read-only audit/plan/cleanup scans. Read the cited source before deciding.
+The orchestrator owns scope through release and archival, including judgment on scout and researcher returns, state, gates, manual-step validation and fixes outside Dev's allowlist. Delegate only production code, tests, review, advice, owner memory fixes, read-only scans and research or solution design. Read the cited source before deciding.
 
 **Retrospective-derived criteria are re-verified at scope.** Verify at current `HEAD`; mark resolved rows `closed` and show evidence at scope without asking. Narrow partial rows to remaining work; disposition goes to the user (scope step 2a). Record verified SHA, outcomes and evidence only in `decisions-log.md`. For host behavior, evidence is host docs or a live dispatch.
 
@@ -12,12 +12,12 @@ At scope accept only `documents.audit: auto|always|off`; legacy values also bloc
 
 Scope step 2 (`asd-phase-scope.md`), every sprint of both workflows, after the raw scope and before any `AC-N` is written:
 - (a) **Requirements interview** — the orchestrator asks the user in chat for the problem, actors, functional requirements, constraints and success criteria, at the detail needed to start design.
-- (b) **Research** — the orchestrator searches the web for best practices of the solution class and records findings, each with its source URL, plus 2-3 conceptual approaches with pros/cons and a recommendation. It covers the raw scope's strands only, never a retro row taken in at step 2a. When it cannot search (offline session, host web tool unavailable) it names the cause; the user chooses retry, skip or abort. Skip is logged in `decisions-log.md`, and `research.md` Findings then reads `no web research: <cause>`.
+- (b) **Research and solution design** — `asd-researcher` returns source-backed findings and conceptual approaches for the raw scope's strands only. Scope step 2 handles unavailable web research. Retro intake in step 2a is separate.
 - (c) **Refinement interview** — the orchestrator refines the requirements in chat from that research, then puts the approach choice as a request user decision (`core.md` "Request user decision"), the hard gate `approach choice` (`checkpoints.md` "Gate inventory"), before any `AC-N` is written.
 
 The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") stage by stage — the raw scope and stage (a) answers, the stage (b) findings, the stage (c) refinement and choice (`asd-phase-scope.md` step 2).
 
-**Conceptual boundary**: stages (a)-(c) stay at functional requirements and conceptual approaches. Technical detail belongs to design when it runs, else to plan; design and plan read `research.md` first ("Input sources" `research`) and research only the technical delta (`design-principles.md` §11).
+**Conceptual boundary**: stages (a)-(c) stay at functional requirements and conceptual approaches. Design and plan read `research.md` first ("Input sources" `research`) and delegate only their technical delta (`design-principles.md` §11).
 
 ## Workflows
 
@@ -147,12 +147,12 @@ Rows are `standard`'s; `lite` deltas: "Workflows".
 
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
-| scope | Main orchestrator | user request, staged-design interviews ("Staged solution design"), retro intake candidates and upstream proposals; the project's open issues, every project; self-hosting: open `asd-retro` issues (`asd-phase-scope.md` step 2a) | `research.md`, `sprint.md`, sprint id, branch, retro backlog and issue dispositions | scope gate passed, branch created |
+| scope | Main orchestrator + researcher | user request, staged-design interviews ("Staged solution design"), retro intake candidates and upstream proposals; the project's open issues, every project; self-hosting: open `asd-retro` issues (`asd-phase-scope.md` step 2a) | `research.md`, `sprint.md`, sprint id, branch, retro backlog and issue dispositions | scope gate passed, branch created |
 | audit | Main orchestrator | `sprint.md`, `research.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/`; subsystem registry when absent (decomposition enabled) | audit gate passed |
-| design | Main orchestrator | `audit.md`, `research.md` | drafts in `<sprint>/design/` | drafts complete |
+| design | Main orchestrator + researcher as needed | `audit.md`, `research.md` | drafts in `<sprint>/design/` | drafts complete |
 | design-review | Combined + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | Main orchestrator | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
-| plan | Main orchestrator | promoted persistent docs, `research.md` | `plan.md` | plan gate passed |
+| plan | Main orchestrator + researcher as needed | promoted persistent docs, `research.md` | `plan.md` | plan gate passed |
 | impl | Dev (Tester for a `Test-only` Task) | `plan.md` (initial), `reviews/impl/wave-<K>/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md`, a `Test-only` Task's tests | all tasks/findings/defects done; build + lint + `checks` pass (completion gate) |
 | impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests (a `Test-only` Task's included) | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
 | impl-review | Quality + Efficiency + External Review | code + tests + `test-plan.md` | `reviews/impl/waves.json`, `reviews/impl/wave-<K>/iter-NN/<reviewer>.md` | every review wave's reviewers APPROVE/latched, in order (`Review iteration counters` above), AND terminal full suite green (`Impacted test set` above) → `cleanup`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode, same wave, minor test-only and agent-memory ones excepted ("Phases (all mandatory)") |
@@ -332,7 +332,7 @@ The main orchestrator passes these lines as `route-task`'s `risks` input, one en
 
 **Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line under the `Material risk` line(s) and any `Test-only` line, never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan checks that the two points observe the same value and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval.
 
-Unlike `Material risk`, an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never a `change` risk, never input to `route-task`. An off-grammar line is a plan defect fixed before approval, not a fail-closed default.
+For an interrupted provider-backed artifact, trace the recorded provider, artifact identity and revision or pending state from the producer through recovery, reconciliation and review. Name the durable evidence and reader at each step, including what happens when publication is absent, pending or completed. Review only the reconciled revision. Unlike `Material risk`, an absent `Reachability` line asserts no cross-phase dependency and does not affect routing. Fix off-grammar lines before plan approval.
 
 **Settings change declaration** (conditional, at most one per `### Task N:` block, plain-text line under the `Material risk`/`Test-only`/`Reachability` lines, never a checkbox): `Settings change: <key>=<value>[, <key>=<value>…]`, `<key>` a dotted `.asd/project/config.yaml` path `t_config.yaml` carries — already, or once an earlier-wave Task of this sprint adds it. Plan acceptance is the approval of record for exactly those pairs: `impl` applies them through `asd-init` sprint-mediated mode as the carrying Task's wave opens, validated against the working-tree `t_config.yaml` (`asd-phase-impl.md` step 6), never as an `MS-N`; no other setting. A key `audit` or `design` reads is instead declared at scope as `sprint.md`'s `Settings change: <key>=<value>[, …]` line, applied by `asd-init` sprint-mediated mode before scope step 3a's freeze with the scope gate as its approval, never a plan Task. A Task carrying the line is alone in its wave: wave 1 when `t_config.yaml` already carries every key, a Task changing the dispatch or commit contract (below) then following alone in wave 2; otherwise a wave after every Task adding one of its keys. The change never rewrites the running sprint's frozen `state.json` snapshot ("Optional documents" above): a frozen setting binds from the next sprint, a live-read one from its next read.
 
@@ -358,6 +358,7 @@ Optional plan line outside every `### Task N:` block, never a checkbox: `Rename 
 - A Task holds only work its dispatched agent may perform. An orchestrator-only action is its own plain line outside every `### Task N:` block, never a checkbox, naming its execution point.
 - No two Tasks in one wave touch overlapping paths, a `Test-only` Task's paths and globs included.
 - A subtask adds no helper, guard or export unless it names a caller or a reachable failure (`code-style.md` §1, §3).
+- For a migration Task, identify the smallest failing legacy fixture, the command reproducing the gap and the expected migrated result. Name an existing fixture or inline the minimal input in the Task brief.
 - The plan lists the external APIs each Task needs and extends the tech reference (`artifact-layout.md` "Tech reference docs") where one is missing, before acceptance.
 - Before plan acceptance, check deployment command references and pinned image tags, public contract build sequencing, and the applicable alert and deduplication key cases (`asd-phase-plan.md` step 4).
 - A multi-stage interactive step states each stage's on-disk write point and its re-entry evidence.

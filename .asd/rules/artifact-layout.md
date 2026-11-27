@@ -154,7 +154,7 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 ## Research
 
-`<sprint>/research.md` per `t_research.md`, written at scope (`sprint-lifecycle.md` "Staged solution design"). Workflow Markdown, same class as `audit.md` and `plan.md`, so the HTML-only representation rule does not reach it. Owner: main orchestrator. Readers: `sprint-lifecycle.md` "Input sources" `research`.
+`<sprint>/research.md` per `t_research.md`, written at scope by the orchestrator from interview and researcher returns (`sprint-lifecycle.md` "Staged solution design"). Workflow Markdown, same class as `audit.md` and `plan.md`, so the HTML-only representation rule does not reach it. Readers: `sprint-lifecycle.md` "Input sources" `research`.
 
 ## Retrospective
 

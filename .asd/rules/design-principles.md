@@ -44,7 +44,9 @@ Apply both `review-policy.md` checklists (over-engineering, structure/cohesion) 
 
 ## 11. Research Current Best Practices
 
-Verify current best practices via web search and fetch for every design decision. Cite sources. For unresolved alternatives, document each option's tradeoffs and the recommendation, then return `QUESTION` for the user's choice (`core.md` "Request user decision").
+Delegate research and solution options to `asd-researcher` per `agent-protocol.md` "Dispatch payload" with `write_scope: []`, `question`, `mode`, `language` and `inputs.source_paths`. Pass accepted research and scope by path. For standalone work use the skill's phase key and `sprint: null` when no sprint applies. Verify current best practices for new design decisions, reusing applicable evidence. The orchestrator validates and cites the return in the owning artifact and owns every draft and gate. Present material alternatives per `core.md` "Request user decision".
+
+Resume from recorded findings or decisions. If a dispatch is interrupted before a validated return, use a fresh agent with the same inputs. Apply the host's quota and stall recovery. A terminal `FAILED`, `ABORT` or second interruption blocks the dependent design step. Surface its cause and recovery through `agent-protocol.md` "Relay" or the calling skill's failure path. Scope handles unavailable web research per its own step 2.
 
 ## See also
 

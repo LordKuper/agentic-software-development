@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 8 specialized agents (Dev, Tester, reviewers, advisor, scout), coordinated by the main orchestrator, which performs all other sprint work itself, and 19 skills.
+ASD works with any technology stack. The main orchestrator coordinates 9 specialized agents (Dev, Tester, reviewers, researcher, advisor, scout) and 19 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -184,7 +184,7 @@ flowchart TD
 
 | Phase | What happens |
 |---|---|
-| **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, best-practice web research, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; one triage-authorisation request precedes the first GitHub write; creates the sprint branch and folder |
+| **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, research and solution options from `asd-researcher`, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; triage labels are automatic and a single authorisation covers planned rewrites and closes; creates the sprint branch and folder |
 | **audit** | Orchestrator reads every existing doc bearing on the touched areas, plus the code; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks and stubs to resolve. Before declaring a missing check or bound, search tests for the concern's identifiers and cite the result. |
 | **design** | Orchestrator produces enabled document drafts and standalone UI mockups, with section lock-in and artifact acceptance where applicable |
 | **design-review** | 1 combined internal reviewer (Quality and Efficiency rubrics in one pass) plus External Review iterate to APPROVE |
@@ -241,7 +241,7 @@ Only the main orchestrator and its inline skills prompt you for a discrete decis
 | `asd-dev-mechanical` (variant) | haiku/high | luna/high | `asd-dev` for verified deterministic, low-risk tasks |
 | `asd-tester-runner` (variant) | haiku/medium | luna/medium | `asd-tester` running a named suite scope (impl-review terminal suite, impacted re-runs, first-entry area runs), recording the run and reporting pass/fail with the first failure lines. |
 
-The orchestrator owns the other sprint work, including research, audit, design and persistent documents, plan, cleanup, retro, state, decisions, manual-step validation, Git and release sequencing. `asd-dev` variants `-mechanical` (Haiku/Luna high) and `-escalated` (Opus/high and Sol/xhigh) keep the base role's permissions. The `standard` tier uses the base (Sonnet/Sol high). Routing escalates on qualifying change risk or a failed objective check. The base tester (Sonnet/high and Sol/medium) authors and triages, and `-runner` (Haiku/Luna medium) executes and records a scoped command. All tiers retain independent review.
+The orchestrator owns the sprint artifacts, state, decisions, manual-step validation, Git and release sequencing. `asd-dev` variants `-mechanical` (Haiku/Luna high) and `-escalated` (Opus/high and Sol/xhigh) keep the base role's permissions. The `standard` tier uses the base (Sonnet/Sol high). Routing escalates on qualifying change risk or a failed objective check. The base tester (Sonnet/high and Sol/medium) authors and triages, and `-runner` (Haiku/Luna medium) executes and records a scoped command. All tiers retain independent review.
 
 Dev and Tester carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own `## Tools`, and `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`); they are the only two agents holding a commit tool (`.asd/rules/git-strategy.md` "Commit before review").
 
@@ -272,6 +272,12 @@ Read-only, dispatched by the orchestrator only for scans at audit, plan and clea
 |---|---|---|---|
 | `asd-scout` | haiku/medium | luna/medium | Path-cited summaries of code and documents for orchestrator scans |
 
+### Researcher (1)
+
+| Agent | Claude | Codex | Role |
+|---|---|---|---|
+| `asd-researcher` | sonnet/high | sol/high | Read-only research and solution design during scope, design, plan and standalone concept, stack and design-system work. Returns cited findings and alternatives to the orchestrator. |
+
 ### Advisor (1)
 
 Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you, and on an ambiguous review-finding route. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything (on Codex policy-bound: a subagent inherits the parent sandbox), and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
@@ -285,6 +291,8 @@ Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-proto
 ## User gates
 
 `adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers and review-cap overrides retain hard gates. PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
+
+ASD uses the host's interactive choice tool when available and numbers options consecutively when it must ask in chat. [Host decision routing](.asd/rules/providers.md#semantic-operations---host-convention)
 
 ## Configuration
 

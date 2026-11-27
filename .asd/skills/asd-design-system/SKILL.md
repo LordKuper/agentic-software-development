@@ -1,9 +1,9 @@
 ---
 {
   "name": "asd-design-system",
-  "description": "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) inline, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline.",
+  "description": "Define or edit docs/ux/DESIGN.md, design-system.html and accessibility.html from scratch, constraints or existing code. Delegates design research, lints tokens and regenerates previews. Use on /asd-design-system, when referred by asd-init or design, or to define, revise or extract a design system, tokens or accessibility baseline.",
   "claude": {
-    "allowed-tools": "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
+    "allowed-tools": "Read Write Edit Glob Grep Bash Task AskUserQuestion"
   }
 }
 ---
@@ -50,11 +50,11 @@ Request user decision (a brownfield candidate defaults C):
 Read `concept.html` (vision, target users, value prop, tone) and `stack.html` (UI platform, framework constraints).
 
 **A — greenfield**
-- Propose 2-3 candidate token sets per section (color palette, typography scale, spacing scale, radii, motion); request user decision: pick or request alternatives
+- Delegate 2–3 candidate token sets per section to `asd-researcher`; ask the user to pick or request alternatives.
 
 **B — constrained**
 - Request user input, multi-field one-shot: brand color (hex), typography (system / serif / sans-serif / monospace / family), density (compact / comfortable / spacious), target platform (web / native-mobile / native-desktop / cli / mixed), each with "no preference"
-- Propose within the constraints
+- Delegate proposals within the constraints.
 
 **C — brownfield extraction**
 - Extract tokens from CSS variables, Tailwind config, theme objects, styled-components themes, design exports; frontmatter `provenance: reverse-engineered`, `source: <primary file>`
@@ -64,7 +64,7 @@ Read `concept.html` (vision, target users, value prop, tone) and `stack.html` (U
 Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/timing, components (only those the concept needs). With `project.subsystem_decomposition: enabled`, name a token one subsystem owns with its subsystem prefix (`design-system.md` §3).
 
 - Create mode only (`docs/ux/DESIGN.md` absent): write a skeleton (Google Labs format) with placeholder sections first. Edit mode enters the loop against the existing file.
-- Fetch the latest Google Labs DESIGN.md spec before the first section, cached for the session.
+- Before the first section, have the researcher verify the latest Google Labs DESIGN.md spec. Reuse that evidence within the session.
 - Per section, per `core.md` "Incremental writing": draft, write to `DESIGN.md` on disk, post the path and a short delta summary in `language.chat` (never the body, `language-policy.md`).
   - Apply `checkpoints.md`: an adaptive pass only for mechanical or already-authorized content; initial or material UX, brand or accessibility direction stays hard. Otherwise request **Lock in / Revise this section / Skip**.
   - Revise: collect feedback, rewrite in place, re-post. Skip: remove the section (heading and placeholder) from the file.
@@ -97,6 +97,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 
 ## Rules
 
+- Researcher dispatch and recovery: `design-principles.md` §11.
 - must: render EVERY user-decision/input request (question text, header, option labels and descriptions, multi-field labels and hints), control options included, in `language.chat` (`language-policy.md` "User-decision options").
 - never: author accessibility rules without checking the concept's target users
 - must: bind token authoring and review by `design-system.md`; UX shaping by `ux-principles.md`
@@ -108,7 +109,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 ## Delegates
 
 ```json
-{"agents": [], "skills": []}
+{"agents": ["asd-researcher"], "skills": []}
 ```
 
 ## Outputs

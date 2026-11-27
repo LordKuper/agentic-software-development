@@ -11,7 +11,7 @@
 - **Workflow** — frozen sprint chain (`standard` or `lite`, `sprint-lifecycle.md` "Workflows"), separate from ASD and the phase orchestration bodies.
 - **Iteration / review wave** — one clean-context review pass / one slice of impl-review scope with independent iterations (`sprint-lifecycle.md` "Review iteration counters").
 - **Creator / reviewer / advisor** — Dev or Tester / workflow's review roster / read-only non-binding advice (`agent-protocol.md` "Relay").
-- **Main orchestrator** — unspawned phase and artifact owner. Delegate only code, tests, review, advice, memory fixes and read-only scans (`sprint-lifecycle.md` "Orchestration and adaptive gates").
+- **Main orchestrator** — unspawned phase and artifact owner. Delegation limits: `sprint-lifecycle.md` "Orchestration and adaptive gates".
 - **Persistent doc** — living artifact under `docs/`. **Subsystem** — unit registered per `artifact-layout.md` "Subsystem registry".
 - **Runtime helper** — `.asd/runtime.js` executes deterministic checks and routing. Authority comes from the applicable rules and user.
 

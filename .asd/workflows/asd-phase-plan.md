@@ -1,6 +1,6 @@
 # ASD Workflow: Plan
 
-Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
+Owner: inline orchestrator; dispatches `asd-scout` for scans and `asd-researcher` for the technical delta.
 
 ## Entry
 
@@ -29,6 +29,7 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
      - per "accepted-debt": edit stubs.md Reason field prepending `(accepted-debt)` inline after its applicable gate
      - decisions-log entry summarising stub decisions
    - Locating the code a Task touches may be delegated to `asd-scout` (a question plus paths; read-only, returns a `path:line`-cited summary); the orchestrator reads every section a summary cites that it relies on before writing a Task, and the plan stays its own.
+   - Delegate any remaining research or solution design per `design-principles.md` §11 before decomposing affected Tasks. Record its evidence in the plan before relying on it.
    - **Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations and wave table) and "Plan author checklist", plus:
      - one Task per coherent unit of work; each Task cites in its body the AC-N it satisfies
      - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
@@ -46,7 +47,7 @@ Owner: inline orchestrator; dispatches `asd-scout` for read-only scan summaries.
 ## Dispatch
 
 ```json
-[{"agent": "asd-scout", "when": "locating touched code before task decomposition, step 4", "payload": ["inputs.context", "question and paths"], "signals": ["COMPLETED", "ABORT"]}]
+[{"agent": "asd-scout", "when": "locating touched code before task decomposition, step 4", "payload": ["inputs.context", "question and paths"], "signals": ["COMPLETED", "ABORT"]}, {"agent": "asd-researcher", "when": "research or solution design left by accepted inputs, step 4", "payload": ["mode", "question", "inputs.context", "inputs.source_paths", "language"], "signals": ["COMPLETED", "FAILED", "ABORT"]}]
 ```
 
 ## Exit
