@@ -48,6 +48,14 @@ Pre-strategy run at `7ba87bbf`: `node tests/run.js runtime-routing runtime-tools
 - Terminal gate: reused this full run at `ebc1bcd3e1a7c00c016a0ba7bbcae3f3fa027bbe`. Only sprint records changed since the measured HEAD. The code, tests and stubs match that run, and no review latch was cleared after it.
 - Line delta: tests +6/−4 (net 2); other +7/−5 (net 2)
 
+Release validation after preparing v14.13.1:
+
+- Command: `node tests/run.js`
+- Scope: full — unscoped runner invocation; full suite completed.
+- Result: pass — 331/331 passed, 0 failed (exit 0).
+- Lint / build: pass — `git diff --cached --check` / `node .asd/sync.js --check`.
+- HEAD: `fdd785ecbdabd61be1029c5c63b4c9ead2729671`.
+
 ## Defects
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
