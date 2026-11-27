@@ -17,7 +17,7 @@ responsibility:
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| Named-profile Codex review (AC-1, AC-2) | Missing or incorrectly split CLI override with apps enabled in the named profile | `runtime-routing` named-profile test | keep | Task 2 extends the existing route contract assertion. It failed against the pre-fix runtime because the override was absent, and the current test checks the full argv and unchanged default Claude route. |
+| Named-profile Codex review (AC-1, AC-2) | Missing or incorrectly split CLI override with apps enabled in the named profile | `runtime-routing` named-profile test | keep | Task 2 extends the existing route contract assertion to check the full argv and the default Claude route. See Task 2 regression proof below. |
 | Review docs and release hashes (AC-3) | Instructions disagree with the argument contract or updated content leaves stale hashes | Review the named-profile instructions in `README.md` and `.asd/rules/external-review.md`, run sync validation and existing contract tests | none | The edit adds ordinary prose. The existing argument test covers the machine contract and sync validates the refreshed hashes. |
 
 ## Removed tests
@@ -30,7 +30,9 @@ responsibility:
 | Test | Gap proof | Regression proof |
 |---|---|---|
 
-Task 2 extended an existing test in `f7d40238`; entry 1 added no tests.
+Task 2 extended an existing test in `f7d40238`. Entry 1 added no tests.
+
+Task 2 regression proof against the runtime at `7ef4796d`. The temporary `042-task2-prefx.cjs` preload compiled that revision's runtime from `git show` in memory. The command `node --require ./.asd/tmp/042-task2-prefx.cjs tests/run.js runtime-routing --filter 'named Codex review profiles disable apps'` exited 1 (1 matched, 0 passed, 1 run). The runner reported `FAIL Sprint 038 AC-4/AC-7, sprint-042 AC-1/AC-2: named Codex review profiles disable apps and only probe CLI version`. The assertion showed that `features.apps=false` was missing. With the fix, `node tests/run.js runtime-routing` exited 0 (26/26 passed).
 
 Pre-strategy run at `7ba87bbf`: `node tests/run.js runtime-routing runtime-tools runtime-review contract-workflows contract-templates contract-rules contract-agents sync-render sync-cli hooks update` exited 0, 282/282 passed. No stale temporary tests were found.
 
