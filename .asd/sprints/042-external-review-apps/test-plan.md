@@ -45,6 +45,7 @@ Pre-strategy run at `7ba87bbf`: `node tests/run.js runtime-routing runtime-tools
 - Lint / build: pass — `git diff --cached --check` / `node .asd/sync.js --check`.
 - Slowest tests: 1324 ms sprint-023 AC-2; 1129 ms sprint-036 AC-14; 1061 ms sprint-021 AC-7; 983 ms sprint-019 AC-8; 808 ms sprint-017 AC-8; 796 ms sprint-038 AC-1/AC-2; 773 ms sprint-020 AC-9; 751 ms sprint-027 AC-9; 736 ms sprint-033 AC-32; 718 ms sprint-014 AC-2.
 - HEAD: `1363427698bd8b2d47d8a29411226f99d4b8c00b`.
+- Terminal gate: reused this full run at `ebc1bcd3e1a7c00c016a0ba7bbcae3f3fa027bbe`. Only sprint records changed since the measured HEAD. The code, tests and stubs match that run, and no review latch was cleared after it.
 - Line delta: tests +6/−4 (net 2); other +7/−5 (net 2)
 
 ## Defects
