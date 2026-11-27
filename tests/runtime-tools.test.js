@@ -16,6 +16,15 @@ test('sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner enviro
   assert.strictEqual(denied.status, 2);
   assert.strictEqual(denied.stdout, '');
   assert.match(denied.stderr, /git rev-parse .* failed:/);
+
+  const wrongRoot = path.join(sandbox.repo, 'other-worktree');
+  fs.mkdirSync(wrongRoot);
+  const env = { ...process.env, GIT_DIR: path.join(sandbox.repo, '.git'), GIT_WORK_TREE: wrongRoot };
+  assert.strictEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sandbox.repo, env, encoding: 'utf8' }).trim(), head);
+  const wrong = runtimeSpawn(args, { cwd: sandbox.repo, env });
+  assert.strictEqual(wrong.status, 2);
+  assert.strictEqual(wrong.stdout, '');
+  assert.match(wrong.stderr, /git resolved worktree .* expected /);
 });
 
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {

@@ -134,6 +134,24 @@ test('sprint-041 AC-11: a wave reports separate completion times and counts iden
       { id: 'Task 3', completed_at: null, outcome: 'interrupted' },
     ],
   });
+
+  const root = mkTempDir();
+  const ledgerPath = path.join(root, 'timing.jsonl');
+  const bundle = 'shared context for the original and retry payloads\n';
+  const bundlePath = path.join(root, 'original.context.md');
+  fs.writeFileSync(bundlePath, bundle, 'utf8');
+  const timing = (...argv) => runtimeSpawn(['timing', '--ledger', ledgerPath, ...argv]);
+  assert.strictEqual(timing('--create', '--open', 'impl', '--kind', 'phase').status, 0);
+  const dispatch = ['--kind', 'dispatch', '--context', bundlePath, '--attrs', 'impl_wave=1,agent=asd-dev'];
+  assert.strictEqual(timing('--open', 'Task 1', ...dispatch).status, 0);
+  assert.strictEqual(timing('--close', 'Task 1', '--outcome', 'interrupted', '--open', 'Task 1#2', ...dispatch).status, 0);
+  assert.strictEqual(timing('--close', 'Task 1#2').status, 0);
+  const retry = runtime.timingSummary(fs.readFileSync(ledgerPath, 'utf8'), []).timing.impl_waves[1];
+  assert.strictEqual(retry.context_bytes, Buffer.byteLength(bundle));
+  assert.deepStrictEqual(retry.context_missing, []);
+  assert.deepStrictEqual(retry.dispatches.map(({ id, outcome }) => [id, outcome]), [
+    ['Task 1', 'interrupted'], ['Task 1#2', 'done'],
+  ]);
 });
 
 test('sprint-033 AC-18 (issues #100, #108, #111): a close of an open op cascades to its open children with a warning, an op a recovery closed interrupted closes again as continued from that close, and any other repeat close writes nothing and warns', () => {
