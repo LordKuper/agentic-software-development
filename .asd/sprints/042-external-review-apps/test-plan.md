@@ -37,6 +37,12 @@ Pre-strategy run at `7ba87bbf`: `node tests/run.js runtime-routing runtime-tools
 ## Suite run
 
 - Scope evidence: `.asd/runtime.js` changes only named-profile External Review argv. The docs explain that route and `.asd/release-manifest.json` refreshes two content hashes. The changed behavior does not reach runner setup, timing, migration logic, or unrelated review commands. The named areas from the pre-strategy run exercise the route plus related runtime, documentation, sync, hook, and release hash contracts.
+- Command: `node tests/run.js`
+- Scope: full — unscoped runner invocation; full suite completed.
+- Result: pass — 331/331 passed, 0 failed.
+- Lint / build: pass — `git diff --cached --check` / `node .asd/sync.js --check`.
+- Slowest tests: 1324 ms sprint-023 AC-2; 1129 ms sprint-036 AC-14; 1061 ms sprint-021 AC-7; 983 ms sprint-019 AC-8; 808 ms sprint-017 AC-8; 796 ms sprint-038 AC-1/AC-2; 773 ms sprint-020 AC-9; 751 ms sprint-027 AC-9; 736 ms sprint-033 AC-32; 718 ms sprint-014 AC-2.
+- HEAD: `1363427698bd8b2d47d8a29411226f99d4b8c00b`.
 
 ## Defects
 
