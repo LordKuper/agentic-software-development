@@ -26,7 +26,7 @@ Reachability: review phases write preflight host and route at dispatch; external
 ### Task 2: Runtime contract callers
 Material risk: change: public contract
 Test-only: tests/runtime-routing.test.js, tests/runtime-timing.test.js
-- [ ] Adapt affected test callers to Task 1's public interfaces without weakening their existing assertions. Regression-test authoring beyond caller repairs remains in impl-test.
+- [x] Adapt affected test callers to Task 1's public interfaces without weakening their existing assertions. Regression-test authoring beyond caller repairs remains in impl-test.
 
 ### Task 3: Researcher and workflow contracts
 Material risk: change: workflow gate
