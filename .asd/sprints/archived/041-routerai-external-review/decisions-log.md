@@ -41,3 +41,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-27 — release candidate v14.13.0 committed 385a0f33; route release suite: runner, dispatch HEAD 385a0f33d64874f7085206a007922ec4643a2971.
 - 2026-11-27 — PR publication: adaptive authority from accepted scope and plan; Combined APPROVE, external skipped account-hold, release suite 331/331 at 385a0f33 (evidence d5089682), lint and build green, GitHub ADMIN.
 - 2026-11-27 — PR #151 opened for v14.13.0; external review skip and 34 unreviewed files disclosed in PR description.
+- 2026-11-27 — Sprint closed after PR #151 merged at cd7dfcd0ba5e163d559f7b92d04ceddf125bdaf3; archived on the next sprint branch.
