@@ -109,5 +109,17 @@
   "orchestrator@plan": 100218,
   "orchestrator@pr": 109227,
   "orchestrator@retro": 94712,
-  "orchestrator@scope": 119726
+  "orchestrator@scope": 119726,
+  "asd-researcher@audit": 3707,
+  "asd-researcher@cleanup": 3707,
+  "asd-researcher@design": 3707,
+  "asd-researcher@design-promote": 3707,
+  "asd-researcher@design-review": 3707,
+  "asd-researcher@impl": 3707,
+  "asd-researcher@impl-review": 3707,
+  "asd-researcher@impl-test": 3707,
+  "asd-researcher@plan": 3707,
+  "asd-researcher@pr": 3707,
+  "asd-researcher@retro": 3707,
+  "asd-researcher@scope": 3707
 }
