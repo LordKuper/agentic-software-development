@@ -26,3 +26,6 @@
 {"op":"open","id":"review1","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T14:40:23.981Z","attrs":{}}
 {"op":"close","id":"review1","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T14:40:23.981Z","end":"2026-11-27T14:44:57.573Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T14:39:55.744Z","end":"2026-11-27T14:44:57.573Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:03.672Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:03.672Z","end":"2026-11-27T14:45:14.584Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:14.697Z","attrs":{}}
