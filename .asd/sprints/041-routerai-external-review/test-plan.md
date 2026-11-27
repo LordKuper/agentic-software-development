@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | c822fed5 | full change surface |
-| 2 | | delta since entry 1 |
+| 2 | 1b1e8fd2 | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -45,6 +45,7 @@ Entry 2 pre-strategy: 247/249 (exit 1) at `d230fa29a62f162d7beba786e82da592b09e9
 - Lint / build: pass
 - HEAD: 48cfcb9b474bdb8d54b728f32127a5f7c8470103
 - Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-suite-impl-test#2-post-revision.runner.log`
+- Line delta: tests +112/−28 (net 84); other +289/−128 (net 161)
 
 ## Defects
 
