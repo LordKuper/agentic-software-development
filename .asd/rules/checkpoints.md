@@ -45,7 +45,7 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | workflow choice (scope step 1, `sprint-lifecycle.md` "Workflows") | hard approve-before-write |
 | ASD update choice (new-sprint start, `asd-sprint` SKILL) | hard approve-before-write |
 
-Ungated: retro issue publication, scope triage closes (one user decision before the first triage write), post-release closes, consumer included-issue and included-PR closes. Intake dispositions stay gated. Cleanup removals are ungated and exclude tests. No standalone gate for `c4-full/` or extra mandatory pause for per-section QODDA.
+Ungated: retro issue publication, scope triage label additions, post-release closes, consumer included-issue and included-PR closes. Scope triage rewrites and closes require the batched authorisation in `asd-phase-scope.md` step 2a. Intake dispositions stay gated. Cleanup removals are ungated and exclude tests. No standalone gate for `c4-full/` or extra mandatory pause for per-section QODDA.
 
 ## Write-then-review-accept mechanic
 

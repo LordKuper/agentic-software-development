@@ -101,6 +101,59 @@ test('sprint-025 AC-1/AC-4 (D2, D4), sprint-034 AC-13: timingAppend closes befor
   assert.ok(torn.text.startsWith('\n'));
 });
 
+test('sprint-041 AC-10: dispatch timing requires an open phase ancestor', () => {
+  const phase = runtime.timingAppend('', { open: 'impl-review', kind: 'phase' }, minuteAt(0)).text;
+  const iteration = runtime.timingAppend(phase, { open: 'iteration', kind: 'review-iteration' }, minuteAt(1)).text;
+  const ledger = phase + iteration;
+  const open = (text, kind, parent) => runtime.timingAppend(text, { open: 'reviewer', kind, parent }, minuteAt(3));
+  const nested = open(ledger, 'external-review', 'iteration');
+  assert.strictEqual(ledgerLines(nested.text)[0].parent, 'iteration');
+  const closed = ledger + runtime.timingAppend(ledger, { close: 'impl-review' }, minuteAt(2)).text;
+  for (const [history, kind, parent] of [
+    ['', 'dispatch', undefined], [ledger, 'dispatch', 'unknown'], [closed, 'external-review', 'iteration'],
+  ]) {
+    const result = open(history, kind, parent);
+    assert.strictEqual(result.text, '', `${kind} must not open without a live phase ancestor`);
+    assert.ok(result.warnings.some((warning) => warning.includes('reviewer')));
+  }
+});
+
+test('sprint-041 AC-11: a wave reports separate completion times and counts identical context once', () => {
+  const wave = { impl_wave: 1, context_bytes: 120, context_digest: 'a'.repeat(64) };
+  const ledger = opLines('impl#1', 'phase', null, 0, 8)
+    + opLines('Task 1', 'dispatch', 'impl#1', 1, 4, wave)
+    + opLines('Task 2', 'dispatch', 'impl#1', 2, 7, wave)
+    + opLines('Task 3', 'dispatch', 'impl#1', 3, 8, { impl_wave: 1 }, 'interrupted');
+  const { impl_waves: summaries } = runtime.timingSummary(ledger, []).timing;
+  assert.deepStrictEqual(summaries?.[1], {
+    context_bytes: wave.context_bytes,
+    context_missing: ['Task 3'],
+    dispatches: [
+      { id: 'Task 1', completed_at: minuteAt(4), outcome: 'done' },
+      { id: 'Task 2', completed_at: minuteAt(7), outcome: 'done' },
+      { id: 'Task 3', completed_at: null, outcome: 'interrupted' },
+    ],
+  });
+
+  const root = mkTempDir();
+  const ledgerPath = path.join(root, 'timing.jsonl');
+  const bundle = 'shared context for the original and retry payloads\n';
+  const bundlePath = path.join(root, 'original.context.md');
+  fs.writeFileSync(bundlePath, bundle, 'utf8');
+  const timing = (...argv) => runtimeSpawn(['timing', '--ledger', ledgerPath, ...argv]);
+  assert.strictEqual(timing('--create', '--open', 'impl', '--kind', 'phase').status, 0);
+  const dispatch = ['--kind', 'dispatch', '--context', bundlePath, '--attrs', 'impl_wave=1,agent=asd-dev'];
+  assert.strictEqual(timing('--open', 'Task 1', ...dispatch).status, 0);
+  assert.strictEqual(timing('--close', 'Task 1', '--outcome', 'interrupted', '--open', 'Task 1#2', ...dispatch).status, 0);
+  assert.strictEqual(timing('--close', 'Task 1#2').status, 0);
+  const retry = runtime.timingSummary(fs.readFileSync(ledgerPath, 'utf8'), []).timing.impl_waves[1];
+  assert.strictEqual(retry.context_bytes, Buffer.byteLength(bundle));
+  assert.deepStrictEqual(retry.context_missing, []);
+  assert.deepStrictEqual(retry.dispatches.map(({ id, outcome }) => [id, outcome]), [
+    ['Task 1', 'interrupted'], ['Task 1#2', 'done'],
+  ]);
+});
+
 test('sprint-033 AC-18 (issues #100, #108, #111): a close of an open op cascades to its open children with a warning, an op a recovery closed interrupted closes again as continued from that close, and any other repeat close writes nothing and warns', () => {
   const scope = runtime.timingAppend('', { open: 'scope', kind: 'phase' }, minuteAt(0));
   const child = runtime.timingAppend(scope.text, { open: 'dev', kind: 'dispatch' }, minuteAt(5));
@@ -142,8 +195,10 @@ test('sprint-025 AC-2 (D2): every kind sprint-lifecycle.md "Operation timing" li
   const kindsLine = sectionOf('.asd/rules/sprint-lifecycle.md', 'Operation timing').split('\n').find((line) => line.startsWith('Kinds (attrs):')) || '';
   const kinds = kindsLine.split(';').map((entry) => /^(?:Kinds \(attrs\):)?\s*`([a-z-]+)`/.exec(entry)).filter(Boolean).map((match) => match[1]);
   assert.ok(kinds.length > 0, '"Operation timing" must keep its "Kinds (attrs):" line');
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
   for (const kind of kinds) {
-    assert.doesNotThrow(() => runtime.timingAppend('', { open: 'probe', kind }, minuteAt(0)), `the rule lists kind ${kind}, so the runtime must record it`);
+    const { text } = runtime.timingAppend(kind === 'phase' ? '' : phase, { open: 'probe', kind }, minuteAt(1));
+    assert.strictEqual(ledgerLines(text)[0]?.kind, kind, `the rule lists kind ${kind}, so the runtime must record it`);
   }
   assert.throws(() => runtime.timingAppend('', { open: 'probe', kind: 'bogus' }, minuteAt(0)), /--kind/);
   assert.throws(() => runtime.timingAppend('', { open: 'probe' }, minuteAt(0)), /--kind/);
@@ -376,7 +431,8 @@ test('sprint-034 AC-9 (033#A-4): a dispatch open fills its missing tier and mode
     routed: (id) => { lookupLog.push(`routed ${id}`); return routedHits[id]; },
     agentAttrs: (agent) => { lookupLog.push(`agent ${agent}`); return { tier: 'mechanical', model: 'haiku' }; },
   };
-  const open = (id, attrs, given = lookups, kind = 'dispatch') => runtime.timingAppend('', { open: id, kind, attrs }, minuteAt(0), given);
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
+  const open = (id, attrs, given = lookups, kind = 'dispatch') => runtime.timingAppend(phase, { open: id, kind, attrs }, minuteAt(1), given);
   const attrsOf = (result) => ledgerLines(result.text)[0].attrs;
 
   const routed = open('Task 1', 'agent=asd-dev');
@@ -655,13 +711,14 @@ test('sprint-037 AC-1: context-check exits 0 over the committed ceilings, exits 
   assert.deepStrictEqual([missingKey.status, JSON.parse(missingKey.stdout).over.map(({ key, ceiling }) => [key, ceiling])], [1, [[unbounded, null]]], 'a present project rules file with no ceiling key fails the check with a null ceiling');
   assert.strictEqual(seeding.status, 0, '--seed writes the file');
   const seeded = JSON.parse(fs.readFileSync(seededFile, 'utf8'));
-  assert.deepStrictEqual(Object.keys(seeded), Object.keys(committed), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
+  assert.deepStrictEqual(Object.keys(seeded).sort(), Object.keys(committed).sort(), 'the committed ceilings cover exactly the role-phase pairs and project rule files a fresh seed derives - a role or phase added without a ceiling fails here');
   assert.strictEqual(runtimeSpawn(['context-check', '--ceilings', seededFile]).status, 0, 'a seeded file passes the check it was seeded for');
 });
 
 test('sprint-037 AC-2/AC-18: a dispatch open takes context_bytes from its bundle lookup unless the caller gave one - read from the scratch bundle file named by its dispatch id, "/" and spaces as "-" - timing-summary totals bundle bytes per agent and names unsized dispatches, and suite_full holds the sprint\'s longest full suite, a baseline median only from three archived full suites, and over only past 1.5 times it', async () => {
   const lookups = { contextBytes: (id) => (id === 'sized' ? 1000 : undefined) };
-  const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend('', { open: id, kind: 'dispatch', attrs }, minuteAt(0), lookups).text)[0].attrs;
+  const phase = runtime.timingAppend('', { open: 'impl', kind: 'phase' }, minuteAt(0)).text;
+  const attrsOf = (id, attrs) => ledgerLines(runtime.timingAppend(phase, { open: id, kind: 'dispatch', attrs }, minuteAt(1), lookups).text)[0].attrs;
   const base = 'agent=asd-dev;tier=standard;model=m';
   assert.strictEqual(Number(attrsOf('sized', base).context_bytes), 1000, 'the bundle size fills a dispatch open');
   assert.strictEqual(Number(attrsOf('sized', `${base};context_bytes=5`).context_bytes), 5, 'a size the caller gave wins');

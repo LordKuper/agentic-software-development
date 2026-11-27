@@ -4,7 +4,7 @@
 
 | Token | Emitter | Handler |
 |---|---|---|
-| `COMPLETED` | creator or workflow finished | dispatcher continues; phase exit → `asd-sprint` Step 3 |
+| `COMPLETED` | agent or workflow finished | dispatcher continues; phase exit → `asd-sprint` Step 3 |
 | `QUESTION` | creator needs user decision; reviewer uses verdict `question:` | "Relay" |
 | `ADVICE_NEEDED` | Dev/Tester non-gate uncertainty | "Relay" |
 | `BLOCKED_MANUAL` | Dev or Tester registers a human-only action in `manual-steps.md` | `asd-phase-impl.md` |

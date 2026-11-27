@@ -1,7 +1,7 @@
 {
   "sprint_id": "040-mockups-token-optimization",
   "branch": "sprint/040-mockups-token-optimization",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -134,6 +134,13 @@
       "artifact_revision": "test-plan.md@terminal-green"
     },
     {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "sprint PR merged and release published",
+      "evidence": "PR #148 merge commit dbb6749a1d91e91888d7a51f3e824d1e54de5cf3",
+      "artifact_revision": "state.json@closure"
+    },
+    {
       "gate": "PR publication",
       "decision_actor": "user",
       "reason": "approved public PR creation and merge in response to the publication request",
@@ -257,9 +264,9 @@
     }
   },
   "created_at": "2026-11-24T10:44:26Z",
-  "updated_at": "2026-11-24T14:08:52.987Z",
+  "updated_at": "2026-11-27T09:23:35Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 148, "state": "open", "url": "https://github.com/LordKuper/agentic-software-development/pull/148" },
-  "archived_at": null
+  "pr": { "number": 148, "state": "merged", "url": "https://github.com/LordKuper/agentic-software-development/pull/148", "merge_commit": "dbb6749a1d91e91888d7a51f3e824d1e54de5cf3" },
+  "archived_at": "2026-11-27T09:23:35Z"
 }

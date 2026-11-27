@@ -100,3 +100,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-24 — Retrospective written and verified: 4 friction entries, 3 actions and 3 systemic proposals. No upstream publication in framework self-hosting. NEXT: pr.
 - 2026-11-24 — 14.12.0 release candidate prepared at 80b2a50. Full candidate suite 326/326, lint and all 77 sync statuses green, context ceilings pass. The public GitHub repo has no sprint PR and no 14.12.0 tag. Publication gate pending.
 - 2026-11-24 — User approved publication and merge. Public PR #148 opened for the verified 14.12.0 release candidate.
+- 2026-11-27 — Sprint closed and archived on the next sprint branch; PR #148 merged as dbb6749a1d91e91888d7a51f3e824d1e54de5cf3, release v14.12.0 published.

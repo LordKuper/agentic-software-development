@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:9b13894504e14719ac9d974902af8d2f4d0cef0f730b0e0dea65efb4edd12104 content_digest=sha256:772d6bbacb0cae9a6d564d3a70256dc7cb0294b1e80b35e76dcf81c7d8e90cba asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:e1ce0b9add701a3fdc724e613743a45b817ac6cb3deca8296384636f79a35c3d content_digest=sha256:50d2d435a1897598077248e986fbd54c71b9b5a000f712f578d57c2d3c8e14ee asd_version=14.12.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document inline, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs $asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -48,10 +48,10 @@ Request user decision, four options (a brownfield candidate defaults D; the user
 
 **A — divergent brainstorm**
 - Request user input, multi-field one-shot: Lens (Problem-first / User-first / Market-first / Tech-first / Capability-first), Horizon (weeks / months / 1-2 years / multi-year), Maturity (first product / shipped before / domain expert)
-- Generate 3 distinct concept directions anchored on the lens; request user decision: pick 1 of 3 / regenerate
+- Delegate 3 distinct directions from the lens to `asd-researcher` in local mode; ask the user to pick or regenerate.
 
 **B — seeded brainstorm**
-- Skip the lens question; generate 3 directions from the raw user hint; request user decision: pick 1 of 3 / regenerate
+- Delegate 3 directions from the user hint in local mode; ask the user to pick or regenerate.
 
 **C — clear vision**
 - Request user input: the concept in the user's own words; draft per `t_concept.html` (required sections first; optional offered per section)
@@ -84,12 +84,13 @@ Request user decision, four options (a brownfield candidate defaults D; the user
 
 ## Rules
 
+- Researcher dispatch and recovery: `design-principles.md` §11.
 - never: mix the multi-field and options request shapes in one request.
 
 ## Delegates
 
 ```json
-{"agents": [], "skills": []}
+{"agents": ["asd-researcher"], "skills": []}
 ```
 
 ## Outputs

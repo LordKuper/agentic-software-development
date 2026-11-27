@@ -16,4 +16,6 @@ Framework repo specifics (`self_hosting: enabled`):
 - A `.asd/runtime.js` parser of a `language.docs` artifact checks its structure (column count, id column, machine tokens), never translated heading text.
 - Before COMPLETED, a dev that edited a rule, workflow or agent file runs `node .asd/runtime.js context-check` and keeps every bundle under its ceiling in `.asd/project/context-ceilings.json`; raising a ceiling is a quality waiver (`code-style.md` §5).
 
+- Before the full test suite, verify read-only child Git can discover and read the checkout in the exact environment passed to the suite; fix any environment issue in process scope, not global Git configuration.
+
 ASD never overwrites this file.

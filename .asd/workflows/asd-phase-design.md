@@ -1,6 +1,6 @@
 # ASD Workflow: Design
 
-Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advisor` only for an escalation consult (`agent-protocol.md` "Relay").
+Owner: inline orchestrator; runs `asd-design-system`; dispatches `asd-researcher` for solution design and `asd-advisor` for escalation.
 
 ## Entry
 
@@ -41,7 +41,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
 ## Rules
 
 - Drafts cover the whole sprint scope in `<sprint>/design/`, one artifact per enabled document only — a disabled document produces no draft, no gate, no dependency on it.
-- Read `research.md` first and research only the technical delta it leaves (`design-principles.md` §11).
+- Read `research.md` first and delegate residual research and solution design per `design-principles.md` §11 before drafting the affected sections.
 - Integrate an existing draft, preserving `provenance` + `source` when present, and write the draft in `language.docs`.
 - **Authoring** (`core.md` "Incremental writing"; steps 6, 8, 9): write the template's skeleton to the draft path, then per section draft → write → delta summary in `language.chat` (`language-policy.md` "Write-then-review-accept: chat-language self-sufficiency") → `Lock in` or `Revise this section`, on `Lock in` appending the decisions-log line "`<draft path>` § `<section>` locked"; after the last section, one artifact-level `accept`, on which append a decisions-log entry ("`<draft path>` accepted") and a `gate_decisions` entry (`gate: <document> accept`, `decision_actor: user`). Re-entry: a section is locked in only with its lock line, never re-asked; a section holding content and no `{{` placeholder but no lock line resumes at its pending `Lock in` or `Revise this section`; a draft with every section locked in and no `gate_decisions` entry resumes at the accept.
 - Acceptance criteria are atomic, one assertion each; every story cross-references its ACs and every AC its story, none without a story. A requirement dropped, or two sources in conflict, is a user decision before the draft carries either.
@@ -50,7 +50,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
 ## Dispatch
 
 ```json
-[{"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
+[{"agent": "asd-researcher", "when": "residual research or solution design before affected drafts", "payload": ["mode", "question", "inputs.context", "inputs.source_paths", "language"], "signals": ["COMPLETED", "FAILED", "ABORT"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}]
 ```
 
 ## Exit

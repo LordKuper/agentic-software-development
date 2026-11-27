@@ -4,6 +4,29 @@
 
 const { assert, fs, path, execFileSync, spawnSync, sync, update, runtime, REPO_ROOT, tests, test, FIXTURE_ROOT, mkTempDir, loadManifest, makeMiniRepo, writeFile, runtimeCli, runtimeCliResult, runtimeCliResultAsync, sandboxGitRepo, sandboxGitRepoFrom, importCommits, execFileAsync, readRepoFile, canonText, headingBody, sectionOf, jsonOf, stepOf, spans, scriptedWait, RUNTIME_JS, runtimeSpawn, runtimeSpawnAsync, disabledAttributionRepo, OFF_VALUE, linkedLedgerCases, recordedOwnedKeys } = require('./lib.js');
 
+test('sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory', async () => {
+  const sandbox = sandboxGitRepo();
+  const [head] = await importCommits(sandbox, [{ 'fixture.txt': 'suite fixture' }]);
+  const args = ['suite-git-check'];
+  const ready = runtimeSpawn(args, { cwd: sandbox.repo });
+  assert.deepStrictEqual([ready.status, ready.stdout.trim()], [0, head]);
+  const denied = runtimeSpawn(args, {
+    cwd: sandbox.repo, env: { ...process.env, GIT_DIR: path.join(sandbox.repo, 'missing-git-directory') },
+  });
+  assert.strictEqual(denied.status, 2);
+  assert.strictEqual(denied.stdout, '');
+  assert.match(denied.stderr, /git rev-parse .* failed:/);
+
+  const wrongRoot = path.join(sandbox.repo, 'other-worktree');
+  fs.mkdirSync(wrongRoot);
+  const env = { ...process.env, GIT_DIR: path.join(sandbox.repo, '.git'), GIT_WORK_TREE: wrongRoot };
+  assert.strictEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sandbox.repo, env, encoding: 'utf8' }).trim(), head);
+  const wrong = runtimeSpawn(args, { cwd: sandbox.repo, env });
+  assert.strictEqual(wrong.status, 2);
+  assert.strictEqual(wrong.stdout, '');
+  assert.match(wrong.stderr, /git resolved worktree .* expected /);
+});
+
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {
   const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
   const trailer = /`(ASD-Task): <id>`/.exec(commits);

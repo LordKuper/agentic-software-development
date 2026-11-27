@@ -1,8 +1,8 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:f926da7c18fd429a1415cce6cbed31b4cd552a92ff9c21dfc8989ec7c0da9d04 content_digest=sha256:ed70a509142ab16c241aaed54041af18b0cc4a1406300fc9f38f5b8c8fc944c9 asd_version=14.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:394a6d21d36e45d7493e46870bda8f3f1a78113fd56321e16121ce31068cb5be content_digest=sha256:be1ea3dd167d97491f7b634a536b47e6a0277cce08457a2ad7248f90ec9232ce asd_version=14.12.0 schema=1
 name: asd-design-system
-description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) inline, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
-allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
+description: "Define or edit docs/ux/DESIGN.md, design-system.html and accessibility.html from scratch, constraints or existing code. Delegates design research, lints tokens and regenerates previews. Use on /asd-design-system, when referred by asd-init or design, or to define, revise or extract a design system, tokens or accessibility baseline."
+allowed-tools: "Read Write Edit Glob Grep Bash Task AskUserQuestion"
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -49,11 +49,11 @@ Request user decision (a brownfield candidate defaults C):
 Read `concept.html` (vision, target users, value prop, tone) and `stack.html` (UI platform, framework constraints).
 
 **A — greenfield**
-- Propose 2-3 candidate token sets per section (color palette, typography scale, spacing scale, radii, motion); request user decision: pick or request alternatives
+- Delegate 2–3 candidate token sets per section to `asd-researcher`; ask the user to pick or request alternatives.
 
 **B — constrained**
 - Request user input, multi-field one-shot: brand color (hex), typography (system / serif / sans-serif / monospace / family), density (compact / comfortable / spacious), target platform (web / native-mobile / native-desktop / cli / mixed), each with "no preference"
-- Propose within the constraints
+- Delegate proposals within the constraints.
 
 **C — brownfield extraction**
 - Extract tokens from CSS variables, Tailwind config, theme objects, styled-components themes, design exports; frontmatter `provenance: reverse-engineered`, `source: <primary file>`
@@ -63,7 +63,7 @@ Read `concept.html` (vision, target users, value prop, tone) and `stack.html` (U
 Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/timing, components (only those the concept needs). With `project.subsystem_decomposition: enabled`, name a token one subsystem owns with its subsystem prefix (`design-system.md` §3).
 
 - Create mode only (`docs/ux/DESIGN.md` absent): write a skeleton (Google Labs format) with placeholder sections first. Edit mode enters the loop against the existing file.
-- Fetch the latest Google Labs DESIGN.md spec before the first section, cached for the session.
+- Before the first section, have the researcher verify the latest Google Labs DESIGN.md spec. Reuse that evidence within the session.
 - Per section, per `core.md` "Incremental writing": draft, write to `DESIGN.md` on disk, post the path and a short delta summary in `language.chat` (never the body, `language-policy.md`).
   - Apply `checkpoints.md`: an adaptive pass only for mechanical or already-authorized content; initial or material UX, brand or accessibility direction stays hard. Otherwise request **Lock in / Revise this section / Skip**.
   - Revise: collect feedback, rewrite in place, re-post. Skip: remove the section (heading and placeholder) from the file.
@@ -96,6 +96,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 
 ## Rules
 
+- Researcher dispatch and recovery: `design-principles.md` §11.
 - must: render EVERY user-decision/input request (question text, header, option labels and descriptions, multi-field labels and hints), control options included, in `language.chat` (`language-policy.md` "User-decision options").
 - never: author accessibility rules without checking the concept's target users
 - must: bind token authoring and review by `design-system.md`; UX shaping by `ux-principles.md`
@@ -107,7 +108,7 @@ Sections: colors, typography, spacing, radii/borders, shadows/elevation, motion/
 ## Delegates
 
 ```json
-{"agents": [], "skills": []}
+{"agents": ["asd-researcher"], "skills": []}
 ```
 
 ## Outputs

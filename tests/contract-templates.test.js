@@ -18,7 +18,7 @@ test('README.md agent-count claims match the actual .asd/agents/*.md file count'
   // on the current word (not a general number-word parser) - it's a guard
   // against silent drift, not a parser: bumping the count must also bump
   // this literal, or the assertion fails loud instead of staying vacuous.
-  const WORD_TO_NUMBER = { Seven: 7, Eight: 8, Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const WORD_TO_NUMBER = { Seven: 7, Eight: 8, Nine: 9, Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
   const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
   assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
   assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);

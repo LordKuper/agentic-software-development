@@ -1,0 +1,356 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index c9d665ca..53f1aef7 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -72,7 +72,7 @@
+     ".asd/rules/language-policy.md": "8621faf93f6b7fead18845adda2e92b207733d680dc8a343d3796ebaeece4dfe",
+     ".asd/rules/providers.md": "b541aeca3cbdb44fb8d2efea9342a7fc08a28e43ef5c87e4e28c74990f885f83",
+     ".asd/rules/review-policy.md": "b119b9ed63a16611f597be9cb2a02dc6103526d1bd7910d7d79cafce15c0cf41",
+-    ".asd/rules/sprint-lifecycle.md": "5e9d1b16425283216e43a42437dbb1c9226ffce89105bf256c59bacc96604185",
++    ".asd/rules/sprint-lifecycle.md": "26108aba95cf52925e27b2bd7c166674057d74fa785a22d89cecc760b59b803e",
+     ".asd/rules/ux-principles.md": "5fe5935f3c835fa6efda040249ebb2144cf2f830009598ea65ebfcc79a5a06da",
+     ".asd/skills/asd-concept/SKILL.md": "e1ce0b9add701a3fdc724e613743a45b817ac6cb3deca8296384636f79a35c3d",
+     ".asd/skills/asd-design-system/SKILL.md": "394a6d21d36e45d7493e46870bda8f3f1a78113fd56321e16121ce31068cb5be",
+@@ -129,9 +129,9 @@
+     ".asd/workflows/asd-phase-design-promote.md": "2bde51ca6ca97950b52403e5e8240f8bdcbe20615d875028bec7b935df29ce58",
+     ".asd/workflows/asd-phase-design-review.md": "0a1f4e6f0d9d68f4fbc895c1b2af169dbe81e7f01f8174e111395264b2883ed1",
+     ".asd/workflows/asd-phase-design.md": "ac3cd2c413bf3367bfbc2a78b29d2a374bc3d0bec4dc7f0ecfb19d40d81ff04b",
+-    ".asd/workflows/asd-phase-impl-review.md": "4322672afe74ef1a33b7c294ff9c3043c6d0ca90319731f1c113e9335674be79",
++    ".asd/workflows/asd-phase-impl-review.md": "b4a8173211a8915e5800df98d59a478368e16f84193a95d12868bcabd229bbdc",
+     ".asd/workflows/asd-phase-impl-test.md": "5a72ac9bbed3d28728bac52b08caf5e76c531d972dfb2e1ce5e3b72f0c478deb",
+-    ".asd/workflows/asd-phase-impl.md": "600a366e1ae78882189851260a74d624e9f1e24b7b966495de22d11c980ccc30",
++    ".asd/workflows/asd-phase-impl.md": "874f77ed8885d834b1419aa77f6043f6b14323d123ebb0f1e3db5823605f5248",
+     ".asd/workflows/asd-phase-plan.md": "84950eac415f35dd59c664fed34e94f6ef715193cea3eb2c81aa59463ac32218",
+     ".asd/workflows/asd-phase-pr.md": "715700a69685420645296b4a9de4c59835930d91416f923ae1d1de82da36f89f",
+     ".asd/workflows/asd-phase-scope.md": "fc0ceb4689af0df07de7bb60330b51ed15af7a2b7ede97b783738221926db31a",
+@@ -142,7 +142,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "e9bc2b7099ed346afe6cb9c6147a7998925249d2de8aeebd69db9f83dd89742e",
++    ".asd/runtime.js": "e7b23211708e60edf6c186c7a1daec7be70080361b1e5bdf7dfc9d483966c6c6",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 6c5af842..86c08ada 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -281,13 +281,13 @@ A problem that is both a code defect and a workflow malfunction (routine under `
+ 
+ ## Operation timing
+ 
+-Write the **timing ledger** `<sprint>/timing.jsonl` only via `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted|continued]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]…]`. One runtime-stamped append per boundary, closes before opens. Quote spaced IDs and whole attrs; no `&&`. Repeat attrs or separate pairs with semicolons or commas before `key=`; last value wins. Scope step 1 alone creates it. Missing ledger or failure never gates.
++Write the **timing ledger** `<sprint>/timing.jsonl` only via `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted|continued]] [--open <id,…> --kind <kind> [--parent <id>] [--context <bundle path>] [--attrs <k=v;…>]…]`. One runtime-stamped append per boundary, closes before opens. Quote spaced IDs and whole attrs; no `&&`. Repeat attrs or separate pairs with semicolons or commas before `key=`; last value wins. Scope step 1 alone creates it. Missing ledger or failure never gates.
+ 
+ Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model`, `context_bytes`); `review-iteration` (`wave`, `iteration`: integers); `suite` (`scope`: `full`|`impacted`|`named`); `external-review` (`model`: wrapped CLI); `user-wait` (`gate`: gate or question label).
+ 
+ IDs: phase name (runtime numbers it); routed dispatch Task ID; reviewer `<reviewer key> [wave-<K>/]iter-NN`; other dispatch `<agent> <phase>#<n>`; iteration `<phase> [wave-<K>/]iter-NN`; suite `suite <phase>#<n>`; wait `wait <gate>`. Use a fresh `#<n>` for repeated IDs; duplicate opens warn and skip. Nested ops pass `--parent`, otherwise use the open phase. Runtime fills missing dispatch attrs from `task_routing` (strip suffix), else frontmatter (unrouted: pass `--attrs agent=<name>`; unresolved warns), and measures `context_bytes` from the bundle when present.
+ 
+-Runtime skips a new `dispatch` or `external-review` open with a warning unless its parent is an open phase or descends through open ops from one. Legacy ledger entries remain readable. Close each initial implementation Task dispatch at its own observed terminal signal (`done` on completion, `interrupted` when stopped or awaiting a new dispatch). A parent close marks any still-open, tagged Task dispatch `interrupted`. A continued close replaces that attempt's completion in `timing-summary`; a fresh retry has its own id. For `impl_wave=<n>`, `timing-summary` adds `impl_waves` with distinct dispatch completions and combined bundle bytes, counting identical bundle contents once per plan wave, including overlapping attempts. Missing measurements are listed as `context_missing`; untagged legacy entries keep their existing totals.
++Runtime skips a new `dispatch` or `external-review` open with a warning unless its parent is an open phase or descends through open ops from one. Legacy ledger entries remain readable. Close each initial implementation Task dispatch at its own observed terminal signal (`done` on completion, `interrupted` when stopped or awaiting a new dispatch). A parent close marks any still-open, tagged Task dispatch `interrupted`. A continued close replaces that attempt's completion in `timing-summary`; a fresh retry has its own id. Every `impl_wave=<n>` dispatch open passes its payload's `inputs.context` with `--context`, including when a retry keeps the earlier path. An explicit missing path yields no bundle measurement. `timing-summary` adds `impl_waves` with distinct completions and counts identical bundle contents once per plan wave, including overlapping attempts. `context_missing` lists unmeasured bundles; untagged legacy entries keep their totals.
+ 
+ `asd-sprint` brackets phase delegation, closing `done` on COMPLETED, `interrupted` on FAILED/ABORT, leaving QUESTION open. Scope opens its own; PR open closes before final commit/push. No timing before ledger creation, during PR merge or release retry. Phase workflows name other sites; Tester brackets suites. Bracket each user prompt or handoff (including manual steps and user verification) in `user-wait` until its answer is processed. On failure/stall read "Timing recovery".
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 55469501..c44aee12 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -1943,9 +1943,10 @@ function timingRequest(flags) {
+   if (!TIMING_OUTCOMES.includes(outcome)) fail(`--outcome must be ${TIMING_OUTCOMES.join(' or ')}`);
+   if (open.length === 0 && [flags.kind, flags.parent, flags.attrs].some((value) => value !== undefined)) fail('--kind/--parent/--attrs apply to --open only');
+   if (open.length > 0 && !TIMING_KINDS.includes(flags.kind)) fail(`--kind must be one of ${TIMING_KINDS.join(', ')}`);
++  if (flags.context !== undefined && (flags.kind !== 'dispatch' || typeof flags.context !== 'string' || !flags.context.trim())) fail('--context <path> applies to dispatch opens');
+   const badPhase = flags.kind === 'phase' ? open.find((name) => !/^[a-z]+(-[a-z]+)*$/.test(name)) : undefined;
+   if (badPhase !== undefined) fail(`--open of a phase takes its bare phase name: ${badPhase}`);
+-  return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
++  return { close, outcome, open, kind: flags.kind, parent: flags.parent, context: flags.context, attrs: timingAttrs(flags.attrs) };
+ }
+ 
+ /** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened writes nothing (warns). */
+@@ -1975,8 +1976,12 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
+ }
+ 
+ /** Fill missing routing and bundle attrs. Warn on unresolved routing or a failed lookup. */
+-function fillDispatchAttrs(id, attrs, lookups, warnings) {
+-  const filled = { ...attrs };
++function fillDispatchAttrs(id, request, lookups, warnings) {
++  const filled = { ...request.attrs };
++  if (request.context !== undefined) {
++    delete filled.context_bytes;
++    delete filled.context_digest;
++  }
+   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
+   const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
+   try {
+@@ -1985,9 +1990,9 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
+       if (!routed?.agent || filled.agent === undefined || routed.agent === filled.agent) fillFrom(routed);
+     }
+     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
+-    const context = lookups.context?.(id, filled.impl_wave);
++    const context = lookups.context?.(id, filled.impl_wave, request.context);
+     if (filled.context_bytes === undefined) {
+-      const bytes = context?.bytes ?? lookups.contextBytes?.(id);
++      const bytes = context?.bytes ?? (request.context === undefined ? lookups.contextBytes?.(id) : undefined);
+       if (bytes !== undefined) filled.context_bytes = bytes;
+     }
+     if (context?.digest && Number(filled.context_bytes) === context.bytes) filled.context_digest = context.digest;
+@@ -2031,7 +2036,7 @@ function timingAppend(text, flags, now, lookups = {}) {
+       continue;
+     }
+     held.add(id);
+-    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
++    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request, lookups, warnings) : request.attrs;
+     const entry = { op: 'open', id, kind: request.kind, parent, start: now, attrs };
+     open.set(id, entry);
+     if (request.kind === 'phase') phaseOpens.push(name);
+@@ -2073,22 +2078,27 @@ function timingRecover(text, headDate) {
+ }
+ 
+ /** Read dispatch bundle size and, for an implementation wave, its content identity. */
+-function timingContext(ledger, id, implWave) {
++function timingContext(ledger, id, implWave, contextPath) {
+   const slug = path.basename(path.dirname(path.resolve(ledger)));
+   const ids = implWave === undefined ? [id, phaseName(id)] : [id];
+-  const names = ids.map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
+-  const found = names.map((name) => path.join(scratchDir(), name)).find((candidate) => fs.existsSync(candidate));
+-  if (found === undefined) return undefined;
+-  if (implWave === undefined) return { bytes: fs.statSync(found).size };
+-  const bundle = fs.readFileSync(found);
+-  return { bytes: bundle.length, digest: crypto.createHash('sha256').update(bundle).digest('hex') };
++  const candidates = contextPath === undefined
++    ? ids.map((name) => path.join(scratchDir(), `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`))
++    : [contextPath];
++  for (const file of candidates) {
++    const stat = fs.statSync(file, { throwIfNoEntry: false });
++    if (!stat?.isFile()) continue;
++    if (implWave === undefined) return { bytes: stat.size };
++    const bundle = fs.readFileSync(file);
++    return { bytes: bundle.length, digest: crypto.createHash('sha256').update(bundle).digest('hex') };
++  }
++  return undefined;
+ }
+ 
+ /** Read bundle measurement, sprint task routing or the relevant host's canonical agent metadata on demand. */
+ function timingLookups(ledger) {
+   const statePath = path.join(path.dirname(ledger), 'state.json');
+   return {
+-    context: (id, implWave) => timingContext(ledger, id, implWave),
++    context: (id, implWave, contextPath) => timingContext(ledger, id, implWave, contextPath),
+     routed: (id) => {
+       if (!fs.existsSync(statePath)) return undefined;
+       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
+@@ -2979,7 +2989,7 @@ const COMMAND_FLAGS = {
+   'timing-summary': ['ledger', 'archive'],
+   'suite-git-check': [],
+   'checks-wait': ['pr', 'repo'],
+-  timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
++  timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'context', 'attrs'],
+   'timing-recover': ['ledger'],
+ };
+ 
+@@ -3148,6 +3158,9 @@ async function main(argv) {
+     return 0;
+   }
+   if (command === 'suite-git-check') {
++    const discovered = runGit(['rev-parse', '--show-toplevel']).replace(/\r?\n$/, '');
++    const checkout = fs.realpathSync(process.cwd());
++    if (path.relative(checkout, fs.realpathSync(discovered)) !== '') fail(`git resolved worktree ${discovered}, expected ${checkout}`);
+     process.stdout.write(runGit(['rev-parse', '--verify', '--quiet', 'HEAD^{commit}']));
+     return 0;
+   }
+diff --git a/.asd/sprints/041-routerai-external-review/test-plan.entry-02.md b/.asd/sprints/041-routerai-external-review/test-plan.entry-02.md
+new file mode 100644
+index 00000000..25fa43ab
+--- /dev/null
++++ b/.asd/sprints/041-routerai-external-review/test-plan.entry-02.md
+@@ -0,0 +1,24 @@
++# Test plan evidence — entry 02
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| D-1 README agent roster | A numeric or word-form count disagrees with the actual roster | README template contract | keep | Existing check validates all README count sites. Add the missing `Nine` fixture and retain every assertion. |
++| D-2 researcher context ceilings | A fresh seed lacks a required key or silently changes existing values | Context CLI contract | keep | Existing checks cover key membership and value preservation. Compare key membership without imposing an order on JSON object properties. |
++| Review finding 1, AC-11 retry context | Preserved payload gets a fresh timing ID and drops known context | Timing CLI contract | add | Extend the existing wave test with a real payload bundle path and distinct timed attempts. The measured bytes remain available and count once. |
++| Review finding 2, AC-9/AC-15 worktree identity | Git reports the expected SHA for another worktree | Git CLI boundary contract | add | Extend the existing terminal runner contract with a valid Git directory and an overridden worktree. Verify Git can still report the expected SHA, then require the guard to refuse the run. |
++| Review finding 3, AC-1/AC-8/AC-14 wrapper handoff | Wrong shell or arguments, an unnecessary retry, or incomplete carried scope | Actual wrapper dispatch against local CLI fixtures | keep | Two `asd-external-review` dispatches consumed genuine runtime preflight output on Codex/Windows. The RouterAI-profile fixture captured exactly one invocation with argv matching `route.args`, including the pinned provider, model and read-only flags. With the default Claude route, the Codex host used PowerShell even though the wrapped provider was Claude and the fixture captured exactly one invocation. Both stdin inputs contained the manifest path without target contents. Both explicit denials returned `external review interrupted: account-hold`, with no additional wrapped invocation. The orchestrator recorded account hold and persisted a skip whose JSON `Unreviewed files` list exactly matched the two manifest paths. Evidence in `.asd/tmp/041-wrapper-fixture/`: preflight JSON, `invocations.jsonl`, `claude-invocations.jsonl` and `review-output-json/external.md`. This is a controlled agent exercise. It verifies the observed wrapper behavior and does not establish live RouterAI authentication. |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| `tests/contract-workflows.test.js`: standalone skill byte-cap assertion | Redundant: survivor `tests/runtime-timing.test.js: context-check exits 0 over the committed ceilings`, branch aggregate standalone skill bytes over the cap | yes — AC-13 |
++
++## Added tests
++
++| Test | Gap proof | Regression proof |
++|---|---|---|
++| `tests/runtime-timing.test.js`: a wave reports separate completion times and counts identical context once | With `NODE_OPTIONS=--require=./.asd/tmp/041-reviewfix-entry1-proof.cjs` and `ASD_041_FIX_PROOF=retry:gap`, discard the supplied bundle path and run the prior case: `node tests/run.js runtime-timing --filter "a wave reports separate completion times"` → exit 0, one match. | Same preload with `retry:regression` and the retry case enabled: `node tests/run.js runtime-timing --filter "a wave reports separate completion times"` → exit 1, one match, `sprint-041 AC-11: a wave reports separate completion times and counts identical context once`. runs: 1 |
++| `tests/runtime-tools.test.js`: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory | With `NODE_OPTIONS=--require=./.asd/tmp/041-reviewfix-entry1-proof.cjs` and `ASD_041_FIX_PROOF=worktree:gap`, remove the root guard and run the prior case: `node tests/run.js runtime-tools --filter "suite Git check discovers HEAD"` → exit 0, one match. | Same preload with `worktree:regression` and the wrong-worktree case enabled: `node tests/run.js runtime-tools --filter "suite Git check discovers HEAD"` → exit 1, one match, `sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory`. runs: 1 |
+diff --git a/.asd/sprints/041-routerai-external-review/test-plan.md b/.asd/sprints/041-routerai-external-review/test-plan.md
+index 64fcf301..b8c5cfd6 100644
+--- a/.asd/sprints/041-routerai-external-review/test-plan.md
++++ b/.asd/sprints/041-routerai-external-review/test-plan.md
+@@ -13,19 +13,20 @@ responsibility:
+ |---|---|---|
+ | 1 | c822fed5 | full change surface |
+ | 2 | 1b1e8fd2 | delta since entry 1 |
++| 3 | ac5fb97c | delta since entry 2 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| D-1 README agent roster | A numeric or word-form count disagrees with the actual roster | README template contract | keep | Existing check validates all README count sites. Add the missing `Nine` fixture and retain every assertion. |
+-| D-2 researcher context ceilings | A fresh seed lacks a required key or silently changes existing values | Context CLI contract | keep | Existing checks cover key membership and value preservation. Compare key membership without imposing an order on JSON object properties. |
++| Review fix 1, AC-11 timing context | A retry silently drops context bytes or double-counts the shared bundle | Timing CLI contract | keep | The prior review-fix pass already extended the owning wave test. It supplies the same real context file to two dispatch IDs, checks one byte contribution and confirms both outcomes. The seeded regression fails in entry 02 evidence. |
++| Review fix 2, AC-9/AC-15 terminal Git guard | The expected SHA is accepted for a different worktree | Git CLI boundary contract | keep | The review-fix test verifies the same SHA under a valid Git directory and a wrong worktree. The runtime guard must reject it. Keep the existing invalid-directory and normal controls. |
++| Review fix 3, AC-1/AC-8/AC-14 external-review wrapper | Wrong provider flags or shell, retried hold or dropped scope | Actual wrapper dispatch against local CLI fixtures | keep | Both controlled dispatches and JSON skip persistence were verified during review-fix. Their evidence is recorded in entry 02. This re-entry adds no wrapper behavior. |
+ 
+ ## Removed tests
+ 
+ | Test | Reason | In change scope |
+ |---|---|---|
+-| `tests/contract-workflows.test.js`: standalone skill byte-cap assertion | Redundant: survivor `tests/runtime-timing.test.js: context-check exits 0 over the committed ceilings`, branch aggregate standalone skill bytes over the cap | yes — AC-13 |
+ 
+ ## Added tests
+ 
+@@ -34,18 +35,14 @@ responsibility:
+ 
+ ## Suite run
+ 
+-Entry 1 post-authoring evidence: 295/297 (exit 1) at `f7970f63bf4ac9d8c39281a26053c071c0a0d8a4`. D-1 and D-2 were routed from that result. The first entry's test decisions and regression proof are in `test-plan.entry-01.md`.
+-
+-Entry 2 pre-strategy: 247/249 (exit 1) at `d230fa29a62f162d7beba786e82da592b09e977d`. The roster test omitted the valid word `Nine`, and the ceiling test treated JSON property order as membership. Both test defects are repaired. Isolated runner read mutations changed `Nine` to `Eight` and removed `asd-researcher@scope`. The original filtered roster and context checks each matched one test and failed with exit 1. Proof logs end in `proof-roster.runner.log` and `proof-ceilings.runner.log` in `.asd/tmp/`.
+-
+ - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update`
+ - Scope: impacted
+-- Scope evidence: after the suite revision, the gate retains the sprint's direct contract, routing, timing, runtime and sync consumers and the executable update cases. Since entry 1, changes are limited to README roster counts, researcher ceilings and existing test assertions. The runner and its setup are unchanged.
+-- Result: pass — 297/297, runner exit 0
++- Scope evidence: the delta from `1b1e8fd2` changes runtime timing context lookup, terminal Git-root checks, their workflow consumers, tests and documentation. The runner and common test setup did not change. The selected areas cover all named consumers and preserve the sprint-wide impacted set without requiring the full suite.
++- Result: pass — 297/297, runner exit 0. Reuse the entry 3 pre-strategy run for the impacted gate at the same checked code and test revision. This entry changes only the test-plan narrative.
+ - Lint / build: pass
+-- HEAD: 48cfcb9b474bdb8d54b728f32127a5f7c8470103
+-- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-suite-impl-test#2-post-revision.runner.log`
+-- Line delta: tests +112/−28 (net 84); other +289/−128 (net 161)
++- HEAD: a6148e3c90d789ddd294cf24367a350b50e9852e
++- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-3-suite-impl-test#3-pre-strategy.runner.log`
++- Line delta: tests +139/−28 (net 111); other +312/−135 (net 177)
+ 
+ ## Defects
+ 
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index a725c8c3..cc852b1f 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -80,7 +80,7 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+ - must (reviewer): put a question as a `question:` item under `## Escalations` (`review-policy.md` "Gate Verdict Format"), which makes the report at least CONCERNS; never a bare `QUESTION`, never `ADVICE_NEEDED`.
+ - must (reviewer): `quality` and `combined` trace AC-N against the `requirements` input (`sprint-lifecycle.md` "Input sources") and read `<sprint>/test-plan.md` with its segments from their manifest; `combined` does both in one pass over the rubrics its manifest composes, step 5's predicates included.
+ - must (tester, step 8 test-fix): fix and commit in place per `review-policy.md` "Minor test-only findings", reporting each finding fixed or unfixed.
+-- must (runner, step 9): fresh for each terminal run. Before `test` or `test_durations`, run `node .asd/runtime.js suite-git-check` from the checkout in the same shell, working directory and environment as the suite command, including any process-local Git settings. Require the returned commit to match `work`'s expected SHA. On failure return `FAILED` with the cause before running or recording the suite. On success run `test` **unscoped**, through `test_durations` when configured, then `lint` and `build`. Record `HEAD`, `Command`, `Scope`, `Result`, `Lint / build`, `Smoke` and, with `test_durations`, `Slowest tests:` (ten, name and ms) in `Suite run`; keep `Line delta` and `Allowance`. On red report the first failure lines and stop for triage.
++- must (runner, step 9): fresh for each terminal run. Before `test` or `test_durations`, run `node .asd/runtime.js suite-git-check` from `repo_root` in the same shell, working directory and environment as the suite command, including any process-local Git settings. The check requires Git's discovered worktree to be this checkout. Require the returned commit to match `work`'s expected SHA. On failure return `FAILED` with the cause before running or recording the suite. On success run `test` **unscoped**, through `test_durations` when configured, then `lint` and `build`. Record `HEAD`, `Command`, `Scope`, `Result`, `Lint / build`, `Smoke` and, with `test_durations`, `Slowest tests:` (ten, name and ms) in `Suite run`; keep `Line delta` and `Allowance`. On red report the first failure lines and stop for triage.
+ - must (base tester, step 9 red triage): fix and commit test-only defects before re-running (`git-strategy.md` "Commit before review" and `impl-review <id> suite` trailer per "Commits"). Report memory failures with their path. Record code defects as pending `D-N` rows in `test-plan.md` `Defects`. Return `FAILED` for an unfixable state.
+ 
+ ## Dispatch
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index ea2f4063..106e2965 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -40,7 +40,7 @@ After dispatch, user contact is limited to blockers, validated manual steps (8)
+ 6. **Dispatch tasks** per execution graph:
+    - For every migration Task, require the minimal failing fixture, reproducing command and expected result from the Task brief (`sprint-lifecycle.md` "Plan author checklist"). Include them in `work` before dispatch. Resolve a missing fixture before dispatch.
+    - Before an initial wave with `Settings change:`, apply exactly its pairs via sprint-mediated `asd-init` against working-tree `t_config.yaml`. Orchestrator commits config, no `MS-N`. On `FAILED` halt before dispatch; else dispatch remaining subtasks.
+-   - initial mode: waves ascending, every task of a wave dispatched concurrently. Tag each task dispatch timing open with `impl_wave=<wave number>`. Close its own operation as soon as its terminal return or stop is observed, before waiting for other dispatches, per `sprint-lifecycle.md` "Operation timing". The next wave opens after all required signals. A fix mode uses step 5's ordered chain, Dev before Tester.
++   - initial mode: waves ascending, every task of a wave dispatched concurrently. Tag each dispatch timing open with `impl_wave=<wave number>` and pass `--context <payload.inputs.context>` for that attempt, including a preserved-payload retry. Close each operation as soon as its own terminal return or stop is observed per `sprint-lifecycle.md` "Operation timing". The next wave opens after all required signals. A fix mode uses step 5's ordered chain, Dev before Tester.
+    - Before each review-fix chain verify commands/APIs per `artifact-layout.md` "Tech reference docs". Write/log missing entries and pass `inputs.tech_reference`; verification failure → `FAILED`.
+    - per task, or once per chain in a fix mode (5a): delegate to the agent `## Dispatch` names (`dev` in `## Rules` reads as that agent); payload per `agent-protocol.md` "Dispatch payload", `## Dispatch`'s role keys: `work` — initial: Task block excerpt (title + subtasks + dependencies); review-fix: grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description, brief per step 3 for critical findings, plus the user-approved change note for accepted FAIL findings); test-fix: grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the live `decisions-log.md` (`artifact-layout.md` "Decisions log" rotation), if any; `inputs` — "Input sources" keys plus `commands`, `tech_reference`, `custom_rules`, `mockups` when the folder exists ("Input sources" `ux`), review-fix `reviews` (`reviews/impl/<id>/`), test-fix `test_plan`; `language` — `language.chat`, `language.docs`; instruction: `## Rules`
+ 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "Creator dispatch recovery" failed dispatch. Initial mode, once the wave has its live signals and reconstructed results and before the next wave opens: apply the Test-only check below, then tick the `plan.md` checkboxes of subtasks reported done by accepted completions or verified complete in recovery, append each returned `memory_index` line to its `MEMORY.md`, and commit; a `memory-check` hit on that commit goes to its owner's memory-fix dispatch here (`review-policy.md` "Memory-fix dispatch"). `self_hosting: enabled`: initial mode, once a wave's last canon-editing dispatch has signalled and before the next wave opens or step 9 runs; fix modes, once the dev chain has signalled and before the tester chain is dispatched (before step 9 when no tester chain follows) — run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
+diff --git a/README.md b/README.md
+index c338b10c..0093261b 100644
+--- a/README.md
++++ b/README.md
+@@ -197,7 +197,7 @@ flowchart TD
+ | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro (a consumer project's `asd` rows are published as `[asd-retro]` issues on the ASD repo, in English whatever `language.docs`, unless `upstream_issues: disabled`, containing nothing project-specific; a Home of `.asd/project/reliability-checklist.md` is a reviewer check added or removed at the next scope, and retro stamps each item this sprint's findings cited and proposes removing one unhit for three sprints; a guardrail a command's exit can decide takes a check as Home, a `commands.yaml` `checks` entry, and a suite over its duration baseline or holding an `Allowance` yields a suite-revision proposal); an entry-free log skips remediation only, proposals still ship; a duration section summarises the sprint's timing ledger (summary table, the top 5 longest plus every over-30-minute machine operation, and every user wait checked for an avoidable escalation; "No timing data" without a ledger); closes with a chat summary |
+ | **pr** | DoD verification (under `safety_valve: disabled`, cleanup's green impacted verification satisfies the tests check) + `gh pr create`, then ASD waits for the PR's checks (up to 60 s for them to register, 30 min to finish) and merges it through `gh` in the same run, with no confirmation (a `gh` failure is `FAILED` naming the fix); one PR per sprint; the PR body lists each impl-review wave whose External Review was an availability skip, with its unreviewed files; a consumer PR body lists each included issue as `Closes #N`, and merge mode closes one the merge left open, and each included PR (an `AC-N` line ending `(PR #N)`) still open. Exit tokens are `done` (merge confirmed) and `await-merge` (merge blocked by a failing or timed-out check, a conflict or a branch-protection rule: the PR stays open and a later `/asd-sprint` resumes it). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release on the commit carrying the sprint's version bump, then closes the sprint's included `[asd-retro]` issues (the PR body lists them as `Refs #N`, never a closing keyword; idempotent; while it is missing, each `/asd-sprint` asks to retry it or continue without it). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
+ 
+-During implementation, `timing-summary` reports each wave's dispatch completions and deduplicated context bytes. Before a terminal full-suite run, `suite-git-check` verifies the expected commit using child Git in the suite's environment. See [operation timing](.asd/rules/sprint-lifecycle.md#operation-timing) and the [implementation review workflow](.asd/workflows/asd-phase-impl-review.md#rules).
++During implementation, `timing-summary` reports each wave's dispatch completions and deduplicated context bytes from the bundles sent to agents. Before a terminal full-suite run, `suite-git-check` verifies the worktree and reports its commit for the runner to compare with the expected SHA. Both Git checks use the suite's environment. See [operation timing](.asd/rules/sprint-lifecycle.md#operation-timing) and the [implementation review workflow](.asd/workflows/asd-phase-impl-review.md#rules).
+ 
+ You can resume an interrupted sprint at any time: `/asd-sprint` first fast-forwards the base branch from `origin`, reads `state.json`, runs the attribution check on the sprint branch, detects the current phase, and dispatches the matching phase skill. When starting a new sprint (not on resume, and skipped when `self_hosting: enabled`), after the dirty-tree check it compares your installed ASD version with the remote's; if a newer one exists you choose to update now or continue (an unreachable remote only warns). Updating runs `/asd-update` in sprint-mediated mode at scope step 1 on the sprint branch, commits the result, then halts asking you to restart the session and run `/asd-sprint` again.
+ 
+diff --git a/docs/architecture/tech-reference/git-2.56.md b/docs/architecture/tech-reference/git-2.56.md
+index ecec813f..5b866cf2 100644
+--- a/docs/architecture/tech-reference/git-2.56.md
++++ b/docs/architecture/tech-reference/git-2.56.md
+@@ -12,6 +12,7 @@ responsibility:
+ - Last verified: 2026-11-17 (installed `git version 2.56.0.windows.4`, local `git --html-path` docs for `git-show`/`git-diff`; `git show <ref>:<path>` on an absent path run live; `git diff --pathspec-from-file=<file>` prints usage and exits non-zero)
+ 
+ ## API surface used in project
++- [`git rev-parse --show-toplevel`](https://git-scm.com/docs/git-rev-parse): prints the working-tree root, absolute by default, or fails when no worktree is available. Use with the same process environment as the suite to detect a redirected worktree. Verified 2026-11-27.
+ - [`git status`](https://git-scm.com/docs/git-status): for a commit check, `git --no-optional-locks --literal-pathspecs status --porcelain=v1 -z --no-renames --untracked-files=all --ignored=traditional --ignore-submodules=none -- <paths…>` compares the index, worktree and HEAD in the current repository. Its NUL-delimited records name repo-relative paths and report the two status columns. Disabling rename detection reports the source deletion and destination addition independently. Reporting untracked and ignored files detects a replacement at a staged deletion. `--no-optional-locks` suppresses the optional index refresh write. Verified with Git 2.56.0.windows.4 on 2026-11-22.
+ - `git --literal-pathspecs diff -M --no-color --no-ext-diff --no-textconv <base>...<head> -- <paths…>`: one reviewer patch per commit range (`.asd/runtime.js` `rangePatchInvocations`); each rename passes its source path beside its destination so the patch shows a rename.
+ - `git diff --raw -z -M --no-abbrev <base>...<head>` and `git diff --numstat -z -M <base>...<head>`: rename map and line counts over a whole range, no path arguments.
+diff --git a/docs/architecture/tech-reference/node-24.15.md b/docs/architecture/tech-reference/node-24.15.md
+index 2238827c..30c02b10 100644
+--- a/docs/architecture/tech-reference/node-24.15.md
++++ b/docs/architecture/tech-reference/node-24.15.md
+@@ -14,6 +14,8 @@ responsibility:
+ 
+ ## API surface used in project
+ 
++- [`fs.realpathSync(path)`](https://nodejs.org/docs/v24.15.0/api/fs.html#fsrealpathsyncpath-options) synchronously returns the resolved path (UTF-8 string by default); compare resolved checkout paths rather than unresolved aliases. Verified 2026-11-27.
++
+ - `path.posix` and `path.win32` select path grammar independently of the host. Their string operations act on the supplied path and do not modify the filesystem. Use each grammar's `isAbsolute(file)` for its host.
+ - `fs.existsSync(path)` and `fs.statSync(path).size` read the explicitly named file or directory without modifying it. Use them to find a previous snapshot copy and verify that the selected drafts produced a patch.
+ - `fs.readFileSync(list, 'utf8')` reads the explicitly named list without changing it. Git's NUL-delimited records retain the path characters needed by literal pathspecs.
+diff --git a/tests/runtime-timing.test.js b/tests/runtime-timing.test.js
+index 13dbdd5a..a1d615d4 100644
+--- a/tests/runtime-timing.test.js
++++ b/tests/runtime-timing.test.js
+@@ -134,6 +134,24 @@ test('sprint-041 AC-11: a wave reports separate completion times and counts iden
+       { id: 'Task 3', completed_at: null, outcome: 'interrupted' },
+     ],
+   });
++
++  const root = mkTempDir();
++  const ledgerPath = path.join(root, 'timing.jsonl');
++  const bundle = 'shared context for the original and retry payloads\n';
++  const bundlePath = path.join(root, 'original.context.md');
++  fs.writeFileSync(bundlePath, bundle, 'utf8');
++  const timing = (...argv) => runtimeSpawn(['timing', '--ledger', ledgerPath, ...argv]);
++  assert.strictEqual(timing('--create', '--open', 'impl', '--kind', 'phase').status, 0);
++  const dispatch = ['--kind', 'dispatch', '--context', bundlePath, '--attrs', 'impl_wave=1,agent=asd-dev'];
++  assert.strictEqual(timing('--open', 'Task 1', ...dispatch).status, 0);
++  assert.strictEqual(timing('--close', 'Task 1', '--outcome', 'interrupted', '--open', 'Task 1#2', ...dispatch).status, 0);
++  assert.strictEqual(timing('--close', 'Task 1#2').status, 0);
++  const retry = runtime.timingSummary(fs.readFileSync(ledgerPath, 'utf8'), []).timing.impl_waves[1];
++  assert.strictEqual(retry.context_bytes, Buffer.byteLength(bundle));
++  assert.deepStrictEqual(retry.context_missing, []);
++  assert.deepStrictEqual(retry.dispatches.map(({ id, outcome }) => [id, outcome]), [
++    ['Task 1', 'interrupted'], ['Task 1#2', 'done'],
++  ]);
+ });
+ 
+ test('sprint-033 AC-18 (issues #100, #108, #111): a close of an open op cascades to its open children with a warning, an op a recovery closed interrupted closes again as continued from that close, and any other repeat close writes nothing and warns', () => {
+diff --git a/tests/runtime-tools.test.js b/tests/runtime-tools.test.js
+index f82fbca1..f64842c5 100644
+--- a/tests/runtime-tools.test.js
++++ b/tests/runtime-tools.test.js
+@@ -16,6 +16,15 @@ test('sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner enviro
+   assert.strictEqual(denied.status, 2);
+   assert.strictEqual(denied.stdout, '');
+   assert.match(denied.stderr, /git rev-parse .* failed:/);
++
++  const wrongRoot = path.join(sandbox.repo, 'other-worktree');
++  fs.mkdirSync(wrongRoot);
++  const env = { ...process.env, GIT_DIR: path.join(sandbox.repo, '.git'), GIT_WORK_TREE: wrongRoot };
++  assert.strictEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sandbox.repo, env, encoding: 'utf8' }).trim(), head);
++  const wrong = runtimeSpawn(args, { cwd: sandbox.repo, env });
++  assert.strictEqual(wrong.status, 2);
++  assert.strictEqual(wrong.stdout, '');
++  assert.match(wrong.stderr, /git resolved worktree .* expected /);
+ });
+ 
+ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {

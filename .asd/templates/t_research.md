@@ -7,7 +7,7 @@ responsibility:
 
 # Research
 
-<!-- Stages, conceptual boundary, no-web-research Findings line: .asd/rules/sprint-lifecycle.md "Staged solution design" — not restated here. -->
+<!-- Stages and conceptual boundary: .asd/rules/sprint-lifecycle.md "Staged solution design". Unavailable web research: .asd/workflows/asd-phase-scope.md step 2(b). -->
 
 ## Requirements
 Raw scope and stage (a) answers; stage (c) refines the answers.

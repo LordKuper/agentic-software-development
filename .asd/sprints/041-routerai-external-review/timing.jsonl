@@ -1,0 +1,154 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T09:24:03.885Z","attrs":{}}
+{"op":"open","id":"wait scope acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-27T09:52:19.566Z","attrs":{"gate":"scope acceptance"}}
+{"op":"close","id":"wait scope acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-27T09:52:19.566Z","end":"2026-11-27T11:22:41.450Z","outcome":"done","attrs":{"gate":"scope acceptance"}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T09:24:03.885Z","end":"2026-11-27T11:22:41.450Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T11:22:41.450Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T11:22:41.450Z","end":"2026-11-27T11:24:09.146Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T11:24:09.146Z","attrs":{}}
+{"op":"open","id":"wait plan overview","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:24:48.849Z","attrs":{"gate":"plan overview"}}
+{"op":"close","id":"wait plan overview","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:24:48.849Z","end":"2026-11-27T11:29:03.222Z","outcome":"done","attrs":{"gate":"plan overview"}}
+{"op":"open","id":"wait plan tasks","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:29:43.269Z","attrs":{"gate":"plan tasks"}}
+{"op":"close","id":"wait plan tasks","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:29:43.269Z","end":"2026-11-27T11:45:19.660Z","outcome":"done","attrs":{"gate":"plan tasks"}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T11:24:09.146Z","end":"2026-11-27T11:45:56.606Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T11:45:56.606Z","attrs":{}}
+{"op":"open","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:46:40.895Z","attrs":{"agent":"asd-dev","tier":"standard","model":"gpt-6.2-sol"}}
+{"op":"close","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:46:40.895Z","end":"2026-11-27T11:56:29.799Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"gpt-6.2-sol"}}
+{"op":"open","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:56:36.194Z","attrs":{"agent":"asd-tester","impl_wave":"2","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl#1","kind":"suite","parent":"Task 2","start":"2026-11-27T11:57:27.800Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#1","kind":"suite","parent":"Task 2","start":"2026-11-27T11:57:27.800Z","end":"2026-11-27T11:57:35.733Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:56:36.194Z","end":"2026-11-27T11:58:12.462Z","outcome":"done","attrs":{"agent":"asd-tester","impl_wave":"2","tier":"standard","model":"sol"}}
+{"op":"open","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:58:36.529Z","attrs":{"agent":"asd-dev-escalated","impl_wave":"3","tier":"escalated","model":"gpt-6.2-sol"}}
+{"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:58:36.529Z","end":"2026-11-27T12:08:45.130Z","outcome":"done","attrs":{"agent":"asd-dev-escalated","impl_wave":"3","tier":"escalated","model":"gpt-6.2-sol"}}
+{"op":"open","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-11-27T12:08:50.703Z","attrs":{"agent":"asd-tester","impl_wave":"4","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl#4.1","kind":"suite","parent":"Task 4","start":"2026-11-27T12:09:54.606Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#4.1","kind":"suite","parent":"Task 4","start":"2026-11-27T12:09:54.606Z","end":"2026-11-27T12:09:57.188Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl#4.2-route","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:05.174Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#4.2-route","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:05.174Z","end":"2026-11-27T12:12:05.398Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#4.2-roster","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:05.456Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl#4.2-roster","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:05.456Z","end":"2026-11-27T12:12:05.624Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl#4.3","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:13.710Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl#4.3","kind":"suite","parent":"Task 4","start":"2026-11-27T12:12:13.710Z","end":"2026-11-27T12:12:16.124Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-11-27T12:08:50.703Z","end":"2026-11-27T12:13:00.104Z","outcome":"done","attrs":{"agent":"asd-tester","impl_wave":"4","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T11:45:56.606Z","end":"2026-11-27T12:13:46.961Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T12:13:46.961Z","attrs":{}}
+{"op":"open","id":"impl-test entry 1 strategy","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:13:59.854Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 1 strategy","start":"2026-11-27T12:14:50.061Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 1 strategy","start":"2026-11-27T12:14:50.061Z","end":"2026-11-27T12:15:19.904Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 1 strategy","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:13:59.854Z","end":"2026-11-27T12:17:08.246Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"impl-test entry 1 author","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:17:12.887Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#1 mutation crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.329Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.329Z","end":"2026-11-27T12:18:58.570Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.624Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.624Z","end":"2026-11-27T12:18:58.852Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.909Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.909Z","end":"2026-11-27T12:18:59.074Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.125Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.125Z","end":"2026-11-27T12:18:59.310Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.360Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.360Z","end":"2026-11-27T12:18:59.816Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.478Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.478Z","end":"2026-11-27T12:19:36.849Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof mutation host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.908Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof mutation host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.908Z","end":"2026-11-27T12:19:37.157Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:37.214Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:37.214Z","end":"2026-11-27T12:19:37.994Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.049Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.049Z","end":"2026-11-27T12:19:38.788Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.839Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.839Z","end":"2026-11-27T12:19:39.263Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.313Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.313Z","end":"2026-11-27T12:19:39.491Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.544Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.544Z","end":"2026-11-27T12:19:39.861Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 git environment mutation","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:07.323Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 git environment mutation","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:07.323Z","end":"2026-11-27T12:20:07.807Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 author impacted","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:57.142Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#1 author impacted","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:57.142Z","end":"2026-11-27T12:21:26.372Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 1 author","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:17:12.887Z","end":"2026-11-27T12:22:08.009Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T12:13:46.961Z","end":"2026-11-27T12:22:22.683Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-27T12:22:22.683Z","attrs":{}}
+{"op":"open","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-27T12:23:20.702Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"D-1","kind":"dispatch","parent":"impl#2","start":"2026-11-27T12:23:20.702Z","end":"2026-11-27T12:25:32.581Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-27T12:22:22.683Z","end":"2026-11-27T12:25:32.636Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-27T12:25:32.636Z","attrs":{}}
+{"op":"open","id":"impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:25:39.265Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#2 pre-strategy","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:26:10.467Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2 pre-strategy","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:26:10.467Z","end":"2026-11-27T12:26:38.663Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#2 proof roster","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:27:39.115Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#2 proof roster","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:27:39.115Z","end":"2026-11-27T12:27:39.342Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#2 proof ceilings","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:27:39.406Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#2 proof ceilings","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:27:39.406Z","end":"2026-11-27T12:27:39.845Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#2 post-repair","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:28:37.733Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2 post-repair","kind":"suite","parent":"impl-test entry 2","start":"2026-11-27T12:28:37.733Z","end":"2026-11-27T12:29:06.291Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:25:39.265Z","end":"2026-11-27T12:29:39.405Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"impl-test suite revision 1","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:29:49.217Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#2-revision-before","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:30:54.169Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2-revision-before","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:30:54.169Z","end":"2026-11-27T12:30:59.105Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#2-revision-cap","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:31:27.290Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#2-revision-cap","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:31:27.290Z","end":"2026-11-27T12:31:27.774Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#2-revision-after","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:32:05.608Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2-revision-after","kind":"suite","parent":"impl-test suite revision 1","start":"2026-11-27T12:32:05.608Z","end":"2026-11-27T12:32:10.522Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test suite revision 1","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:29:49.217Z","end":"2026-11-27T12:32:52.431Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"impl-test entry 2 suite","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:32:52.503Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#2 post-revision","kind":"suite","parent":"impl-test entry 2 suite","start":"2026-11-27T12:33:24.513Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#2 post-revision","kind":"suite","parent":"impl-test entry 2 suite","start":"2026-11-27T12:33:24.513Z","end":"2026-11-27T12:33:54.473Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 2 suite","kind":"dispatch","parent":"impl-test#2","start":"2026-11-27T12:32:52.503Z","end":"2026-11-27T12:34:26.203Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-27T12:25:32.636Z","end":"2026-11-27T12:34:34.753Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T12:34:34.753Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T12:35:32.682Z","attrs":{}}
+{"op":"open","id":"combined wave-1/iter-01","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.571Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"open","id":"external wave-1/iter-01","kind":"external-review","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.621Z","attrs":{"model":"sonnet"}}
+{"op":"close","id":"combined wave-1/iter-01","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.571Z","end":"2026-11-27T12:37:03.140Z","outcome":"interrupted","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"open","id":"combined wave-1/iter-01#2","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:37:03.191Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"external wave-1/iter-01","kind":"external-review","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:35:51.621Z","end":"2026-11-27T12:38:16.975Z","outcome":"interrupted","attrs":{"model":"sonnet"}}
+{"op":"close","id":"combined wave-1/iter-01#2","kind":"dispatch","parent":"impl-review wave-1/iter-01","start":"2026-11-27T12:37:03.191Z","end":"2026-11-27T12:42:41.137Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T12:35:32.682Z","end":"2026-11-27T12:42:41.137Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T12:34:34.753Z","end":"2026-11-27T12:43:31.649Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-27T12:43:31.649Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:43:42.343Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:43:42.343Z","end":"2026-11-27T12:48:09.701Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"open","id":"review-fix wave-1/iter-01 tester","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:48:09.835Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite review-fix-1 retry gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:40.886Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:40.886Z","end":"2026-11-27T12:50:41.093Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 retry regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.164Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.164Z","end":"2026-11-27T12:50:41.528Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 retry fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.579Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.579Z","end":"2026-11-27T12:50:41.925Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.974Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.974Z","end":"2026-11-27T12:50:42.410Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:42.465Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:42.465Z","end":"2026-11-27T12:50:42.973Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:43.026Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:43.026Z","end":"2026-11-27T12:50:43.568Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 impacted","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:53:35.843Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite review-fix-1 impacted","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:53:35.843Z","end":"2026-11-27T12:54:04.901Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"review-fix wave-1/iter-01 tester","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:48:09.835Z","end":"2026-11-27T12:54:40.665Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-27T12:43:31.649Z","end":"2026-11-27T12:54:40.718Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-27T12:54:40.718Z","attrs":{}}
+{"op":"open","id":"impl-test entry 3","kind":"dispatch","parent":"impl-test#3","start":"2026-11-27T12:54:47.459Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#3 pre-strategy","kind":"suite","parent":"impl-test entry 3","start":"2026-11-27T12:55:26.086Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#3 pre-strategy","kind":"suite","parent":"impl-test entry 3","start":"2026-11-27T12:55:26.086Z","end":"2026-11-27T12:55:57.927Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 3","kind":"dispatch","parent":"impl-test#3","start":"2026-11-27T12:54:47.459Z","end":"2026-11-27T12:56:51.521Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-27T12:54:40.718Z","end":"2026-11-27T12:57:04.131Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-11-27T12:57:04.131Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-02","kind":"review-iteration","parent":"impl-review#2","start":"2026-11-27T12:57:45.830Z","attrs":{}}
+{"op":"open","id":"combined wave-1/iter-02","kind":"dispatch","parent":"impl-review wave-1/iter-02","start":"2026-11-27T12:58:01.767Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"combined wave-1/iter-02","kind":"dispatch","parent":"impl-review wave-1/iter-02","start":"2026-11-27T12:58:01.767Z","end":"2026-11-27T13:01:39.100Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-review wave-1/iter-02","kind":"review-iteration","parent":"impl-review#2","start":"2026-11-27T12:57:45.830Z","end":"2026-11-27T13:01:39.100Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review terminal suite 1","kind":"dispatch","parent":"impl-review#2","start":"2026-11-27T13:14:10.524Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"open","id":"suite-terminal-1","kind":"suite","parent":"impl-review terminal suite 1","start":"2026-11-27T13:15:29.619Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite-terminal-1","kind":"suite","parent":"impl-review terminal suite 1","start":"2026-11-27T13:15:29.619Z","end":"2026-11-27T13:17:13.419Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-review terminal suite 1","kind":"dispatch","parent":"impl-review#2","start":"2026-11-27T13:14:10.524Z","end":"2026-11-27T13:18:03.603Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"close","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-11-27T12:57:04.131Z","end":"2026-11-27T13:18:03.603Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-27T13:18:03.603Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-27T13:18:03.603Z","end":"2026-11-27T13:18:44.484Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-27T13:18:44.484Z","attrs":{}}
+{"op":"close","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-27T13:18:44.484Z","end":"2026-11-27T13:19:30.886Z","outcome":"done","attrs":{}}
+{"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T13:19:30.886Z","attrs":{}}
+{"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T13:19:30.886Z","end":"2026-11-27T13:21:29.567Z","outcome":"done","attrs":{}}
+{"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T13:21:29.567Z","attrs":{}}
+{"op":"open","id":"pr release suite","kind":"dispatch","parent":"pr#1","start":"2026-11-27T13:23:12.044Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"open","id":"suite pr#1","kind":"suite","parent":"pr release suite","start":"2026-11-27T13:24:31.946Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite pr#1","kind":"suite","parent":"pr release suite","start":"2026-11-27T13:24:31.946Z","end":"2026-11-27T13:25:14.423Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"pr release suite","kind":"dispatch","parent":"pr#1","start":"2026-11-27T13:23:12.044Z","end":"2026-11-27T13:26:48.211Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T13:21:29.567Z","end":"2026-11-27T13:26:48.211Z","outcome":"done","attrs":{}}

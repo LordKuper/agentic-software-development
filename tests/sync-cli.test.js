@@ -2,7 +2,7 @@
 
 // sync.js command line: --check, --apply and orphan detection
 
-const { assert, fs, path, execFileSync, spawnSync, sync, REPO_ROOT, test, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, markedFileContent, spans, disabledAttributionRepo, linkedLedgerCases } = require('./lib.js');
+const { assert, fs, path, execFileSync, spawnSync, sync, REPO_ROOT, test, loadManifest, makeMiniRepo, writeAgentCanon, GOOD_AGENT_CANON, markedFileContent, spans, disabledAttributionRepo, linkedLedgerCases, canonAgents } = require('./lib.js');
 
 test('`node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md', () => {
   const { execFileSync } = require('node:child_process');
@@ -25,7 +25,10 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
   }
   const codexAgents = [...targets].filter((target) => /^\.codex\/agents\/.+\.toml$/.test(target));
   const primaryAgents = codexAgents.filter((target) => !target.endsWith('-quota.toml'));
-  assert.strictEqual(primaryAgents.length, 11, 'Sprint 038 AC-12: all primary roles and tier variants have quota alternatives');
+  const expectedPrimary = canonAgents().flatMap(({ name, meta }) => [
+    name, ...Object.keys(meta.variants || {}).map((suffix) => `${name}-${suffix}`),
+  ]).map((name) => `.codex/agents/${name}.toml`).sort();
+  assert.deepStrictEqual(primaryAgents.sort(), expectedPrimary, 'Sprint 038 AC-12: the sync plan includes every canonical role and tier variant');
   assert.deepStrictEqual(codexAgents.filter((target) => target.endsWith('-quota.toml')).sort(), primaryAgents.map((target) => target.replace(/\.toml$/, '-quota.toml')).sort());
   assert.ok(![...targets].some((target) => /^\.claude\/agents\/.+-quota\.md$/.test(target)));
   const skillsDir = path.join(REPO_ROOT, '.asd', 'skills');

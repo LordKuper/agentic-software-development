@@ -14,6 +14,8 @@ responsibility:
 
 ## API surface used in project
 
+- [`fs.realpathSync(path)`](https://nodejs.org/docs/v24.15.0/api/fs.html#fsrealpathsyncpath-options) synchronously returns the resolved path (UTF-8 string by default); compare resolved checkout paths rather than unresolved aliases. Verified 2026-11-27.
+
 - `path.posix` and `path.win32` select path grammar independently of the host. Their string operations act on the supplied path and do not modify the filesystem. Use each grammar's `isAbsolute(file)` for its host.
 - `fs.existsSync(path)` and `fs.statSync(path).size` read the explicitly named file or directory without modifying it. Use them to find a previous snapshot copy and verify that the selected drafts produced a patch.
 - `fs.readFileSync(list, 'utf8')` reads the explicitly named list without changing it. Git's NUL-delimited records retain the path characters needed by literal pathspecs.

@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 8 specialized agents (Dev, Tester, reviewers, advisor, scout), coordinated by the main orchestrator, which performs all other sprint work itself, and 19 skills.
+ASD works with any technology stack. The main orchestrator dispatches 9 specialized agents (Dev, Tester, reviewers, researcher, advisor, scout) and coordinates 19 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -184,7 +184,7 @@ flowchart TD
 
 | Phase | What happens |
 |---|---|
-| **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, best-practice web research, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; one triage-authorisation request precedes the first GitHub write; creates the sprint branch and folder |
+| **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, research and solution options from `asd-researcher`, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); triages the project's own open GitHub issues in every project, each put to you for include/reject/defer, none auto-closed; lists each open PR for a merge/include/close/defer choice, none by default, and each due accepted-debt stub (`stubs-due`) for renewal or an `AC-N`; under self-hosting also the ASD repo's open `[asd-retro]` issues (rewriting a non-English marker issue to English in place first) — duplicates and already-resolved ones are closed with evidence, the rest go to you; triage labels are automatic and a single authorisation covers planned rewrites and closes; creates the sprint branch and folder |
 | **audit** | Orchestrator reads every existing doc bearing on the touched areas, plus the code; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks and stubs to resolve. Before declaring a missing check or bound, search tests for the concern's identifiers and cite the result. |
 | **design** | Orchestrator produces enabled document drafts and standalone UI mockups, with section lock-in and artifact acceptance where applicable |
 | **design-review** | 1 combined internal reviewer (Quality and Efficiency rubrics in one pass) plus External Review iterate to APPROVE |
@@ -196,6 +196,8 @@ flowchart TD
 | **cleanup** | Orchestrator, with no dispatch, review or gate: commits any dirty bookkeeping, records a checkpoint in the decisions log, then removes what the sprint made superfluous only on clear evidence (debug output, commented-out blocks, scratch files, fixtures no remaining test reads, unreferenced code), each removal its own `chore(cleanup)` commit; never a test file; verifies with build, lint and the impacted tests (the safety valve applied unless `safety_valve: disabled`), reverting a removal that breaks one, and appends one decisions-log record line; `cleanup: disabled` in `config.yaml` makes it a no-op |
 | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro (a consumer project's `asd` rows are published as `[asd-retro]` issues on the ASD repo, in English whatever `language.docs`, unless `upstream_issues: disabled`, containing nothing project-specific; a Home of `.asd/project/reliability-checklist.md` is a reviewer check added or removed at the next scope, and retro stamps each item this sprint's findings cited and proposes removing one unhit for three sprints; a guardrail a command's exit can decide takes a check as Home, a `commands.yaml` `checks` entry, and a suite over its duration baseline or holding an `Allowance` yields a suite-revision proposal); an entry-free log skips remediation only, proposals still ship; a duration section summarises the sprint's timing ledger (summary table, the top 5 longest plus every over-30-minute machine operation, and every user wait checked for an avoidable escalation; "No timing data" without a ledger); closes with a chat summary |
 | **pr** | DoD verification (under `safety_valve: disabled`, cleanup's green impacted verification satisfies the tests check) + `gh pr create`, then ASD waits for the PR's checks (up to 60 s for them to register, 30 min to finish) and merges it through `gh` in the same run, with no confirmation (a `gh` failure is `FAILED` naming the fix); one PR per sprint; the PR body lists each impl-review wave whose External Review was an availability skip, with its unreviewed files; a consumer PR body lists each included issue as `Closes #N`, and merge mode closes one the merge left open, and each included PR (an `AC-N` line ending `(PR #N)`) still open. Exit tokens are `done` (merge confirmed) and `await-merge` (merge blocked by a failing or timed-out check, a conflict or a branch-protection rule: the PR stays open and a later `/asd-sprint` resumes it). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release on the commit carrying the sprint's version bump, then closes the sprint's included `[asd-retro]` issues (the PR body lists them as `Refs #N`, never a closing keyword; idempotent; while it is missing, each `/asd-sprint` asks to retry it or continue without it). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
+
+During implementation, `timing-summary` reports each wave's dispatch completions and deduplicated context bytes from the bundles sent to agents. Before a terminal full-suite run, `suite-git-check` verifies the worktree and reports its commit for the runner to compare with the expected SHA. Both Git checks use the suite's environment. See [operation timing](.asd/rules/sprint-lifecycle.md#operation-timing) and the [implementation review workflow](.asd/workflows/asd-phase-impl-review.md#rules).
 
 You can resume an interrupted sprint at any time: `/asd-sprint` first fast-forwards the base branch from `origin`, reads `state.json`, runs the attribution check on the sprint branch, detects the current phase, and dispatches the matching phase skill. When starting a new sprint (not on resume, and skipped when `self_hosting: enabled`), after the dirty-tree check it compares your installed ASD version with the remote's; if a newer one exists you choose to update now or continue (an unreachable remote only warns). Updating runs `/asd-update` in sprint-mediated mode at scope step 1 on the sprint branch, commits the result, then halts asking you to restart the session and run `/asd-sprint` again.
 
@@ -221,11 +223,11 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Eight specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna/astra) and reasoning effort. `.asd/sync.js` resolves aliases to model IDs via `.asd/release-manifest.json`'s `model_families` table. Effort is shown as `model/effort`. The `haiku` family passes through to Claude Code's `haiku` alias: Haiku 5.5 on the Anthropic API, Haiku 4.5 on Bedrock, Vertex and Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set. [Provider model families](.asd/rules/providers.md#model-family-resolution)
+Nine specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna/astra) and reasoning effort. `.asd/sync.js` resolves aliases to model IDs via `.asd/release-manifest.json`'s `model_families` table. Effort is shown as `model/effort`. The `haiku` family passes through to Claude Code's `haiku` alias: Haiku 5.5 on the Anthropic API, Haiku 4.5 on Bedrock, Vertex and Foundry unless `ANTHROPIC_DEFAULT_HAIKU_MODEL` is set. [Provider model families](.asd/rules/providers.md#model-family-resolution)
 
 **Orchestrator session model.** ASD never sets the main orchestrator's model; it is your session model. Recommended: Opus at `medium` effort as the default, Fable for long unattended or large runs. Raise effort before changing models; the dispatched agents below carry their own tiers.
 
-**Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates 11 `-quota` definitions, one for each of the eight roles and three task variants. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
+**Model quota retry.** If a host rejects a dispatch for the model's quota, ASD retries once when a compatible alternative is available, preserves the role and its grants, and logs the actual model and reason. Codex generates one `-quota` definition for each role and task variant. The fallback model/effort pairs are Sol → Astra/medium, Luna → Sol/medium, and Astra → Sol/high. Each fallback uses the same session provider. [Quota overrides](.asd/rules/providers.md#model-quota-overrides)
 
 Only the main orchestrator and its inline skills prompt you for a discrete decision. Claude Code uses `AskUserQuestion`. Codex uses the native choice widget when available, with the same choices in chat as a fallback. Both wait for your explicit answer. Creators relay hard or unresolved decisions as `QUESTION`. Reviewers use their `Escalations` or `Stalemate` verdict sections. [Provider mapping](.asd/rules/providers.md#semantic-operations---host-convention), [agent relay](.asd/rules/agent-protocol.md#relay)
 
@@ -239,7 +241,7 @@ Only the main orchestrator and its inline skills prompt you for a discrete decis
 | `asd-dev-mechanical` (variant) | haiku/high | luna/high | `asd-dev` for verified deterministic, low-risk tasks |
 | `asd-tester-runner` (variant) | haiku/medium | luna/medium | `asd-tester` running a named suite scope (impl-review terminal suite, impacted re-runs, first-entry area runs), recording the run and reporting pass/fail with the first failure lines. |
 
-The orchestrator owns the other sprint work, including research, audit, design and persistent documents, plan, cleanup, retro, state, decisions, manual-step validation, Git and release sequencing. `asd-dev` variants `-mechanical` (Haiku/Luna high) and `-escalated` (Opus/high and Sol/xhigh) keep the base role's permissions. The `standard` tier uses the base (Sonnet/Sol high). Routing escalates on qualifying change risk or a failed objective check. The base tester (Sonnet/high and Sol/medium) authors and triages, and `-runner` (Haiku/Luna medium) executes and records a scoped command. All tiers retain independent review.
+The orchestrator owns the sprint artifacts, state, decisions, manual-step validation, Git and release sequencing. `asd-dev` variants `-mechanical` (Haiku/Luna high) and `-escalated` (Opus/high and Sol/xhigh) keep the base role's permissions. The `standard` tier uses the base (Sonnet/Sol high). Routing escalates on qualifying change risk or a failed objective check. The base tester (Sonnet/high and Sol/medium) authors and triages, and `-runner` (Haiku/Luna medium) executes and records a scoped command. All tiers retain independent review.
 
 Dev and Tester carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own `## Tools`, and `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`); they are the only two agents holding a commit tool (`.asd/rules/git-strategy.md` "Commit before review").
 
@@ -270,6 +272,12 @@ Read-only, dispatched by the orchestrator only for scans at audit, plan and clea
 |---|---|---|---|
 | `asd-scout` | haiku/medium | luna/medium | Path-cited summaries of code and documents for orchestrator scans |
 
+### Researcher (1)
+
+| Agent | Claude | Codex | Role |
+|---|---|---|---|
+| `asd-researcher` | sonnet/high | sol/high | Read-only research and solution design during scope, design, plan and standalone concept, stack and design-system work. Returns cited findings and alternatives to the orchestrator. |
+
 ### Advisor (1)
 
 Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-protocol.md` "Relay") on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase — and by the orchestrator before it puts an agent `QUESTION`, a `FAILED`, a repeated stall, a stalemate, a review-cap override or a reviewer FAIL escalation to you, and on an ambiguous review-finding route. Always returns a free-text recommendation with rationale that the caller may accept, adapt, or override; on a HARD gate (`checkpoints.md`) it names the gate and never authorizes it. Never emits a verdict token, never writes or edits anything (on Codex policy-bound: a subagent inherits the parent sandbox), and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. An escalation's advice is shown to you beside its options and recorded in the answer's decisions-log entry; no review file, no ledger entry.
@@ -283,6 +291,8 @@ Read-only, consulted by Dev or Tester (never a reviewer, `.asd/rules/agent-proto
 ## User gates
 
 `adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers and review-cap overrides retain hard gates. PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
+
+ASD uses the host's interactive choice tool when available and numbers options consecutively when it must ask in chat. [Host decision routing](.asd/rules/providers.md#semantic-operations---host-convention)
 
 ## Configuration
 
@@ -358,7 +368,7 @@ your-project/
 │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md, agent-protocol.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md, t_reliability-checklist.md
-│   ├── agents/                      # 8 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+│   ├── agents/                      # 9 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
 │   ├── skills/                      # 19 canonical skill specs (SKILL.md)
 │   ├── workflows/                   # 12 phase orchestration files, each with its agent-facing phase rules (referenced by path, not generated) + 2 workflow definitions (`standard.json`, `lite.json`, see "Workflows")
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
@@ -377,13 +387,13 @@ your-project/
 │       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; decisions-log.md and test-plan.md rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
-│   ├── agents/                      # 11 agent definitions: 8 roles + 3 tier variants (*.md)
+│   ├── agents/                      # 12 agent definitions: 9 roles + 3 tier variants (*.md)
 │   ├── skills/                      # 19 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   ├── agent-memory/<agent>/        # hand-authored, never generated — see "Agent memory" in artifact-layout.md
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
-│   ├── agents/                      # 22 agent definitions: 8 roles + 3 tier variants + 11 quota alternatives (*.toml)
+│   ├── agents/                      # 24 agent definitions: 9 roles + 3 tier variants + 12 quota alternatives (*.toml)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
@@ -466,14 +476,15 @@ model_reasoning_effort = "medium"
 name = "RouterAI"
 base_url = "https://routerai.ru/api/v1"
 wire_api = "responses"
+supports_websockets = false
 env_key = "ROUTERAI_API_KEY"
 ```
 
 Supply `ROUTERAI_API_KEY` in the local environment inherited by Codex. If you need authenticated model-catalog discovery, use the documented command-backed authentication with a local credential helper. Keep the profile and credentials outside the repository. [Codex profile and provider configuration](https://learn.chatgpt.com/docs/config-file/config-advanced), [RouterAI Codex setup](https://routerai.ru/pages/vibe-coding-codex)
 
-In `/asd-init` (`$asd-init` in Codex), set `review.external_review: enabled` and `review.codex_profile: routerai-review`. ASD pins the profile's model, provider and effort for the subprocess, with approval disabled, `--sandbox read-only` and `--ephemeral`. The selected provider receives the external review input.
+In `/asd-init` (`$asd-init` in Codex), set `review.external_review: enabled` and `review.codex_profile: routerai-review`. The read-only, ephemeral Codex subprocess uses `--profile routerai-review`, `--model=~anthropic/claude-opus-latest` and `-c 'model_provider="routerai"'` with the profile's effort and approvals disabled. RouterAI receives the external review input.
 
-To verify the route, run `node .asd/runtime.js external-preflight --input <file>` with a JSON file containing `host: "codex"`, `codexProfile: "routerai-review"`, and your `codexCommand` override if set. Expect `local-ready` and a route with profile `routerai-review`, model `~anthropic/claude-opus-latest`, and `routerai` and `medium` in its arguments. To verify credentials and model access, run a read-only synthetic review with those same route arguments and check that it returns a verdict. The synthetic request can use RouterAI credits. [RouterAI model alias](https://routerai.ru/models/~anthropic/claude-opus-latest)
+To verify configuration, run `node .asd/runtime.js external-preflight --input <file>` with JSON containing `host: "codex"`, `codexProfile: "routerai-review"`, and your `codexCommand` override if set. Expect `local-ready`, `route.model_provider: "routerai"` and `route.model: "~anthropic/claude-opus-latest"`. A read-only synthetic review with `route.args` verifies credentials and model access and can use RouterAI credits. An explicit account hold ends the attempt and records the unreviewed files. [RouterAI model alias](https://routerai.ru/models/~anthropic/claude-opus-latest)
 
 ---
 

@@ -4,13 +4,14 @@
 
 const { assert, fs, path, sync, REPO_ROOT, test, workflowReviewerAgents, readRepoFile, canonText, sectionOf, jsonOf, canonMarkdownFiles, canonAgents, headingsOf, FORM_CATEGORIES } = require('./lib.js');
 
-test('read-only agents (every workflow reviewer, asd-advisor and asd-scout): an explicit claude.tools allowlist with no Write/Edit, and no Bash but External Review\'s', () => {
+test('read-only agents (AC-3): an explicit claude.tools allowlist with no Write/Edit, and no Bash but External Review\'s', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
+  const nonReviewers = ['asd-advisor', 'asd-researcher', 'asd-scout'];
   const readOnlyNames = files
     .map((f) => f.slice(0, -3))
-    .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name === 'asd-scout' || name.startsWith('asd-reviewer-'));
-  assert.deepStrictEqual(readOnlyNames.sort(), [...workflowReviewerAgents(), 'asd-advisor', 'asd-scout'].sort(), 'the read-only set is every reviewer a workflow definition dispatches plus asd-advisor and asd-scout - a reviewer agent no roster names is dead canon, and a roster key whose agent is missing here escapes the read-only check');
+    .filter((name) => name === 'asd-external-review' || nonReviewers.includes(name) || name.startsWith('asd-reviewer-'));
+  assert.deepStrictEqual(readOnlyNames.sort(), [...workflowReviewerAgents(), ...nonReviewers].sort(), 'the read-only set includes every dispatched reviewer, the advisor, researcher and scout');
   for (const name of readOnlyNames) {
     const { meta } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, `${name}.md`)));
     assert.ok(Array.isArray(meta.claude && meta.claude.tools), `${name}: claude.tools must be an explicit allowlist - a subagent with none inherits the full parent tool set, so the absence checks below would pass vacuously`);
@@ -114,7 +115,7 @@ test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-proto
   assert.deepStrictEqual(protocolTokens, ['COMPLETED', 'QUESTION', 'ADVICE_NEEDED', 'BLOCKED_MANUAL', 'FAILED', 'ABORT', 'REVIEW_DONE'], 'agent-protocol.md "Signals" lists the seven tokens of D8');
   const retired = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => /PLAN_DRAFT|PLAN_READY/.test(canonText(rel)));
   assert.deepStrictEqual(retired, [], 'PLAN_DRAFT and PLAN_READY have no emitter or handler (O3) and must stay out of canon');
-  const creators = FORM_CATEGORIES.agents.files().map((rel) => path.basename(rel, '.md')).filter((name) => !/^asd-(reviewer-|external-review|advisor|scout)/.test(name));
+  const creators = FORM_CATEGORIES.agents.files().map((rel) => path.basename(rel, '.md')).filter((name) => !/^asd-(reviewer-|external-review|advisor|researcher|scout)/.test(name));
   assert.deepStrictEqual(creators, ['asd-dev', 'asd-tester'], 'sanity: the creators are the two code-and-test agents - every other artifact is the orchestrator\'s');
   for (const rel of FORM_CATEGORIES.agents.files()) {
     const name = path.basename(rel, '.md');
