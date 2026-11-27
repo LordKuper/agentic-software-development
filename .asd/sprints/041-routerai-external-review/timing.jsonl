@@ -17,3 +17,5 @@
 {"op":"open","id":"suite impl#1","kind":"suite","parent":"Task 2","start":"2026-11-27T11:57:27.800Z","attrs":{"scope":"impacted"}}
 {"op":"close","id":"suite impl#1","kind":"suite","parent":"Task 2","start":"2026-11-27T11:57:27.800Z","end":"2026-11-27T11:57:35.733Z","outcome":"done","attrs":{"scope":"impacted"}}
 {"op":"close","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:56:36.194Z","end":"2026-11-27T11:58:12.462Z","outcome":"done","attrs":{"agent":"asd-tester","impl_wave":"2","tier":"standard","model":"sol"}}
+{"op":"open","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:58:36.529Z","attrs":{"agent":"asd-dev-escalated","impl_wave":"3","tier":"escalated","model":"gpt-6.2-sol"}}
+{"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:58:36.529Z","end":"2026-11-27T12:08:45.130Z","outcome":"done","attrs":{"agent":"asd-dev-escalated","impl_wave":"3","tier":"escalated","model":"gpt-6.2-sol"}}

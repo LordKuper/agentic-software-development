@@ -42,3 +42,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-27 — Task 1 committed bff4888c; generated views synced 11fb45ac; syntax, lint, context ceilings and sync check pass. RouterAI profile unavailable locally; live inference unverified. Contract callers route to Task 2.
 - 2026-11-27 — route Task 2: standard, dispatch HEAD 5f6e2c793add9b7e9cd45c46541b7dd159e59177
 - 2026-11-27 — Task 2 committed e3482c79; runtime-routing and runtime-timing passed 47/47. New behavior regression coverage remains for impl-test.
+- 2026-11-27 — route Task 3: escalated, dispatch HEAD ba3cdbe785f18b8efc044399ec7f323b177e153f; risk change: workflow gate, change: broad-reasoning
+- 2026-11-27 — Task 3 committed 107c87dd; generated views synced 62dfa94c; build, lint, context ceilings and six researcher bundles pass. Live researcher dispatch remains unverified.
