@@ -1,7 +1,7 @@
 {
   "sprint_id": "041-routerai-external-review",
   "branch": "sprint/041-routerai-external-review",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "mockup_format": "none",
@@ -13,7 +13,8 @@
     { "gate": "scope", "decision_actor": "user", "reason": "user accepted scope and included all nine retro proposals", "evidence": "decisions-log.md: Scope accepted and retro intake", "artifact_revision": "sprint.md@scope" },
     { "gate": "retro intake dispositions", "decision_actor": "user", "reason": "user included all nine proposals", "evidence": "decisions-log.001.md: Scope accepted and retro intake", "artifact_revision": "sprint.md@scope" },
     { "gate": "audit", "decision_actor": "orchestrator", "reason": "criteria, current routes, tests and implementation risks inspected", "evidence": "audit.md: Existing implementation, Gaps, Risks", "artifact_revision": "audit.md@audit" },
-    { "gate": "plan", "decision_actor": "user", "reason": "user accepted overview and task decomposition", "evidence": "decisions-log.003.md: Plan overview locked; Plan accepted; sync check passed", "artifact_revision": "plan.md@plan" }
+    { "gate": "plan", "decision_actor": "user", "reason": "user accepted overview and task decomposition", "evidence": "decisions-log.003.md: Plan overview locked; Plan accepted; sync check passed", "artifact_revision": "plan.md@plan" },
+    { "gate": "initial impl assessment", "decision_actor": "orchestrator", "reason": "all accepted tasks committed and build, lint, context and agnix checks passed", "evidence": "decisions-log.md: Initial implementation; plan.md tasks", "artifact_revision": "plan.md@impl" }
   ],
   "task_routing": { "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" }, "Task 3": { "execution": "agent", "tier": "escalated", "reason": "risk:broad-reasoning", "raise_effort": false, "resolved_model": "gpt-6.2-sol" } },
   "skipped_phases": [],

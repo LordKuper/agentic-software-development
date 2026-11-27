@@ -39,7 +39,7 @@ Reachability: scope writes research and chosen approach at their stage boundarie
 ### Task 4: Workflow contract callers and suite revision
 Material risk: change: coverage
 Test-only: tests/contract-agents.test.js, tests/contract-workflows.test.js, tests/contract-rules.test.js, tests/sync-render.test.js, tests/update*.test.js
-- [ ] Adapt callers and roster assertions for Task 3. For AC-13, identify redundant workflow assertions by behavior, remove only those with named surviving coverage, and retain executable update cases. Follow the test-removal gate and record evidence; do not author unrelated new regression tests here.
+- [x] Adapt callers and roster assertions for Task 3. For AC-13, identify redundant workflow assertions by behavior, remove only those with named surviving coverage, and retain executable update cases. Follow the test-removal gate and record evidence; do not author unrelated new regression tests here.
 
 Orchestrator-only action, after plan acceptance and before the terminal test runner is used: update `.asd/project/custom-coding-rules.md` to require a read-only child Git check in the same process environment as the full suite (AC-9), and commit that named project-owned path. The runtime check in Task 1 covers AC-15.
 
