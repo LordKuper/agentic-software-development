@@ -40,8 +40,10 @@ Entry 2 pre-strategy: 247/249 (exit 1) at `d230fa29a62f162d7beba786e82da592b09e9
 - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-render`
 - Scope: impacted
 - Scope evidence: README contract readers and context-ceiling checks cover the delta. Changes are bounded to roster documentation, researcher keys and two existing assertions. Runtime and runner setup are unchanged in this entry.
-- Result: pending post-repair run
-- HEAD:
+- Result: pass — 249/249, runner exit 0
+- Lint / build: pass
+- HEAD: 92994e99604ffd26524841d380e8a953ff8b4033
+- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-2-suite-impl-test#2-post-repair.runner.log`
 
 ## Defects
 
