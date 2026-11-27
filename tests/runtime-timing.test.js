@@ -101,6 +101,41 @@ test('sprint-025 AC-1/AC-4 (D2, D4), sprint-034 AC-13: timingAppend closes befor
   assert.ok(torn.text.startsWith('\n'));
 });
 
+test('sprint-041 AC-10: dispatch timing requires an open phase ancestor', () => {
+  const phase = runtime.timingAppend('', { open: 'impl-review', kind: 'phase' }, minuteAt(0)).text;
+  const iteration = runtime.timingAppend(phase, { open: 'iteration', kind: 'review-iteration' }, minuteAt(1)).text;
+  const ledger = phase + iteration;
+  const open = (text, kind, parent) => runtime.timingAppend(text, { open: 'reviewer', kind, parent }, minuteAt(3));
+  const nested = open(ledger, 'external-review', 'iteration');
+  assert.strictEqual(ledgerLines(nested.text)[0].parent, 'iteration');
+  const closed = ledger + runtime.timingAppend(ledger, { close: 'impl-review' }, minuteAt(2)).text;
+  for (const [history, kind, parent] of [
+    ['', 'dispatch', undefined], [ledger, 'dispatch', 'unknown'], [closed, 'external-review', 'iteration'],
+  ]) {
+    const result = open(history, kind, parent);
+    assert.strictEqual(result.text, '', `${kind} must not open without a live phase ancestor`);
+    assert.ok(result.warnings.some((warning) => warning.includes('reviewer')));
+  }
+});
+
+test('sprint-041 AC-11: a wave reports separate completion times and counts identical context once', () => {
+  const wave = { impl_wave: 1, context_bytes: 120, context_digest: 'a'.repeat(64) };
+  const ledger = opLines('impl#1', 'phase', null, 0, 8)
+    + opLines('Task 1', 'dispatch', 'impl#1', 1, 4, wave)
+    + opLines('Task 2', 'dispatch', 'impl#1', 2, 7, wave)
+    + opLines('Task 3', 'dispatch', 'impl#1', 3, 8, { impl_wave: 1 }, 'interrupted');
+  const { impl_waves: summaries } = runtime.timingSummary(ledger, []).timing;
+  assert.deepStrictEqual(summaries?.[1], {
+    context_bytes: wave.context_bytes,
+    context_missing: ['Task 3'],
+    dispatches: [
+      { id: 'Task 1', completed_at: minuteAt(4), outcome: 'done' },
+      { id: 'Task 2', completed_at: minuteAt(7), outcome: 'done' },
+      { id: 'Task 3', completed_at: null, outcome: 'interrupted' },
+    ],
+  });
+});
+
 test('sprint-033 AC-18 (issues #100, #108, #111): a close of an open op cascades to its open children with a warning, an op a recovery closed interrupted closes again as continued from that close, and any other repeat close writes nothing and warns', () => {
   const scope = runtime.timingAppend('', { open: 'scope', kind: 'phase' }, minuteAt(0));
   const child = runtime.timingAppend(scope.text, { open: 'dev', kind: 'dispatch' }, minuteAt(5));

@@ -91,6 +91,39 @@ test('AC-5: negative-cache recovers when the fingerprint changes because model, 
   assert.strictEqual(preflight().status, 'local-ready', 'a rotated credential (changed mtime) must produce a different auth generation and recover, not stay stuck on the old negative-cache entry');
 });
 
+test('sprint-041 AC-5/AC-14: preflight resolves LF and CRLF metadata and reports the invoking host', () => {
+  const root = mkTempDir();
+  const metadata = 'agents/asd-external-review.md';
+  for (const file of ['runtime.js', 'sync.js', 'release-manifest.json']) {
+    writeFile(root, `.asd/${file}`, readRepoFile(`.asd/${file}`));
+  }
+  const fixtureRuntime = require(path.join(root, '.asd', 'runtime.js'));
+  const canonical = canonText(`.asd/${metadata}`);
+  const preflight = (host) => withExitZeroNode(() => fixtureRuntime.externalPreflight({
+    host, codexCommand: process.execPath, claudeCommand: process.execPath,
+  }));
+  for (const eol of ['\r\n', '\n']) {
+    writeFile(root, `.asd/${metadata}`, canonical.replace(/\n/g, eol));
+    for (const [host, wrapped] of [['codex', 'claude'], ['claude', 'codex']]) {
+      const result = preflight(host);
+      assert.deepStrictEqual([result.status, result.host, result.platform, result.route.provider], [
+        'local-ready', host, process.platform, wrapped,
+      ]);
+    }
+  }
+});
+
+test('sprint-041 AC-8: a reported account hold remains distinct on the next preflight', () => {
+  const cachePath = path.join(mkTempDir(), 'external-cache.json');
+  const input = { provider: 'codex', command: process.execPath, model: 'review-model', cachePath, now: 1000 };
+  withExitZeroNode(() => {
+    const { fingerprint } = runtime.externalPreflight(input);
+    runtime.recordExternalFailure({ fingerprint, status: 'account-hold', cachePath, now: input.now });
+    const { status, reason } = runtime.externalPreflight(input);
+    assert.deepStrictEqual({ status, reason }, { status: 'negative-cache', reason: 'account-hold' });
+  });
+});
+
 test('AC-5: the persisted negative-cache entry never carries anything beyond {status, retry_after} - no secrets or command output', () => {
   const root = mkTempDir();
   const cachePath = path.join(root, 'external-cache.json');

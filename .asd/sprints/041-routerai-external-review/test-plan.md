@@ -41,6 +41,13 @@ Task 4 verified each survivor by an isolated mutation that selected one test and
 
 | Test | Gap proof | Regression proof |
 |---|---|---|
+| `tests/runtime-routing.test.js`: preflight resolves LF and CRLF metadata and reports the invoking host | With either `crlf` or `host` seeded, `node tests/run.js runtime-routing --filter "named Codex review profiles"` → exit 0, one match each | Restore raw metadata reads (`crlf`) or omit wrapper host (`host`): `node tests/run.js runtime-routing --filter "sprint-041 AC-5/AC-14"` → exit 1 each, one match each, `sprint-041 AC-5/AC-14: preflight resolves LF and CRLF metadata and reports the invoking host`. Runs: 2 |
+| `tests/runtime-routing.test.js`: a reported account hold remains distinct on the next preflight | With `hold` seeded, `node tests/run.js runtime-routing --filter "preflight permits only fixed local probes"` → exit 0, one match | Remove account-hold status (`hold`): `node tests/run.js runtime-routing --filter "sprint-041 AC-8"` → exit 1, one match, `sprint-041 AC-8: a reported account hold remains distinct on the next preflight`. Runs: 1 |
+| `tests/runtime-timing.test.js`: dispatch timing requires an open phase ancestor | With `parent` seeded, `node tests/run.js runtime-timing --filter "timingAppend closes before it opens"` → exit 0, one match | Bypass ancestry validation (`parent`): `node tests/run.js runtime-timing --filter "sprint-041 AC-10"` → exit 1, one match, `sprint-041 AC-10: dispatch timing requires an open phase ancestor`. Runs: 1 |
+| `tests/runtime-timing.test.js`: a wave reports separate completion times and counts identical context once | With `wave` seeded, `node tests/run.js runtime-timing --filter "a dispatch open takes context_bytes"` → exit 0, one match | Count identical context again (`wave`): `node tests/run.js runtime-timing --filter "sprint-041 AC-11"` → exit 1, one match, `sprint-041 AC-11: a wave reports separate completion times and counts identical context once`. Runs: 1 |
+| `tests/runtime-tools.test.js`: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory | `git grep -n -e suite-git-check HEAD -- tests` → no matching existing test | Ignore inherited `GIT_DIR` (`git`): `node tests/run.js runtime-tools --filter "sprint-041 AC-9/AC-15"` → exit 1, one match, `sprint-041 AC-9/AC-15: suite Git check discovers HEAD in the runner environment and rejects an invalid Git directory`. Runs: 1 |
+
+Mutation setup: `ASD_041_TEST_MUTATION=<key>` with `.asd/tmp/041-impl-test-mutations.cjs` loaded via `node --require` for `crlf`, `hold`, `parent` and `wave` regressions, or via `NODE_OPTIONS=--require` for `host`, `git` and gap runs. It changes runtime source reads in the dedicated runner processes only. Full runner logs are in `.asd/tmp/` with `041-routerai-external-review-impl-test-entry-1-author-suite-impl-test#1-` prefix. All five checks pass without the preload.
 
 ## Suite run
 
@@ -53,7 +60,7 @@ Pre-strategy evidence (step 3). Step 8 gate is pending.
 - HEAD: 9e615958234fc603184a26d2d3b1401f59698653
 - Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-1-strategy-suite-impl-test#1.runner.log`
 
-Test defect: `tests/sync-cli.test.js`, test `node .asd/sync.js --check reports every item current (no drift), including AGENTS.md`. The literal primary Codex-role count expects 11, actual 12, including the researcher. The canonical researcher and both Codex views exist. Derive the expected primary paths from canonical roles plus declared task variants and keep the independent one-to-one quota assertion. Route to Tester in step 7.
+Test defect repaired in step 7: `tests/sync-cli.test.js` asserted 11 primary Codex roles, actual 12. Derive exact primary paths from canonical roles and task variants. Keep the independent one-to-one quota assertion.
 
 ## Defects
 
