@@ -461,7 +461,7 @@ designmd --version
 
 ### Codex CLI / Claude CLI
 
-The wrapped model defaults to Sol/high under Claude Code and Sonnet/xhigh under Codex. With `review.codex_profile` set under Codex, the wrapped model and effort come from that local profile. The primary session and its agents keep their provider. Set `system.tools.codex_command` or `system.tools.claude_command` if the selected CLI is outside `PATH`. [External Review routing](.asd/rules/external-review.md)
+The wrapped model defaults to Sol/high under Claude Code and Sonnet/xhigh under Codex. With `review.codex_profile` set under Codex, the wrapped model and effort come from that local profile. ASD passes `-c features.apps=false` to disable connected apps for this subprocess. The primary session and its agents keep their provider. Set `system.tools.codex_command` or `system.tools.claude_command` if the selected CLI is outside `PATH`. [External Review routing](.asd/rules/external-review.md)
 
 #### Use ChatGPT for Codex and RouterAI for External Review
 
