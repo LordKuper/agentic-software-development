@@ -22,4 +22,5 @@
 - 2026-11-27 — cleanup: removed none; reverted none; verified n/a: no removals.
 - 2026-11-27 — retrospective.html written: one friction entry, one covered action, one covered systemic proposal; non-empty branch.
 - 2026-11-27 — Release v14.13.1 prepared in fdd785ec; full suite 331/331, build and lint passed at that HEAD; PR publication authorized adaptively by the user's scope and plan evidence.
+- 2026-11-27 — PR #152 opened for v14.13.1; external review skip and its five unreviewed files disclosed in PR description.
 - 2026-11-27 — impl-test: full suite green (331/331), 0 added/0 removed tests
