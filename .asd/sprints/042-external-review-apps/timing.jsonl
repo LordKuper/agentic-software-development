@@ -1,0 +1,15 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T14:29:37.740Z","attrs":{}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T14:29:37.740Z","end":"2026-11-27T14:29:54.159Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T14:29:54.261Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T14:29:54.261Z","end":"2026-11-27T14:30:36.888Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T14:30:36.994Z","attrs":{}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T14:30:36.994Z","end":"2026-11-27T14:30:56.388Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T14:30:56.488Z","attrs":{}}
+{"op":"open","id":"task2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T14:32:43.927Z","attrs":{"impl_wave":"2"}}
+{"op":"open","id":"task2-proof","kind":"suite","parent":"task2","start":"2026-11-27T14:33:31.229Z","attrs":{"scope":"named"}}
+{"op":"close","id":"task2-proof","kind":"suite","parent":"task2","start":"2026-11-27T14:33:31.229Z","end":"2026-11-27T14:33:31.973Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"task2-impact","kind":"suite","parent":"task2","start":"2026-11-27T14:33:39.034Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"task2-impact","kind":"suite","parent":"task2","start":"2026-11-27T14:33:39.034Z","end":"2026-11-27T14:33:42.845Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"task2","kind":"dispatch","parent":"impl#1","start":"2026-11-27T14:32:43.927Z","end":"2026-11-27T14:34:28.828Z","outcome":"done","attrs":{"impl_wave":"2"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T14:30:56.488Z","end":"2026-11-27T14:34:28.828Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T14:34:28.935Z","attrs":{}}
