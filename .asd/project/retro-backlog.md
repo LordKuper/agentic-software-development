@@ -111,7 +111,13 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 038-codex-provider-routing#A-2 | asd | included | 039-figma-codex-prompts | Capture the complete runner report and exit code in the same invocation before printing a bounded summary. |
 | 038-codex-provider-routing#P-1 | asd | included | 039-figma-codex-prompts | Require a recorded red run before accepting a Test-only Task that adds or extends a behavior regression. |
 | 038-codex-provider-routing#P-2 | asd | included | 039-figma-codex-prompts | Exercise the workflow's Git-produced scope list when testing a review-path change. |
-| 039-figma-codex-prompts#A-2 | asd | deferred | 040-mockups-token-optimization | Carry the wrapper host in external-review preflight and use it to select the invocation shell. |
-| 039-figma-codex-prompts#A-4 | asd | deferred | 040-mockups-token-optimization | Check repository discovery in the exact environment used to start the terminal test runner. |
+| 039-figma-codex-prompts#A-2 | asd | included | 041-routerai-external-review | Carry the wrapper host in external-review preflight and use it to select the invocation shell. |
+| 039-figma-codex-prompts#A-4 | asd | included | 041-routerai-external-review | Check repository discovery in the exact environment used to start the terminal test runner. |
 | 039-figma-codex-prompts#P-1 | asd | included | 040-mockups-token-optimization | Check the existing aggregate standalone-skill byte budget in context-check when a standalone skill changes. |
-| 039-figma-codex-prompts#P-2 | asd | deferred | 040-mockups-token-optimization | Trace an interrupted provider-backed artifact through recovery, reconciliation, and review in the plan's reachability check. |
+| 039-figma-codex-prompts#P-2 | asd | included | 041-routerai-external-review | Trace an interrupted provider-backed artifact through recovery, reconciliation, and review in the plan's reachability check. |
+| 040-mockups-token-optimization#A-1 | asd | included | 041-routerai-external-review | Stop wrapped review on an explicit account-hold denial. Persist the reason and carried scope. |
+| 040-mockups-token-optimization#A-2 | consumer | included | 041-routerai-external-review | Verify read-only child Git access in the same process environment as the full suite. |
+| 040-mockups-token-optimization#A-3 | asd | included | 041-routerai-external-review | Validate the open phase parent before accepting a new dispatch timing operation. |
+| 040-mockups-token-optimization#P-1 | asd | included | 041-routerai-external-review | Record actual completion for each concurrent task and attribute shared context once in the wave summary. |
+| 040-mockups-token-optimization#P-2 | asd | included | 041-routerai-external-review | Bring the smallest failing migration fixture into the migration task brief before dispatch. |
+| 040-mockups-token-optimization#P-3 | asd | included | 041-routerai-external-review | Scope a suite revision to remove redundant workflow assertions and retain executable update cases. |

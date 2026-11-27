@@ -1,0 +1,5 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T09:24:03.885Z","attrs":{}}
+{"op":"open","id":"wait scope acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-27T09:52:19.566Z","attrs":{"gate":"scope acceptance"}}
+{"op":"close","id":"wait scope acceptance","kind":"user-wait","parent":"scope#1","start":"2026-11-27T09:52:19.566Z","end":"2026-11-27T11:22:41.450Z","outcome":"done","attrs":{"gate":"scope acceptance"}}
+{"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-27T09:24:03.885Z","end":"2026-11-27T11:22:41.450Z","outcome":"done","attrs":{}}
+{"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-27T11:22:41.450Z","attrs":{}}
