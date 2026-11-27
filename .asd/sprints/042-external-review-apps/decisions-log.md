@@ -14,4 +14,7 @@
 - 2026-11-27 — route Task 2: standard, dispatch HEAD b84e0d70.
 - 2026-11-27 — Task 2 f7d40238: regression proof red against pre-fix runtime (missing override), green on current runtime; impacted runtime-routing 26/26.
 - 2026-11-27 — Initial implementation assessment accepted adaptively: all tasks complete; sync, lint, context and agnix checks passed; no stubs introduced.
+- 2026-11-27 — External review wave-1/iter-01 skipped: account-hold; cli=claude; model=sonnet. Five manifest files remain unreviewed; F-1.
+- 2026-11-27 — route combined.md finding 1: standard, dispatch HEAD 11caf01c; in-place test evidence repair ebc1bcd3 records the failed command, test name and exit code.
+- 2026-11-27 — Impl-review DoD: finding 1 resolved; external review unavailable (F-1); reused full suite 331/331 from 1363427698bd8b2d47d8a29411226f99d4b8c00b, no code/test/stub changes since.
 - 2026-11-27 — impl-test: full suite green (331/331), 0 added/0 removed tests
