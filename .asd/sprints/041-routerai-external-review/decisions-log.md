@@ -37,3 +37,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-11-27 — route Task 1: standard, dispatch HEAD 4b4014a705a9a1ff8c63ddecf3cca352e68e8e9d; risk change: public contract, change: authentication
+- 2026-11-27 — Task 1 committed bff4888c; generated views synced 11fb45ac; syntax, lint, context ceilings and sync check pass. RouterAI profile unavailable locally; live inference unverified. Contract callers route to Task 2.

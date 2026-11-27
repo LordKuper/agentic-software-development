@@ -11,3 +11,5 @@
 {"op":"close","id":"wait plan tasks","kind":"user-wait","parent":"plan#1","start":"2026-11-27T11:29:43.269Z","end":"2026-11-27T11:45:19.660Z","outcome":"done","attrs":{"gate":"plan tasks"}}
 {"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-27T11:24:09.146Z","end":"2026-11-27T11:45:56.606Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T11:45:56.606Z","attrs":{}}
+{"op":"open","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:46:40.895Z","attrs":{"agent":"asd-dev","tier":"standard","model":"gpt-6.2-sol"}}
+{"op":"close","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-27T11:46:40.895Z","end":"2026-11-27T11:56:29.799Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"gpt-6.2-sol"}}

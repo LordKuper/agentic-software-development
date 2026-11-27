@@ -15,7 +15,7 @@
     { "gate": "audit", "decision_actor": "orchestrator", "reason": "criteria, current routes, tests and implementation risks inspected", "evidence": "audit.md: Existing implementation, Gaps, Risks", "artifact_revision": "audit.md@audit" },
     { "gate": "plan", "decision_actor": "user", "reason": "user accepted overview and task decomposition", "evidence": "decisions-log.003.md: Plan overview locked; Plan accepted; sync check passed", "artifact_revision": "plan.md@plan" }
   ],
-  "task_routing": {},
+  "task_routing": { "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:public contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" } },
   "skipped_phases": [],
   "reviews": { "design": { "iteration": 0, "verdicts": {}, "latched": {} }, "impl": { "wave": 1, "waves": [{ "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }] } },
   "created_at": "2026-11-27T09:23:35Z",

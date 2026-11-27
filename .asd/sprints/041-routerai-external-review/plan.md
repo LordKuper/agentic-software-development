@@ -19,9 +19,9 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format").
 Material risk: change: public contract
 Material risk: change: authentication
 Reachability: review phases write preflight host and route at dispatch; external wrapper reads them before invocation and carries failure scope to the next review iteration.
-- [ ] Cover AC-1, AC-2, AC-5, AC-8, AC-10, AC-11, AC-14 and AC-15 in `.asd/runtime.js`, `.asd/rules/external-review.md`, `.asd/agents/asd-external-review.md` and the review workflows: use the existing named Codex profile and literal provider/model overrides; normalize canonical metadata; preserve existing routes and secret boundaries; carry the actual wrapper host; classify an explicit account hold without retry while retaining scope; validate phase parents and report individual completion and shared context.
-- [ ] Specify timing behavior for overlapping work, nested operations, missing or closed parent, legacy ledger and retries. Attribute shared context once per wave while counting each distinct dispatch completion; report incomplete/missing context rather than inventing values. Preserve existing ledger compatibility.
-- [ ] Implement the terminal runner's repository-discovery check in the actual child environment, without changing global Git configuration. Use existing Codex and RouterAI tech references; verify behavior when credentials or provider are unavailable.
+- [x] Cover AC-1, AC-2, AC-5, AC-8, AC-10, AC-11, AC-14 and AC-15 in `.asd/runtime.js`, `.asd/rules/external-review.md`, `.asd/agents/asd-external-review.md` and the review workflows: use the existing named Codex profile and literal provider/model overrides; normalize canonical metadata; preserve existing routes and secret boundaries; carry the actual wrapper host; classify an explicit account hold without retry while retaining scope; validate phase parents and report individual completion and shared context.
+- [x] Specify timing behavior for overlapping work, nested operations, missing or closed parent, legacy ledger and retries. Attribute shared context once per wave while counting each distinct dispatch completion; report incomplete/missing context rather than inventing values. Preserve existing ledger compatibility.
+- [x] Implement the terminal runner's repository-discovery check in the actual child environment, without changing global Git configuration. Use existing Codex and RouterAI tech references; verify behavior when credentials or provider are unavailable.
 
 ### Task 2: Runtime contract callers
 Material risk: change: public contract
