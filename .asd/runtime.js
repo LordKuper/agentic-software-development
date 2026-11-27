@@ -1943,9 +1943,10 @@ function timingRequest(flags) {
   if (!TIMING_OUTCOMES.includes(outcome)) fail(`--outcome must be ${TIMING_OUTCOMES.join(' or ')}`);
   if (open.length === 0 && [flags.kind, flags.parent, flags.attrs].some((value) => value !== undefined)) fail('--kind/--parent/--attrs apply to --open only');
   if (open.length > 0 && !TIMING_KINDS.includes(flags.kind)) fail(`--kind must be one of ${TIMING_KINDS.join(', ')}`);
+  if (flags.context !== undefined && (flags.kind !== 'dispatch' || typeof flags.context !== 'string' || !flags.context.trim())) fail('--context <path> applies to dispatch opens');
   const badPhase = flags.kind === 'phase' ? open.find((name) => !/^[a-z]+(-[a-z]+)*$/.test(name)) : undefined;
   if (badPhase !== undefined) fail(`--open of a phase takes its bare phase name: ${badPhase}`);
-  return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
+  return { close, outcome, open, kind: flags.kind, parent: flags.parent, context: flags.context, attrs: timingAttrs(flags.attrs) };
 }
 
 /** The close entries for one `--close` id, given the `entries` so far and the `open` ops (updated). An open op closes after its still-open children, which take its outcome (warns); an id closed as `interrupted` by a recovery closes again as `continued`, running from that close's end; any other already-closed id is skipped (warns); an id never opened writes nothing (warns). */
@@ -1975,8 +1976,12 @@ function closeWithChildren(open, entry, end, outcome, warnings) {
 }
 
 /** Fill missing routing and bundle attrs. Warn on unresolved routing or a failed lookup. */
-function fillDispatchAttrs(id, attrs, lookups, warnings) {
-  const filled = { ...attrs };
+function fillDispatchAttrs(id, request, lookups, warnings) {
+  const filled = { ...request.attrs };
+  if (request.context !== undefined) {
+    delete filled.context_bytes;
+    delete filled.context_digest;
+  }
   const missing = () => ['agent', 'tier', 'model'].filter((key) => filled[key] === undefined);
   const fillFrom = (found) => missing().forEach((key) => { if (found && found[key] !== undefined) filled[key] = found[key]; });
   try {
@@ -1985,9 +1990,9 @@ function fillDispatchAttrs(id, attrs, lookups, warnings) {
       if (!routed?.agent || filled.agent === undefined || routed.agent === filled.agent) fillFrom(routed);
     }
     if (missing().length > 0 && lookups.agentAttrs && filled.agent !== undefined) fillFrom(lookups.agentAttrs(filled.agent));
-    const context = lookups.context?.(id, filled.impl_wave);
+    const context = lookups.context?.(id, filled.impl_wave, request.context);
     if (filled.context_bytes === undefined) {
-      const bytes = context?.bytes ?? lookups.contextBytes?.(id);
+      const bytes = context?.bytes ?? (request.context === undefined ? lookups.contextBytes?.(id) : undefined);
       if (bytes !== undefined) filled.context_bytes = bytes;
     }
     if (context?.digest && Number(filled.context_bytes) === context.bytes) filled.context_digest = context.digest;
@@ -2031,7 +2036,7 @@ function timingAppend(text, flags, now, lookups = {}) {
       continue;
     }
     held.add(id);
-    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request.attrs, lookups, warnings) : request.attrs;
+    const attrs = request.kind === 'dispatch' ? fillDispatchAttrs(id, request, lookups, warnings) : request.attrs;
     const entry = { op: 'open', id, kind: request.kind, parent, start: now, attrs };
     open.set(id, entry);
     if (request.kind === 'phase') phaseOpens.push(name);
@@ -2073,22 +2078,27 @@ function timingRecover(text, headDate) {
 }
 
 /** Read dispatch bundle size and, for an implementation wave, its content identity. */
-function timingContext(ledger, id, implWave) {
+function timingContext(ledger, id, implWave, contextPath) {
   const slug = path.basename(path.dirname(path.resolve(ledger)));
   const ids = implWave === undefined ? [id, phaseName(id)] : [id];
-  const names = ids.map((name) => `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`);
-  const found = names.map((name) => path.join(scratchDir(), name)).find((candidate) => fs.existsSync(candidate));
-  if (found === undefined) return undefined;
-  if (implWave === undefined) return { bytes: fs.statSync(found).size };
-  const bundle = fs.readFileSync(found);
-  return { bytes: bundle.length, digest: crypto.createHash('sha256').update(bundle).digest('hex') };
+  const candidates = contextPath === undefined
+    ? ids.map((name) => path.join(scratchDir(), `${slug}-${name.replace(/[/ ]/g, '-')}.context.md`))
+    : [contextPath];
+  for (const file of candidates) {
+    const stat = fs.statSync(file, { throwIfNoEntry: false });
+    if (!stat?.isFile()) continue;
+    if (implWave === undefined) return { bytes: stat.size };
+    const bundle = fs.readFileSync(file);
+    return { bytes: bundle.length, digest: crypto.createHash('sha256').update(bundle).digest('hex') };
+  }
+  return undefined;
 }
 
 /** Read bundle measurement, sprint task routing or the relevant host's canonical agent metadata on demand. */
 function timingLookups(ledger) {
   const statePath = path.join(path.dirname(ledger), 'state.json');
   return {
-    context: (id, implWave) => timingContext(ledger, id, implWave),
+    context: (id, implWave, contextPath) => timingContext(ledger, id, implWave, contextPath),
     routed: (id) => {
       if (!fs.existsSync(statePath)) return undefined;
       const routed = (JSON.parse(fs.readFileSync(statePath, 'utf8')).task_routing || {})[phaseName(id)];
@@ -2979,7 +2989,7 @@ const COMMAND_FLAGS = {
   'timing-summary': ['ledger', 'archive'],
   'suite-git-check': [],
   'checks-wait': ['pr', 'repo'],
-  timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'attrs'],
+  timing: ['ledger', 'create', 'close', 'open', 'outcome', 'kind', 'parent', 'context', 'attrs'],
   'timing-recover': ['ledger'],
 };
 
@@ -3148,6 +3158,9 @@ async function main(argv) {
     return 0;
   }
   if (command === 'suite-git-check') {
+    const discovered = runGit(['rev-parse', '--show-toplevel']).replace(/\r?\n$/, '');
+    const checkout = fs.realpathSync(process.cwd());
+    if (path.relative(checkout, fs.realpathSync(discovered)) !== '') fail(`git resolved worktree ${discovered}, expected ${checkout}`);
     process.stdout.write(runGit(['rev-parse', '--verify', '--quiet', 'HEAD^{commit}']));
     return 0;
   }
