@@ -147,3 +147,8 @@
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T13:19:30.886Z","attrs":{}}
 {"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T13:19:30.886Z","end":"2026-11-27T13:21:29.567Z","outcome":"done","attrs":{}}
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T13:21:29.567Z","attrs":{}}
+{"op":"open","id":"pr release suite","kind":"dispatch","parent":"pr#1","start":"2026-11-27T13:23:12.044Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"open","id":"suite pr#1","kind":"suite","parent":"pr release suite","start":"2026-11-27T13:24:31.946Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite pr#1","kind":"suite","parent":"pr release suite","start":"2026-11-27T13:24:31.946Z","end":"2026-11-27T13:25:14.423Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"pr release suite","kind":"dispatch","parent":"pr#1","start":"2026-11-27T13:23:12.044Z","end":"2026-11-27T13:26:48.211Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"luna"}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T13:21:29.567Z","end":"2026-11-27T13:26:48.211Z","outcome":"done","attrs":{}}
