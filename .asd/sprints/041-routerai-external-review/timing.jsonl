@@ -31,3 +31,39 @@
 {"op":"close","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-11-27T12:08:50.703Z","end":"2026-11-27T12:13:00.104Z","outcome":"done","attrs":{"agent":"asd-tester","impl_wave":"4","tier":"standard","model":"sol"}}
 {"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-27T11:45:56.606Z","end":"2026-11-27T12:13:46.961Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T12:13:46.961Z","attrs":{}}
+{"op":"open","id":"impl-test entry 1 strategy","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:13:59.854Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 1 strategy","start":"2026-11-27T12:14:50.061Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 1 strategy","start":"2026-11-27T12:14:50.061Z","end":"2026-11-27T12:15:19.904Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 1 strategy","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:13:59.854Z","end":"2026-11-27T12:17:08.246Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"impl-test entry 1 author","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:17:12.887Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite impl-test#1 mutation crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.329Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.329Z","end":"2026-11-27T12:18:58.570Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.624Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.624Z","end":"2026-11-27T12:18:58.852Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.909Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:58.909Z","end":"2026-11-27T12:18:59.074Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.125Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.125Z","end":"2026-11-27T12:18:59.310Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.360Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:18:59.360Z","end":"2026-11-27T12:18:59.816Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.478Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof mutation git","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.478Z","end":"2026-11-27T12:19:36.849Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof mutation host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.908Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof mutation host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:36.908Z","end":"2026-11-27T12:19:37.157Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:37.214Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap crlf","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:37.214Z","end":"2026-11-27T12:19:37.994Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.049Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap host","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.049Z","end":"2026-11-27T12:19:38.788Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.839Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap hold","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:38.839Z","end":"2026-11-27T12:19:39.263Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.313Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap parent","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.313Z","end":"2026-11-27T12:19:39.491Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 proof gap wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.544Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 proof gap wave","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:19:39.544Z","end":"2026-11-27T12:19:39.861Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 git environment mutation","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:07.323Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite impl-test#1 git environment mutation","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:07.323Z","end":"2026-11-27T12:20:07.807Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite impl-test#1 author impacted","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:57.142Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#1 author impacted","kind":"suite","parent":"impl-test entry 1 author","start":"2026-11-27T12:20:57.142Z","end":"2026-11-27T12:21:26.372Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"impl-test entry 1 author","kind":"dispatch","parent":"impl-test#1","start":"2026-11-27T12:17:12.887Z","end":"2026-11-27T12:22:08.009Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-27T12:13:46.961Z","end":"2026-11-27T12:22:22.683Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-11-27T12:22:22.683Z","attrs":{}}
