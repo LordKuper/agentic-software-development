@@ -51,14 +51,17 @@ Mutation setup: `ASD_041_TEST_MUTATION=<key>` with `.asd/tmp/041-impl-test-mutat
 
 ## Suite run
 
-Pre-strategy evidence (step 3). Step 8 gate is pending.
+Pre-strategy run (step 3): 289/292, exit 1 at `9e615958234fc603184a26d2d3b1401f59698653`, same command. Runner log `.asd/tmp/041-routerai-external-review-impl-test-entry-1-strategy-suite-impl-test#1.runner.log`.
+
+Post-authoring impacted run. D-1 and D-2 remain pending.
 
 - Command: `node tests/run.js contract-agents contract-rules contract-templates contract-workflows runtime-review runtime-routing runtime-timing runtime-tools sync-cli sync-render update`
 - Scope: impacted
 - Scope evidence: changed test files plus direct agent, runtime, workflow, template and generated-view contract consumers and executable update checks. Safety-valve decision is pending at step 8.
-- Result: fail — 289 passed, 3 failed, runner exit 1
-- HEAD: 9e615958234fc603184a26d2d3b1401f59698653
-- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-1-strategy-suite-impl-test#1.runner.log`
+- Result: fail — 295 passed, 2 failed (D-1 and D-2), runner exit 1. All five regressions and the repaired sync CLI test passed.
+- Lint / build: pass
+- HEAD: f7970f63bf4ac9d8c39281a26053c071c0a0d8a4
+- Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-1-author-suite-impl-test#1-author-impacted.runner.log`
 
 Test defect repaired in step 7: `tests/sync-cli.test.js` asserted 11 primary Codex roles, actual 12. Derive exact primary paths from canonical roles and task variants. Keep the independent one-to-one quota assertion.
 
