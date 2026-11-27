@@ -32,3 +32,9 @@
 {"op":"close","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:14.697Z","end":"2026-11-27T14:45:29.731Z","outcome":"done","attrs":{}}
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:29.836Z","attrs":{}}
 {"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-27T14:45:29.836Z","end":"2026-11-27T14:46:28.306Z","outcome":"done","attrs":{}}
+{"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T14:47:15.082Z","attrs":{}}
+{"op":"open","id":"release042","kind":"dispatch","parent":"pr#1","start":"2026-11-27T14:47:15.131Z","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"gpt-6-luna"}}
+{"op":"open","id":"release-full","kind":"suite","parent":"release042","start":"2026-11-27T14:47:21.760Z","attrs":{"scope":"full"}}
+{"op":"close","id":"release-full","kind":"suite","parent":"release042","start":"2026-11-27T14:47:21.760Z","end":"2026-11-27T14:48:58.523Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"release042","kind":"dispatch","parent":"pr#1","start":"2026-11-27T14:47:15.131Z","end":"2026-11-27T14:49:17.238Z","outcome":"done","attrs":{"agent":"asd-tester-runner","tier":"runner","model":"gpt-6-luna"}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-11-27T14:47:15.082Z","end":"2026-11-27T14:49:17.238Z","outcome":"done","attrs":{}}
