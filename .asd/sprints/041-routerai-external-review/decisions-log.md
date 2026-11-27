@@ -61,5 +61,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-27 — route impl-test entry 2 suite: standard, dispatch HEAD 48cfcb9b474bdb8d54b728f32127a5f7c8470103
 - 2026-11-27 — impl-review wave-1/iter-01 external skipped: account-hold; cli=claude; model=sonnet. All 32 scope files carried unreviewed. F-2.
 - 2026-11-27 — impl-review wave-1/iter-01: Combined CONCERNS (three high findings); external availability skip, no latch. Route findings 1–3 to impl review-fix. Initial Combined manifest lacked self-hosting; corrected and fresh review completed (F-1). Reformatted sprint reviews block to the runtime's expected multiline layout after record-verdicts refused the compact seed.
+- 2026-11-27 — route review-fix wave-1/iter-01: standard, dispatch HEAD 0ac01f74801a593451c86b4ab61b67693cbaeef5; risk change: public contract, change: security
+- 2026-11-27 — review-fix findings 1–2 committed d17e1195; canon ledger synced 65ed2f8b. Syntax, build, lint and context pass. Route tests for findings 1–3: standard, dispatch HEAD 65ed2f8bb7193054861a6fb50d6d2ce7d4d260f7.
+- 2026-11-27 — review-fix tests committed 1ce40446 and evidence b30fd13c; 156/156 impacted, build and lint pass. Real wrapper probes used local fake Codex and Claude CLIs, captured one invocation each with correct args and PowerShell host; account-hold retained JSON scope. No live RouterAI request.
 - 2026-11-27 — impl-test: defects D-1,D-2 -> impl test-fix
 - 2026-11-27 — impl-test: impacted set green (297/297), 5 added and 3 removed tests

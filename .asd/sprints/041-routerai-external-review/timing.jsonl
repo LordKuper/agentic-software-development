@@ -105,3 +105,23 @@
 {"op":"close","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-27T12:35:32.682Z","end":"2026-11-27T12:42:41.137Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-27T12:34:34.753Z","end":"2026-11-27T12:43:31.649Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-27T12:43:31.649Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:43:42.343Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:43:42.343Z","end":"2026-11-27T12:48:09.701Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sol"}}
+{"op":"open","id":"review-fix wave-1/iter-01 tester","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:48:09.835Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"open","id":"suite review-fix-1 retry gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:40.886Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:40.886Z","end":"2026-11-27T12:50:41.093Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 retry regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.164Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.164Z","end":"2026-11-27T12:50:41.528Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 retry fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.579Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 retry fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.579Z","end":"2026-11-27T12:50:41.925Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.974Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree gap","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:41.974Z","end":"2026-11-27T12:50:42.410Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:42.465Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree regression","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:42.465Z","end":"2026-11-27T12:50:42.973Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 worktree fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:43.026Z","attrs":{"scope":"named"}}
+{"op":"close","id":"suite review-fix-1 worktree fixed","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:50:43.026Z","end":"2026-11-27T12:50:43.568Z","outcome":"done","attrs":{"scope":"named"}}
+{"op":"open","id":"suite review-fix-1 impacted","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:53:35.843Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite review-fix-1 impacted","kind":"suite","parent":"review-fix wave-1/iter-01 tester","start":"2026-11-27T12:53:35.843Z","end":"2026-11-27T12:54:04.901Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"review-fix wave-1/iter-01 tester","kind":"dispatch","parent":"impl#3","start":"2026-11-27T12:48:09.835Z","end":"2026-11-27T12:54:40.665Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sol"}}
+{"op":"close","id":"impl#3","kind":"phase","parent":null,"start":"2026-11-27T12:43:31.649Z","end":"2026-11-27T12:54:40.718Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-11-27T12:54:40.718Z","attrs":{}}
