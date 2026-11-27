@@ -121,3 +121,5 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 040-mockups-token-optimization#P-1 | asd | included | 041-routerai-external-review | Record actual completion for each concurrent task and attribute shared context once in the wave summary. |
 | 040-mockups-token-optimization#P-2 | asd | included | 041-routerai-external-review | Bring the smallest failing migration fixture into the migration task brief before dispatch. |
 | 040-mockups-token-optimization#P-3 | asd | included | 041-routerai-external-review | Scope a suite revision to remove redundant workflow assertions and retain executable update cases. |
+| 041-routerai-external-review#A-3 | asd | deferred | 042-external-review-apps | Validate that a newly seeded sprint state can be updated by verdict persistence before advancing. |
+| 041-routerai-external-review#P-1 | asd | deferred | 042-external-review-apps | Scope a suite revision to reduce full-suite cost while preserving executable update coverage. |

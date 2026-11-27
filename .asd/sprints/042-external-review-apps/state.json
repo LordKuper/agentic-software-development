@@ -1,0 +1,31 @@
+{
+  "sprint_id": "042-external-review-apps",
+  "branch": "sprint/042-external-review-apps",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "mockup_format": "none",
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    { "gate": "workflow choice", "decision_actor": "user", "reason": "user selected lite", "evidence": "decisions-log.md: Workflow choice", "artifact_revision": "state.json@scope" },
+    { "gate": "scope", "decision_actor": "user", "reason": "user requested mandatory ASD-level disabling of apps for external Codex review", "evidence": "sprint.md: Acceptance; decisions-log.md: Approach", "artifact_revision": "sprint.md@scope" },
+    { "gate": "audit", "decision_actor": "orchestrator", "reason": "route and existing tests checked; no unresolved contradictions", "evidence": "audit.md", "artifact_revision": "audit.md@audit" },
+    { "gate": "plan", "decision_actor": "orchestrator", "reason": "explicit user route requirement, test caller identified, sync build passed", "evidence": "plan.md; research.md", "artifact_revision": "plan.md@plan" },
+    { "gate": "initial impl assessment", "decision_actor": "orchestrator", "reason": "both tasks complete, build, lint and configured checks pass", "evidence": "plan.md; Task 1 and Task 2 commits", "artifact_revision": "plan.md@impl" },
+    { "gate": "impl-review green handoff", "decision_actor": "orchestrator", "reason": "internal finding fixed, external availability skip, full suite green and reused", "evidence": "reviews/impl/wave-1/iter-01; test-plan.md", "artifact_revision": "test-plan.md@terminal-green" },
+    { "gate": "PR publication", "decision_actor": "orchestrator", "reason": "explicitly authorized scope and adaptive plan; internal finding resolved; release suite green", "evidence": "combined review; test-plan.md full 331/331 at fdd785ec", "artifact_revision": "sprint.md@scope; plan.md@plan" }
+  ],
+  "task_routing": { "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:public-contract", "raise_effort": false, "resolved_model": "gpt-6.2-sol" } },
+  "skipped_phases": ["design-promote"],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 1, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "APPROVE (skipped: external review unavailable: account-hold; cli=claude; model=sonnet)" } }, "iteration_heads": { "iter-01": "11caf01c" }, "latched": {} } ] }
+  },
+  "created_at": "2026-11-27T14:28:23Z",
+  "updated_at": "2026-11-27T14:28:23Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": { "number": 152, "state": "open", "url": "https://github.com/LordKuper/agentic-software-development/pull/152" },
+  "archived_at": null
+}

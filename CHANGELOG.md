@@ -2,6 +2,12 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.13.1
+
+### Fixed
+
+- Disable connected apps in named-profile Codex external review to reduce unnecessary input tokens and cost.
+
 ## v14.13.0
 
 ### Added

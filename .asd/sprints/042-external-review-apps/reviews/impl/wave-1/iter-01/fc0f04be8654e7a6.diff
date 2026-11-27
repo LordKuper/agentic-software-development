@@ -1,0 +1,98 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 925c28b6..5d62f4a5 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -67,7 +67,7 @@
+     ".asd/rules/core.md": "214bb5861b5cbbcbb109ef829fc0eec6c1c2ec5bc4598f4c29bce2cb433e1c0d",
+     ".asd/rules/design-principles.md": "2eda7cf86e0d1bcc8b9601aaa05088e20fd6e00b0dda7525859daeb846569798",
+     ".asd/rules/design-system.md": "c48661ceb833778cf3310f5a4af01e2280e2fe2a921ebdb33967a12266b88fd6",
+-    ".asd/rules/external-review.md": "2bd4d1ad7d55da5310c28e7a160a038fdfdc82541038fb6b3d2a54e648118b4e",
++    ".asd/rules/external-review.md": "d136576f93b2ce97042791ecc886f75f69c0a137c31058ffd965b0580683d5a0",
+     ".asd/rules/git-strategy.md": "aff869777f438d6377e153efff2192b7177e41e2fd0ffbb0a9f0ccfd3d508f0f",
+     ".asd/rules/language-policy.md": "8621faf93f6b7fead18845adda2e92b207733d680dc8a343d3796ebaeece4dfe",
+     ".asd/rules/providers.md": "b541aeca3cbdb44fb8d2efea9342a7fc08a28e43ef5c87e4e28c74990f885f83",
+@@ -142,7 +142,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "e7b23211708e60edf6c186c7a1daec7be70080361b1e5bdf7dfc9d483966c6c6",
++    ".asd/runtime.js": "402e096d4c176014d7ec01f404cca502db9436de44ba545f362e04f90224f034",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "8f4ccf5daa8c029e28913473246a45187f1aa0a24603f9535610634e600f773c",
+diff --git a/.asd/rules/external-review.md b/.asd/rules/external-review.md
+index 672be93e..5ed994d1 100644
+--- a/.asd/rules/external-review.md
++++ b/.asd/rules/external-review.md
+@@ -12,7 +12,7 @@ Select the invocation row with `external-preflight`'s wrapper `host` and Node `p
+ 
+ The rendered prompt alone reaches the wrapped CLI's stdin: under Codex by **here-string/heredoc, never written to disk**; under Claude Code from one scratch file, `<scratch-dir>/<NNN-slug>-external-<phase>-<iteration id, "/" as "-">.prompt.md` (`<scratch-dir>`: the directory of `payload.inputs.context`, `artifact-layout.md` "Scratch directory"), written with the file-write operation, redirected into stdin and deleted after the run, pass or fail. That file is the sole filesystem write of the invocation. The scope manifest travels by path, never in the prompt — the prompt names the review output dir's `external.scope.json`, which `emit-manifest` already wrote ("Phase-scoped payload"). The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`.
+ 
+-Use `preflight.route.command` as the executable and splat `preflight.route.args` as literal arguments for a named profile. Use the agent file's rendered `wraps_invoke_args` for the default route. Both forms specify the model, effort and read-only boundary. The table shows the default argument tail as a placeholder.
++Use `preflight.route.command` as the executable and splat `preflight.route.args` as literal arguments for a named profile. The named-profile invocation forces `-c features.apps=false` to omit connected apps from the review subprocess. Use the agent file's rendered `wraps_invoke_args` for the default route. Both forms specify the model, effort and read-only boundary. The table shows the default argument tail as a placeholder.
+ 
+ `--allowedTools` alone is not a read-only boundary.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index c44aee12..304c16af 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -338,7 +338,7 @@ function codexProfileRoute(route) {
+   }
+   const args = ['exec', '--profile', route.profile, `--model=${model}`,
+     '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
+-    '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
++    '-c', 'approval_policy="never"', '-c', 'features.apps=false', '--sandbox', 'read-only', '--ephemeral', '-'];
+   return { route: { ...route, model, model_provider: provider, args }, identity: { ...identity, provider, effort } };
+ }
+ 
+diff --git a/README.md b/README.md
+index 0093261b..e04b60b7 100644
+--- a/README.md
++++ b/README.md
+@@ -461,7 +461,7 @@ designmd --version
+ 
+ ### Codex CLI / Claude CLI
+ 
+-The wrapped model defaults to Sol/high under Claude Code and Sonnet/xhigh under Codex. With `review.codex_profile` set under Codex, the wrapped model and effort come from that local profile. The primary session and its agents keep their provider. Set `system.tools.codex_command` or `system.tools.claude_command` if the selected CLI is outside `PATH`. [External Review routing](.asd/rules/external-review.md)
++The wrapped model defaults to Sol/high under Claude Code and Sonnet/xhigh under Codex. With `review.codex_profile` set under Codex, the wrapped model and effort come from that local profile. ASD passes `-c features.apps=false` to disable connected apps for this subprocess. The primary session and its agents keep their provider. Set `system.tools.codex_command` or `system.tools.claude_command` if the selected CLI is outside `PATH`. [External Review routing](.asd/rules/external-review.md)
+ 
+ #### Use ChatGPT for Codex and RouterAI for External Review
+ 
+diff --git a/tests/runtime-routing.test.js b/tests/runtime-routing.test.js
+index 29b6286a..fcbcc59a 100644
+--- a/tests/runtime-routing.test.js
++++ b/tests/runtime-routing.test.js
+@@ -195,7 +195,7 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () =>
+   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
+ });
+ 
+-test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and only probe CLI version', () => {
++test('Sprint 038 AC-4/AC-7, sprint-042 AC-1/AC-2: named Codex review profiles disable apps and only probe CLI version', () => {
+   const root = mkTempDir();
+   const profile = path.join(root, 'routerai.config.toml');
+   const trace = path.join(root, 'probes.jsonl');
+@@ -215,18 +215,20 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
+     const model = 'model = "~anthropic/claude-opus-latest"\nmodel_reasoning_effort = "medium"\n';
+     fs.writeFileSync(profile, `${model}[irrelevant]\nmodel_provider = "routerai"\n`);
+     assert.strictEqual(runtime.externalPreflight(input).status, 'profile-invalid');
+-    fs.writeFileSync(profile, `${model}model_provider = "routerai"\n`);
++    fs.writeFileSync(profile, `${model}model_provider = "routerai"\n[features]\napps = true\n`);
+     process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.133.9';
+     assert.strictEqual(runtime.externalPreflight(input).status, 'profile-cli-unsupported');
+     process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.134.0';
+     const ready = runtime.externalPreflight(input);
+     assert.deepStrictEqual([ready.status, ready.route], ['local-ready', {
+       provider: 'codex', command, profile: 'routerai', model: '~anthropic/claude-opus-latest', model_provider: 'routerai',
+-      args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest', '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'],
++      args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest',
++        '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"',
++        '-c', 'features.apps=false', '--sandbox', 'read-only', '--ephemeral', '-'],
+     }]);
+     assert.deepStrictEqual(fs.readFileSync(trace, 'utf8').trim().split(/\r?\n/), ['--version', '--version']);
+     const defaultRoute = withExitZeroNode(() => runtime.externalPreflight({ ...input, codexProfile: '', claudeCommand: process.execPath }));
+-    assert.deepStrictEqual([defaultRoute.status, defaultRoute.route.provider, defaultRoute.route.command], ['local-ready', 'claude', process.execPath]);
++    assert.deepStrictEqual([defaultRoute.status, defaultRoute.route.provider, defaultRoute.route.command, defaultRoute.route.args], ['local-ready', 'claude', process.execPath, undefined]);
+   } finally {
+     for (const key of ['CODEX_HOME', 'ASD_TEST_CLI_TRACE', 'ASD_TEST_CLI_VERSION']) {
+       if (saved[key] === undefined) delete process.env[key];

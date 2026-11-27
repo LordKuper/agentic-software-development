@@ -195,7 +195,7 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
 });
 
-test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and only probe CLI version', () => {
+test('Sprint 038 AC-4/AC-7, sprint-042 AC-1/AC-2: named Codex review profiles disable apps and only probe CLI version', () => {
   const root = mkTempDir();
   const profile = path.join(root, 'routerai.config.toml');
   const trace = path.join(root, 'probes.jsonl');
@@ -215,18 +215,20 @@ test('Sprint 038 AC-4/AC-7: named Codex review profiles use a separate route and
     const model = 'model = "~anthropic/claude-opus-latest"\nmodel_reasoning_effort = "medium"\n';
     fs.writeFileSync(profile, `${model}[irrelevant]\nmodel_provider = "routerai"\n`);
     assert.strictEqual(runtime.externalPreflight(input).status, 'profile-invalid');
-    fs.writeFileSync(profile, `${model}model_provider = "routerai"\n`);
+    fs.writeFileSync(profile, `${model}model_provider = "routerai"\n[features]\napps = true\n`);
     process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.133.9';
     assert.strictEqual(runtime.externalPreflight(input).status, 'profile-cli-unsupported');
     process.env.ASD_TEST_CLI_VERSION = 'codex-cli 0.134.0';
     const ready = runtime.externalPreflight(input);
     assert.deepStrictEqual([ready.status, ready.route], ['local-ready', {
       provider: 'codex', command, profile: 'routerai', model: '~anthropic/claude-opus-latest', model_provider: 'routerai',
-      args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest', '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'],
+      args: ['exec', '--profile', 'routerai', '--model=~anthropic/claude-opus-latest',
+        '-c', 'model_provider="routerai"', '-c', 'model_reasoning_effort="medium"', '-c', 'approval_policy="never"',
+        '-c', 'features.apps=false', '--sandbox', 'read-only', '--ephemeral', '-'],
     }]);
     assert.deepStrictEqual(fs.readFileSync(trace, 'utf8').trim().split(/\r?\n/), ['--version', '--version']);
     const defaultRoute = withExitZeroNode(() => runtime.externalPreflight({ ...input, codexProfile: '', claudeCommand: process.execPath }));
-    assert.deepStrictEqual([defaultRoute.status, defaultRoute.route.provider, defaultRoute.route.command], ['local-ready', 'claude', process.execPath]);
+    assert.deepStrictEqual([defaultRoute.status, defaultRoute.route.provider, defaultRoute.route.command, defaultRoute.route.args], ['local-ready', 'claude', process.execPath, undefined]);
   } finally {
     for (const key of ['CODEX_HOME', 'ASD_TEST_CLI_TRACE', 'ASD_TEST_CLI_VERSION']) {
       if (saved[key] === undefined) delete process.env[key];

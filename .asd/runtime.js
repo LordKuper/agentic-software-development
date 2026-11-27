@@ -338,7 +338,7 @@ function codexProfileRoute(route) {
   }
   const args = ['exec', '--profile', route.profile, `--model=${model}`,
     '-c', `model_provider=${JSON.stringify(provider)}`, '-c', `model_reasoning_effort=${JSON.stringify(effort)}`,
-    '-c', 'approval_policy="never"', '--sandbox', 'read-only', '--ephemeral', '-'];
+    '-c', 'approval_policy="never"', '-c', 'features.apps=false', '--sandbox', 'read-only', '--ephemeral', '-'];
   return { route: { ...route, model, model_provider: provider, args }, identity: { ...identity, provider, effort } };
 }
 

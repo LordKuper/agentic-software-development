@@ -12,7 +12,7 @@ Select the invocation row with `external-preflight`'s wrapper `host` and Node `p
 
 The rendered prompt alone reaches the wrapped CLI's stdin: under Codex by **here-string/heredoc, never written to disk**; under Claude Code from one scratch file, `<scratch-dir>/<NNN-slug>-external-<phase>-<iteration id, "/" as "-">.prompt.md` (`<scratch-dir>`: the directory of `payload.inputs.context`, `artifact-layout.md` "Scratch directory"), written with the file-write operation, redirected into stdin and deleted after the run, pass or fail. That file is the sole filesystem write of the invocation. The scope manifest travels by path, never in the prompt — the prompt names the review output dir's `external.scope.json`, which `emit-manifest` already wrote ("Phase-scoped payload"). The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`.
 
-Use `preflight.route.command` as the executable and splat `preflight.route.args` as literal arguments for a named profile. Use the agent file's rendered `wraps_invoke_args` for the default route. Both forms specify the model, effort and read-only boundary. The table shows the default argument tail as a placeholder.
+Use `preflight.route.command` as the executable and splat `preflight.route.args` as literal arguments for a named profile. The named-profile invocation forces `-c features.apps=false` to omit connected apps from the review subprocess. Use the agent file's rendered `wraps_invoke_args` for the default route. Both forms specify the model, effort and read-only boundary. The table shows the default argument tail as a placeholder.
 
 `--allowedTools` alone is not a read-only boundary.
 
