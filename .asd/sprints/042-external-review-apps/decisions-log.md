@@ -18,4 +18,7 @@
 - 2026-11-27 — route combined.md finding 1: standard, dispatch HEAD 11caf01c; in-place test evidence repair ebc1bcd3 records the failed command, test name and exit code.
 - 2026-11-27 — Impl-review DoD: finding 1 resolved; external review unavailable (F-1); reused full suite 331/331 from 1363427698bd8b2d47d8a29411226f99d4b8c00b, no code/test/stub changes since.
 - 2026-11-27 — design-promote skipped: no enabled documents or mockups.
+- 2026-11-27 — cleanup checkpoint 0240b998.
+- 2026-11-27 — cleanup: removed none; reverted none; verified n/a: no removals.
+- 2026-11-27 — retrospective.html written: one friction entry, one covered action, one covered systemic proposal; non-empty branch.
 - 2026-11-27 — impl-test: full suite green (331/331), 0 added/0 removed tests
