@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | c822fed5 | full change surface |
 | 2 | 1b1e8fd2 | delta since entry 1 |
-| 3 | | delta since entry 2 |
+| 3 | ac5fb97c | delta since entry 2 |
 
 ## Risk → check decisions
 
@@ -42,6 +42,7 @@ responsibility:
 - Lint / build: pass
 - HEAD: a6148e3c90d789ddd294cf24367a350b50e9852e
 - Runner log: `.asd/tmp/041-routerai-external-review-impl-test-entry-3-suite-impl-test#3-pre-strategy.runner.log`
+- Line delta: tests +139/−28 (net 111); other +312/−135 (net 177)
 
 ## Defects
 
